@@ -47,10 +47,10 @@ public class Container {
     @Column
     private Integer port;
 
-    @Column(nullable = false)
+    @Column
     private String sidecarHost;
 
-    @Column(nullable = false)
+    @Column
     private Integer sidecarPort;
 
     @Column
@@ -63,8 +63,7 @@ public class Container {
     private String uiAdditionalFlags;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })

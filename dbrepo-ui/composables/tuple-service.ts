@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useTupleService = (): any => {
   async function create(databaseId: number, tableId: number, data: TableCsvDto): Promise<void> {
     const axios = useAxiosInstance()
@@ -10,7 +12,7 @@ export const useTupleService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to create tuple(s)', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -26,7 +28,7 @@ export const useTupleService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to update tuple(s)', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -42,7 +44,7 @@ export const useTupleService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete tuple(s)', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }

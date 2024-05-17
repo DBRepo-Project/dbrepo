@@ -3,9 +3,9 @@ package at.tuwien.service.impl;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
-import at.tuwien.exception.BannerMessageNotFoundException;
+import at.tuwien.exception.MessageNotFoundException;
 import at.tuwien.mapper.BannerMessageMapper;
-import at.tuwien.repository.mdb.BannerMessageRepository;
+import at.tuwien.repository.BannerMessageRepository;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +39,11 @@ public class BannerMessageServiceImpl implements BannerMessageService {
     }
 
     @Override
-    public BannerMessage find(Long id) throws BannerMessageNotFoundException {
+    public BannerMessage find(Long id) throws MessageNotFoundException {
         final Optional<BannerMessage> optional = bannerMessageRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to find banner message with id {}", id);
-            throw new BannerMessageNotFoundException("Failed to find banner message with id " + id);
+            throw new MessageNotFoundException("Failed to find banner message with id " + id);
         }
         return optional.get();
     }
@@ -57,22 +57,20 @@ public class BannerMessageServiceImpl implements BannerMessageService {
     }
 
     @Override
-    public BannerMessage update(Long id, BannerMessageUpdateDto data) throws BannerMessageNotFoundException {
-        final BannerMessage entity = find(id);
-        entity.setMessage(data.getMessage());
-        entity.setDisplayEnd(data.getDisplayEnd());
-        entity.setDisplayStart(data.getDisplayStart());
-        entity.setType(bannerMessageMapper.bannerMessageTypeDtoToBannerMessageType(data.getType()));
-        final BannerMessage message = bannerMessageRepository.save(entity);
+    public BannerMessage update(BannerMessage message, BannerMessageUpdateDto data) {
+        message.setMessage(data.getMessage());
+        message.setDisplayEnd(data.getDisplayEnd());
+        message.setDisplayStart(data.getDisplayStart());
+        message.setType(bannerMessageMapper.bannerMessageTypeDtoToBannerMessageType(data.getType()));
+        message = bannerMessageRepository.save(message);
         log.info("Updated banner message with id {}", message.getId());
         return message;
     }
 
     @Override
-    public void delete(Long id) throws BannerMessageNotFoundException {
-        find(id);
-        bannerMessageRepository.deleteById(id);
-        log.info("Deleted banner message with id {}", id);
+    public void delete(BannerMessage message) {
+        bannerMessageRepository.deleteById(message.getId());
+        log.info("Deleted banner message with id {}", message.getId());
     }
 
 }

@@ -22,7 +22,15 @@
       :title="$t('pages.subset.title')">
       <v-card-text>
         <v-list
-          v-if="subset"
+          v-if="loadingSubset && !subset"
+          lines="two"
+          dense>
+          <v-skeleton-loader
+            type="list-item-three-line"
+            width="50%" />
+        </v-list>
+        <v-list
+          v-else
           lines="two"
           dense>
           <v-list-item
@@ -44,7 +52,7 @@
           <v-list-item
             :title="$t('pages.subset.query-hash.title')"
             density="compact">
-            <pre v-text="`${this.$t('pages.subset.query-hash.prefix')}${subset.query_hash}`" />
+            <pre v-text="`${$t('pages.subset.query-hash.prefix')}${subset.query_hash}`" />
           </v-list-item>
           <v-list-item
             v-if="executionUTC"
@@ -95,7 +103,7 @@
 <script setup>
 const config = useRuntimeConfig()
 const { database_id, subset_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/query/${subset_id}`)
+const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`)
 if (data.value) {
   const identifierService = useIdentifierService()
   useServerHead(identifierService.subsetToServerHead(data.value))
@@ -103,10 +111,10 @@ if (data.value) {
 }
 </script>
 <script>
-import Summary from '@/components/identifier/Summary'
-import SubsetToolbar from '@/components/subset/SubsetToolbar'
-import Select from '@/components/identifier/Select'
-import UserBadge from '@/components/user/UserBadge'
+import Summary from '@/components/identifier/Summary.vue'
+import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

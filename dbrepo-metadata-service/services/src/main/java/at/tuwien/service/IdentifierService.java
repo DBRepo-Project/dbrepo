@@ -1,14 +1,16 @@
 package at.tuwien.service;
 
 import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -83,71 +85,66 @@ public interface IdentifierService {
      */
     List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId);
 
+    Identifier publish(Long identifierId) throws SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, MalformedException, ServiceConnectionException, IdentifierNotFoundException;
+
     /**
      * Creates a new identifier in the metadata database for a query or database.
      *
-     * @param data      The identifier.
-     * @param principal The authorization principal.
+     * @param database The database.
+     * @param user     The user.
+     * @param data     The data.
      * @return The created identifier from the metadata database if successful.
-     * @throws QueryNotFoundException     The query was not found in the data database.
-     * @throws IdentifierRequestException The identifier requested could not be created.
-     * @throws UserNotFoundException      The user was not found in the metadata database.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws ViewNotFoundException      The view with id was not found.
-     * @throws QueryStoreException        The query store failed to retrieve.
-     * @throws ImageNotSupportedException The image is not supported.
      */
-    Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
-            ViewNotFoundException, QueryStoreException, ImageNotSupportedException;
+    Identifier save(Database database, User user, IdentifierSaveDto data) throws ServiceException,
+            ServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
+            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException;
+
+    /**
+     * Creates a new identifier in the metadata database for a query or database.
+     *
+     * @param database The database.
+     * @param user     The user.
+     * @param data     The data.
+     * @return The created identifier from the metadata database if successful.
+     */
+    Identifier create(Database database, User user, IdentifierCreateDto data) throws ServiceException,
+            ServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
+            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Export metadata for a identifier
      *
-     * @param id The identifier id.
+     * @param identifier The identifier.
      * @return The export, if successful.
-     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
-    InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException;
+    InputStreamResource exportMetadata(Identifier identifier);
 
     /**
      * Export metadata for bibliography for a identifier.
      *
-     * @param id    The identifier id.
-     * @param style The identifier bibliography style. Optional. Default: APA.
+     * @param identifier The identifier.
+     * @param style      The identifier bibliography style. Optional. Default: APA.
      * @return The export, if successful.
-     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
-     * @throws IdentifierRequestException  The identifier style was not found.
+     * @throws MalformedException The identifier style was not found.
      */
-    String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException,
-            IdentifierRequestException;
+    String exportBibliography(Identifier identifier, BibliographyTypeDto style) throws MalformedException;
 
     /**
      * Exports an identifier to XML
      *
-     * @param identifierId The identifier id.
+     * @param identifier The identifier.
      * @return The XML resource, if successful.
-     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
-     * @throws QueryNotFoundException      The query was not found in the metadata database or was deleted.
-     * @throws IdentifierRequestException  The identifier does not allow for exporting.
-     * @throws QueryStoreException         The query store failed to retrieve.
-     * @throws QueryMalformedException     The export query is malformed.
-     * @throws DatabaseNotFoundException   The database was not found in the metadata database.
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws FileStorageException        The S3 storage failed to produce an export resource.
-     * @throws DataDbSidecarException      The sidecar failed to upload the export to the S3 storage.
      */
-    InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
-            QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException, DataProcessingException;
+    InputStreamResource exportResource(Identifier identifier) throws ServiceException, ServiceConnectionException,
+            IdentifierNotFoundException, QueryNotFoundException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the
      * database, but sets it as deleted.
      *
-     * @param identifierId The identifier id.
-     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
-     * @throws DatabaseNotFoundException   The database was not found in the metadata database.
+     * @param identifier The identifier.
      */
-    void delete(Long identifierId) throws IdentifierNotFoundException, DatabaseNotFoundException;
+    void delete(Identifier identifier) throws ServiceException, ServiceConnectionException, IdentifierNotFoundException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 }

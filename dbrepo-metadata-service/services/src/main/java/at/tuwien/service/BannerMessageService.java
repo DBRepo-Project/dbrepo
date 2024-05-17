@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
-import at.tuwien.exception.BannerMessageNotFoundException;
+import at.tuwien.exception.MessageNotFoundException;
 
 import java.util.List;
 
@@ -28,9 +28,9 @@ public interface BannerMessageService {
      *
      * @param id The message id.
      * @return The message, if successful.
-     * @throws BannerMessageNotFoundException The message was not found in the metadata database.
+     * @throws MessageNotFoundException The message was not found in the metadata database.
      */
-    BannerMessage find(Long id) throws BannerMessageNotFoundException;
+    BannerMessage find(Long id) throws MessageNotFoundException;
 
     /**
      * Creates a new maintenance message in the metadata database.
@@ -43,18 +43,16 @@ public interface BannerMessageService {
     /**
      * Updates a maintenance message by given id in the metadata database.
      *
-     * @param id   The message id.
-     * @param data The updated message data.
+     * @param message The message.
+     * @param data    The updated message data.
      * @return The updated message, if successful.
-     * @throws BannerMessageNotFoundException The message was not found in the metadata database.
      */
-    BannerMessage update(Long id, BannerMessageUpdateDto data) throws BannerMessageNotFoundException;
+    BannerMessage update(BannerMessage message, BannerMessageUpdateDto data);
 
     /**
      * Deletes a maintenance message by given id in the metadata database.
      *
-     * @param id The message id.
-     * @throws BannerMessageNotFoundException The message was not found in the metadata database.
+     * @param message The message.
      */
-    void delete(Long id) throws BannerMessageNotFoundException;
+    void delete(BannerMessage message);
 }

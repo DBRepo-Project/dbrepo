@@ -18,16 +18,7 @@
           <p
             v-for="(title, i) in identifier.titles"
             :key="`t-${i}`">
-            <span>
-              <v-badge
-                v-if="title.language"
-                inline
-                :content="title.language"
-                color="code">
-                <span v-text="title.title" />
-              </v-badge>
-              <span v-else v-text="title.title" />
-            </span>
+            <span v-text="title.title" />
           </p>
         </v-list-item>
         <v-list-item
@@ -36,16 +27,10 @@
           <p
             v-for="(description, i) in identifier.descriptions"
             :key="`d-${i}`">
-            <span>
-              <v-badge
-                v-if="description.language"
-                inline
-                :content="description.language"
-                color="code">
-                <span v-text="description.description" />
-              </v-badge>
-              <span v-else v-text="description.description" />
-            </span>
+            <div
+              v-text="description?.type"
+              class="text-subtitle-2" />
+            <span v-text="description.description" />
           </p>
         </v-list-item>
         <v-list-item
@@ -56,33 +41,7 @@
         <v-list-item
           :title="$t('pages.identifier.creators.title')"
           density="compact">
-          <p
-            v-for="(personOrOrg, i) in identifier.creators"
-            :key="`c-${i}`">
-            <OrcidIcon
-              v-if="hasOrcid(personOrOrg)"
-              class="mr-1"
-              :orcid="personOrOrg.name_identifier" />
-            <IsniIcon
-              v-if="hasIsni(personOrOrg)"
-              class="mr-1"
-              :isni="personOrOrg.name_identifier" />
-            <RorIcon
-              v-if="hasRor(personOrOrg)"
-              class="mr-1"
-              :ror="personOrOrg.name_identifier" />
-            <span
-              v-text="personOrOrg.creator_name" />
-            <sup
-              v-if="hasAffiliation(personOrOrg)"
-              class="ml-1">
-              <a
-                v-if="personOrOrg.affiliation_identifier"
-                :href="personOrOrg.affiliation_identifier">
-                {{ personOrOrg.affiliation ? personOrOrg.affiliation : personOrOrg.affiliation_identifier }}
-              </a>
-            </sup>
-          </p>
+          <Creators :person-or-orgs="identifier.creators" />
         </v-list-item>
         <v-list-item
           v-if="identifierLang"
@@ -103,20 +62,8 @@
           <p
             v-for="(related, i) in identifier.related_identifiers"
             :key="`r-${i}`">
-            <span v-text="`${related.type}:`" />
-            <a
-              v-if="related.value.startsWith('http')"
-              :href="related.value"
-              v-text="related.value"
-              class="ml-1" />
-            <span
-              v-else
-              class="ml-1"
-              v-text="related.value" />
-            <span
-              v-if="related.relation"
-              class="ml-1"
-              v-text="`(${related.relation})`"/>
+            <Banner
+              :identifier="related" />
           </p>
         </v-list-item>
         <v-list-item
@@ -157,6 +104,7 @@
           </p>
         </v-list-item>
         <v-list-item
+          v-if="canCitation"
           :title="$t('pages.identifier.citation.title')"
           density="compact">
           <Citation
@@ -168,12 +116,13 @@
 </template>
 
 <script>
-import Citation from '@/components/identifier/Citation'
-import IsniIcon from '@/components/icons/IsniIcon'
-import OrcidIcon from '@/components/icons/OrcidIcon'
-import RorIcon from '@/components/icons/RorIcon'
-import Banner from '@/components/identifier/Banner'
-import Persist from '@/components/identifier/Persist'
+import Citation from '@/components/identifier/Citation.vue'
+import IsniIcon from '@/components/icons/IsniIcon.vue'
+import OrcidIcon from '@/components/icons/OrcidIcon.vue'
+import RorIcon from '@/components/icons/RorIcon.vue'
+import Banner from '@/components/identifier/Banner.vue'
+import Persist from '@/components/identifier/Persist.vue'
+import Creators from '@/components/identifier/Creators.vue'
 import { formatLanguage } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
@@ -184,7 +133,8 @@ export default {
     IsniIcon,
     OrcidIcon,
     RorIcon,
-    Banner
+    Banner,
+    Creators
   },
   props: {
     identifier: {
@@ -226,20 +176,9 @@ export default {
       } else {
         return null
       }
-    }
-  },
-  methods: {
-    hasOrcid (personOrOrg) {
-      return personOrOrg.name_identifier && personOrOrg.name_identifier_scheme === 'ORCID'
     },
-    hasIsni (personOrOrg) {
-      return personOrOrg.name_identifier && personOrOrg.name_identifier_scheme === 'ISNI'
-    },
-    hasRor (personOrOrg) {
-      return personOrOrg.name_identifier && personOrOrg.name_identifier_scheme === 'ROR'
-    },
-    hasAffiliation (personOrOrg) {
-      return personOrOrg.affiliation || personOrOrg.affiliation_identifier
+    canCitation () {
+      return this.identifier && this.identifier.status === 'published'
     }
   }
 }

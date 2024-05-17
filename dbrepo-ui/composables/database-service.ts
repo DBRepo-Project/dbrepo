@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useDatabaseService = (): any => {
   async function findAll(): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance();
@@ -10,7 +12,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find databases', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -27,7 +29,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find databases', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -44,7 +46,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find server time', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -60,7 +62,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find databases', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -76,7 +78,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to update database visibility for database with id', id);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -92,7 +94,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to update database image for database with id', id);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -108,7 +110,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to update database owner for database with id', id);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -124,7 +126,7 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to create databases', error)
-          reject(error)
+          reject(axiosErrorToApiError(error));
         })
     })
   }

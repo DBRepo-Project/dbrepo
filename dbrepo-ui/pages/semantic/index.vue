@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import ViewSemanticEntity from '@/components/dialogs/ViewSemanticEntity'
+import ViewSemanticEntity from '@/components/dialogs/ViewSemanticEntity.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 

@@ -1,43 +1,31 @@
-app.version: '@project.version@'
+application:
+  title: DBRepo
+  version: '@project.version@'
 spring:
-  main.banner-mode: off
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   datasource:
-    url: "jdbc:mariadb://${METADATA_HOST}:3306/${METADATA_DB}${METADATA_JDBC_EXTRA_ARGS}"
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: "${METADATA_USERNAME}"
-    password: "${METADATA_PASSWORD}"
+    url: jdbc:h2:mem:fda;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS FDA;NON_KEYWORDS=value
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
   rabbitmq:
-    host: "${BROKER_HOST}"
-    virtual-host: "${BROKER_VIRTUALHOST}"
-    password: "${BROKER_PASSWORD}"
-    username: "${BROKER_USERNAME}"
-    port: ${BROKER_PORT}
+    host: "${BROKER_HOST:broker-service}"
+    virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
+    password: "${BROKER_PASSWORD:fda}"
+    username: "${BROKER_USERNAME:fda}"
+    port: ${BROKER_PORT:5672}
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.MariaDBDialect
-    hibernate:
-      search:
-        default:
-          elasticsearch:
-            host: search-db
-      ddl-auto: validate
-      use-new-id-generator-mappings: false
+    database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
     properties:
       hibernate:
-        default_schema: "${METADATA_DB}"
+        default_schema: fda
         jdbc:
           time_zone: UTC
   application:
-    name: search-sync-agent
-  opensearch:
-    username: "${SEARCH_USERNAME}"
-    password: "${SEARCH_PASSWORD}"
-    host: search-db
-    port: 9200
-    protocol: http
+    name: data-service
+  main:
+    banner-mode: off
 management:
   endpoints:
     web:
@@ -53,21 +41,43 @@ management:
     livenessState:
       enabled: true
 server:
-  port: 9093
+  port: 8080
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: "${LOG_LEVEL}"
+    at.tuwien.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-fda:
+dbrepo:
+  endpoints:
+    gatewayService: "${GATEWAY_SERVICE_ENDPOINT:http://gateway-service}"
+    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
+    authService: "${AUTH_SERVICE_HOST:http://auth-service:8080}"
+  s3:
+    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
+    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
+    importBucket: "${S3_IMPORT_BUCKET:dbrepo-upload}"
+    exportBucket: "${S3_EXPORT_BUCKET:dbrepo-download}"
+  admin:
+    username: "${ADMIN_USERNAME:admin}"
+    password: "${ADMIN_PASSWORD:admin}"
   jwt:
-    issuer: "${JWT_ISSUER}"
-    public_key: "${JWT_PUBKEY}"
-  minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
-  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
-  requeueRejected: ${REQUEUE_REJECTED}
-  queueName: "${QUEUE_NAME}"
-  exchangeName: "${EXCHANGE_NAME}"
-  routingKey: "${ROUTING_KEY}"
-  connectionTimeout: ${CONNECTION_TIMEOUT}
+    public_key: "${JWT_PUBKEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+  keycloak:
+    username: "${AUTH_SERVICE_ADMIN:fda}"
+    password: "${AUTH_SERVICE_ADMIN_PASSWORD:fda}"
+    client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
+    clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+  sql:
+    forbidden: "${NOT_SUPPORTED_KEYWORDS:\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--}"
+  grant:
+    default:
+      read: "${GRANT_DEFAULT_READ:SELECT}"
+      write: "${GRANT_DEFAULT_WRITE:SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS:2}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS:6}"
+  requeueRejected: ${REQUEUE_REJECTED:false}
+  queueName: "${BROKER_QUEUE_NAME:dbrepo}"
+  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
+  routingKey: "${BROKER_ROUTING_KEY:#}"
+  connectionTimeout: ${CONNECTION_TIMEOUT:10000}

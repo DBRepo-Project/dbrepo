@@ -1,11 +1,9 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
-import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.utils.XmlUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -27,9 +25,7 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class MetadataEndpointUnitTest extends BaseUnitTest {
+public class MetadataEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
@@ -40,6 +36,10 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void identify_succeeds() {
+
+        /* mock */
+        when(identifierRepository.findEarliest())
+                .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.identify();
@@ -52,6 +52,10 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void identifyAlt_succeeds() {
+
+        /* mock */
+        when(identifierRepository.findEarliest())
+                .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
         final ResponseEntity<String> response = metadataEndpoint.identifyAlt();

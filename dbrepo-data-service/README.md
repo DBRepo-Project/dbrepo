@@ -27,16 +27,16 @@ mvn -pl rest-service clean spring-boot:run -Dspring-boot.run.profiles=local
 
 #### Actuator
 
-- Info: http://localhost:9093/actuator/info
-- Health: http://localhost:9093/actuator/health
-    - Readiness: http://localhost:9093/actuator/health/readiness
-    - Liveness: http://localhost:9093/actuator/health/liveness
-- Prometheus: http://localhost:9093/actuator/prometheus
+- Info: http://localhost/actuator/info
+- Health: http://localhost/actuator/health
+    - Readiness: http://localhost/actuator/health/readiness
+    - Liveness: http://localhost/actuator/health/liveness
+- Prometheus: http://localhost/actuator/prometheus
 
 #### Swagger UI
 
-- Swagger UI: http://localhost:9093/swagger-ui/index.html
+- Swagger UI: http://localhost/swagger-ui/index.html
 
 #### OpenAPI
 
-- OpenAPI v3 as .yaml: http://localhost:9093/v3/api-docs.yaml
+- OpenAPI v3 as .yaml: http://localhost/v3/api-docs.yaml

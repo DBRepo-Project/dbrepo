@@ -1,8 +1,7 @@
 package at.tuwien.mvc;
 
-import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureObservability
 @MockAmqp
-@MockOpensearch
-public class ActuatorEndpointMvcTest extends BaseUnitTest {
+public class ActuatorEndpointMvcTest extends AbstractUnitTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -80,7 +80,6 @@
 
 <script>
 import {useUserStore} from '@/stores/user'
-import {localizedMessage} from '@/utils'
 
 export default {
   data() {
@@ -111,10 +110,9 @@ export default {
     },
     login() {
       this.loading = true
-      const authenticationService = useAuthenticationService()
-      authenticationService.authenticatePlain(this.username, this.password)
+      const userService = useUserService()
+      userService.obtainToken(this.username, this.password)
         .then((data) => {
-          const userService = useUserService()
           const userId = userService.tokenToUserId(data.access_token)
           userService.findOne(userId)
             .then((user) => {
@@ -135,15 +133,13 @@ export default {
               this.userStore.setUser(user)
               this.$router.push('/database')
             })
+            .catch(error => {
+              this.$toast.error(this.$t(error.code))
+            })
         })
         .catch((error) => {
           console.error('Failed to login', error)
-          const {status} = error.response
-          if (status === 401) {
-            this.$toast.error(this.$t('error.user.credentials'))
-          } else {
-            this.$toast.error(localizedMessage(this.$t, error, null))
-          }
+          this.$toast.error(this.$t(error.code))
           this.loading = false
         })
         .finally(() => {

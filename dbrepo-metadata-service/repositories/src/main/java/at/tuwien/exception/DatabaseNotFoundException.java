@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.NOT_FOUND)
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "error.database.missing")
 public class DatabaseNotFoundException extends Exception {
 
     public DatabaseNotFoundException(String msg) {

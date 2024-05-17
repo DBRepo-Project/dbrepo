@@ -15,14 +15,18 @@
       </v-card-text>
     </v-card>
     <v-divider
-      v-if="table && identifier" />
+      v-if="identifier" />
     <v-card
-      v-if="table"
       variant="flat"
       rounded="0"
       :title="$t('pages.table.title')">
       <v-card-text>
+        <v-skeleton-loader
+          v-if="!table"
+          type="list-item-three-line"
+          width="50%" />
         <v-list
+          v-if="table"
           dense>
           <v-list-item
             :title="$t('pages.table.id.title')">
@@ -67,8 +71,7 @@
         </v-list>
       </v-card-text>
     </v-card>
-    <v-divider
-      v-if="canWrite && canWriteQueues" />
+    <v-divider />
     <v-card
       v-if="canWrite && canWriteQueues"
       variant="flat"
@@ -164,10 +167,10 @@ if (data.value) {
 }
 </script>
 <script>
-import TableToolbar from '@/components/table/TableToolbar'
-import Select from '@/components/identifier/Select'
-import Summary from '@/components/identifier/Summary'
-import UserBadge from '@/components/user/UserBadge'
+import TableToolbar from '@/components/table/TableToolbar.vue'
+import Select from '@/components/identifier/Select.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
@@ -272,17 +275,26 @@ export default {
       }
       return this.table.identifiers
     },
+    filteredIdentifiers () {
+      if (!this.identifiers) {
+        return []
+      }
+      if (!this.user) {
+        return this.identifiers.filter(i => i.status === 'published')
+      }
+      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+    },
     identifier () {
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
           return filter[0]
         }
       }
-      return this.identifiers[0]
+      return this.filteredIdentifiers[0]
     },
     hasIdentifier () {
-      return this.identifiers.length > 0
+      return this.identifier
     },
     brokerExtraInfo () {
       return this.$config.public.broker.extra

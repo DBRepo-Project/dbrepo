@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,9 +26,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/license")
 public class LicenseEndpoint {
 
     private final LicenseMapper licenseMapper;
@@ -41,16 +38,16 @@ public class LicenseEndpoint {
         this.licenseService = licenseService;
     }
 
-    @GetMapping("/license")
+    @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_license_findall")
+    @Observed(name = "dbrepo_metadata_license_findall")
     @Operation(summary = "Get all licenses")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List of licenses",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = LicenseDto.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = LicenseDto[].class)))}),
     })
     public ResponseEntity<List<LicenseDto>> list() {
         log.debug("endpoint list licenses");

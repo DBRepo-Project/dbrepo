@@ -13,7 +13,7 @@
           rounded="0">
           <v-card-text>
             <Select
-              :identifiers="identifiers"
+              :identifiers="filteredIdentifiers"
               :identifier="identifier" />
           </v-card-text>
         </v-card>
@@ -23,9 +23,13 @@
           :title="$t('pages.database.title')"
           variant="flat"
           rounded="0">
-          <v-card-text
-            v-if="database">
+          <v-card-text>
+            <v-skeleton-loader
+              v-if="!database"
+              type="list-item-three-line"
+              width="50%" />
             <v-list
+              v-if="database"
               lines="two"
               dense>
               <v-list-item
@@ -115,9 +119,15 @@
           :title="$t('pages.container.title')"
           variant="flat"
           rounded="0">
-          <v-card-text
-            v-if="database">
-            <v-list dense>
+          <v-card-text>
+            <v-skeleton-loader
+              v-if="!database"
+              type="list-item-three-line"
+              width="50%" />
+            <v-list
+              v-if="database"
+              lines="two"
+              dense>
               <v-list-item
                 :title="$t('pages.container.name.title')"
                 density="compact">
@@ -158,10 +168,10 @@ if (data.value) {
 }
 </script>
 <script>
-import DatabaseToolbar from '@/components/database/DatabaseToolbar'
-import Summary from '@/components/identifier/Summary'
-import Select from '@/components/identifier/Select'
-import UserBadge from '@/components/user/UserBadge'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
@@ -232,14 +242,23 @@ export default {
       }
       return this.database.identifiers
     },
+    filteredIdentifiers () {
+      if (!this.identifiers) {
+        return []
+      }
+      if (!this.user) {
+        return this.identifiers.filter(i => i.status === 'published')
+      }
+      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+    },
     identifier () {
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
           return filter[0]
         }
       }
-      return this.identifiers[0]
+      return this.filteredIdentifiers[0]
     },
     access () {
       return this.userStore.getAccess
@@ -295,7 +314,7 @@ export default {
       return databaseService.databaseToOwner(this.database)
     },
     hasIdentifier () {
-      return this.identifiers.length > 0
+      return this.identifier
     },
     accessDescription () {
       if (!this.access) {

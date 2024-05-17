@@ -12,6 +12,19 @@ body {
   }
 }
 
+.v-dialog > .v-overlay__content {
+  overflow-y: auto !important;
+}
+
+.v-radio-group > .v-input__details {
+  display: none;
+}
+
+form > .v-toolbar {
+  border-bottom: 1px solid !important;
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+}
+
 .v-stepper {
   &[vertical] {
     &.v-sheet {
@@ -36,6 +49,7 @@ body {
     }
   }
 }
+
 .v-stepper-window {
   margin-top: 0 !important;
   margin-bottom: 0 !important;

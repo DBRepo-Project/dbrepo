@@ -1,34 +1,28 @@
-FROM python:3.9-slim
+FROM python:3.11-alpine
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apt update && apt install -y curl gcc libmariadb-dev
+RUN apk add bash curl
 
-WORKDIR /app
+WORKDIR /home/alpine
 
 COPY Pipfile Pipfile.lock ./
+
+COPY ./lib ./lib
 
 RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV PORT_APP=5000
-ENV FLASK_ENV=production
-ENV HOSTNAME=analyse-service
-ENV LOG_LEVEL=INFO
-ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
-ENV S3_ACCESS_KEY_ID="seaweedfsadmin"
-ENV S3_SECRET_ACCESS_KEY="seaweedfsadmin"
+USER 1001
 
-COPY ./as-yml ./as-yml
-COPY ./clients ./clients
-COPY ./*.py ./
+WORKDIR /app
 
-RUN mkdir -p /data
+COPY --chown=1001 ./api ./api
+COPY --chown=1001 ./as-yml ./as-yml
+COPY --chown=1001 ./clients ./clients
+COPY --chown=1001 ./*.py ./
 
-EXPOSE $PORT_APP
+# non-root port
+EXPOSE 8080
 
-ENTRYPOINT [ "python", "./pywsgi.py" ]
-
-CMD sh -c /wait && flask run
+ENTRYPOINT [ "gunicorn", "--log-level", "DEBUG", "--workers", "4", "--bind", ":8080", "app:app" ]

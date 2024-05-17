@@ -16,16 +16,16 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class DatabaseCreateDto {
 
-    @NotNull(message = "Container id is required")
+    @NotNull
     @JsonProperty("container_id")
     @Schema(example = "1")
     private Long cid;
 
-    @NotBlank(message = "database name is required")
+    @NotBlank
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotNull(message = "public attribute is required")
+    @NotNull
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;

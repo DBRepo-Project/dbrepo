@@ -1,24 +1,22 @@
 <template>
-  <div v-if="identifier">
-    <v-row no-gutters>
-      <v-col v-if="!loading" md="10">
-        <pre v-text="citation" />
-      </v-col>
-      <v-col
-        v-if="!$vuetify.display.mdAndDown"
-        md="2"
-        class="cite-style">
-        <v-select
-          v-model="style"
-          :items="styles"
-          item-title="style"
-          item-value="accept"
-          dense
-          variant="outlined"
-          single-line />
-      </v-col>
-    </v-row>
-  </div>
+  <v-row no-gutters>
+    <v-col v-if="!loading" md="10">
+      <pre v-text="citation" />
+    </v-col>
+    <v-col
+      v-if="!$vuetify.display.mdAndDown"
+      md="2"
+      class="cite-style">
+      <v-select
+        v-model="style"
+        :items="styles"
+        item-title="style"
+        item-value="accept"
+        dense
+        variant="outlined"
+        single-line />
+    </v-col>
+  </v-row>
 </template>
 
 <script>

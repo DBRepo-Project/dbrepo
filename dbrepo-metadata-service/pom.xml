@@ -11,9 +11,21 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.4.1</version>
+    <version>1.4.3</version>
 
     <description>Service that manages the metadata</description>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>api</module>
+        <module>entities</module>
+        <module>oai</module>
+        <module>test</module>
+        <module>repositories</module>
+        <module>services</module>
+        <module>rest-service</module>
+        <module>report</module>
+    </modules>
 
     <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/</url>
     <developers>
@@ -44,19 +56,6 @@
         </developer>
     </developers>
 
-    <packaging>pom</packaging>
-    <modules>
-        <module>api</module>
-        <module>entities</module>
-        <module>oai</module>
-        <module>querystore</module>
-        <module>test</module>
-        <module>repositories</module>
-        <module>services</module>
-        <module>rest-service</module>
-        <module>report</module>
-    </modules>
-
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>4.0.2</spring-cloud.version>
@@ -73,16 +72,13 @@
         <apache-jena.version>4.10.0</apache-jena.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
-        <jsql-parser.version>4.6</jsql-parser.version>
+        <jsql.version>4.6</jsql.version>
         <keycloak.version>21.0.2</keycloak.version>
         <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <testcontainers.version>1.19.1</testcontainers.version>
-        <opensearch-testcontainer.version>2.0.0</opensearch-testcontainer.version>
         <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
-        <opensearch-client.version>1.1.0</opensearch-client.version>
-        <opensearch-rest-client.version>2.8.0</opensearch-rest-client.version>
+        <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
-        <minio.version>8.5.7</minio.version>
     </properties>
 
     <dependencies>
@@ -99,6 +95,11 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
             <version>${spring-cloud.version}</version>
@@ -109,49 +110,23 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <!-- Datasource -->
+        <!-- Open API -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+        <!-- Data Source -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch</artifactId>
-            <version>${opensearch-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-starter</artifactId>
-            <version>${opensearch-client.version}</version>
-        </dependency>
-        <!-- OpenSearch -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>opensearch-rest-high-level-client</artifactId>
-            <version>${opensearch-rest-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>opensearch-rest-client-sniffer</artifactId>
-            <version>${opensearch-rest-client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.mchange</groupId>
@@ -162,6 +137,12 @@
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-c3p0</artifactId>
             <version>${c3p0-hibernate.version}</version>
+        </dependency>
+        <!-- Storage -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws-s3.version}</version>
         </dependency>
         <!-- Monitoring -->
         <dependency>
@@ -178,40 +159,6 @@
             <artifactId>micrometer-observation-test</artifactId>
             <version>${micrometer.version}</version>
             <scope>test</scope>
-        </dependency>
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-common</artifactId>
-            <version>${keycloak.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
-            <version>${jwt.version}</version>
-        </dependency>
-        <!-- Utils -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-        <!-- SQL Parser -->
-        <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>${jsql-parser.version}</version>
-        </dependency>
-        <!-- RDF -->
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-core</artifactId>
-            <version>${apache-jena.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-arq</artifactId>
-            <version>${apache-jena.version}</version>
         </dependency>
         <!-- IDE -->
         <dependency>
@@ -246,6 +193,34 @@
             <artifactId>commons-validator</artifactId>
             <version>${commons-validator.version}</version>
         </dependency>
+        <!-- Authentication -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-common</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${jwt.version}</version>
+        </dependency>
+        <!-- Utils -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        <!-- RDF -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>${apache-jena.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>${apache-jena.version}</version>
+        </dependency>
         <!-- AMPQ -->
         <dependency>
             <groupId>org.springframework.amqp</groupId>
@@ -256,37 +231,15 @@
             <artifactId>amqp-client</artifactId>
             <version>${rabbitmq.version}</version>
         </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi.version}</version>
-        </dependency>
-        <!-- Open API -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-            <version>${springdoc-openapi.version}</version>
-        </dependency>
-        <!-- blob storage -->
-        <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
-            <version>${minio.version}</version>
-        </dependency>
         <!-- Testing -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -317,26 +270,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>minio</artifactId>
-            <version>${testcontainers.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.dasniko</groupId>
             <artifactId>testcontainers-keycloak</artifactId>
             <version>${keycloak-testcontainer.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch</groupId>
-            <artifactId>opensearch-testcontainers</artifactId>
-            <version>${opensearch-testcontainer.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-test-autoconfigure</artifactId>
-            <version>${opensearch-client.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -356,7 +292,6 @@
                     <include>**/rdf/*</include>
                     <include>**/templates/*.txt</include>
                     <include>**/templates/*.xml</include>
-                    <include>**/init/querystore.sql</include>
                 </includes>
             </resource>
         </resources>

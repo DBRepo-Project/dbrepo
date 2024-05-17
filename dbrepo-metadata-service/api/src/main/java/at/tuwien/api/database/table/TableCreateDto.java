@@ -2,6 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -26,6 +27,9 @@ public class TableCreateDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    @JsonProperty("need_sequence")
+    private transient boolean needSequence;
+
     @Size(max = 180)
     @Schema(example = "Air Quality in Austria")
     private String description;
@@ -33,5 +37,6 @@ public class TableCreateDto {
     @NotNull
     private List<ColumnCreateDto> columns;
 
+    @NotNull
     private ConstraintsCreateDto constraints;
 }

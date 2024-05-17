@@ -1,10 +1,8 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.repository.mdb.LicenseRepository;
+import at.tuwien.repository.LicenseRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,9 +22,7 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class LicenseEndpointUnitTest extends BaseUnitTest {
+public class LicenseEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private LicenseRepository licenseRepository;

@@ -16,8 +16,6 @@ class UploadClient:
     endpoint: str = None
 
     def __init__(self, endpoint: str = 'http://gateway-service/api/upload/files') -> None:
-        logging.getLogger('requests').setLevel(logging.INFO)
-        logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
         self.endpoint = os.environ.get('REST_UPLOAD_ENDPOINT', endpoint)

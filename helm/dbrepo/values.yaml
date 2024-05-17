@@ -1,0 +1,701 @@
+# Copyright the DBRepo developers
+# SPDX-License-Identifier: APACHE-2.0
+
+## @section Common parameters
+##
+
+## @param namespace The namespace to install the chart
+##
+namespace: dbrepo
+## @param hostname The hostname.
+##
+hostname: example.com
+## @param gateway The gateway endpoint.
+##
+gateway: https://example.com
+## @param strategyType The image pull
+##
+strategyType: RollingUpdate
+## @param clusterDomain The cluster domain.
+##
+clusterDomain: cluster.local
+
+## @section Internal Admin User
+
+## @param admin.username The internal admin username.
+## @param admin.password The internal admin password.
+##
+admin:
+  username: admin
+  password: admin
+
+## @section Metadata Database
+
+## @param metadatadb.enabled Enable the Metadata Database.
+## @skip metadatadb.fullnameOverride
+## @param metadatadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @param metadatadb.host The hostname for the microservices.
+## @param metadatadb.rootUser.user The root username.
+## @param metadatadb.rootUser.password The root user password.
+## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
+## @param metadatadb.db.name The database name.
+## @skip metadatadb.metrics.enabled The Prometheus settings.
+## @skip metadatadb.galera The Galera settings.
+## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
+## @skip metadatadb.service The initial database scripts.
+## @param metadatadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @param metadatadb.replicaCount The number of replicas, should be uneven (2n+1).
+##
+metadatadb:
+  enabled: true
+  fullnameOverride: metadata-db
+  image:
+    debug: false
+  host: metadata-db
+  rootUser:
+    user: root
+    password: dbrepo
+  jdbcExtraArgs: ""
+  db:
+    name: fda
+  metrics:
+    enabled: false
+  galera:
+    mariabackup:
+      user: mariabackup
+      password: mariabackup
+  initdbScriptsConfigMap: metadata-db-setup
+  service:
+    type: ClusterIP
+    annotations: { }
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: [ ]
+  persistence:
+    enabled: false
+  replicaCount: 3
+
+## @section Auth Service
+
+## @param authservice.enabled Enable the Auth Service.
+## @skip authservice.fullnameOverride
+## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @param authservice.endpoint The hostname for the microservices.
+## @param authservice.auth.adminUser The admin username.
+## @param authservice.auth.adminPassword The admin user password.
+## @skip authservice.postgresql
+## @skip authservice.extraStartupArgs
+## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
+## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
+## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
+## @param authservice.tls.usePem Use PEM certificates as input instead of PKS12/JKS stores.
+## @param authservice.metrics.enabled Enable the Prometheus metrics export sidecar container.
+## @param authservice.client.id The client id for the microservices.
+## @param authservice.client.secret The client secret for the microservices.
+## @skip authservice.extraEnvVarsCM
+## @skip authservice.extraVolumes
+## @skip authservice.extraVolumeMounts
+## @skip authservice.replicaCount The number of replicas.
+##
+authservice:
+  enabled: true
+  fullnameOverride: auth-service
+  image:
+    debug: false
+  endpoint: http://auth-service
+  auth:
+    adminUser: fda
+    adminPassword: fda
+  postgresql:
+    enabled: true
+    auth:
+      postgresPassword: postgres
+  extraStartupArgs: "--import-realm"
+  jwt:
+    pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
+  tls:
+    enabled: true
+    existingSecret: ingress-cert
+    usePem: true
+  metrics:
+    enabled: false
+  client:
+    id: dbrepo-client
+    secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  extraEnvVarsCM: auth-service-config
+  extraVolumes:
+    - name: config-map
+      configMap:
+        name: auth-service-config
+  extraVolumeMounts:
+    - name: config-map
+      mountPath: /opt/bitnami/keycloak/data/import
+  replicaCount: 2
+
+## @section Data Database
+
+## @param datadb.enabled Enable the Data Database.
+## @skip datadb.fullnameOverride
+## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @skip datadb.extraFlags
+## @param datadb.rootUser.user The root username.
+## @param datadb.rootUser.password The root user password.
+## @skip datadb.metrics.enabled The Prometheus settings.
+## @skip datadb.galera The Galera settings.
+## @skip datadb.service
+## @skip datadb.sidecars
+## @skip datadb.extraVolumeMounts
+## @skip datadb.extraVolumes
+## @param datadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @param datadb.replicaCount The number of replicas, should be uneven (2n+1).
+##
+datadb:
+  enabled: true
+  fullnameOverride: data-db
+  image:
+    debug: false
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+  rootUser:
+    user: root
+    password: dbrepo
+  metrics:
+    enabled: true
+  galera:
+    mariabackup:
+      user: mariabackup
+      password: mariabackup
+  service:
+    extraPorts:
+      - name: "sidecar"
+        port: 80
+        targetPort: 8080
+        protocol: TCP
+  sidecars:
+    - name: sidecar
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.3
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 0
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - ALL
+      ports:
+        - name: "sidecar"
+          containerPort: 8080
+          protocol: TCP
+      envFrom:
+        - secretRef:
+            name: data-service-secret
+      livenessProbe:
+        exec:
+          command:
+            - /bin/bash
+            - -ec
+            - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+        initialDelaySeconds: 120
+        periodSeconds: 30
+      readinessProbe:
+        exec:
+          command:
+            - /bin/bash
+            - -ec
+            - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+        initialDelaySeconds: 30
+        periodSeconds: 30
+      volumeMounts:
+        - name: s3
+          mountPath: /tmp
+  extraVolumeMounts:
+    - name: s3
+      mountPath: /tmp
+  extraVolumes:
+    - name: s3
+      emptyDir: { }
+  persistence:
+    enabled: false
+  replicaCount: 3
+
+## @section Search Database
+
+## @param searchdb.enabled Enable the Search Database.
+## @skip searchdb.fullnameOverride
+## @param searchdb.host The hostname for the microservices.
+## @param searchdb.port The port for the microservices.
+## @skip searchdb.protocol
+## @param searchdb.username The admin username.
+## @param searchdb.password The admin user password.
+## @skip searchdb.clusterName
+## @skip searchdb.masterService
+## @param searchdb.replicas The number of replicas.
+## @skip searchdb.sysctlInit
+## @param searchdb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @skip searchdb.service
+## @skip searchdb.extraEnvs
+## @skip searchdb.extraVolumeMounts
+## @skip searchdb.extraVolumes
+## @skip searchdb.config
+##
+searchdb:
+  enabled: true
+  fullnameOverride: search-db
+  host: search-db
+  port: 9200
+  protocol: http
+  username: admin
+  password: admin
+  clusterName: search-db
+  masterService: search-db
+  replicas: 3
+  sysctlInit:
+    enabled: true
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+    annotations: { }
+    loadBalancerSourceRanges: [ ]
+  extraEnvs:
+    - name: DISABLE_INSTALL_DEMO_CONFIG
+      value: "true"
+  extraVolumeMounts:
+    - name: node-cert
+      mountPath: /usr/share/opensearch/config/tls
+      readOnly: true
+  extraVolumes:
+    - name: node-cert
+      secret:
+        secretName: search-db-secret
+  config:
+    opensearch.yml: |
+      cluster.name: search-db
+      network.host: 0.0.0.0
+      plugins:
+        security:
+          ssl:
+            transport:
+              pemcert_filepath: tls/tls.crt
+              pemkey_filepath: tls/tls.key
+              pemtrustedcas_filepath: tls/ca.crt
+              enforce_hostname_verification: false
+            http:
+              #enabled: true # uncomment to force ssl connections
+              pemcert_filepath: tls/tls.crt
+              pemkey_filepath: tls/tls.key
+              pemtrustedcas_filepath: tls/ca.crt
+          allow_unsafe_democertificates: false
+          allow_default_init_securityindex: true
+          authcz:
+            admin_dn:
+              - CN=search-db
+          nodes_dn:
+            - CN=search-db
+          audit.type: internal_opensearch
+          enable_snapshot_restore_privilege: true
+          check_snapshot_restore_write_privileges: true
+          restapi:
+            roles_enabled: [ "all_access", "security_rest_api_access" ]
+          system_indices:
+            enabled: true
+            indices:
+              [
+                ".opendistro-alerting-config",
+                ".opendistro-alerting-alert*",
+                ".opendistro-anomaly-results*",
+                ".opendistro-anomaly-detector*",
+                ".opendistro-anomaly-checkpoints",
+                ".opendistro-anomaly-detection-state",
+                ".opendistro-reports-*",
+                ".opendistro-notifications-*",
+                ".opendistro-notebooks",
+                ".opendistro-asynchronous-search-response*",
+              ]
+
+## @section Upload Service
+
+## @param uploadservice.enabled Enable the Upload Service.
+## @skip uploadservice.fullnameOverride
+## @skip uploadservice.image
+## @skip uploadservice.containerArgs
+## @skip uploadservice.envFrom
+## @param uploadservice.replicaCount The number of replicas.
+##
+uploadservice:
+  enabled: true
+  fullnameOverride: upload-service
+  image:
+    repository: tusproject/tusd
+    tag: v1.12
+  containerArgs:
+    - "--base-path=/api/upload/files/"
+    - "-s3-endpoint=http://storageservice-s3:9000"
+    - "-s3-bucket=dbrepo-upload"
+  envFrom:
+    - secretRef:
+        name: upload-service-secret
+  replicaCount: 2
+
+## @section Broker Service
+
+## @param brokerservice.enabled Enable the Broker Service.
+## @skip brokerservice.fullnameOverride
+## @skip brokerservice.image
+## @param brokerservice.endpoint The management api endpoint for the microservices.
+## @param brokerservice.host The hostname for the microservices.
+## @param brokerservice.port The port for the microservices.
+## @param brokerservice.virtualHost The default virtual host name.
+## @param brokerservice.queueName The default queue name.
+## @param brokerservice.exchangeName The default exchange name.
+## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
+## @param brokerservice.connectionTimeout The connection timeout in ms.
+## @skip brokerservice.auth
+## @skip brokerservice.extraConfiguration
+## @skip brokerservice.loadDefinition
+## @skip brokerservice.extraVolumes
+## @skip brokerservice.extraPlugins
+## @param brokerservice.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @skip brokerservice.service
+## @param brokerservice.replicaCount The number of replicas.
+##
+brokerservice:
+  enabled: true
+  fullnameOverride: broker-service
+  image:
+    debug: true
+  endpoint: http://broker-service:15672
+  host: broker-service
+  port: 5672
+  virtualHost: dbrepo
+  queueName: dbrepo
+  exchangeName: dbrepo
+  routingKey: dbrepo.#
+  connectionTimeout: 60000
+  auth:
+    tls:
+      enabled: false
+      sslOptionsVerify: true
+      failIfNoPeerCert: true
+      existingSecret: ingress-cert
+    username: broker
+    password: broker
+  extraConfiguration: |-
+    default_vhost = dbrepo
+    default_user_tags.administrator = true
+    default_permissions.configure = .*
+    default_permissions.read = .*
+    default_permissions.write = .*
+    load_definitions = /app/load_definition.json
+    log.console = true
+    listeners.tcp.1 = 0.0.0.0:5672
+    auth_backends.1 = rabbit_auth_backend_oauth2
+    auth_backends.2 = rabbit_auth_backend_internal
+    auth_oauth2.resource_server_id = rabbitmq
+    auth_oauth2.preferred_username_claims.1 = client_id
+    auth_oauth2.default_key = t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM
+    auth_oauth2.signing_keys.t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM = /app/cert.pem
+    auth_oauth2.signing_keys.id2 = /app/pubkey.pem
+    auth_oauth2.algorithms.1 = HS256
+    auth_oauth2.algorithms.2 = RS256
+    management.oauth_enabled = true
+    management.oauth_client_id = rabbitmq-client
+    management.oauth_client_secret = JEC2FexxrX4N65fLeDGukAl6R3Lc9y0u
+    management.oauth_scopes = openid
+    management.oauth_provider_url = https://example.com/api/auth/realms/dbrepo
+  loadDefinition:
+    enabled: true
+    existingSecret: broker-service-secret
+  extraVolumes:
+    - name: secret-map
+      secret:
+        secretName: broker-service-secret
+  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+    managerPortEnabled: true
+    # loadBalancerIP:
+  replicaCount: 2
+
+## @section Analyse Service
+
+## @param analyseservice.enabled Enable the Broker Service.
+## @skip analyseservice.image
+## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @param analyseservice.replicaCount The number of replicas.
+##
+analyseservice:
+  enabled: true
+  image:
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.3
+    pullPolicy: Always
+    debug: false
+  s3:
+    endpoint: http://storageservice-s3:9000
+  replicaCount: 2
+
+## @section Metadata Service
+
+## @param metadataservice.enabled Enable the Metadata Service.
+## @skip metadataservice.image
+## @param metadataservice.admin.email The OAI-PMH exposed admin e-mail.
+## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
+## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
+## @param metadataservice.granularity The OAI-PMH exposed record granularity.
+## @param metadataservice.datacite.enabled Enable the DataCite account for minting DOIs.
+## @param metadataservice.datacite.url The DataCite api endpoint url.
+## @param metadataservice.datacite.prefix The DataCite prefix.
+## @param metadataservice.datacite.username The DataCite api username.
+## @param metadataservice.datacite.password The DataCite api user password.
+## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
+## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @skip metadataservice.s3.bucket
+## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
+## @param metadataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+## @param metadataservice.replicaCount The number of replicas.
+##
+metadataservice:
+  enabled: true
+  image:
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.3
+    pullPolicy: Always
+    debug: false
+  admin:
+    email: noreply@example.com
+  deletedRecord: permanent
+  repositoryName: Database Repository
+  granularity: YYYY-MM-DDThh:mm:ssZ
+  datacite:
+    enabled: false
+    url: https://api.datacite.org
+    prefix: ""
+    username: ""
+    password: ""
+  sparql:
+    connectionTimeout: 10000
+  s3:
+    endpoint: http://storageservice-s3:9000
+    bucket:
+      import: dbrepo-upload
+      export: dbrepo-download
+    auth:
+      username: seaweedfsadmin
+      password: seaweedfsadmin
+  replicaCount: 2
+
+## @section Data Service
+
+## @param dataservice.enabled Enable the Metadata Service.
+## @param dataservice.endpoint The endpoint for the microservices.
+## @skip dataservice.image
+## @param dataservice.grant.read The default database permissions for users with read access.
+## @param dataservice.grant.write The default database permissions for users with write access.
+## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @skip dataservice.s3.bucket
+## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
+## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+## @param dataservice.consumerConcurrentMin The minimum broker service consumer number.
+## @param dataservice.consumerConcurrentMax The maximum broker service consumer number.
+## @param dataservice.requeueRejected Enable re-queueing of rejected messages to the broker service.
+## @param dataservice.replicaCount The number of replicas.
+##
+dataservice:
+  enabled: true
+  endpoint: http://data-service
+  image:
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.3
+    pullPolicy: Always
+    debug: false
+  grant:
+    read: SELECT
+    write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+  s3:
+    endpoint: http://storageservice-s3:9000
+    bucket:
+      import: dbrepo-upload
+      export: dbrepo-download
+    auth:
+      username: seaweedfsadmin
+      password: seaweedfsadmin
+  consumerConcurrentMin: 1
+  consumerConcurrentMax: 5
+  requeueRejected: false
+  replicaCount: 2
+
+## @section Search Service
+
+## @param searchservice.enabled Enable the Search Service.
+## @param searchservice.endpoint The endpoint for the microservices.
+## @skip searchservice.image
+## @skip searchservice.init
+## @param searchservice.replicaCount The number of replicas.
+##
+searchservice:
+  enabled: true
+  endpoint: http://search-service
+  image:
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.3
+    pullPolicy: Always
+    debug: false
+  init:
+    image:
+      name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service-init:1.4.3
+      pullPolicy: Always
+  replicaCount: 2
+
+## @section Storage Service
+
+## @param storageservice.enabled Enable the Storage Service.
+## @skip storageservice.master
+## @skip storageservice.filer
+## @skip storageservice.volume
+## @skip storageservice.s3
+## @skip storageservice.init
+##
+storageservice:
+  enabled: true
+  master:
+    enabled: true
+  filer:
+    enabled: true
+    replicas: 1
+    enablePVC: false
+    storage: 25Gi
+    s3:
+      enabled: true
+      allowEmptyFolder: true
+      port: 9000
+      enableAuth: true
+      skipAuthSecretCreation: true
+      existingConfigSecret: seaweedfs-s3-secret
+  volume:
+    enabled: true
+    replicas: 1
+  s3:
+    enabled: true
+    replicas: 2
+    port: 9000
+    metricsPort: 9091
+    enableAuth: true
+    skipAuthSecretCreation: true
+    existingConfigSecret: seaweedfs-s3-secret
+    bucket:
+      import: dbrepo-upload
+      export: dbrepo-download
+    auth:
+      username: seaweedfsadmin
+      password: seaweedfsadmin
+  init:
+    image: s210.dl.hpc.tuwien.ac.at/dbrepo/storage-service-init:1.4.3
+    pullPolicy: Always
+
+## @section User Interface
+
+## @param ui.enabled Enable the User Interface.
+## @skip ui.image
+## @param ui.public.api.client The endpoint for the client api.
+## @param ui.public.api.server The endpoint for the server api.
+## @param ui.public.title The user interface title.
+## @param ui.public.logo The user interface logo.
+## @param ui.public.icon The user interface icon.
+## @param ui.public.touch The user interface apple touch icon.
+## @param ui.public.broker.host The displayed broker hostname.
+## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
+## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
+## @param ui.public.broker.extra Extra metadata displayed.
+## @param ui.public.database.extra Extra metadata displayed.
+## @skip ui.public.links
+## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
+## @param ui.public.doi.enabled Enable the display that DOIs are minted.
+## @param ui.public.doi.endpoint The DOI proxy.
+## @param ui.replicaCount The number of replicas.
+## @skip ui.extraVolumes
+## @skip ui.extraVolumeMounts
+##
+ui:
+  enabled: true
+  image:
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.3
+    pullPolicy: Always
+    debug: false
+  public:
+    api:
+      client: ""
+      server: ""
+    title: "Database Repository"
+    logo: "/logo.svg"
+    icon: "/favicon.ico"
+    touch: "/apple-touch-icon.png"
+    broker:
+      host: example.com
+      port:
+        5671: true
+        5672: false
+      extra: ""
+    database:
+      extra: "128.130.0.0/15"
+    links:
+      rabbitmq:
+        text: RabbitMQ Admin
+        href: /api/broker/
+      keycloak:
+        text: Keycloak Admin
+        href: /api/auth/
+    pid:
+      default:
+        publisher: "Example University"
+    doi:
+      enabled: false
+      endpoint: https://doi.org
+  replicaCount: 2
+  extraVolumes: [ ]
+  #  - name: images-map
+  #    configMap:
+  #      name: ui-config
+  extraVolumeMounts: [ ]
+  #  - name: images-map
+  #    mountPath: /static/logo.svg
+  #    subPath: logo.svg
+
+## @section Ingress
+
+## @param ingress.enabled Enable the ingress.
+## @skip ingress.className
+## @skip ingress.tls
+## @skip ingress.annotations
+##
+ingress:
+  enabled: false
+  className: nginx
+  tls:
+    enabled: true
+    secretName: ingress-cert
+  annotations:
+    basic: { }
+    #      nginx.org/path-regex: "case_sensitive"
+    #      nginx.ingress.kubernetes.io/use-regex: "true"
+    #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    rewriteApi:
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /api/$1
+    rewriteRoot:
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+    rewriteRootSecure:
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+    rewritePid:
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /api/identifier/$1

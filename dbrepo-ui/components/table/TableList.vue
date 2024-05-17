@@ -8,18 +8,19 @@
     <v-card
       variant="flat"
       rounded="0"
-      v-for="(item, i) in tables"
+      v-for="(table, i) in tables"
       :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list>
         <v-list-item
           lines="two"
-          :title="item.name"
-          :subtitle="item.description ? item.description : '(no description)'"
-          :to="`/database/${$route.params.database_id}/table/${item.id}/info`">
+          :title="table.name"
+          :class="clazz(table)"
+          :subtitle="table.description ? table.description : '(no description)'"
+          :to="`/database/${$route.params.database_id}/table/${table.id}/info`">
           <template v-slot:append>
             <v-tooltip
-              v-if="item.identifiers && item.identifiers.length > 0"
+              v-if="hasPublishedIdentifier(table)"
               :text="$t('pages.identifier.pid.title')"
               left>
               <template v-slot:activator="{ props }">
@@ -105,6 +106,15 @@ export default {
     },
     created (created) {
       return formatTimestampUTCLabel(created)
+    },
+    clazz (view) {
+      return this.hasPublishedIdentifier(view) ? 'primary-text' : null
+    },
+    hasPublishedIdentifier (subset) {
+      if (!subset.identifiers) {
+        return null
+      }
+      return subset.identifiers.filter(i => i.status === 'published').length > 0
     }
   }
 }

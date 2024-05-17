@@ -64,14 +64,22 @@
               <v-select
                 v-model="tableImport.line_termination"
                 :items="lineTerminationItems"
-                :base-color="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator ? 'warning' : ''"
                 item-title="name"
                 item-value="value"
                 clearable
                 persistent-hint
                 :variant="inputVariant"
                 :hint="$t('pages.table.subpages.import.terminator.hint')"
-                :label="$t('pages.table.subpages.import.terminator.label')"/>
+                :label="$t('pages.table.subpages.import.terminator.label')">
+                <template
+                    v-if="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
+                    v-slot:prepend>
+                  <v-icon
+                    color="warning">
+                    mdi-alert-outline
+                  </v-icon>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
           <v-row dense>
@@ -146,9 +154,9 @@
                 border="start"
                 color="warning">
                 {{ $t('pages.table.subpages.import.terminator.warn.prefix') }}
-                <strong v-text="tableImport.separator"/>
+                <strong>{{ JSON.stringify(tableImport.line_termination).replaceAll('"', '') }}</strong>
                 {{ $t('pages.table.subpages.import.terminator.warn.middle') }}
-                <strong v-text="suggestedAnalyseLineTerminator"/>
+                <strong>{{ JSON.stringify(suggestedAnalyseLineTerminator).replaceAll('"', '') }}</strong>
                 {{ $t('pages.table.subpages.import.terminator.warn.suffix') }}
               </v-alert>
             </v-col>
@@ -186,6 +194,7 @@
               <v-btn
                 :disabled="!isAnalyseAllowed || !validStep1 || !validStep2"
                 :loading="loading"
+                :variant="buttonVariant"
                 color="secondary"
                 size="small"
                 :text="$t('pages.table.subpages.import.analyse.text')"
@@ -244,7 +253,7 @@
 </template>
 
 <script>
-import {isNonNegativeInteger, localizedMessage} from '@/utils'
+import {isNonNegativeInteger} from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -399,6 +408,7 @@ export default {
               this.rowCount = rowCount
             })
           this.step = this.stepStart + 2
+          this.loading = false
         })
         .catch((error) => {
           console.error('Failed to import csv', error)
@@ -410,6 +420,7 @@ export default {
         })
     },
     uploadAndAnalyse() {
+      this.loading = true
       this.previousFile = this.fileModel[0]
       const uploadService = useUploadService()
       return uploadService.create(this.previousFile)
@@ -417,21 +428,18 @@ export default {
           this.$toast.success(this.$t('success.upload.dataset'))
           this.analyse(s3key)
         })
-        .catch((error) => {
+        .catch(() => {
           this.$toast.error(this.$t('error.upload.dataset'))
-          this.loading = false
-        })
-        .finally(() => {
           this.loading = false
         })
     },
     analyse(filename) {
-      this.loading = true
       const analyseService = useAnalyseService()
       const payload = { filename }
       if (this.tableImport.separator) {
         payload.separator = this.tableImport.separator
       }
+      this.loading = true
       analyseService.suggest(payload)
         .then((analysis) => {
           const {columns, separator, line_termination} = analysis
@@ -456,12 +464,10 @@ export default {
           this.step = this.stepStart + 2
           this.$toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
-        })
-        .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
           this.loading = false
         })
-        .finally(() => {
+        .catch(({code}) => {
+          this.$toast.error(this.$t(code))
           this.loading = false
         })
     }

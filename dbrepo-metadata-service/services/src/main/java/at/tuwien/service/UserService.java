@@ -33,7 +33,7 @@ public interface UserService {
      * @return The user, if successful.
      * @throws UserNotFoundException The user was not found.
      */
-    User find(UUID id) throws UserNotFoundException;
+    User findById(UUID id) throws UserNotFoundException;
 
     /**
      * Creates a user in the metadata database managed by Keycloak in the given realm.
@@ -47,44 +47,33 @@ public interface UserService {
     /**
      * Updates the user information for a user with given id in the metadata database.
      *
-     * @param id   The user id.
+     * @param user The user.
      * @param data The user information.
      * @return The user if successful. False otherwise.
-     * @throws UserNotFoundException The user was not found.
      */
-    User modify(UUID id, UserUpdateDto data) throws UserNotFoundException;
+    User modify(User user, UserUpdateDto data);
 
     /**
      * Updates the user password for a user with given id in the metadata database.
      *
-     * @param id   The user id.
+     * @param user The user.
      * @param data The new password.
      */
-    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException;
-
-    /**
-     * Updates the user theme for a user with given id in the metadata database.
-     *
-     * @param id   The user id.
-     * @param data The user theme.
-     * @return The user if successful. False otherwise.
-     * @throws UserNotFoundException The user was not found.
-     */
-    User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException;
+    void updatePassword(User user, UserPasswordDto data);
 
     /**
      * Validates if a user with the given username already exists in the metadata database.
      *
      * @param username The username.
-     * @throws UserAlreadyExistsException The user with this username already exists.
+     * @throws UserExistsException The user with this username already exists.
      */
-    void validateUsernameNotExists(String username) throws UserAlreadyExistsException;
+    void validateUsernameNotExists(String username) throws UserExistsException;
 
     /**
      * Validates if a user with the given email already exists in the metadata database.
      *
      * @param email The email.
-     * @throws UserEmailAlreadyExistsException The user with this email already exists.
+     * @throws EmailExistsException The user with this email already exists.
      */
-    void validateEmailNotExists(String email) throws UserEmailAlreadyExistsException;
+    void validateEmailNotExists(String email) throws EmailExistsException;
 }

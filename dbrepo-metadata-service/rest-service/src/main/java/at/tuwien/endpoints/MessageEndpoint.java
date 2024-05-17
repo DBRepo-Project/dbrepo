@@ -1,0 +1,165 @@
+package at.tuwien.endpoints;
+
+import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.api.maintenance.BannerMessageBriefDto;
+import at.tuwien.api.maintenance.BannerMessageCreateDto;
+import at.tuwien.api.maintenance.BannerMessageDto;
+import at.tuwien.api.maintenance.BannerMessageUpdateDto;
+import at.tuwien.entities.maintenance.BannerMessage;
+import at.tuwien.exception.MessageNotFoundException;
+import at.tuwien.mapper.BannerMessageMapper;
+import at.tuwien.service.BannerMessageService;
+import io.micrometer.observation.annotation.Observed;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Log4j2
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping(path = "/api/message")
+public class MessageEndpoint {
+
+    private final BannerMessageMapper bannerMessageMapper;
+    private final BannerMessageService bannerMessageService;
+
+    @Autowired
+    public MessageEndpoint(BannerMessageMapper bannerMessageMapper, BannerMessageService bannerMessageService) {
+        this.bannerMessageMapper = bannerMessageMapper;
+        this.bannerMessageService = bannerMessageService;
+    }
+
+    @GetMapping
+    @Observed(name = "dbrepo_metadata_maintenance_findall")
+    @Operation(summary = "Find maintenance messages")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List messages",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = BannerMessageDto.class)))}),
+    })
+    public ResponseEntity<List<BannerMessageDto>> list(@RequestParam(required = false) String filter) {
+        log.debug("endpoint list active maintenance messages");
+        List<BannerMessageDto> dtos;
+        if (filter.equals("active")) {
+            dtos = bannerMessageService.getActive()
+                    .stream()
+                    .map(bannerMessageMapper::bannerMessageToBannerMessageDto)
+                    .toList();
+        } else {
+            dtos = bannerMessageService.findAll()
+                    .stream()
+                    .map(bannerMessageMapper::bannerMessageToBannerMessageDto)
+                    .toList();
+        }
+        log.trace("list maintenance messages results in dtos {}", dtos);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/message/{messageId}")
+    @Observed(name = "dbrepo_metadata_maintenance_find")
+    @Operation(summary = "Find one maintenance message")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Get messages",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BannerMessageDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") Long messageId)
+            throws MessageNotFoundException {
+        log.debug("endpoint find one maintenance messages");
+        final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.find(messageId));
+        log.trace("find one maintenance message results in dto {}", dto);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping
+    @Observed(name = "dbrepo_metadata_maintenance_create")
+    @Operation(summary = "Create maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @PreAuthorize("hasAuthority('create-maintenance-message')")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BannerMessageBriefDto.class))}),
+    })
+    public ResponseEntity<BannerMessageDto> create(@Valid @RequestBody BannerMessageCreateDto data) {
+        log.debug("endpoint create maintenance message, data={}", data);
+        final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.create(data));
+        log.trace("create maintenance message results in dto {}", dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto);
+    }
+
+    @PutMapping("/{messageId}")
+    @Observed(name = "dbrepo_metadata_maintenance_update")
+    @Operation(summary = "Update maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @PreAuthorize("hasAuthority('update-maintenance-message')")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = BannerMessageBriefDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("messageId") Long messageId,
+                                                   @Valid @RequestBody BannerMessageUpdateDto data)
+            throws MessageNotFoundException {
+        log.debug("endpoint update maintenance message, messageId={}, data={}", messageId, data);
+        final BannerMessage message = bannerMessageService.find(messageId);
+        final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.update(message, data));
+        log.trace("update maintenance message results in dto {}", dto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
+    }
+
+    @DeleteMapping("/{messageId}")
+    @Observed(name = "dbrepo_metadata_maintenance_delete")
+    @Operation(summary = "Delete maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @PreAuthorize("hasAuthority('delete-maintenance-message')")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted message",
+                    content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<?> delete(@NotNull @PathVariable("messageId") Long messageId) throws MessageNotFoundException {
+        log.debug("endpoint delete maintenance message, messageId={}", messageId);
+        final BannerMessage message = bannerMessageService.find(messageId);
+        bannerMessageService.delete(message);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .build();
+    }
+
+}

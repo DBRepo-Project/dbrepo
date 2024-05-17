@@ -1,7 +1,8 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import java.security.Principal;
@@ -13,21 +14,20 @@ public interface ContainerService {
      * Creates a container.
      *
      * @param createDto The container metadata.
-     * @param principal The principal of the creating user.
      * @return The container object, if successful.
      * @throws ImageNotFoundException          The image of the container was not found in the metadata database.
      * @throws ContainerAlreadyExistsException A container with this name already exists.
      */
-    Container create(ContainerCreateRequestDto createDto, Principal principal) throws ImageNotFoundException,
+    Container create(ContainerCreateDto createDto) throws ImageNotFoundException,
             ContainerAlreadyExistsException;
 
     /**
      * Removes a container by given id from the metadata database.
      *
-     * @param containerId The container id.
-     * @throws ContainerNotFoundException     The container was not found in the metadata database.
+     * @param container The container.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
-    void remove(Long containerId) throws ContainerNotFoundException;
+    void remove(Container container) throws ContainerNotFoundException;
 
     /**
      * Finds a container with a specific id from the metadata database.

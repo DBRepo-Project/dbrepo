@@ -17,5 +17,5 @@
 
 - [x] Q1: Python library, versioning in every component, bumping frontend versions, i18n
 - [ ] Q2: Kubernetes deployment guidelines for OpenShift
-- [ ] Q3: TBD
+- [ ] Q3: Frontend tests, database dashboards
 - [ ] Q4: Release of 2.0.0

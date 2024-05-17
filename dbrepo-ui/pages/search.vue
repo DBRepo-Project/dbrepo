@@ -2,14 +2,8 @@
   <div>
     <v-toolbar
       variant="flat">
-      <v-toolbar-title>
-        <span
-          v-if="header"
-          v-text="header" />
-        <v-skeleton-loader
-          v-if="!header"
-          type="heading" />
-      </v-toolbar-title>
+      <v-toolbar-title
+        v-text="header" />
       <v-spacer />
       <v-btn
         v-if="canCreateDatabase"
@@ -30,10 +24,10 @@
     <DatabaseList
       v-if="isDatabaseSearch"
       :loading="loading"
-      :databases="results.results" />
+      :databases="results" />
     <div v-else>
       <v-card
-        v-for="(result, idx) in results.results"
+        v-for="(result, idx) in results"
         :key="idx"
         :to="link(result) && link(result).startsWith('http') ? null : link(result)"
         :href="link(result) && link(result).startsWith('http') ? link(result): null"
@@ -71,8 +65,8 @@
 </template>
 
 <script>
-import DatabaseCreate from '@/components/database/DatabaseCreate'
-import AdvancedSearch from '@/components/search/AdvancedSearch'
+import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
+import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {
@@ -82,10 +76,8 @@ export default {
   },
   data () {
     return {
-      results: {
-        results: [],
-        type: null
-      },
+      results: [],
+      type: 'database',
       loading: false,
       createDbDialog: null,
       userStore: useUserStore()
@@ -95,17 +87,14 @@ export default {
     roles () {
       return this.userStore.getRoles
     },
-    query () {
+    q () {
       if (!this.$route.query || !this.$route.query.q) {
         return null
       }
       return this.$route.query.q
     },
     header () {
-      if (!this.results || !this.results.results) {
-        return null
-      }
-      return `${this.results.results.length} ${this.results.results.length !== 1 ? this.$t('toolbars.search.results') : this.$t('toolbars.search.result')}`
+      return `${this.results.length} ${this.results.length !== 1 ? this.$t('toolbars.search.results') : this.$t('toolbars.search.result')}`
     },
     canCreateDatabase () {
       if (!this.roles) {
@@ -114,31 +103,33 @@ export default {
       return this.roles.includes('create-database')
     },
     isDatabaseSearch () {
-      return this.results.type === 'database'
+      return this.type === 'database'
     }
   },
   watch: {
     $route: {
       handler () {
-        this.generalSearch()
+        this.fuzzySearch()
       }
     }
   },
   mounted () {
-    if (this.query) {
-      this.generalSearch()
-    }
+    this.fuzzySearch()
   },
   methods: {
-    generalSearch () {
+    fuzzySearch () {
       if (this.loading) {
+        return
+      }
+      const queryKeys = Object.keys(this.$route.query)
+      if (!queryKeys || queryKeys.length !== 1 || !queryKeys.includes('q')) {
         return
       }
       this.loading = true
       const searchService = useSearchService()
-      searchService.search(null, { search_term: this.query })
-        .then((response) => {
-          this.results = response
+      searchService.fuzzy_search(this.q)
+        .then(({results}) => {
+          this.results = results
           this.loading = false
         })
         .catch(() => {
@@ -152,49 +143,49 @@ export default {
       if ('exchange_name' in item) {
         return true
       }
-      return this.results.type === 'database'
+      return this.type === 'database'
     },
     isConcept (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'concept'
+      return this.type === 'concept'
     },
     isUnit (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'unit'
+      return this.type === 'unit'
     },
     isTable (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'table'
+      return this.type === 'table'
     },
     isColumn (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'column'
+      return this.type === 'column'
     },
     isUser (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'user'
+      return this.type === 'user'
     },
     isView (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'view'
+      return this.type === 'view'
     },
     isIdentifier (item) {
       if (!item) {
         return false
       }
-      return this.results.type === 'identifier'
+      return this.type === 'identifier'
     },
     isPublic (item) {
       if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isIdentifier(item)) {
@@ -209,7 +200,11 @@ export default {
         return item.uri
       } if (this.isIdentifier(item)) {
         const identifierService = useIdentifierService()
-        return identifierService.identifierPreferEnglishTitle(item)
+        const title = identifierService.identifierPreferEnglishTitle(item)
+        if (!title) {
+          return this.$t('pages.identifier.titles.none')
+        }
+        return title
       } else if (this.isUser(item)) {
         return item.creator.qualified_name
       }
@@ -220,7 +215,11 @@ export default {
         return item.description
       } else if (this.isIdentifier(item)) {
         const identifierService = useIdentifierService()
-        return identifierService.identifierPreferEnglishDescription(item)
+        const description = identifierService.identifierPreferEnglishDescription(item)
+        if (!description) {
+          return this.$t('pages.identifier.descriptions.none')
+        }
+        return description
       } else if (this.isColumn(item)) {
         let text = item.column_type
         if (item.size) {
@@ -244,7 +243,7 @@ export default {
       } else if (this.isColumn(item)) {
         return `/database/${item.database_id}/table/${item.table_id}/schema`
       } else if (this.isIdentifier(item)) {
-        return `/pid/${item.id}?pid=${item.id}`
+        return `/pid/${item.id}`
       } else if (this.isConcept(item) || this.isUnit(item)) {
         return item.uri
       }
@@ -275,11 +274,16 @@ export default {
         if (item.publisher) {
           tags.push({ text: item.publisher })
         }
-        item.licenses.forEach(l => tags.push({ text: l.identifier, color: 'success' }))
-        item.funders.forEach(f => tags.push({ text: f.funder_name }))
+        if (item.licenses) {
+          item.licenses.forEach(l => tags.push({text: l.identifier, color: 'success'}))
+        }
+        if (item.funders) {
+          item.funders.forEach(f => tags.push({text: f.funder_name}))
+        }
         if (item.language) {
           tags.push({ text: item.language })
         }
+        tags.push({ text: this.capitalizeFirstLetter(item.status), color: item.status === 'published' ? 'success' : null })
       } else if (this.isUnit(item)) {
       } else if (this.isConcept(item)) {
       } else if (this.isUser(item)) {
@@ -290,14 +294,24 @@ export default {
       return tags
     },
     closed (event) {
-      this.createDbDialog = false
+      this.dialog = false
       if (event.success) {
-        this.$router.push('/database?f=my')
+        this.$router.push(`/database/${event.database_id}/info`)
       }
     },
-    onSearchResult (results) {
-      console.debug('found search results', results)
+    onSearchResult ({results, type}) {
       this.results = results
+      if (!type) {
+        return
+      }
+      console.debug('search for type', type, ':', results)
+      this.type = type
+    },
+    capitalizeFirstLetter(string) {
+      if (!string) {
+        return
+      }
+      return string.charAt(0).toUpperCase() + string.slice(1);
     }
   }
 }

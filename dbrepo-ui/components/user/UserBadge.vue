@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import OrcidIcon from '@/components/icons/OrcidIcon'
+import OrcidIcon from '@/components/icons/OrcidIcon.vue'
 
 export default {
   components: {

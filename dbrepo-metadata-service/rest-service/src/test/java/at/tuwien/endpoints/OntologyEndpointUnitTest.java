@@ -1,8 +1,6 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.semantics.*;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
@@ -34,9 +32,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class OntologyEndpointUnitTest extends BaseUnitTest {
+public class OntologyEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private OntologyService ontologyService;
@@ -119,8 +115,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-ontology"})
-    public void create_hasRole_succeeds() throws UserNotFoundException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+    public void create_hasRole_succeeds() throws UserNotFoundException {
 
         /* test */
         create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, ONTOLOGY_1);
@@ -132,7 +127,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, null, ONTOLOGY_1);
+            update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, ONTOLOGY_1);
         });
     }
 
@@ -142,17 +137,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_4_PRINCIPAL, ONTOLOGY_1);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"update-ontology"})
-    public void update_hasRoleNotFound_fails() {
-
-        /* test */
-        assertThrows(OntologyNotFoundException.class, () -> {
-            update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_3_PRINCIPAL, null);
+            update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, ONTOLOGY_1);
         });
     }
 
@@ -161,7 +146,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void update_hasRole_succeeds() throws OntologyNotFoundException {
 
         /* test */
-        update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_3_PRINCIPAL, ONTOLOGY_1);
+        update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, ONTOLOGY_1);
     }
 
     @Test
@@ -181,16 +166,6 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(ONTOLOGY_1_ID, ONTOLOGY_1);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-ontology"})
-    public void delete_hasRoleNotFound_fails() {
-
-        /* test */
-        assertThrows(OntologyNotFoundException.class, () -> {
-            delete_generic(ONTOLOGY_1_ID, null);
         });
     }
 
@@ -244,8 +219,8 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
-    public void find_hasRoleLabel_succeeds() throws UriMalformedException, QueryMalformedException,
-            OntologyNotFoundException, FilterBadRequestException, OntologyInvalidException {
+    public void find_hasRoleLabel_succeeds() throws MalformedException, UriMalformedException, OntologyNotFoundException,
+            FilterBadRequestException {
         final EntityDto entityDto = EntityDto.builder()
                 .label("Apache Jena")
                 .uri("http://www.wikidata.org/entity/Q1686799")
@@ -260,8 +235,8 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
-    public void find_hasRoleUri_succeeds() throws UriMalformedException, QueryMalformedException,
-            OntologyNotFoundException, FilterBadRequestException, OntologyInvalidException {
+    public void find_hasRoleUri_succeeds() throws MalformedException, UriMalformedException, OntologyNotFoundException,
+            FilterBadRequestException {
         final EntityDto entityDto = EntityDto.builder()
                 .label("Apache Jena")
                 .uri("http://www.wikidata.org/entity/Q1686799")
@@ -312,8 +287,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     }
 
     public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user,
-                               Ontology ontology) throws UserNotFoundException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+                               Ontology ontology) throws UserNotFoundException {
 
         /* mock */
         if (ontology != null) {
@@ -340,21 +314,23 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    public void update_generic(Long ontologyId, OntologyModifyDto modifyDto, Principal principal, Ontology ontology)
+    public void update_generic(Long ontologyId, OntologyModifyDto modifyDto, Ontology ontology)
             throws OntologyNotFoundException {
 
         /* mock */
+        when(ontologyService.find(ontologyId))
+                .thenReturn(ontology);
         if (ontology != null) {
-            when(ontologyService.update(ontologyId, modifyDto))
+            when(ontologyService.update(ontology, modifyDto))
                     .thenReturn(ontology);
         } else {
             doThrow(OntologyNotFoundException.class)
                     .when(ontologyService)
-                    .update(ontologyId, modifyDto);
+                    .update(ontology, modifyDto);
         }
 
         /* test */
-        final ResponseEntity<OntologyDto> response = ontologyEndpoint.update(ontologyId, modifyDto, principal);
+        final ResponseEntity<OntologyDto> response = ontologyEndpoint.update(ontologyId, modifyDto);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final OntologyDto body = response.getBody();
         assertNotNull(body);
@@ -363,23 +339,18 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void delete_generic(Long ontologyId, Ontology ontology) throws OntologyNotFoundException {
 
         /* mock */
-        if (ontology != null) {
-            doNothing()
-                    .when(ontologyService)
-                    .delete(ontologyId);
-        } else {
-            doThrow(OntologyNotFoundException.class)
-                    .when(ontologyService)
-                    .delete(ontologyId);
-        }
+        doNothing()
+                .when(ontologyService)
+                .delete(ontology);
 
         /* test */
         final ResponseEntity<?> response = ontologyEndpoint.delete(ontologyId);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
-    public List<EntityDto> find_generic(Long ontologyId, String label, String uri, Ontology ontology, EntityDto entityDto)
-            throws OntologyNotFoundException, QueryMalformedException, UriMalformedException, FilterBadRequestException, OntologyInvalidException {
+    public List<EntityDto> find_generic(Long ontologyId, String label, String uri, Ontology ontology,
+                                        EntityDto entityDto) throws MalformedException, UriMalformedException,
+            FilterBadRequestException, OntologyNotFoundException {
 
         /* mock */
         if (ontology != null) {
@@ -393,12 +364,12 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         if (entityDto != null) {
             when(entityService.findByLabel(ontology, label))
                     .thenReturn(List.of(entityDto));
-            when(entityService.findByUri(ontology, uri))
+            when(entityService.findByUri(uri))
                     .thenReturn(List.of(entityDto));
         } else {
             when(entityService.findByLabel(ontology, label))
                     .thenReturn(List.of());
-            when(entityService.findByUri(ontology, uri))
+            when(entityService.findByUri(uri))
                     .thenReturn(List.of());
         }
 

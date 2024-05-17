@@ -185,8 +185,8 @@
 </template>
 
 <script>
-import DatabaseToolbar from '@/components/database/DatabaseToolbar'
-import EditAccess from '@/components/dialogs/EditAccess'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import EditAccess from '@/components/dialogs/EditAccess.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 

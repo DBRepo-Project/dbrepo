@@ -1,0 +1,68 @@
+{{- if .Values.dataservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: data-service
+    service: data-service
+spec:
+  replicas: {{ .Values.dataservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: data-service
+      service: data-service
+  template:
+    metadata:
+      labels:
+        app: data-service
+        service: data-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+        - name: data-service
+          image: {{ .Values.dataservice.image.name }}
+          imagePullPolicy: {{ .Values.dataservice.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: {{ .Values.dataservice.profileType | default "RuntimeDefault" }}
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: data-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/readiness | grep 'UP' || exit 1"
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts: []
+      volumes: []
+{{- end }}

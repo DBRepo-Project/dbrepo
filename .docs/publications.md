@@ -20,10 +20,8 @@ hide:
 
 DBRepo logo in various formats:
 
-* PNG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.png)
-  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.png))
-* SVG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.svg)
-  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.svg))
+* PNG: [bigger](../images/logo/logo.png) ([smaller](../images/logo/favicon.png))
+* SVG: [bigger](../images/logo/logo.svg) ([smaller](../images/logo/favicon.svg))
 
 
 ## Refereed

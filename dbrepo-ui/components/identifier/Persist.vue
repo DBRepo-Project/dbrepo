@@ -1,36 +1,93 @@
 <template>
-  <div id="persist">
+  <div
+    v-if="isCreator"
+    id="persist">
     <v-toolbar flat>
       <v-btn
         icon="mdi-arrow-left"
         size="small"
         :to="backTo" />
-      <v-toolbar-title :text="pageTitle" />
+      <v-toolbar-title
+        :text="$t('pages.identifier.pid.title')" />
       <v-spacer />
       <v-btn
-        v-if="!isUpdate"
-        prepend-icon="mdi-content-save-outline"
-        class="mb-1"
-        color="primary"
+        v-if="canSave"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        color="secondary"
         variant="flat"
-        :loading="loading"
-        :disabled="!formValid || !validPublicationMonth || !validPublicationDay || loading"
+        type="submit"
+        :loading="loadingSave"
+        :disabled="!formValid || loadingSave"
         :text="($vuetify.display.xl ? $t('toolbars.identifier.create.xl') + ' ' : '') + $t('toolbars.identifier.create.permanent')"
-        @click="save" />
+        @click="createOrSave"/>
       <v-btn
-        v-if="isUpdate"
-        prepend-icon="mdi-content-save-outline"
-        class="mb-1"
+        v-if="canRemove"
+        class="ml-2"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
+        color="error"
+        variant="flat"
+        :loading="loadingDelete"
+        :disabled="loadingDelete"
+        :text="($vuetify.display.xl ? $t('toolbars.identifier.delete.xl') + ' ' : '') + $t('toolbars.identifier.delete.permanent')"
+        @click="remove" />
+      <v-btn
+        v-if="canPublish"
+        class="ml-2"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
-        :loading="loading"
-        :disabled="!formValid || loading"
-        :text="($vuetify.display.xl ? $t('toolbars.identifier.update.xl') + ' ' : '') + $t('toolbars.identifier.update.permanent')"
-        @click="save" />
+        :loading="loadingPublish"
+        :disabled="loadingPublish"
+        :text="($vuetify.display.xl ? $t('toolbars.identifier.publish.xl') + ' ' : '') + $t('toolbars.identifier.publish.permanent')"
+        @click="publish" />
     </v-toolbar>
     <v-form
       ref="form"
-      v-model="formValid">
+      :disabled="isPublished"
+      @submit.prevent>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.pid.title')"
+        :subtitle="$t('pages.identifier.subpages.create.pid.subtitle')">
+        <v-card-text>
+          <v-row dense>
+            <v-col cols="8">
+              <v-radio-group
+                v-model="hasPid"
+                inline>
+                <v-radio
+                  :label="$t('navigation.no')"
+                  :value="false" />
+                <v-radio
+                  :label="$t('navigation.yes')"
+                  :value="true" />
+              </v-radio-group>
+            </v-col>
+          </v-row>
+          <v-row
+            :dense="hasPid">
+            <v-col cols="8">
+              <v-text-field
+                v-if="hasPid"
+                v-model="identifier.doi"
+                :label="$t('pages.identifier.subpages.create.pid.label')"
+                clearable
+                :variant="inputVariant"
+                name="name-identifier"
+                :hint="$t('pages.identifier.subpages.create.pid.hint')"
+                persistent-hint
+                :rules="[
+                  v => !!v || $t('validation.required'),
+                  v => isDoi(v) || $t('validation.doi.invalid'),
+                ]"
+                required />
+              <span v-if="!hasPid && willMintDoi">{{ $t('pages.identifier.subpages.create.doi.mint') }}</span>
+              <span v-if="!hasPid && !willMintDoi">{{ $t('pages.identifier.subpages.create.pid.mint') }}</span>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
       <v-card
         variant="flat"
         rounded="0"
@@ -94,6 +151,7 @@
                       size="small"
                       color="error"
                       variant="flat"
+                      :disabled="isPublished"
                       :text="$t('pages.identifier.subpages.create.creators.remove.text')"
                       @click="deleteCreator(i)" />
                   </v-col>
@@ -188,8 +246,9 @@
             <v-col>
               <v-btn
                 size="small"
-                color="tertiary"
+                :color="!isPublished ? 'tertiary' : null"
                 :variant="buttonVariant"
+                :disabled="isPublished"
                 :text="$t('pages.identifier.subpages.create.creators.add')"
                 @click="addCreator" />
             </v-col>
@@ -233,6 +292,7 @@
                       color="error"
                       size="small"
                       variant="flat"
+                      :disabled="isPublished"
                       :text="$t('pages.identifier.subpages.create.titles.remove.text')"
                       @click="deleteTitle(i)" />
                   </v-col>
@@ -276,8 +336,9 @@
             <v-col>
               <v-btn
                 size="small"
-                color="tertiary"
+                :color="!isPublished ? 'tertiary' : null"
                 :variant="buttonVariant"
+                :disabled="isPublished"
                 :text="$t('pages.identifier.subpages.create.titles.add.text')"
                 @click="addTitle" />
             </v-col>
@@ -321,6 +382,7 @@
                       size="small"
                       color="error"
                       variant="flat"
+                      :disabled="isPublished"
                       :text="$t('pages.identifier.subpages.create.descriptions.remove.text')"
                       @click="deleteDescription(i)" />
                   </v-col>
@@ -365,8 +427,9 @@
             <v-col>
               <v-btn
                 size="small"
-                color="tertiary"
+                :color="!isPublished ? 'tertiary' : null"
                 :variant="buttonVariant"
+                :disabled="isPublished"
                 :text="$t('pages.identifier.subpages.create.descriptions.add.text')"
                 @click="addDescription" />
             </v-col>
@@ -493,6 +556,7 @@
                       size="small"
                       color="error"
                       variant="flat"
+                      :disabled="isPublished"
                       :text="$t('pages.identifier.subpages.create.related-identifiers.remove.text')"
                       @click="deleteRelatedIdentifier(i)" />
                   </v-col>
@@ -506,8 +570,9 @@
             <v-col>
               <v-btn
                 size="small"
-                color="tertiary"
+                :color="!isPublished ? 'tertiary' : null"
                 :variant="buttonVariant"
+                :disabled="isPublished"
                 :text="$t('pages.identifier.subpages.create.related-identifiers.add.text')"
                 @click="addRelatedIdentifier" />
             </v-col>
@@ -623,6 +688,7 @@
                       color="error"
                       variant="flat"
                       size="small"
+                      :disabled="isPublished"
                       :text="$t('pages.identifier.subpages.create.funders.remove.text')"
                       @click="deleteFunder(i)" />
                   </v-col>
@@ -668,7 +734,8 @@
             <v-col>
               <v-btn
                 size="small"
-                color="tertiary"
+                :color="!isPublished ? 'tertiary' : null"
+                :disabled="isPublished"
                 :variant="buttonVariant"
                 :text="$t('pages.identifier.subpages.create.funders.add.text')"
                 @click="addFunding" />
@@ -758,6 +825,7 @@
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
+import { MerkleJson } from 'merkle-json'
 
 export default {
   props: {
@@ -792,8 +860,12 @@ export default {
   },
   data () {
     return {
-      formValid: false,
       loading: false,
+      loadingSave: false,
+      loadingDelete: false,
+      loadingPublish: false,
+      stateHash: null,
+      hasPid: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
       identifier: {
@@ -811,7 +883,7 @@ export default {
         type: this.type,
         creators: [],
         related_identifiers: [],
-        funders: []
+        funders: [],
       },
       titleType: [
         { value: 'AlternativeTitle' },
@@ -890,7 +962,10 @@ export default {
   },
   computed: {
     user () {
-      return this.userStore.getUser.value
+      return this.userStore.getUser
+    },
+    roles () {
+      return this.userStore.getRoles
     },
     isSubset () {
       return this.type === 'subset'
@@ -907,15 +982,36 @@ export default {
     willMintDoi () {
       return this.$config.public.doi.enabled
     },
+    pid () {
+      return this.$route.params.identifier_id
+    },
+    isPublished () {
+      if (!this.identifier) {
+        return false
+      }
+      return this.identifier.status === 'published'
+    },
+    nextTo (id) {
+      if (this.isSubset) {
+        return `/database/${this.$route.params.database_id}/subset/${this.$route.params.subset_id}/persist/${id}`
+      } else if (this.isDatabase) {
+        return `/database/${this.$route.params.database_id}/persist/${id}`
+      } else if (this.isView) {
+        return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}/persist/${id}`
+      } else if (this.isTable) {
+        return `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/persist/${id}`
+      }
+      return null
+    },
     backTo () {
       if (this.isSubset) {
-        return `/database/${this.$route.params.database_id}/subset/${this.$route.params.subset_id}`
+        return `/database/${this.$route.params.database_id}/subset/${this.$route.params.subset_id}/info`
       } else if (this.isDatabase) {
         return `/database/${this.$route.params.database_id}/info`
       } else if (this.isView) {
-        return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`
+        return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}/info`
       } else if (this.isTable) {
-        return `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`
+        return `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/info`
       }
       return null
     },
@@ -943,9 +1039,6 @@ export default {
           }
       }
     },
-    pageTitle () {
-      return (this.isUpdate ? 'Update' : 'Create') + ' Identifier'
-    },
     isUpdate () {
       return 'id' in this.identifier && this.identifier.id
     },
@@ -954,6 +1047,56 @@ export default {
         return false
       }
       return this.user.given_name || this.user.family_name || this.user.attributes.affiliation || this.user.attributes.orcid
+    },
+    isCreator () {
+      if (!this.user || !this.identifier) {
+        return false
+      }
+      if (!this.identifier.creator) {
+        return true
+      }
+      return this.identifier.creator.id === this.user.id
+    },
+    formValid () {
+      /* somehow Vue3/Vuetify3 validation form is broken for arrays */
+      const errors = []
+      if (!this.identifier.publisher) {
+        errors.push('Required: publisher')
+      }
+      if (!this.identifier.publication_year) {
+        errors.push('Required: publication_year')
+      }
+      if (!this.identifier.type) {
+        errors.push('Required: type')
+      }
+      if (this.hasPid && !this.identifier.doi) {
+        errors.push('Required: doi')
+      }
+      this.identifier.creators.forEach((creator, idx) => {
+        if (!creator.creator_name) {
+          errors.push(`Required: creators[${idx}].creator_name`)
+        }
+      })
+      this.identifier.titles.forEach((title, idx) => {
+        if (!title.title) {
+          errors.push(`Required: titles[${idx}].title`)
+        }
+      })
+      this.identifier.descriptions.forEach((description, idx) => {
+        if (!description.description) {
+          errors.push(`Required: descriptions[${idx}].description`)
+        }
+      })
+      this.identifier.funders.forEach((funder, idx) => {
+        if (!funder.funder_name) {
+          errors.push(`Required: funders[${idx}].funder_name`)
+        }
+      })
+      if (errors.length > 0) {
+        console.error('Validation errors', errors)
+        return false
+      }
+      return true
     },
     prefix () {
       if (this.isSubset) {
@@ -966,6 +1109,26 @@ export default {
         return 'Table'
       }
       return ''
+    },
+    canSave () {
+      if (!this.roles || !this.identifier) {
+        return false
+      }
+      return this.roles.includes('create-identifier') && !this.isPublished
+    },
+    canRemove () {
+      if (!this.roles || !this.identifier || !this.identifier.creator || !this.user) {
+        return false
+      }
+      return this.roles.includes('delete-identifier') && this.identifier.creator.id === this.user.id && !this.isPublished
+    },
+    canPublish () {
+      if (!this.roles || !this.identifier || !this.roles.includes('publish-identifier') || this.isPublished || !this.identifier.id) {
+        return false
+      }
+      /* ensure no changes have been applied after the last save */
+      const mj = new MerkleJson()
+      return mj.hash(this.identifier) === this.stateHash
     },
     validPublicationDay () {
       const day = this.identifier.publication_day
@@ -992,21 +1155,21 @@ export default {
   },
   watch: {
     database () {
-      this.init()
+      this.fetchIdentifier()
     },
     query () {
-      this.init()
+      this.fetchIdentifier()
     },
     view () {
-      this.init()
+      this.fetchIdentifier()
     }
   },
   mounted () {
     this.addCreator()
     this.addTitle()
     this.addDescription()
-    this.loadLicenses()
-    this.init()
+    this.fetchLicenses()
+    this.fetchIdentifier()
   },
   methods: {
     cancel () {
@@ -1174,39 +1337,90 @@ export default {
     deleteRelatedIdentifier (index) {
       this.identifier.related_identifiers.splice(index, 1)
     },
+    createOrSave () {
+      if (!this.formValid) {
+        this.$toast.info(this.$t('error.identifier.form'))
+        return
+      }
+      if (!this.identifier.id) {
+        this.create();
+        return
+      }
+      this.save();
+    },
     save () {
-      this.loading = true
+      this.loadingSave = true
       const identifierService = useIdentifierService()
       const payload = identifierService.identifierToIdentifierSave(this.identifier)
-      if (this.isUpdate) {
-        identifierService.update(this.identifier.id, payload)
-          .then(() => {
-            this.cacheStore.reloadDatabase()
-            this.$router.push(this.backTo)
-            this.$toast.success(this.$t('success.pid.updated'))
-          })
-          .catch(() => {
-            this.loading = false
-          })
-          .finally(() => {
-            this.loading = false
-          })
-      } else {
-        identifierService.create(payload)
-          .then(() => {
-            this.cacheStore.reloadDatabase()
-            this.$router.push(this.backTo)
-            this.$toast.success(this.$t('success.pid.created'))
-          })
-          .catch(() => {
-            this.loading = false
-          })
-          .finally(() => {
-            this.loading = false
-          })
-      }
+      identifierService.save(payload)
+        .then((identifier) => {
+          this.cacheStore.reloadDatabase()
+          this.$toast.success(this.$t('success.pid.saved'))
+          this.identifier = identifier
+          this.loadingSave = false
+        })
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
+          this.loadingSave = false
+        })
+        .finally(() => {
+          this.loadingSave = false
+        })
     },
-    loadLicenses () {
+    create () {
+      this.loadingSave = true
+      const identifierService = useIdentifierService()
+      const payload = identifierService.identifierToIdentifierSave(this.identifier)
+      identifierService.create(payload)
+        .then((identifier) => {
+          this.cacheStore.reloadDatabase()
+          this.$toast.success(this.$t('success.pid.created'))
+          this.identifier = identifier
+          this.$router.push(this.nextTo)
+          this.loadingSave = false
+        })
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
+          this.loadingSave = false
+        })
+        .finally(() => {
+          this.loadingSave = false
+        })
+    },
+    publish () {
+      this.loadingPublish = true
+      const identifierService = useIdentifierService()
+      identifierService.publish(this.identifier.id)
+        .then(() => {
+          this.$toast.success(this.$t('success.pid.published'))
+          this.cacheStore.reloadDatabase()
+          this.loadingPublish = false
+        })
+        .catch(() => {
+          this.loadingPublish = false
+        })
+        .finally(() => {
+          this.loadingPublish = false
+        })
+    },
+    remove () {
+      this.loadingDelete = true
+      const identifierService = useIdentifierService()
+      identifierService.remove(this.identifier.id)
+        .then(() => {
+          this.cacheStore.reloadDatabase()
+          this.$toast.success(this.$t('success.pid.deleted'))
+          this.$router.push(this.backTo)
+          this.loadingDelete = false
+        })
+        .catch(() => {
+          this.loadingDelete = false
+        })
+        .finally(() => {
+          this.loadingDelete = false
+        })
+    },
+    fetchLicenses () {
       this.loading = true
       const licenseService = useLicenseService()
       licenseService.findAll()
@@ -1221,7 +1435,32 @@ export default {
           this.loading = false
         })
     },
-    init () {
+    saveStateHash () {
+      if (!this.identifier) {
+        return
+      }
+      const mj = new MerkleJson()
+      this.stateHash = mj.hash(this.identifier)
+    },
+    fetchIdentifier () {
+      if (this.pid) {
+        const identifierService = useIdentifierService()
+        identifierService.findOne(this.pid, 'application/json')
+          .then((identifier) => {
+            this.identifier = identifier
+            this.saveStateHash()
+            if (identifier.titles.length === 0) {
+              this.addTitle()
+            }
+            if (identifier.descriptions.length === 0) {
+              this.addDescription()
+            }
+            if (identifier.creators.length === 0) {
+              this.addCreator()
+            }
+          })
+        return
+      }
       if (this.isDatabase && this.database && 'identifier' in this.database && this.database.identifier) {
         this.identifier = Object.assign(this.database.identifier, {})
       } else if (this.isSubset && this.query && 'identifier' in this.query && this.query.identifier) {
@@ -1229,8 +1468,12 @@ export default {
       } else if (this.isView && this.view && 'identifier' in this.view && this.view.identifier) {
         this.identifier = Object.assign(this.view.identifier, {})
       }
+      this.saveStateHash()
     },
     insertSelf (creator) {
+      if (this.isPublished) {
+        return false
+      }
       if (this.user.attributes.orcid) {
         creator.name_identifier = this.user.attributes.orcid
         this.retrieveCreator(creator)
@@ -1242,10 +1485,16 @@ export default {
       creator.affiliation = this.user.attributes.affiliation
     },
     canShiftUp (creator, idx) {
+      if (this.isPublished) {
+        return false
+      }
       return !(this.identifier.creators.length === 1 || idx === 0);
 
     },
     canShiftDown (creator, idx) {
+      if (this.isPublished) {
+        return false
+      }
       return !(this.identifier.creators.length === 1 || idx + 1 === this.identifier.creators.length);
 
     },
@@ -1259,6 +1508,12 @@ export default {
       const element = array[fromIndex]
       array.splice(fromIndex, 1)
       array.splice(toIndex, 0, element)
+    },
+    isDoi (val) {
+      if (!val) {
+        return false
+      }
+      return val.startsWith('10.')
     }
   }
 }

@@ -4,7 +4,6 @@
       :title="$t('pages.table.subpages.versioning.title')"
       :subtitle="$t('pages.table.subpages.versioning.subtitle')"
       variant="elevated">
-      <v-progress-linear v-if="loading" color="primary" />
       <v-card-text>
         <v-text-field
           v-model="datetime"
@@ -20,7 +19,10 @@
           :suffix="$t('pages.table.subpages.versioning.timestamp.suffix')"
           class="mb-4"
           type="text" />
+        <Loading
+          v-if="loading" />
         <Bar
+          v-if="!loading"
           id="time-travel"
           :data="chartData"
           :options="chartOptions"
@@ -64,7 +66,7 @@ export default {
   data () {
     return {
       formValid: false,
-      loading: false,
+      loading: true,
       datetime: null,
       history: null,
       chartOptions: {
@@ -80,7 +82,25 @@ export default {
         scales: {
           y: {
             display: true,
-            type: 'logarithmic'
+            ticks: {
+              min: 0,
+              stepSize: 1
+            },
+            title: {
+              display: true,
+              text: this.$t('pages.table.subpages.versioning.chart.ylabel')
+            },
+          },
+          x: {
+            display: true,
+            ticks: {
+              min: 0,
+              stepSize: 1
+            },
+            title: {
+              display: true,
+              text: this.$t('pages.table.subpages.versioning.chart.xlabel')
+            }
           }
         }
       },
@@ -103,13 +123,10 @@ export default {
       return {
         labels: this.history ? this.history.map(d => format(new Date(d.timestamp), 'yyyy-MM-dd HH:mm:ss')) : [],
         datasets: [
-          this.history ? { backgroundColor: this.$vuetify.theme.current.colors.primary, data: this.history.map(d => d.total) } : { data: [] }
+          this.history ? { backgroundColor: this.$vuetify.theme.current.colors.success, data: this.history.filter(d => d.event === 'INSERT').map(d => d.total) } : { data: [] },
+          this.history ? { backgroundColor: this.$vuetify.theme.current.colors.error, data: this.history.filter(d => d.event === 'DELETE').map(d => d.total) } : { data: [] },
         ]
       }
-    },
-    buttonVariant () {
-      const runtimeConfig = useRuntimeConfig()
-      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   mounted() {

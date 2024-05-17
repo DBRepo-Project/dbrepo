@@ -84,10 +84,10 @@ if (data.value) {
 }
 </script>
 <script>
-import ViewToolbar from '@/components/view/ViewToolbar'
-import Summary from '@/components/identifier/Summary'
-import Select from '@/components/identifier/Select'
-import UserBadge from '~/components/user/UserBadge'
+import ViewToolbar from '@/components/view/ViewToolbar.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
@@ -155,14 +155,23 @@ export default {
       }
       return this.view.identifiers
     },
+    filteredIdentifiers () {
+      if (!this.identifiers) {
+        return []
+      }
+      if (!this.user) {
+        return this.identifiers.filter(i => i.status === 'published')
+      }
+      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+    },
     identifier () {
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
           return filter[0]
         }
       }
-      return this.identifiers[0]
+      return this.filteredIdentifiers[0]
     },
     views () {
       if (!this.database) {
@@ -174,7 +183,7 @@ export default {
       return this.$route.query.pid
     },
     hasIdentifier () {
-      return this.identifiers.length > 0
+      return this.identifier
     },
     creator () {
       if (!this.view) {

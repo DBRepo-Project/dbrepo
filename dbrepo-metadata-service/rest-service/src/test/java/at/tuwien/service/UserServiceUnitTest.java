@@ -1,13 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockListeners;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +21,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-@MockAmqp
-@MockListeners
-@MockOpensearch
-public class UserServiceUnitTest extends BaseUnitTest {
+public class UserServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private KeycloakGateway keycloakGateway;
@@ -59,13 +53,13 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final User response = userService.find(USER_1_ID);
+        final User response = userService.findById(USER_1_ID);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test
-    public void findAll_succeeds() throws UserNotFoundException {
+    public void findAll_succeeds() {
 
         /* mock */
         when(userRepository.findAll())
@@ -77,8 +71,8 @@ public class UserServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            UserAlreadyExistsException, UserEmailAlreadyExistsException {
+    public void create_succeeds() throws UserNotFoundException, UserExistsException, EmailExistsException,
+            ServiceException, ServiceConnectionException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))
@@ -98,7 +92,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void modify_succeeds() throws UserNotFoundException {
+    public void modify_succeeds() {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))
@@ -107,42 +101,13 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1);
 
         /* test */
-        final User response = userService.modify(USER_1_ID, USER_1_UPDATE_DTO);
+        final User response = userService.modify(USER_1, USER_1_UPDATE_DTO);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test
-    public void modify_notExists_succeeds() {
-
-        /* mock */
-        when(userRepository.findById(USER_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            userService.modify(USER_1_ID, USER_1_UPDATE_DTO);
-        });
-    }
-
-    @Test
-    public void toggleTheme_succeeds() throws UserNotFoundException {
-
-        /* mock */
-        when(userRepository.findById(USER_1_ID))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(USER_1);
-
-        /* test */
-        final User response = userService.toggleTheme(USER_1_ID, USER_1_THEME_SET_DTO);
-        assertEquals(USER_1_ID, response.getId());
-        assertEquals(USER_1_USERNAME, response.getUsername());
-        assertEquals(USER_1_THEME, response.getTheme());
-    }
-
-    @Test
-    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException {
+    public void updatePassword_succeeds() throws ServiceException, ServiceConnectionException {
 
         /* mock */
         doNothing()
@@ -154,7 +119,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1);
 
         /* test */
-        userService.updatePassword(USER_1_ID, USER_1_PASSWORD_DTO);
+        userService.updatePassword(USER_1, USER_1_PASSWORD_DTO);
     }
 
     @Test
@@ -171,7 +136,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            userService.find(USER_1_ID);
+            userService.findById(USER_1_ID);
         });
     }
 

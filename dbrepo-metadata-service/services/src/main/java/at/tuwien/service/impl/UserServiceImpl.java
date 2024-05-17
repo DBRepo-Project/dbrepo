@@ -4,7 +4,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -36,18 +36,18 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with username {} in metadata database", username);
-            throw new UserNotFoundException("Failed to find user with username " + username + " in metadata database");
+            log.error("Failed to find user with username {}", username);
+            throw new UserNotFoundException("Failed to find user with username " + username);
         }
         return optional.get();
     }
 
     @Override
-    public User find(UUID id) throws UserNotFoundException {
+    public User findById(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with id {} in metadata database", id);
-            throw new UserNotFoundException("Failed to find user with id " + id + " in metadata database");
+            log.error("Failed to find user with id {}", id);
+            throw new UserNotFoundException("Failed to find user with id " + id);
         }
         return optional.get();
     }
@@ -61,58 +61,51 @@ public class UserServiceImpl implements UserService {
                 .email(data.getEmail())
                 .theme("light")
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
+                .language("en")
                 .build();
         /* create at metadata database */
         final User user = userRepository.save(entity);
-        log.info("Created user with id {} in metadata database", user.getId());
+        log.info("Created user with id {}", user.getId());
         return user;
     }
 
     @Override
-    public User modify(UUID id, UserUpdateDto data) throws UserNotFoundException {
-        final User entity = find(id);
-        entity.setFirstname(data.getFirstname());
-        entity.setLastname(data.getLastname());
-        entity.setAffiliation(data.getAffiliation());
-        entity.setOrcid(data.getOrcid());
+    public User modify(User user, UserUpdateDto data) {
+        user.setFirstname(data.getFirstname());
+        user.setLastname(data.getLastname());
+        user.setAffiliation(data.getAffiliation());
+        user.setOrcid(data.getOrcid());
+        user.setTheme(data.getTheme());
+        user.setLanguage(data.getLanguage());
         /* create at metadata database */
-        final User user = userRepository.save(entity);
-        log.info("Modified user with id {} in metadata database", user.getId());
+        user = userRepository.save(user);
+        log.info("Modified user with id {}", user.getId());
         return user;
     }
 
     @Override
-    public void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException {
-        final User user = find(id);
+    public void updatePassword(User user, UserPasswordDto data) {
         user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
+        /* update at metadata database */
         userRepository.save(user);
-        log.info("Updated password of user with id {} in metadata database", id);
+        log.info("Updated password of user with id {}", user.getId());
     }
 
     @Override
-    public User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException {
-        final User entity = find(id);
-        entity.setTheme(data.getTheme());
-        final User user = userRepository.save(entity);
-        log.info("Updated theme of user with id {} in metadata database", id);
-        return user;
-    }
-
-    @Override
-    public void validateUsernameNotExists(String username) throws UserAlreadyExistsException {
+    public void validateUsernameNotExists(String username) throws UserExistsException {
         if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("User with username " + username + " already exists in metadata database");
+            throw new UserExistsException("User with username " + username + " already exists");
         }
     }
 
     @Override
-    public void validateEmailNotExists(String email) throws UserEmailAlreadyExistsException {
+    public void validateEmailNotExists(String email) throws EmailExistsException {
         if (userRepository.existsByEmail(email)) {
-            throw new UserEmailAlreadyExistsException("User with email " + email + " already exists in metadata database");
+            throw new EmailExistsException("User with email " + email + " already exists");
         }
     }
 
-    protected String getMariaDbPassword(String password) {
+    public String getMariaDbPassword(String password) {
         final byte[] utf8 = password.getBytes(StandardCharsets.UTF_8);
         return "*" + DigestUtils.sha1Hex(DigestUtils.sha1(utf8)).toUpperCase();
     }

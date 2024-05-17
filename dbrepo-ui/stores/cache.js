@@ -46,7 +46,7 @@ export const useCacheStore = defineStore('cache', {
     },
     reloadTable () {
       const tableService = useTableService()
-      tableService.findOne(this.table.tdbid, this.table.id)
+      tableService.findOne(this.table.database_id, this.table.id)
         .then(table => this.table = table)
         .catch(() => {})
     },

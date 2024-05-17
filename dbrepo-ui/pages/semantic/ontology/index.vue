@@ -30,8 +30,8 @@
 </template>
 
 <script>
-import OntologiesList from '@/components/OntologiesList'
-import CreateOntology from '@/components/dialogs/CreateOntology'
+import OntologiesList from '@/components/OntologiesList.vue'
+import CreateOntology from '@/components/dialogs/CreateOntology.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
