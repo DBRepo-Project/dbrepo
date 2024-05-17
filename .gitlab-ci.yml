@@ -564,9 +564,9 @@ release-images:
   before_script:
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
-  script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
+  script:
     - "make release"
 
 release-images-unstable:
@@ -581,11 +581,11 @@ release-images-unstable:
       - master
       - dev
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
-  script:
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
+  script:
     - "CI_COMMIT_BRANCH=release-unstable make release-images"
 
 release-chart:
@@ -595,11 +595,14 @@ release-chart:
     refs:
       - /^release-.*/
   before_script:
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "echo ${CI_GPG_KEYRING} | base64 -d > ~/keyring.gpg"
+    - "apk add sed helm curl"
+    - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
-    - apk add sed helm curl
-    - helm package ./helm/dbrepo --destination ./build
-    - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
+    - "helm package --sign --key 'Martin Weise' ./helm/dbrepo --keyring ~/keyring.gpg --destination ./build"
+    - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
+    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release

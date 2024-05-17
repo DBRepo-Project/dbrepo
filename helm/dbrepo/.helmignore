@@ -12,6 +12,8 @@ hack/
 .hg/
 .hgignore
 .svn/
+# Generated
+build/
 # Common backup files
 *.swp
 *.bak
