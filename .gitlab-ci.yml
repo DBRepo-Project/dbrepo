@@ -598,6 +598,7 @@ release-chart:
       - /^release-.*/
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "mkdir -p /root/.gnupg"
     - "echo ${CI_GPG_KEYRING} | base64 -d > /root/.gnupg/pubring.gpg"
     - "apk add sed helm curl"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
@@ -613,7 +614,7 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add git make sed wget ssh"
+    - "apk add git make sed wget openssh"
   script:
     - make docs
     - eval $(ssh-agent -s)
