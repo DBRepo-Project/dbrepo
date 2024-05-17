@@ -615,6 +615,7 @@ release-docs:
       - /^release-.*/
   before_script:
     - "apk add git make sed wget openssh"
+    - "pip install -r ./requirements.txt"
   script:
     - make gen-docs-doc
     - eval $(ssh-agent -s)
