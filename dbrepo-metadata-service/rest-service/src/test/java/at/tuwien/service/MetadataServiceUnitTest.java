@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockListeners;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.oaipmh.OaiErrorType;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.ror.RorDto;
@@ -13,35 +13,33 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
-import at.tuwien.repository.mdb.IdentifierRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@Log4j2
 @SpringBootTest
-@MockAmqp
-@MockListeners
-@MockOpensearch
-public class MetadataServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IdentifierRepository identifierRepository;
+@ExtendWith(SpringExtension.class)
+public class MetadataServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private OrcidGateway orcidGateway;
@@ -52,6 +50,9 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     @MockBean
     private CrossrefGateway crossrefGateway;
 
+    @MockBean
+    private IdentifierService identifierService;
+
     @Autowired
     private MetadataService metadataService;
 
@@ -59,10 +60,120 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void findByUrl_orcid_succeeds() throws OrcidNotFoundException,
-            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
-        final OrcidDto orcid = objectMapper
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    public void identify_succeeds() {
+
+        /* test */
+        final String response = metadataService.identify();
+        assertTrue(response.contains("repositoryName"));
+        assertTrue(response.contains("baseURL"));
+        assertTrue(response.contains("adminEmail"));
+        assertTrue(response.contains("earliestDatestamp"));
+        assertTrue(response.contains("deletedRecord"));
+        assertTrue(response.contains("granularity"));
+    }
+
+    @Test
+    public void listIdentifiers_succeeds() {
+        final OaiListIdentifiersParameters parameters = OaiListIdentifiersParameters.builder()
+                .build();
+
+        when(identifierService.findAll())
+                .thenReturn(List.of(IDENTIFIER_1));
+
+        /* test */
+        final String response = metadataService.listIdentifiers(parameters);
+        assertTrue(response.contains("identifier"));
+        assertTrue(response.contains("datestamp"));
+    }
+
+    @Test
+    public void listMetadataFormats_succeeds() {
+
+        /* test */
+        final String response = metadataService.listMetadataFormats();
+        assertTrue(response.contains("metadataPrefix"));
+        assertTrue(response.contains("schema"));
+        assertTrue(response.contains("metadataNamespace"));
+    }
+
+    @Test
+    public void error_succeeds() {
+
+        /* test */
+        final String response = metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
+        assertTrue(response.contains("error"));
+    }
+
+    @Test
+    @Transactional
+    public void getRecord_succeeds() throws IdentifierNotFoundException {
+        final OaiRecordParameters parameters = OaiRecordParameters.builder()
+                .identifier("oai:1")
+                .build();
+
+        /* mock */
+        when(identifierService.find(1L))
+                .thenReturn(IDENTIFIER_1);
+
+        /* test */
+        final String response = metadataService.getRecord(parameters);
+        assertTrue(response.contains("identifier"));
+        assertTrue(response.contains("datestamp"));
+        assertTrue(response.contains("title"));
+        assertTrue(response.contains("description"));
+        assertTrue(response.contains("publisher"));
+    }
+
+    @Test
+    public void getRecord_oaiNotFound_fails() throws IdentifierNotFoundException {
+        final OaiRecordParameters parameters = OaiRecordParameters.builder()
+                .identifier("oai:9999")
+                .build();
+
+        /* mock */
+        doThrow(IdentifierNotFoundException.class)
+                .when(identifierService)
+                .find(anyLong());
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+    @Test
+    public void getRecord_doiNotFound_fails() throws IdentifierNotFoundException {
+        final OaiRecordParameters parameters = OaiRecordParameters.builder()
+                .identifier("doi:10.1111/abcd-efgh")
+                .build();
+
+        /* mock */
+        doThrow(IdentifierNotFoundException.class)
+                .when(identifierService)
+                .findByDoi(anyString());
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+    @Test
+    public void getRecord_prefixMalformed_fails() {
+        final OaiRecordParameters parameters = OaiRecordParameters.builder()
+                .identifier("pid:1")
+                .build();
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+    @Test
+    public void findByUrl_orcid_succeeds() throws OrcidNotFoundException, RorNotFoundException, IOException,
+            DoiNotFoundException, IdentifierNotSupportedException {
+        final OrcidDto orcid = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/orcid_jdoe.json"), OrcidDto.class);
 
         /* mock */
@@ -90,10 +201,9 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByUrl_doi_succeeds() throws OrcidNotFoundException,
-            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
-        final CrossrefDto doi = objectMapper
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    public void findByUrl_doi_succeeds() throws OrcidNotFoundException, RorNotFoundException, IOException,
+            DoiNotFoundException, IdentifierNotSupportedException {
+        final CrossrefDto doi = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/doi_ec.json"), CrossrefDto.class);
 
         /* mock */
@@ -123,10 +233,9 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByUrl_ror_succeeds() throws OrcidNotFoundException,
-            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
-        final RorDto ror = objectMapper
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    public void findByUrl_ror_succeeds() throws OrcidNotFoundException, RorNotFoundException, IOException,
+            DoiNotFoundException, IdentifierNotSupportedException {
+        final RorDto ror = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/ror_tuw.json"), RorDto.class);
 
         /* mock */
@@ -167,7 +276,7 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     public void findByUrl_isniMalformed_fails() {
 
         /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
+        assertThrows(IdentifierNotSupportedException.class, () -> {
             metadataService.findByUrl("https://isni.org/isni/0000000506791090");
         });
     }

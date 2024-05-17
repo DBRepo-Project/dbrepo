@@ -42,7 +42,7 @@
             <v-row dense>
               <v-col xl="4">
                 <v-text-field
-                  v-model="token"
+                  v-model="accessTokenField"
                   disabled
                   :variant="inputVariant"
                   :label="$t('pages.settings.subpages.developer.token.access.label')" />
@@ -58,7 +58,7 @@
             <v-row dense>
               <v-col xl="4">
                 <v-text-field
-                  v-model="refreshToken"
+                  v-model="refreshTokenField"
                   disabled
                   :variant="inputVariant"
                   :label="$t('pages.settings.subpages.developer.token.refresh.label')" />
@@ -102,6 +102,8 @@ export default {
   data () {
     return {
       tab: 0,
+      accessTokenField: null,
+      refreshTokenField: null,
       headers: [
         { title: this.$t('pages.settings.subpages.developer.maintenance.active'), value: 'active' },
         { title: this.$t('pages.settings.subpages.developer.maintenance.type'), value: 'type' },
@@ -180,6 +182,11 @@ export default {
   },
   mounted () {
     this.loadMessages()
+    if (!this.token || !this.refreshToken) {
+      return
+    }
+    this.accessTokenField = this.token
+    this.refreshTokenField = this.refreshToken
   },
   methods: {
     submit () {

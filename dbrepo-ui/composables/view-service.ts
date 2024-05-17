@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useViewService = (): any => {
   async function remove(databaseId: number, viewId: number): Promise<void> {
     const axios = useAxiosInstance()
@@ -10,7 +12,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -26,7 +28,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to create view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -42,7 +44,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -59,7 +61,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }

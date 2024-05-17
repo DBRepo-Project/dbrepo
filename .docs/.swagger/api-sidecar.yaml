@@ -1,17 +1,17 @@
 components:
-  schemas:
-    Health:
-      properties:
-        status:
-          example: UP
-          type: string
-      required:
-        - status
-      title: Status object
-      type: object
+  securitySchemes:
+    basicAuth:
+      in: header
+      scheme: basic
+      type: http
+    bearerAuth:
+      bearerFormat: JWT
+      in: header
+      scheme: bearer
+      type: http
 externalDocs:
   description: Sourcecode Documentation
-  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__APPVERSION__/
 info:
   contact:
     email: andreas.rauber@tuwien.ac.at
@@ -66,6 +66,9 @@ paths:
         '400':
           description: The Storage Service could not be contacted or .csv was not
             found.
+      security:
+        - bearerAuth: []
+        - basicAuth: []
       summary: Exports a .csv to the Storage Service
       tags:
         - sidecar
@@ -90,11 +93,14 @@ paths:
         '400':
           description: The Storage Service could not be contacted or .csv was not
             found.
+      security:
+        - bearerAuth: []
+        - basicAuth: []
       summary: Imports a .csv from the Storage Service
       tags:
         - sidecar
 servers:
   - description: Generated server url
-    url: http://localhost:5000
+    url: http://localhost:8080
   - description: Sandbox
     url: https://test.dbrepo.tuwien.ac.at

@@ -1,16 +1,18 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.auth.LoginRequestDto;
+import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.UserService;
-import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,12 +22,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,30 +40,26 @@ import java.util.UUID;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/user",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/user")
 public class UserEndpoint {
 
     private final UserMapper userMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
-    private final MessageQueueService messageQueueService;
     private final AuthenticationService authenticationService;
 
     @Autowired
     public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService,
-                        MessageQueueService messageQueueService, AuthenticationService authenticationService) {
+                        AuthenticationService authenticationService) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.databaseService = databaseService;
-        this.messageQueueService = messageQueueService;
         this.authenticationService = authenticationService;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_users_findall")
+    @Observed(name = "dbrepo_metadata_users_list")
     @Operation(summary = "Find all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -81,9 +79,9 @@ public class UserEndpoint {
     }
 
     @PostMapping
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = {ServiceException.class, ServiceConnectionException.class})
     @PreAuthorize("!isAuthenticated()")
-    @Observed(name = "dbr_user_create")
+    @Observed(name = "dbrepo_metadata_user_create")
     @Operation(summary = "Create user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -111,34 +109,13 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws UserAlreadyExistsException, UserEmailAlreadyExistsException, UserNotFoundException,
-            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException,
-            BrokerVirtualHostModificationException {
-        log.debug("endpoint create a user, data={}", data);
-        /* check */
+            throws UserExistsException, EmailExistsException, ServiceException, ServiceConnectionException,
+            UserNotFoundException {
+        log.debug("endpoint create a user, data.username={}", data.getUsername());
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
-        /* create */
         authenticationService.create(data);
         final at.tuwien.api.keycloak.UserDto keycloakUserDto = authenticationService.findByUsername(data.getUsername());
-        try {
-            messageQueueService.createUser(data.getUsername(), data.getPassword());
-            messageQueueService.setVirtualHostPermissions(data.getUsername());
-        } catch (BrokerRemoteException | BrokerVirtualHostGrantException e) {
-            try {
-                authenticationService.delete(keycloakUserDto.getId());
-            } catch (UserNotFoundException e2) {
-                /* ignore */
-            }
-            throw new BrokerRemoteException(e);
-        } catch (BrokerVirtualHostModificationException e) {
-            try {
-                authenticationService.delete(keycloakUserDto.getId());
-            } catch (UserNotFoundException e2) {
-                /* ignore */
-            }
-            throw new BrokerVirtualHostModificationException(e);
-        }
         final User user = userService.create(data, keycloakUserDto.getId());
         final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
@@ -146,10 +123,62 @@ public class UserEndpoint {
                 .body(dto);
     }
 
-    @GetMapping("/{id}")
-    @Transactional
-    @PreAuthorize("isAuthenticated() or hasAuthority('find-user')")
-    @Observed(name = "dbr_user_find")
+    @PostMapping("/token")
+    @Observed(name = "dbrepo_metadata_user_token")
+    @Operation(summary = "Obtain user token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Obtained user token",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TokenDto.class))}),
+    })
+    public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
+            throws ServiceException, ServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
+            AccountNotSetupException {
+        log.debug("endpoint get token, data.username={}", data.getUsername());
+        /* check */
+        final TokenDto token = authenticationService.obtainToken(data);
+        try {
+            userService.findByUsername(data.getUsername());
+        } catch (UserNotFoundException e) {
+            /* need to sync */
+            log.debug("User with username {} does not exist in metadata database yet", data.getUsername());
+            final SignupRequestDto request = SignupRequestDto.builder()
+                    .username(data.getUsername())
+                    .email("noreply@example.com")
+                    .password(data.getPassword())
+                    .build();
+            userService.create(request, authenticationService.findByUsername(data.getUsername()).getId());
+            log.info("Fetched user information from auth service and stored it into metadata database");
+        }
+        return ResponseEntity.accepted()
+                .body(token);
+    }
+
+    @PutMapping("/token")
+    @Observed(name = "dbrepo_metadata_user_refresh_token")
+    @Operation(summary = "Refresh user token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Refreshed user token",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TokenDto.class))}),
+    })
+    public ResponseEntity<TokenDto> refreshToken(@NotNull @Valid @RequestBody RefreshTokenRequestDto data)
+            throws ServiceConnectionException, CredentialsInvalidException {
+        log.debug("endpoint refresh token");
+        /* check */
+        final TokenDto token = authenticationService.refreshToken(data.getRefreshToken());
+        return ResponseEntity.accepted()
+                .body(token);
+    }
+
+    @GetMapping("/{userId}")
+    @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
+    @Observed(name = "dbrepo_metadata_user_find")
     @Operation(summary = "Get a user info", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -168,30 +197,27 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") UUID id,
-                                        @NotNull Principal principal) throws UserNotFoundException,
-            NotAllowedException {
-        log.debug("endpoint find a user, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("userId") UUID userId,
+                                        @NotNull Principal principal) throws NotAllowedException,
+            UserNotFoundException {
+        log.debug("endpoint find a user, userId={}", userId);
         /* check */
-        final User user = userService.find(id);
-        final UserDto dto = userMapper.userToUserDto(user);
-        if (user.getUsername().equals(principal.getName())) {
-            log.trace("find user resulted in dto {}", dto);
-            return ResponseEntity.ok()
-                    .body(dto);
-        } else if (UserUtil.hasRole(principal, "find-user")) {
-            log.trace("find user resulted in dto {}", dto);
-            return ResponseEntity.ok()
-                    .body(dto);
+        final User user = userService.findById(userId);
+        if (!user.equals(principal)) {
+            if (!UserUtil.hasRole(principal, "admin")) {
+                log.error("Failed to find user: foreign user");
+                throw new NotAllowedException("Failed to find user: foreign user");
+            }
         }
-        log.error("Failed to find user: no authority and not the current logged-in user");
-        throw new NotAllowedException("Failed to find user: no authority and not the current logged-in user");
+        final UserDto dto = userMapper.userToUserDto(user);
+        return ResponseEntity.ok()
+                .body(dto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{userId}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
-    @Observed(name = "dbr_user_modify")
+    @Observed(name = "dbrepo_metadata_user_modify")
     @Operation(summary = "Modify user information", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -204,90 +230,27 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Modify user is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "User attribute was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Foreign user modification",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") UUID id,
+    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
-                                          @NotNull Principal principal) throws UserNotFoundException,
-            ForeignUserException, QueryMalformedException {
-        log.debug("endpoint modify a user, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        if (!id.equals(UserUtil.getId(principal))) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+                                          @NotNull Principal principal) throws ServiceException,
+            ServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException {
+        log.debug("endpoint modify a user, userId={}, data={}", userId, data);
+        User user = userService.findById(userId);
+        if (!user.equals(principal)) {
+            log.error("Failed to modify user: not current user");
+            throw new NotAllowedException("Failed to modify user: not current user");
         }
-        /* modify */
-        final User user = userService.modify(id, data);
-        databaseService.updatePassword(user);
+        user = userService.modify(user, data);
         final UserDto dto = userMapper.userToUserDto(user);
-        log.trace("modify user resulted in dto {}", dto);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(dto);
-    }
-
-    @PutMapping("/{id}/theme")
-    @Transactional
-    @PreAuthorize("hasAuthority('modify-user-theme')")
-    @Observed(name = "dbr_user_theme_modify")
-    @Operation(summary = "Modify user theme", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Modified user theme",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Modify user is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "User or user attribute was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Foreign user modification",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") UUID id,
-                                         @NotNull @Valid @RequestBody UserThemeSetDto data,
-                                         @NotNull Principal principal) throws UserNotFoundException,
-            ForeignUserException {
-        log.debug("endpoint modify a user theme, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        if (!id.equals(UserUtil.getId(principal))) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
-        }
-        /* modify theme */
-        final User user = userService.toggleTheme(id, data);
-        final UserDto dto = userMapper.userToUserDto(user);
-        log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
 
-    @PutMapping("/{id}/password")
+    @PutMapping("/{userId}/password")
     @Transactional
     @PreAuthorize("isAuthenticated()")
-    @Observed(name = "dbr_user_password_modify")
+    @Observed(name = "dbrepo_metadata_user_password_modify")
     @Operation(summary = "Modify user password", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -295,40 +258,23 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Modify is not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "User was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Foreign user modification",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Authentication service does not respond",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> password(@NotNull @PathVariable("id") UUID id,
+    public ResponseEntity<?> password(@NotNull @PathVariable("userId") UUID userId,
                                       @NotNull @Valid @RequestBody UserPasswordDto data,
-                                      @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint modify a user password, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        if (!id.equals(UserUtil.getId(principal))) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+                                      @NotNull Principal principal) throws NotAllowedException, ServiceException,
+            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException {
+        log.debug("endpoint modify a user password, userId={}, data.password=(hidden)", userId);
+        User user = userService.findById(userId);
+        if (!user.equals(principal)) {
+            log.error("Failed to modify user password: not current user");
+            throw new NotAllowedException("Failed to modify user password: not current user");
         }
-        /* modify password */
-        userService.updatePassword(id, data);
-        authenticationService.updatePassword(id, data);
+        user = userService.findByUsername(principal.getName());
+        userService.updatePassword(user, data);
+        authenticationService.updatePassword(user, data);
+        for (Database database : databaseService.findAllAccess(userId)) {
+            databaseService.updatePassword(database, user);
+        }
         return ResponseEntity.accepted()
                 .build();
     }

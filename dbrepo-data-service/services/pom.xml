@@ -6,12 +6,25 @@
     <parent>
         <groupId>at.tuwien</groupId>
         <artifactId>dbrepo-data-service</artifactId>
-        <version>1.4.1</version>
+        <version>1.4.3</version>
     </parent>
 
     <artifactId>services</artifactId>
     <name>dbrepo-data-service-services</name>
-    <version>1.4.1</version>
+    <version>1.4.3</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>2.25.23</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-data-service-querystore</artifactId>
+            <version>1.4.3</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

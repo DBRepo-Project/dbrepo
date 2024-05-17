@@ -1,8 +1,6 @@
 package at.tuwien.mapper;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,9 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class TableMapperUnitTest extends BaseUnitTest {
+public class TableMapperUnitTest extends AbstractUnitTest {
 
     @Autowired
     private TableMapper tableMapper;

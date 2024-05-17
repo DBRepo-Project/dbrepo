@@ -70,9 +70,8 @@
                     <v-textarea
                       v-model="tableCreate.description"
                       rows="2"
-                      variant="underlined"
                       :rules="[
-                        v => (!!v || v.length <= 180) || ($t('validation.max-length') + 180),
+                        v => (!v || v.length <= 180) || $t('validation.max-length') + 180
                       ]"
                       clearable
                       counter="180"
@@ -127,8 +126,9 @@
                     color="secondary"
                     variant="flat"
                     size="small"
+                    :loading="loadingContinue"
                     :text="$t('navigation.continue')"
-                    :to="`/database/${this.$route.params.database_id}/table/${table.id}/info`" />
+                    @click="onContinue" />
                 </v-col>
               </v-row>
             </v-container>
@@ -157,13 +157,20 @@ export default {
       valid: false,
       description: null,
       loading: false,
+      loadingContinue: false,
       step: 1,
       table: null,
       error: false,
       tableCreate: {
         name: null,
         description: null,
-        columns: []
+        columns: [],
+        constraints: {
+          uniques: [],
+          foreign_keys: [],
+          checks: [],
+          primary_key: [],
+        }
       },
       items: [
         {
@@ -242,28 +249,35 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    createTable () {
+    createTable (columns, constraints) {
       this.loading = true
       const tableService = useTableService()
-      tableService.create(this.$route.params.database_id, this.tableCreate)
+      const payload = Object.assign({}, this.tableCreate)
+      payload.columns = columns
+      payload.constraints = constraints
+      tableService.create(this.$route.params.database_id, payload)
         .then((table) => {
           this.cacheStore.reloadDatabase()
           this.table = table
         })
         .catch((error) => {
-          this.$toast.error(this.$t('error.table.create'))
+          this.$toast.error(this.$t(error.code))
           this.loading = false
         })
         .finally(() => {
           this.loading = false
         })
     },
-    schemaClose (event) {
-      console.debug('schema closed', event)
-      if (!event.success) {
+    schemaClose ({success, columns, constraints}) {
+      console.debug('schema closed', success)
+      if (!success) {
         return
       }
-      this.createTable()
+      this.createTable(columns, constraints)
+    },
+    async onContinue () {
+      this.loadingContinue = true
+      await this.$router.push(`/database/${this.$route.params.database_id}/table/${this.table.id}/info`)
     }
   }
 }

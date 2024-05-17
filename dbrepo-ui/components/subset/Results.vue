@@ -3,7 +3,7 @@
     <v-data-table-server
       flat
       :headers="headers"
-      :loading="loading > 0"
+      :loading="loading || loadingCount || loadingExecute"
       :options="options"
       :items="result.rows"
       :items-length="total"
@@ -24,11 +24,18 @@ export default {
       default: () => {
         return {}
       }
+    },
+    loading: {
+      type: Boolean,
+      default: () => {
+        return false
+      }
     }
   },
   data () {
     return {
-      loading: 0,
+      loadingCount: false,
+      loadingExecute: false,
       resultId: null,
       id: null,
       result: {
@@ -43,7 +50,7 @@ export default {
         showFirstLastPage: true,
         itemsPerPageOptions: [10, 25, 50, 100]
       },
-      total: null,
+      total: 0,
     }
   },
   computed: {
@@ -93,16 +100,21 @@ export default {
       if (id === null) {
         return
       }
-      this.loading++
+      this.loadingExecute = true
       if (this.type === 'query') {
         const queryService = useQueryService()
         queryService.reExecuteData(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
+            this.loadingExecute = false
+          })
+          .catch(({code}) => {
+            this.$toast.error(this.$t(code))
+            this.loadingExecute = false
           })
           .finally(() => {
-            this.loading--
+            this.loadingExecute = false
           })
       } else {
         const viewService = useViewService()
@@ -110,9 +122,14 @@ export default {
           .then((result) => {
             this.mapResults(result)
             this.id = id
+            this.loadingExecute = false
+          })
+          .catch(({code}) => {
+            this.$toast.error(this.$t(code))
+            this.loadingExecute = false
           })
           .finally(() => {
-            this.loading--
+            this.loadingExecute = false
           })
       }
     },
@@ -120,24 +137,34 @@ export default {
       if (id === null) {
         return
       }
-      this.loading++
+      this.loadingCount = true
       if (this.type === 'query') {
         const queryService = useQueryService()
         queryService.reExecuteCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
+            this.loadingCount = false
+          })
+          .catch(({code}) => {
+            this.$toast.error(this.$t(code))
+            this.loadingCount = false
           })
           .finally(() => {
-            this.loading--
+            this.loadingCount = false
           })
       } else {
         const viewService = useViewService()
         viewService.reExecuteCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
+            this.loadingCount = false
+          })
+          .catch(({code}) => {
+            this.$toast.error(this.$t(code))
+            this.loadingCount = false
           })
           .finally(() => {
-            this.loading--
+            this.loadingCount = false
           })
       }
     },

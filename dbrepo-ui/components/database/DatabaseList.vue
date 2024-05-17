@@ -1,15 +1,18 @@
 <template>
   <div>
-    <div
-      v-if="loading"
-      v-for="(idx) in [1,2,3,4,5]"
-      :key="`d-${idx}`">
-      <DatabaseSkeleton />
-    </div>
-    <div v-for="(database, idx) in databases" :key="idx">
-      <DatabaseCard
-        :database="database" />
-    </div>
+    <v-card
+      variant="flat"
+      rounded="0">
+      <v-list-item
+        v-if="loading"
+        lines="two">
+        <Loading />
+      </v-list-item>
+    </v-card>
+    <DatabaseCard
+      v-for="(database, idx) in databases"
+      :database="database"
+      :key="idx"/>
   </div>
 </template>
 

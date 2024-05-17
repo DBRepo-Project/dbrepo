@@ -1,0 +1,1230 @@
+package at.tuwien.mapper;
+
+import at.tuwien.api.container.image.ImageDateDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.*;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.TableMalformedException;
+import at.tuwien.utils.MariaDbUtil;
+import com.github.dockerjava.zerodep.shaded.org.apache.commons.codec.binary.Hex;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.select.*;
+import org.jetbrains.annotations.NotNull;
+import org.mapstruct.Mapper;
+import org.mapstruct.Named;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.sql.*;
+import java.sql.Date;
+import java.text.Normalizer;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Mapper(componentModel = "spring")
+public interface MariaDbMapper {
+
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MariaDbMapper.class);
+
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
+            .withZone(ZoneId.of("UTC"));
+
+    @Named("internalMapping")
+    default String nameToInternalName(String data) {
+        if (data == null || data.isEmpty()) {
+            return data;
+        }
+        final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+        final Pattern WHITESPACE = Pattern.compile("[\\s]");
+        String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
+        String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
+        String slug = NONLATIN.matcher(normalized).replaceAll("_")
+                .replaceAll("-", "_");
+        return slug.toLowerCase(Locale.ENGLISH);
+    }
+
+    default QueryResultDto resultListToQueryResultDto(List<ColumnDto> columns, ResultSet result) throws SQLException {
+        log.trace("mapping result list to query result, columns={}, result={}", columns, result);
+        final List<Map<String, Object>> resultList = new LinkedList<>();
+        while (result.next()) {
+            /* map the result set to the columns through the stored metadata in the metadata database */
+            int[] idx = new int[]{1};
+            final Map<String, Object> map = new HashMap<>();
+            for (final ColumnDto column : columns) {
+                final String columnOrAlias;
+                if (column.getAlias() != null) {
+                    log.debug("column {} has alias {}", column.getInternalName(), column.getAlias());
+                    columnOrAlias = column.getAlias();
+                } else {
+                    columnOrAlias = column.getInternalName();
+                }
+                if (List.of(ColumnTypeDto.BLOB, ColumnTypeDto.TINYBLOB, ColumnTypeDto.MEDIUMBLOB, ColumnTypeDto.LONGBLOB).contains(column.getColumnType())) {
+                    log.trace("column {} is of type {}", columnOrAlias, column.getColumnType().getType().toLowerCase());
+                    final Blob blob = result.getBlob(idx[0]++);
+                    final String value = blob == null ? null : Hex.encodeHexString(blob.getBytes(1, (int) blob.length())).toUpperCase();
+                    map.put(columnOrAlias, value);
+                    continue;
+                }
+                final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
+                if (object == null) {
+                    log.warn("result set for column {} is empty (=null)", column.getInternalName());
+                }
+                map.put(columnOrAlias, object);
+            }
+            resultList.add(map);
+        }
+        final int[] idx = new int[]{0};
+        final List<Map<String, Integer>> headers = columns.stream()
+                .map(c -> (Map<String, Integer>) new LinkedHashMap<String, Integer>() {{
+                    put(c.getAlias() != null ? c.getAlias() : c.getInternalName(), idx[0]++);
+                }})
+                .toList();
+        log.trace("created ordered header list: {}", headers);
+        return QueryResultDto.builder()
+                .result(resultList)
+                .headers(headers)
+                .build();
+    }
+
+    default String tableCreateDtoToCreateSequenceRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
+        return "CREATE SEQUENCE IF NOT EXISTS `" + tableCreateDtoToSequenceName(data) + "` NOCACHE";
+    }
+
+    default String tableCreateDtoToSequenceName(at.tuwien.api.database.table.internal.TableCreateDto data) {
+        final String name = "seq_" + nameToInternalName(data.getName()) + "_id";
+        log.trace("mapped table name {} to sequence name {}", data.getName(), name);
+        return name;
+    }
+
+    /**
+     * Maps the desired data type to a MySQL string with the default MySQL 8 values for each
+     *
+     * @param data The column definition.
+     * @return The MySQL string.
+     */
+    default String columnTypeDtoToDataType(ColumnCreateDto data) {
+        return switch (data.getType()) {
+            case CHAR -> "CHAR(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARCHAR -> "VARCHAR(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BINARY -> "BINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARBINARY -> "VARBINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case ENUM -> "ENUM(" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case SET -> "SET(" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case BIT -> "BIT(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case TINYINT -> "TINYINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case SMALLINT -> "SMALLINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case MEDIUMINT -> "MEDIUMINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case INT -> "INT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BIGINT -> "BIGINT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case FLOAT -> "FLOAT(" + Objects.requireNonNullElse(data.getSize(), "24") + ")";
+            case DOUBLE ->
+                    "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            case DECIMAL ->
+                    "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            default -> data.getType().getType().toUpperCase();
+        };
+    }
+
+    default String columnCreateDtoToPrimaryKeyLengthSpecification(ColumnCreateDto data) {
+        if (EnumSet.of(ColumnTypeDto.BLOB, ColumnTypeDto.TEXT).contains(data.getType())) {
+            return "(" + Objects.requireNonNullElse(data.getIndexLength(), 255) + ")";
+        }
+        return "";
+    }
+
+    default String tableCreateDtoToCreateTableRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
+        final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
+                .append(nameToInternalName(data.getName()))
+                .append("` (");
+        log.trace("primary key column(s) exist: {}", data.getConstraints().getPrimaryKey());
+        final int[] idx = {0};
+        for (ColumnCreateDto column : data.getColumns()) {
+            stringBuilder.append(idx[0]++ > 0 ? ", " : "")
+                    .append("`")
+                    .append(nameToInternalName(column.getName()))
+                    .append("` ")
+                    /* data type */
+                    .append(columnTypeDtoToDataType(column))
+                    /* null expressions */
+                    .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
+                    /* default expressions */
+                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
+        }
+        /* create primary key index */
+        stringBuilder.append(", PRIMARY KEY (")
+                .append(String.join(",", data.getConstraints()
+                        .getPrimaryKey()
+                        .stream()
+                        .map(c -> {
+                            final Optional<ColumnCreateDto> optional = data.getColumns()
+                                    .stream()
+                                    .filter(cc -> cc.getName().equals(c))
+                                    .findFirst();
+                            log.trace("lookup {} in columns: {}", c, data.getColumns().stream().map(ColumnCreateDto::getName).toList());
+                            return "`" + nameToInternalName(c) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(optional.get());
+                        })
+                        .toArray(String[]::new)))
+                .append(")");
+        if (data.getConstraints() != null) {
+            log.trace("constraints are {}", data.getConstraints());
+            if (data.getConstraints().getUniques() != null) {
+                /* create unique indices */
+                data.getConstraints().getUniques()
+                        .forEach(u -> stringBuilder.append(", ")
+                                .append("UNIQUE KEY (`")
+                                .append(u.stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                .append("`)"));
+            }
+            if (data.getConstraints().getForeignKeys() != null) {
+                /* create foreign key indices */
+                data.getConstraints().getForeignKeys()
+                        .forEach(fk -> {
+                            stringBuilder.append(", FOREIGN KEY (`")
+                                    .append(fk.getColumns().stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                    .append("`) REFERENCES `")
+                                    .append(nameToInternalName(fk.getReferencedTable()))
+                                    .append("` (`")
+                                    .append(fk.getReferencedColumns().stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                    .append("`)");
+                            if (fk.getOnDelete() != null) {
+                                stringBuilder.append(" ON DELETE ").append(fk.getOnDelete());
+                            }
+                            if (fk.getOnUpdate() != null) {
+                                stringBuilder.append(" ON UPDATE ").append(fk.getOnUpdate());
+                            }
+                        });
+            }
+            if (data.getConstraints().getChecks() != null) {
+                /* create check constraints */
+                data.getConstraints().getChecks()
+                        .forEach(ck -> stringBuilder.append(", ")
+                                .append("CHECK (")
+                                .append(ck)
+                                .append(")"));
+            }
+        }
+        stringBuilder.append(") WITH SYSTEM VERSIONING;");
+        log.trace("mapped create table query: {}", stringBuilder);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Selects the row count from a table/view.
+     *
+     * @param databaseName The database internal name.
+     * @param tableOrView  The table/view internal name.
+     * @param timestamp    The moment in time the data should be returned in UTC timezone.
+     * @return The raw SQL query.
+     */
+    default String selectCountRawQuery(String databaseName, String tableOrView, Instant timestamp) {
+        final StringBuilder statement = new StringBuilder("SELECT COUNT(1) FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableOrView)
+                .append("`");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        statement.append(";");
+        return statement.toString();
+    }
+
+    default Long resultSetToNumber(ResultSet data) throws QueryMalformedException, SQLException {
+        if (!data.next()) {
+            throw new QueryMalformedException("Failed to map number");
+        }
+        return data.getLong(1);
+    }
+
+    /**
+     * Selects the dataset page from a table/view.
+     *
+     * @param databaseName The database internal name.
+     * @param tableOrView  The table/view internal name.
+     * @param columns      The columns that should be contained in the result set.
+     * @param timestamp    The moment in time the data should be returned in UTC timezone.
+     * @return The raw SQL query.
+     */
+    default String selectDatasetRawQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
+                                         Instant timestamp, Long size, Long page) {
+        final int[] idx = new int[]{0};
+        final StringBuilder statement = new StringBuilder("SELECT ");
+        columns.forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("`"));
+        statement.append(" FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableOrView)
+                .append("`");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        log.trace("pagination size/limit of {}", size);
+        statement.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        statement.append(" OFFSET ")
+                .append(page * size)
+                .append(";");
+        log.trace("mapped select data query: {}", statement);
+        return statement.toString();
+    }
+
+    /**
+     * Selects the dataset page from a table/view.
+     *
+     * @param databaseName The database internal name.
+     * @param table        The table internal name.
+     * @return The raw SQL query.
+     */
+    default String selectHistoryRawQuery(String databaseName, String table, Long size) {
+        final StringBuilder statement = new StringBuilder("SELECT IF(`deleted_at` IS NULL, `inserted_at`, `deleted_at`) as `timestamp`, IF(`deleted_at` IS NULL, 'INSERT', 'DELETE') as `event`, total FROM (SELECT ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(1) as total FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(table)
+                .append("` FOR SYSTEM_TIME ALL GROUP BY inserted_at, deleted_at ORDER BY deleted_at DESC) AS v ORDER BY v.inserted_at, v.deleted_at ASC LIMIT ")
+                .append(size)
+                .append(";");
+        log.trace("mapped history query: {}", statement);
+        return statement.toString();
+    }
+
+    default String dropTableRawQuery(String tableName) {
+        return "DROP TABLE IF EXISTS `" + tableName + "`;";
+    }
+
+    default String tupleToRawInsertQuery(PrivilegedTableDto table, TupleDto data) throws TableMalformedException {
+        log.trace("mapping table data to insert query, table={}, data={}", table, data);
+        if (table.getColumns().isEmpty()) {
+            throw new TableMalformedException("Columns are not known: empty");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder statement = new StringBuilder("INSERT INTO `")
+                .append(table.getInternalName())
+                .append("` (")
+                .append(table.getColumns()
+                        .stream()
+                        .filter(column -> !column.getAutoGenerated())
+                        .map(column -> "`" + column.getInternalName() + "`")
+                        .collect(Collectors.joining(",")))
+                .append(") VALUES (");
+        final int[] idx = new int[]{1, 0};
+        table.getColumns()
+                .stream()
+                .filter(c -> !c.getAutoGenerated())
+                .forEach(c -> statement.append(idx[1]++ > 0 ? "," : "")
+                        .append("?"));
+        statement.append(");");
+        for (int i = 0; i < table.getColumns().size(); i++) {
+            final ColumnDto column = table.getColumns()
+                    .get(i);
+            if (column.getAutoGenerated()) {
+                log.trace("column is auto-generated, skip.");
+                continue;
+            }
+            final Optional<Map.Entry<String, Object>> tuple = data.getData()
+                    .entrySet()
+                    .stream()
+                    .filter(d -> d.getKey().equals(column.getInternalName()))
+                    .findFirst();
+            if (tuple.isEmpty()) {
+                log.error("Failed to map column name {}, known names: {}", column.getInternalName(), data.getData().keySet());
+                throw new TableMalformedException("Failed to map column names: not all columns are present in the tuple!");
+            }
+        }
+        log.trace("mapped tuple insert query: {}", statement);
+        return statement.toString();
+    }
+
+    default String tableOrViewToRawExportQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
+                                               Instant timestamp, String filename) {
+        final StringBuilder statement = new StringBuilder("SELECT ");
+        int[] idx = new int[]{0};
+        columns.forEach(column -> {
+            statement.append(idx[0] != 0 ? "," : "")
+                    .append("'")
+                    .append(column.getInternalName())
+                    .append("'");
+            idx[0]++;
+        });
+        statement.append(" UNION ALL SELECT ");
+        int[] jdx = new int[]{0};
+        columns.forEach(column -> {
+            statement.append(jdx[0] != 0 ? "," : "")
+                    .append("`")
+                    .append(column.getInternalName())
+                    .append("`");
+            jdx[0]++;
+        });
+        statement.append(" FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableOrView)
+                .append("`");
+        if (timestamp != null) {
+            log.trace("export has timestamp present");
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        statement.append(" INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
+        statement.append(";");
+        return statement.toString();
+    }
+
+    default String subsetToRawExportQuery(String query, List<ColumnDto> columns, Instant timestamp, String filename) {
+        final StringBuilder statement = new StringBuilder("SELECT ");
+        int[] idx = new int[]{0};
+        columns.forEach(column -> {
+            statement.append(idx[0] != 0 ? "," : "")
+                    .append("'")
+                    .append(column.getInternalName())
+                    .append("'");
+            idx[0]++;
+        });
+        if (query.contains(";")) {
+            query = query.substring(0, query.indexOf(";"));
+        }
+        statement.append(query)
+                .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("'")
+                .append(" INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';")
+                .append(";");
+        return statement.toString();
+    }
+
+    default TableDto resultSetToTable(DatabaseDto database, ResultSet resultSet) throws SQLException,
+            QueryMalformedException {
+        if (!resultSet.next()) {
+            throw new QueryMalformedException("Failed to map table");
+        }
+        final TableDto table = TableDto.builder()
+                .name(resultSet.getString(1))
+                .internalName(resultSet.getString(1))
+                .isVersioned(resultSet.getString(2).equals("SYSTEM VERSIONED"))
+                .numRows(resultSet.getLong(3))
+                .avgRowLength(resultSet.getLong(4))
+                .dataLength(resultSet.getLong(5))
+                .maxDataLength(resultSet.getLong(6))
+                .tdbid(database.getId())
+                .queueName("dbrepo")
+                .routingKey("dbrepo." + database.getInternalName() + "." + resultSet.getString(1))
+                .creator(database.getOwner())
+                .createdBy(database.getOwner().getId())
+                .owner(database.getOwner())
+                .constraints(ConstraintsDto.builder()
+                        .foreignKeys(new LinkedList<>())
+                        .primaryKey(new LinkedHashSet<>())
+                        .uniques(new LinkedList<>())
+                        .checks(new LinkedHashSet<>())
+                        .build())
+                .build();
+        if (resultSet.getString(7) != null && !resultSet.getString(7).isEmpty()) {
+            table.setCreated(Timestamp.valueOf(resultSet.getString(7))
+                    .toInstant());
+        }
+        return table;
+    }
+
+    default TableDto resultSetToTable(ResultSet resultSet, TableDto table, ImageDateDto defaultDateFormat,
+                                      ImageDateDto defaultTimestampFormat) throws SQLException {
+        /* columns */
+        final List<ColumnDto> columns = new LinkedList<>();
+        while (resultSet.next()) {
+            /* constraints */
+            if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
+                table.getConstraints().getPrimaryKey().add(resultSet.getString(10));
+            }
+            final ColumnDto column = ColumnDto.builder()
+                    .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
+                    .autoGenerated(resultSet.getString(2) != null && resultSet.getString(2).startsWith("nextval"))
+                    .isNullAllowed(resultSet.getString(3).equals("YES"))
+                    .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
+                    .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
+                    .name(resultSet.getString(10))
+                    .internalName(resultSet.getString(10))
+                    .build();
+            /* fix boolean and set size for others */
+            if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
+                column.setColumnType(ColumnTypeDto.BOOL);
+            } else if (resultSet.getString(5) != null) {
+                column.setSize(resultSet.getLong(5));
+            } else if (resultSet.getString(6) != null) {
+                column.setSize(resultSet.getLong(6));
+            }
+            if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
+                column.setDateFormat(defaultTimestampFormat);
+            } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
+                column.setDateFormat(defaultDateFormat);
+            }
+            log.trace("mapped result set to column {}", column);
+            columns.add(column);
+        }
+        table.setColumns(columns);
+        return table;
+    }
+
+    default List<TableHistoryDto> resultSetToTableHistory(ResultSet resultSet) throws SQLException {
+        /* columns */
+        final List<TableHistoryDto> history = new LinkedList<>();
+        while (resultSet.next()) {
+            history.add(TableHistoryDto.builder()
+                    .timestamp(LocalDateTime.parse(resultSet.getString(1), mariaDbFormatter)
+                            .atZone(ZoneId.of("UTC"))
+                            .toInstant())
+                    .event(resultSet.getString(2))
+                    .total(resultSet.getLong(3))
+                    .build());
+        }
+        log.trace("found {} history event(s)", history.size());
+        return history;
+    }
+
+    default String datasetToRawInsertQuery(String databaseName, PrivilegedTableDto table, ImportCsvDto data) {
+        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '/tmp/")
+                .append(data.getLocation())
+                .append("' REPLACE INTO TABLE `")
+                .append(databaseName)
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
+                .append(data.getSeparator())
+                .append("'");
+        if (data.getQuote() != null) {
+            statement.append(" OPTIONALLY ENCLOSED BY '")
+                    .append(data.getQuote())
+                    .append("'");
+        }
+        statement.append(" LINES TERMINATED BY '")
+                .append(data.getLineTermination())
+                .append("'")
+                .append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
+                .append(" (");
+        final StringBuilder set = new StringBuilder();
+        int[] idx = new int[]{0};
+        table.getColumns()
+                .forEach(column -> {
+                    if (column.getAutoGenerated()) {
+                        log.trace("import column is auto generated, skip");
+                        return;
+                    }
+                    statement.append(idx[0] != 0 ? "," : "");
+                    /* format as variable */
+                    statement.append("@")
+                            .append(column.getInternalName());
+                    if (column.getDateFormat() != null) {
+                        log.trace("import column has date format, need to format it differently");
+                        /* reformat dates */
+                        columnToDateSet(data, column, set);
+                    } else if (column.getColumnType().equals(ColumnTypeDto.BOOL)) {
+                        log.trace("import column has boolean format, need to format it differently");
+                        /* reformat booleans */
+                        columnToBoolSet(data, column, set);
+                    } else {
+                        log.trace("import column has text format");
+                        /* reformat others */
+                        columnToTextSet(data, column, set);
+                    }
+                    idx[0]++;
+                });
+        statement.append(")")
+                .append(set.length() != 0 ? (" SET " + set) : "")
+                .append(";");
+        return statement.toString();
+    }
+
+
+    default String tupleToRawDeleteQuery(PrivilegedTableDto table, TupleDeleteDto data) throws TableMalformedException {
+        log.trace("table csv to delete query, table.id={}, data.keys={}", table.getId(), data.getKeys());
+        if (table.getColumns().isEmpty()) {
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder statement = new StringBuilder("DELETE FROM `")
+                .append(table.getInternalName())
+                .append("` WHERE ");
+        final int[] idx = new int[]{0};
+        table.getConstraints()
+                .getPrimaryKey()
+                .forEach(column -> statement.append(idx[0]++ == 0 ? "" : " AND ")
+                        .append("`")
+                        .append(column)
+                        .append("` ")
+                        .append(data.getKeys().get(column) == null ? "IS" : "=")
+                        .append(" ?"));
+        log.trace("mapped delete tuple query {}", statement);
+        return statement.toString();
+    }
+
+    default String tupleToRawUpdateQuery(PrivilegedTableDto table, TupleUpdateDto data)
+            throws TableMalformedException {
+        if (table.getColumns().isEmpty()) {
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder statement = new StringBuilder("UPDATE `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` SET ");
+        final int[] idx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> {
+                    statement.append(idx[0]++ == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` = ?");
+                });
+        statement.append(" WHERE ");
+        final int[] jdx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> {
+                    statement.append(jdx[0] == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` ");
+                    if (value == null) {
+                        statement.append(" IS NULL");
+                    } else {
+                        statement.append(" = '")
+                                .append(value)
+                                .append("'");
+                    }
+                    jdx[0]++;
+                });
+        statement.append(";");
+        log.trace("mapped update query: {}", statement);
+        return statement.toString();
+    }
+
+    default String tupleToRawCreateQuery(PrivilegedTableDto table, TupleDto data) throws TableMalformedException {
+        if (table.getColumns().isEmpty()) {
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder statement = new StringBuilder("INSERT INTO `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` (");
+        final int[] idx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> {
+                    final Optional<ColumnDto> optional = table.getColumns().stream()
+                            .filter(c -> c.getInternalName().equals(key))
+                            .findFirst();
+                    if (optional.isEmpty()) {
+                        log.error("Failed to find table column {}", key);
+                        throw new IllegalArgumentException("Failed to find table column");
+                    }
+                    if (optional.get().getAutoGenerated() || value == null) {
+                        return;
+                    }
+                    statement.append(idx[0]++ == 0 ? "" : ", ")
+                            .append(key);
+                });
+        statement.append(") VALUES (");
+        final int[] jdx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> {
+                    final Optional<ColumnDto> optional = table.getColumns().stream()
+                            .filter(c -> c.getInternalName().equals(key))
+                            .findFirst();
+                    if (optional.isEmpty()) {
+                        log.error("Failed to find table column {}", key);
+                        throw new IllegalArgumentException("Failed to find table column");
+                    }
+                    if (optional.get().getAutoGenerated() || value == null) {
+                        return;
+                    }
+                    statement.append(jdx[0]++ == 0 ? "" : ", ")
+                            .append(MariaDbUtil.needValueQuotes(optional.get().getColumnType()) ? "'" : "")
+                            .append(value)
+                            .append(MariaDbUtil.needValueQuotes(optional.get().getColumnType()) ? "'" : "");
+                });
+        statement.append(");");
+        log.trace("mapped create tuple query: {}", statement);
+        return statement.toString();
+    }
+
+    default void columnToDateSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
+        log.trace("mapping column to date set");
+        set.append(set.length() != 0 ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = STR_TO_DATE(");
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL), '")
+                    .append(column.getDateFormat()
+                            .getDatabaseFormat()
+                            .replace('\'', '\\'))
+                    .append("')");
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName())
+                .append(", '")
+                .append(column.getDateFormat()
+                        .getDatabaseFormat()
+                        .replace('\'', '\\'))
+                .append("')");
+    }
+
+    default void columnToBoolSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
+        log.trace("mapping column to bool set, data={}, column={}, set=(generated)", data, column);
+        set.append(set.length() != 0 ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = ");
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'),NULL,");
+            columnToBoolSet2(data, column, set);
+            set.append(")");
+            return;
+        }
+        columnToBoolSet2(data, column, set);
+    }
+
+    default void columnToBoolSet2(ImportCsvDto data, ColumnDto column, StringBuilder set) {
+        log.trace("mapping column to inner bool set, data={}, column={}, set=(generated)", data, column);
+        if (data.getTrueElement() != null) {
+            log.trace("import has true element present");
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getTrueElement())
+                    .append("'),TRUE,");
+            if (data.getFalseElement() != null) {
+                log.trace("import has false element present (both true and false)");
+                /* can map both true/false */
+                set.append("IF(!STRCMP(@")
+                        .append(column.getInternalName())
+                        .append(",'")
+                        .append(data.getFalseElement())
+                        .append("'),FALSE,@")
+                        .append(column.getInternalName())
+                        .append("))");
+            } else {
+                /* can only map true */
+                set.append("@")
+                        .append(column.getInternalName())
+                        .append(")");
+            }
+            return;
+        }
+        if (data.getFalseElement() != null) {
+            log.trace("import has false element present");
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getFalseElement())
+                    .append("'),FALSE,");
+            if (data.getTrueElement() != null) {
+                log.trace("import has true element present (both true and false)");
+                /* can map both true/false */
+                set.append("IF(!STRCMP(@")
+                        .append(column.getInternalName())
+                        .append(",'")
+                        .append(data.getTrueElement())
+                        .append("'),TRUE,@")
+                        .append(column.getInternalName())
+                        .append("))");
+            } else {
+                /* can only map true */
+                set.append("@")
+                        .append(column.getInternalName())
+                        .append(")");
+            }
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName());
+    }
+
+    default void columnToTextSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
+        log.trace("mapping column to text set");
+        set.append(!set.isEmpty() ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = ");
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL)");
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName());
+    }
+
+    default void prepareStatementWithColumnTypeObject(PreparedStatement statement, ColumnTypeDto columnType, int idx,
+                                                      Object value) throws SQLException {
+        switch (columnType) {
+            case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
+                if (value == null) {
+                    statement.setNull(idx, Types.BLOB);
+                    break;
+                }
+                try {
+                    final ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                    try (ObjectOutputStream ois = new ObjectOutputStream(boas)) {
+                        ois.writeObject(value);
+                        statement.setBlob(idx, new ByteArrayInputStream(boas.toByteArray()));
+                    }
+
+                } catch (IOException e) {
+                    log.error("Failed to set blob: {}", e.getMessage());
+                    throw new SQLException("Failed to set blob: " + e.getMessage(), e);
+                }
+                break;
+            case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.VARCHAR);
+                    break;
+                }
+                statement.setString(idx, String.valueOf(value));
+                break;
+            case DATE:
+                log.trace("prepare statement idx {} date {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.DATE);
+                    break;
+                }
+                statement.setDate(idx, Date.valueOf(String.valueOf(value)));
+                break;
+            case BIGINT:
+                log.trace("prepare statement idx {} bigint {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.BIGINT);
+                    break;
+                }
+                statement.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case INT, MEDIUMINT:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.INTEGER);
+                    break;
+                }
+                statement.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case TINYINT:
+                log.trace("prepare statement idx {} tinyint {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.TINYINT);
+                    break;
+                }
+                statement.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case SMALLINT:
+                log.trace("prepare statement idx {} smallint {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.SMALLINT);
+                    break;
+                }
+                statement.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case DECIMAL:
+                log.trace("prepare statement idx {} decimal {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.DECIMAL);
+                    break;
+                }
+                statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                break;
+            case FLOAT:
+                log.trace("prepare statement idx {} float {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.FLOAT);
+                    break;
+                }
+                statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                break;
+            case DOUBLE:
+                log.trace("prepare statement idx {} double {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.DOUBLE);
+                    break;
+                }
+                statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                break;
+            case BINARY, VARBINARY, BIT:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.DECIMAL);
+                    break;
+                }
+                statement.setBinaryStream(idx, (InputStream) value);
+                break;
+            case BOOL:
+                log.trace("prepare statement idx {} boolean {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.BOOLEAN);
+                    break;
+                }
+                statement.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
+                break;
+            case TIMESTAMP:
+                log.trace("prepare statement idx {} timestamp {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.TIMESTAMP);
+                    break;
+                }
+                statement.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
+                break;
+            case DATETIME:
+                log.trace("prepare statement idx {} datetime {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.TIMESTAMP);
+                    break;
+                }
+                statement.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
+                break;
+            case TIME:
+                log.trace("prepare statement idx {} time {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.TIME);
+                    break;
+                }
+                statement.setTime(idx, Time.valueOf(String.valueOf(value)));
+                break;
+            case YEAR:
+                log.trace("prepare statement idx {} year {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    statement.setNull(idx, Types.TIME);
+                    break;
+                }
+                statement.setString(idx, String.valueOf(value));
+                break;
+            default:
+                log.error("Failed to map column type {} at index {} for value {}", columnType, idx, value);
+                throw new IllegalArgumentException("Failed to map column type " + columnType);
+        }
+    }
+
+    default Object dataColumnToObject(Object data, ColumnDto column) {
+        if (data == null) {
+            return null;
+        }
+        /* boolean encoding fix */
+        if (column.getColumnType().equals(ColumnTypeDto.TINYINT) && column.getSize() == 1) {
+            log.trace("column {} is of type tinyint with size {}: map to boolean", column.getInternalName(), column.getSize());
+            column.setColumnType(ColumnTypeDto.BOOL);
+        }
+        switch (column.getColumnType()) {
+            case DATE -> {
+                if (column.getDateFormat() == null) {
+                    log.error("Missing date format for column {}", column.getId());
+                    throw new IllegalArgumentException("Missing date format");
+                }
+                log.trace("mapping {} to date with format '{}'", data, column.getDateFormat());
+                final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                        .parseCaseInsensitive() /* case insensitive to parse JAN and FEB */
+                        .appendPattern(column.getDateFormat().getUnixFormat())
+                        .toFormatter(Locale.ENGLISH);
+                final LocalDate date = LocalDate.parse(String.valueOf(data), formatter);
+                return date.atStartOfDay(ZoneId.of("UTC"))
+                        .toInstant();
+            }
+            case TIMESTAMP, DATETIME -> {
+                if (column.getDateFormat() == null) {
+                    log.error("Missing date format for column {}", column.getId());
+                    throw new IllegalArgumentException("Missing date format");
+                }
+                log.trace("mapping {} to timestamp with format '{}'", data, column.getDateFormat());
+                return Timestamp.valueOf(data.toString())
+                        .toInstant();
+            }
+            case BINARY, VARBINARY, BIT -> {
+                log.trace("mapping {} -> binary", data);
+                return Long.parseLong(String.valueOf(data), 2);
+            }
+            case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> {
+                log.trace("mapping {} -> string", data);
+                return String.valueOf(data);
+            }
+            case BIGINT -> {
+                log.trace("mapping {} -> biginteger", data);
+                return new BigInteger(String.valueOf(data));
+            }
+            case INT, SMALLINT, MEDIUMINT, TINYINT -> {
+                log.trace("mapping {} -> integer", data);
+                return Integer.parseInt(String.valueOf(data));
+            }
+            case DECIMAL, FLOAT, DOUBLE -> {
+                log.trace("mapping {} -> double", data);
+                return Double.valueOf(String.valueOf(data));
+            }
+            case BOOL -> {
+                log.trace("mapping {} -> boolean", data);
+                return Boolean.valueOf(String.valueOf(data));
+            }
+            case TIME -> {
+                log.trace("mapping {} -> time", data);
+                return String.valueOf(data);
+            }
+            case YEAR -> {
+                final String date = String.valueOf(data);
+                log.trace("mapping {} -> year", date);
+                return Short.valueOf(date.substring(0, date.indexOf('-')));
+            }
+        }
+        log.warn("column type {} is not known", column.getColumnType());
+        throw new IllegalArgumentException("Column type not known");
+    }
+
+    default List<ColumnDto> parseColumns(DatabaseDto database, String query) throws JSQLParserException {
+        final List<ColumnDto> columns = new ArrayList<>();
+        final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
+        final net.sf.jsqlparser.statement.Statement statement = parserRealSql.parse(new StringReader(query));
+        log.debug("parse columns from query: {}", query);
+        /* check */
+        if (!(statement instanceof Select)) {
+            log.error("Query attempts to update the dataset, not a SELECT statement");
+            throw new JSQLParserException("Query attempts to update the dataset");
+        }
+        /* start parsing */
+        final Select selectStatement = (Select) statement;
+        final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
+        final List<SelectItem> clauses = ps.getSelectItems();
+        log.trace("columns referenced in the from-clause: {}", clauses);
+        /* Parse all tables */
+        final List<FromItem> fromItems = new ArrayList<>(fromItemToFromItems(ps.getFromItem()));
+        if (ps.getJoins() != null && !ps.getJoins().isEmpty()) {
+            log.trace("query contains join items: {}", ps.getJoins());
+            for (net.sf.jsqlparser.statement.select.Join j : ps.getJoins()) {
+                if (j.getRightItem() != null) {
+                    fromItems.add(j.getRightItem());
+                }
+            }
+        }
+        final List<ColumnDto> allColumns = Stream.of(database.getViews()
+                                .stream()
+                                .map(ViewDto::getColumns)
+                                .flatMap(List::stream),
+                        database.getTables()
+                                .stream()
+                                .map(TableDto::getColumns)
+                                .flatMap(List::stream))
+                .flatMap(i -> i)
+                .toList();
+        log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
+        /* Checking if all tables or views exist */
+        log.trace("table/view/join referenced in the statement: {}", fromItems.stream().map(this::fromItemToFromItems).flatMap(List::stream).collect(Collectors.toList()));
+        /* Checking if all columns exist */
+        for (SelectItem clause : clauses) {
+            final SelectExpressionItem item = (SelectExpressionItem) clause;
+            final ColumnDto column = (ColumnDto) item.getExpression();
+            final Optional<net.sf.jsqlparser.schema.Table> optional = fromItems.stream()
+                    .map(t -> (net.sf.jsqlparser.schema.Table) t)
+                    .filter(t -> {
+                        if (column.getTable() == null) {
+                            /* column does not reference a specific table, so there is only one table */
+                            final String tableName = ((net.sf.jsqlparser.schema.Table) fromItems.get(0)).getName().replace("`", "");
+                            return tableMatches(t, tableName);
+                        }
+                        final String tableName = column.getTable().getName().replace("`", "");
+                        return tableMatches(t, tableName);
+                    })
+                    .findFirst();
+            if (optional.isEmpty()) {
+                log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
+                throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
+            }
+            final String columnName = column.getInternalName().replace("`", "");
+            final String tableOrView = optional.get().getName().replace("`", "");
+            final List<ColumnDto> filteredColumns = allColumns.stream()
+                    .filter(c -> (c.getAlias() != null && c.getAlias().equals(columnName)) || c.getInternalName().equals(columnName))
+                    .toList();
+            final Optional<ColumnDto> optionalColumn = filteredColumns.stream()
+                    .filter(c -> columnMatches(c, tableOrView))
+                    .findFirst();
+            if (optionalColumn.isEmpty()) {
+                log.error("Failed to find column with name {} of table/view {} in {}", columnName, tableOrView, filteredColumns.stream().map(c -> c.getTable().getInternalName() + "." + c.getInternalName()).toList());
+                throw new JSQLParserException("Failed to find column with name " + columnName + " of table/view " + tableOrView);
+            }
+            final ColumnDto resultColumn = optionalColumn.get();
+            if (item.getAlias() != null) {
+                resultColumn.setAlias(item.getAlias().getName().replace("`", ""));
+            }
+            log.trace("found column with internal name {} and alias {}", resultColumn.getInternalName(), resultColumn.getAlias());
+            columns.add(resultColumn);
+        }
+        return columns;
+    }
+
+    default boolean tableMatches(net.sf.jsqlparser.schema.Table table, String otherTableName) {
+        final String tableName = table.getName()
+                .trim()
+                .replace("`", "");
+        if (table.getAlias() == null) {
+            /* table does not have designator */
+            log.trace("table {} has no designator", tableName);
+            return tableName.equals(otherTableName);
+        }
+        /* has designator */
+        final String designator = table.getAlias()
+                .getName()
+                .trim()
+                .replace("`", "");
+        log.trace("table {} has designator {}", tableName, designator);
+        return designator.equals(otherTableName);
+    }
+
+    default boolean columnMatches(ColumnDto column, String tableOrView) {
+        if (column.getTable().getInternalName().equals(tableOrView)) {
+            log.trace("table {} found in column table", tableOrView);
+            return true;
+        }
+        if (column.getViews() == null) {
+            log.trace("table/view {} not found among column views: empty list", tableOrView);
+            return false;
+        }
+        /* maybe matches one of the other views */
+        final boolean found = column.getViews()
+                .stream()
+                .anyMatch(v -> v.getInternalName().equals(tableOrView));
+        if (!found) {
+            log.trace("table/view {} not found among column views: {}", tableOrView, column.getViews().stream().map(ViewDto::getInternalName).toList());
+        }
+        return found;
+    }
+
+    default List<FromItem> fromItemToFromItems(FromItem data) {
+        return fromItemToFromItems(data, 0);
+    }
+
+    default List<FromItem> fromItemToFromItems(FromItem data, Integer level) {
+        final List<FromItem> fromItems = new LinkedList<>();
+        if (data instanceof net.sf.jsqlparser.schema.Table table) {
+            fromItems.add(data);
+            log.trace("from-item {} is of type table: level ~> {}", table.getName(), level);
+            return fromItems;
+        }
+        if (data instanceof SubJoin subJoin) {
+            log.trace("from-item is of type sub-join: level ~> {}", level);
+            for (Join join : subJoin.getJoinList()) {
+                fromItems.addAll(fromItemToFromItems(join.getRightItem(), level + 1));
+            }
+            fromItems.addAll(fromItemToFromItems(((SubJoin) data).getLeft(), level + 1));
+            return fromItems;
+        }
+        log.warn("unknown from-item {}", data);
+        return null;
+    }
+
+    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
+        return QueryDto.builder()
+                .id(data.getLong(1))
+                .created(LocalDateTime.parse(data.getString(2), mariaDbFormatter)
+                        .atZone(ZoneId.of("UTC"))
+                        .toInstant())
+                .createdBy(UUID.fromString(data.getString(3)))
+                .query(data.getString(4))
+                .queryHash(data.getString(5))
+                .resultHash(data.getString(6))
+                .resultNumber(data.getLong(7))
+                .isPersisted(data.getBoolean(8))
+                .build();
+    }
+
+    default String selectRawSelectQuery(String query, Instant timestamp, Long page, Long size) {
+        query = query.toLowerCase(Locale.ROOT)
+                .trim();
+        if (query.matches(";$")) {
+            /* remove last semicolon */
+            query = query.substring(0, query.length() - 1);
+        }
+        /* query check (this is enforced by the db also) */
+        final StringBuilder sb = new StringBuilder("SELECT * FROM (")
+                .append(query)
+                .append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("' as tbl");
+        /* pagination */
+        log.trace("pagination size/limit of {}", size);
+        sb.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        sb.append(" OFFSET ")
+                .append(page * size);
+        sb.append(";");
+        return sb.toString();
+    }
+
+    default String countRawSelectQuery(String query, Instant timestamp) {
+        query = query.toLowerCase(Locale.ROOT)
+                .trim();
+        if (query.matches(";$")) {
+            /* remove last semicolon */
+            query = query.substring(0, query.length() - 1);
+        }
+        /* query check (this is enforced by the db also) */
+        final StringBuilder sb = new StringBuilder("SELECT COUNT(1) FROM (")
+                .append(query)
+                .append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("' as tbl;");
+        return sb.toString();
+    }
+
+}

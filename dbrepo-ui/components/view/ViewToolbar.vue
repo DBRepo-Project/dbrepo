@@ -44,7 +44,6 @@
 <script>
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
-import {localizedMessage} from '@/utils'
 
 export default {
   components: {
@@ -115,11 +114,7 @@ export default {
       if (!this.view) {
         return null
       }
-      if (!this.identifier) {
-        return this.view.name
-      }
-      const identifierService = useUserService()
-      return identifierService.identifierPreferEnglishTitle(this.identifier)
+      return this.view.name
     }
   },
   methods: {
@@ -133,7 +128,7 @@ export default {
           this.$router.push(`/database/${this.$route.params.database_id}/view`)
         })
         .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
+          this.$toast.error(this.$t(error.code))
         })
         .finally(() => {
           this.loadingDelete = false

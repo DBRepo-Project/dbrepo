@@ -1,4 +1,6 @@
 import {jwtDecode} from 'jwt-decode'
+import axios from 'axios'
+import {axiosErrorToApiError} from '@/utils'
 
 export const useUserService = (): any => {
   async function findAll(): Promise<UserDto[]> {
@@ -12,7 +14,7 @@ export const useUserService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find users', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -28,7 +30,7 @@ export const useUserService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find user', error);
-          reject(error);
+          reject(axiosErrorToApiError(error));
         });
     });
   }
@@ -43,7 +45,7 @@ export const useUserService = (): any => {
           resolve(response.data)
         }).catch((error) => {
         console.error('Failed to update user', error)
-        reject(error)
+        reject(axiosErrorToApiError(error))
       })
     })
   }
@@ -58,7 +60,7 @@ export const useUserService = (): any => {
           resolve(response.data)
         }).catch((error) => {
         console.error('Failed to create user', error)
-        reject(error)
+        reject(axiosErrorToApiError(error))
       })
     })
   }
@@ -73,22 +75,48 @@ export const useUserService = (): any => {
           resolve(response.data)
         }).catch((error) => {
         console.error('Failed to update user password', error)
-        reject(error)
+        reject(axiosErrorToApiError(error))
       })
     })
   }
 
-  async function updateTheme(id: string, data: UserThemeSetDto): Promise<UserDto> {
-    const axios = useAxiosInstance()
-    console.debug('update user theme for user with id', id)
-    return new Promise<UserDto>((resolve, reject) => {
-      axios.put<UserDto>(`/api/user/${id}/theme`, data)
+  async function obtainToken(username: string, password: string): Promise<KeycloakOpenIdTokenDto> {
+    console.debug('obtain user token for user with username', username)
+    return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
+      const userStore = useUserStore()
+      axios.post<KeycloakOpenIdTokenDto>('/api/user/token', {username, password})
         .then((response) => {
-          console.info('Update user theme for user with id', id)
+          console.info('Obtained user token')
+          // eslint-disable-next-line camelcase
+          const {access_token, refresh_token} = response.data
+          userStore.setToken(access_token)
+          userStore.setRefreshToken(refresh_token)
+          userStore.setRoles(tokenToRoles(access_token))
           resolve(response.data)
         }).catch((error) => {
-        console.error('Failed to update user theme', error)
-        reject(error)
+          console.error('Failed to obtain user token', error)
+
+          reject(axiosErrorToApiError(error))
+      })
+    })
+  }
+
+  async function refreshToken(refreshToken: string): Promise<KeycloakOpenIdTokenDto> {
+    console.debug('refresh user token')
+    return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
+      axios.put<KeycloakOpenIdTokenDto>('/api/user/token', {refresh_token: refreshToken})
+        .then((response) => {
+          console.info('Refreshed user token')
+          const userStore = useUserStore()
+          // eslint-disable-next-line camelcase
+          const {access_token, refresh_token} = response.data
+          userStore.setToken(access_token)
+          userStore.setRefreshToken(refresh_token)
+          resolve(response.data)
+        }).catch((error) => {
+          console.error('Failed to refresh user token', error)
+
+          reject(axiosErrorToApiError(error))
       })
     })
   }
@@ -106,7 +134,7 @@ export const useUserService = (): any => {
   function userInfoToUser(data: UserDto) {
     const obj: UserDto = Object.assign({}, data)
     obj.attributes = {
-      theme_dark: data.attributes.theme_dark,
+      theme: data.attributes.theme,
       orcid: data.attributes.orcid,
       affiliation: data.attributes.affiliation
     }
@@ -159,7 +187,8 @@ export const useUserService = (): any => {
     update,
     create,
     updatePassword,
-    updateTheme,
+    obtainToken,
+    refreshToken,
     tokenToRoles,
     tokenToUserId,
     userInfoToUser,

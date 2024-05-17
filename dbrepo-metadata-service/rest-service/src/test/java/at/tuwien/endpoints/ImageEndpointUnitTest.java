@@ -1,8 +1,6 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
@@ -31,9 +29,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-@MockAmqp
-@MockOpensearch
-public class ImageEndpointUnitTest extends BaseUnitTest {
+public class ImageEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private ImageServiceImpl imageService;
@@ -46,7 +42,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findAll_anonymous_succeeds() {
 
         /* test */
-        findAll_generic(null);
+        findAll_generic();
     }
 
     @Test
@@ -54,7 +50,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findAll_hasRole_succeeds() {
 
         /* test */
-        findAll_generic(USER_1_PRINCIPAL);
+        findAll_generic();
     }
 
     @Test
@@ -62,7 +58,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findAll_noRole_succeeds() {
 
         /* test */
-        findAll_generic(USER_4_PRINCIPAL);
+        findAll_generic();
     }
 
     @Test
@@ -160,7 +156,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(IMAGE_1_ID, IMAGE_1, null);
+            delete_generic(IMAGE_1_ID, IMAGE_1);
         });
     }
 
@@ -170,21 +166,21 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(IMAGE_1_ID, IMAGE_1, USER_1_PRINCIPAL);
+            delete_generic(IMAGE_1_ID, IMAGE_1);
         });
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-image"})
-    public void delete_hasRole_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_hasRole_succeeds() throws ImageNotFoundException {
 
         /* mock */
         doNothing()
                 .when(imageService)
-                .delete(IMAGE_1_ID);
+                .delete(IMAGE_1);
 
         /* test */
-        delete_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
+        delete_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -199,7 +195,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            modify_generic(IMAGE_1_ID, IMAGE_1, request, null);
+            modify_generic(IMAGE_1_ID, IMAGE_1, request);
         });
     }
 
@@ -215,7 +211,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_4_PRINCIPAL);
+            modify_generic(IMAGE_1_ID, IMAGE_1, request);
         });
     }
 
@@ -231,29 +227,29 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_2_PRINCIPAL);
+        modify_generic(IMAGE_1_ID, IMAGE_1, request);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void findAll_generic(Principal principal) {
+    public void findAll_generic() {
 
         /* mock */
         when(imageService.getAll())
                 .thenReturn(List.of(IMAGE_1));
 
         /* test */
-        final ResponseEntity<List<ImageBriefDto>> response = imageEndpoint.findAll(principal);
+        final ResponseEntity<List<ImageBriefDto>> response = imageEndpoint.findAll();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<ImageBriefDto> body = response.getBody();
         assertEquals(1, body.size());
     }
 
-    public void create_generic(ImageCreateDto data, Principal principal) throws UserNotFoundException,
-            ImageAlreadyExistsException, ImageNotFoundException, ImageInvalidException {
+    public void create_generic(ImageCreateDto data, Principal principal) throws ImageAlreadyExistsException,
+            ImageInvalidException {
 
         /* mock */
         when(imageService.create(data, principal))
@@ -277,29 +273,28 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void delete_generic(Long imageId, ContainerImage image, Principal principal) throws ImageNotFoundException {
+    public void delete_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))
                 .thenReturn(image);
 
         /* test */
-        final ResponseEntity<?> response = imageEndpoint.delete(imageId, principal);
+        final ResponseEntity<?> response = imageEndpoint.delete(imageId);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data, Principal principal)
-            throws ImageNotFoundException {
+    public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data) throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))
                 .thenReturn(image);
-        when(imageService.update(imageId, data))
+        when(imageService.update(image, data))
                 .thenReturn(image);
 
         /* test */
-        final ResponseEntity<?> response = imageEndpoint.update(imageId, data, principal);
+        final ResponseEntity<?> response = imageEndpoint.update(imageId, data);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }

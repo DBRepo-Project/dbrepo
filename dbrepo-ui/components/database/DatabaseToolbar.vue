@@ -3,6 +3,10 @@
     <v-toolbar
       flat>
       <v-toolbar-title>
+        <v-skeleton-loader
+          v-if="!database"
+          type="subtitle"
+          width="200" />
         <span
           v-if="database && $vuetify.display.lgAndUp"
           v-text="database.name" />
@@ -24,18 +28,24 @@
       </v-toolbar-title>
       <v-spacer />
       <v-btn
+        v-if="false"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-chart-timeline-variant-shimmer' : null"
+        color="tertiary"
+        :variant="buttonVariant"
+        :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
+      <v-btn
         v-if="canImportCsv"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.xlAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
+        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         :to="`/database/${$route.params.database_id}/table/import`" />
       <v-btn
         v-if="canCreateSubset"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="ml-2 white--text"
         :to="`/database/${$route.params.database_id}/subset/create`" />
       <v-btn
@@ -43,7 +53,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel-outline' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="ml-2 white--text"
         :to="`/database/${$route.params.database_id}/view/create`" />
       <v-btn
@@ -51,7 +61,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-large-plus' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/table/create`" />
       <v-btn
@@ -59,7 +69,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/persist`" />
       <template v-slot:extension>

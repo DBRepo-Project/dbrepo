@@ -23,16 +23,10 @@
                 required
                 clearable
                 persistent-hint
+                :base-color="suggestedAnalyseSeparator && providedSeparator !== analysedSeparator ? 'warning' : ''"
                 :variant="inputVariant"
                 :hint="$t('pages.table.subpages.import.separator.hint')"
-                :label="$t('pages.table.subpages.import.separator.label')">
-                <template
-                  v-if="suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
-                  v-slot:prepend>
-                  <v-icon
-                    color="warning">mdi-alert-outline</v-icon>
-                </template>
-              </v-select>
+                :label="$t('pages.table.subpages.import.separator.label')"/>
             </v-col>
           </v-row>
           <v-row dense>
@@ -78,10 +72,12 @@
                 :hint="$t('pages.table.subpages.import.terminator.hint')"
                 :label="$t('pages.table.subpages.import.terminator.label')">
                 <template
-                  v-if="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
-                  v-slot:prepend>
+                    v-if="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
+                    v-slot:prepend>
                   <v-icon
-                    color="warning">mdi-alert-outline</v-icon>
+                    color="warning">
+                    mdi-alert-outline
+                  </v-icon>
                 </template>
               </v-select>
             </v-col>
@@ -158,9 +154,9 @@
                 border="start"
                 color="warning">
                 {{ $t('pages.table.subpages.import.terminator.warn.prefix') }}
-                <strong v-text="tableImport.separator"/>
+                <strong>{{ JSON.stringify(tableImport.line_termination).replaceAll('"', '') }}</strong>
                 {{ $t('pages.table.subpages.import.terminator.warn.middle') }}
-                <strong v-text="suggestedAnalyseLineTerminator"/>
+                <strong>{{ JSON.stringify(suggestedAnalyseLineTerminator).replaceAll('"', '') }}</strong>
                 {{ $t('pages.table.subpages.import.terminator.warn.suffix') }}
               </v-alert>
             </v-col>
@@ -198,6 +194,7 @@
               <v-btn
                 :disabled="!isAnalyseAllowed || !validStep1 || !validStep2"
                 :loading="loading"
+                :variant="buttonVariant"
                 color="secondary"
                 size="small"
                 :text="$t('pages.table.subpages.import.analyse.text')"
@@ -256,7 +253,7 @@
 </template>
 
 <script>
-import {isNonNegativeInteger, localizedMessage} from '@/utils'
+import {isNonNegativeInteger} from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -431,7 +428,7 @@ export default {
           this.$toast.success(this.$t('success.upload.dataset'))
           this.analyse(s3key)
         })
-        .catch((error) => {
+        .catch(() => {
           this.$toast.error(this.$t('error.upload.dataset'))
           this.loading = false
         })
@@ -469,11 +466,8 @@ export default {
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
           this.loading = false
         })
-        .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
-          this.loading = false
-        })
-        .finally(() => {
+        .catch(({code}) => {
+          this.$toast.error(this.$t(code))
           this.loading = false
         })
     }

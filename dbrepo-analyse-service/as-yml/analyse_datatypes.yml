@@ -1,6 +1,7 @@
 tags:
   - analyse-endpoint
 summary: "Determine datatypes"
+operationId: analyse_datatypes
 description: "This is a simple API which returns the datatypes of a (path) csv file"
 consumes:
   - "application/json"

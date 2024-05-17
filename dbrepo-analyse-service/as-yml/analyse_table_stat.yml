@@ -1,7 +1,7 @@
 tags:
   - analyse-endpoint
 summary: Determine table statistics
-operationId: determine_table_stat
+operationId: analyse_table_stat
 parameters:
   - name: database_id
     in: path
@@ -17,6 +17,9 @@ parameters:
     schema:
       type: integer
       format: int64
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]
 responses:
   202:
     description: Determined statistics
@@ -75,3 +78,11 @@ components:
         message:
           type: string
           example: Message
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -20,11 +20,11 @@ services:
       network: host
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dbrepo-metadata-db/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
+      - ./dbrepo-metadata-db/setup-data.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
     environment:
-      MARIADB_DATABASE: "${METADATA_DB:-fda}"
+      MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
@@ -41,7 +41,7 @@ services:
     image: docker.io/bitnami/mariadb-galera:11.2.2-debian-11-r0
     volumes:
       - data-db-data:/bitnami/mariadb
-      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
     ports:
       - "3307:3306"
     environment:
@@ -75,17 +75,14 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-authentication-service:
+  dbrepo-auth-service:
     restart: "no"
-    container_name: dbrepo-authentication-service
-    hostname: authentication-service
-    image: dbrepo-authentication-service:latest
+    container_name: dbrepo-auth-service
+    hostname: auth-service
+    image: dbrepo-auth-service:latest
     build:
-      context: ./dbrepo-authentication-service
+      context: ./dbrepo-auth-service
       network: host
-    ports:
-      - "8443:8443"
-      - "8080:8080"
     healthcheck:
       test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
       interval: 10s
@@ -111,72 +108,61 @@ services:
     build:
       context: ./dbrepo-metadata-service
       network: host
-    volumes:
-      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
-      - "9099:9099"
+      - "9099:8080"
+    volumes:
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
       ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-fda}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-fda}
+      AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BASE_URL: "${BASE_URL:-http://localhost}"
-      GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
+      BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
+      BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
       BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
-      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
-      BROKER_HOST: "${BROKER_HOST:-broker-service}"
-      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
-      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
-      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
-      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
-      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
-      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+      BROKER_PORT: ${BROKER_PORT:-5672}
+      BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
-      EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
-      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
-      LOG_LEVEL: "${LOG_LEVEL:-debug}"
-      METADATA_DB: "${METADATA_DB:-fda}"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
       METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
       METADATA_USERNAME: "${METADATA_USERNAME:-root}"
       METADATA_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
-      NOT_SUPPORTED_KEYWORDS: "${NOT_SUPPORTED_KEYWORDS:-\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--}"
-      PID_BASE: "${PID_BASE:-http://localhost/pid/}"
-      REPOSITORY_NAME: "${REPOSITORY_NAME:-Example Repository}"
-      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
-      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      DELETE_AFTER_IMPORT: "${DELETE_AFTER_IMPORT:-true}"
-      WEBSITE: "${WEBSITE:-http://localhost}"
-      KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
-      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
-      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
-      KEYCLOAK_CLIENT_SECRET: "${KEYCLOAK_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      DATACITE_URL: "${DATACITE_URL:-https://api.test.datacite.org}"
-      DATACITE_PREFIX: "${DATACITE_PREFIX:-}"
-      DATACITE_USERNAME: "${DATACITE_USERNAME:-}"
-      DATACITE_PASSWORD: "${DATACITE_PASSWORD:-}"
-      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
-      S3_IMPORT_BUCKET: "${STORAGE_IMPORT_BUCKET:-dbrepo-upload}"
-      S3_EXPORT_BUCKET: "${STORAGE_EXPORT_BUCKET:-dbrepo-download}"
-      DELETE_STALE_FILES_RATE: "${DELETE_STALE_FILES_RATE:-60}"
-      MIRROR_RATE: ${METADATA_SERVICE_MIRROR_RATE:-60}
-      OBTAIN_METADATA_RATE: ${METADATA_SERVICE_OBTAIN_METADATA_RATE:-60}
-      DELETE_STALE_QUERIES_RATE: ${METADATA_SERVICE_DELETE_STALE_QUERIES_RATE:-60}
+      PID_BASE: ${PID_BASE:-http://localhost/pid/}
+      REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
+      SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://search-service:8080}"
+      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
+      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
     healthcheck:
-      test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
+      test: wget -qO- localhost:8080/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
     depends_on:
-      dbrepo-authentication-service:
+      dbrepo-auth-service:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
-      dbrepo-metadata-db:
+      dbrepo-data-service:
         condition: service_healthy
-      dbrepo-search-db:
+      dbrepo-metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -190,15 +176,24 @@ services:
       context: ./dbrepo-analyse-service
       network: host
     ports:
-      - "5000:5000"
+      - "5000:8080"
     environment:
-      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
+      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
+      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
-      test: curl -sSL localhost:5000/health | grep 'UP' || exit 1
+      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -210,9 +205,6 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: docker.io/bitnami/rabbitmq:3.12-debian-12
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     volumes:
       - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
@@ -220,6 +212,9 @@ services:
       - ./dbrepo-broker-service/pubkey.pem:/app/pubkey.pem
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
+    depends_on:
+      dbrepo-auth-service:
+        condition: service_healthy
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
       interval: 10s
@@ -236,8 +231,6 @@ services:
     build:
       context: ./dbrepo-search-db
       network: host
-    ports:
-      - "9200:9200"
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -250,6 +243,8 @@ services:
       resources:
         limits:
           memory: 4G
+    ports:
+      - "9200:9200"
     volumes:
       - search-db-data:/usr/share/elasticsearch/data
     logging:
@@ -264,11 +259,19 @@ services:
       context: ./dbrepo-search-service
       network: host
     ports:
-      - "4000:4000"
+      - "4000:8080"
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
-      OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
+      OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
+      OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD:-admin}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
 
   dbrepo-data-db-sidecar:
     restart: "no"
@@ -279,19 +282,22 @@ services:
       context: ./dbrepo-data-db/sidecar
       network: host
     ports:
-      - "3305:3305"
+      - "3305:8080"
     environment:
-      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
-      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-seaweedfsadmin}
+      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
+      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
-      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
+      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
 
   dbrepo-ui:
     restart: "no"
@@ -330,7 +336,7 @@ services:
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
-      dbrepo-authentication-service:
+      dbrepo-auth-service:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
@@ -339,36 +345,41 @@ services:
       dbrepo-search-db:
         condition: service_healthy
       dbrepo-ui:
-        condition: service_started
+        condition: service_healthy
     logging:
       driver: json-file
 
+  # service not part of dbrepo system (but for developing)
   dbrepo-search-db-dashboard:
     restart: "no"
     container_name: dbrepo-search-db-dashboard
     hostname: search-db-dashboard
     image: docker.io/opensearchproject/opensearch-dashboards:2.10.0
-    volumes:
-      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:
       - "5601:5601"
+    volumes:
+      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
 
-  dbrepo-search-db-init:
+  dbrepo-search-service-init:
     restart: "no"
-    container_name: dbrepo-search-db-init
-    hostname: search-db-init
-    image: dbrepo-search-db-init:latest
+    container_name: dbrepo-search-service-init
+    hostname: search-service-init
+    image: dbrepo-search-service-init:latest
     build:
-      context: ./dbrepo-search-db/init
+      context: ./dbrepo-search-service/init
       network: host
     environment:
-      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
-      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
+      OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
+      OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD:-admin}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
@@ -381,8 +392,6 @@ services:
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:3.59
     command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9091" ]
-    ports:
-      - 9000:9000
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
       - storage-service-data:/data
@@ -443,35 +452,44 @@ services:
       context: ./dbrepo-data-service
       network: host
     ports:
-      - "9093:9093"
+      - "9093:8080"
+    volumes:
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
-      METADATA_DB: ${METADATA_DB:-fda}
-      METADATA_HOST: ${METADATA_HOST:-metadata-db}
-      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
-      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
-      METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-fda}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-fda}
+      AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
+      BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
+      BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_PORT: ${BROKER_PORT:-5672}
+      BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
+      GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT}"
+      GRANT_DEFAULT_WRITE: "${GRANT_DEFAULT_WRITE:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
       MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
-      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
-      BROKER_HOST: "${BROKER_HOST:-broker-service}"
-      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
-      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
-      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
-      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+      STORAGE_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://storage-service:9000}
     healthcheck:
-      test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
+      test: wget -qO- localhost:8080/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
     depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
       dbrepo-data-db:
         condition: service_healthy
     logging:

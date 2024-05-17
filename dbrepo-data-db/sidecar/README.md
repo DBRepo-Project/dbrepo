@@ -4,6 +4,6 @@ Sidecar that downloads the .csv from the Upload Service to deposit on the same p
 
 ## Endpoints
 
-* Prometheus metrics [`/metrics`](http://localhost:3305/metrics)
-* Health check [`/health`](http://localhost:3305/health)
-* Swagger API [`/swagger-ui/`](http://localhost:3305/swagger-ui/)
+* Prometheus metrics [`/metrics`](http://localhost:8080/metrics)
+* Health check [`/health`](http://localhost:8080/health)
+* Swagger API [`/swagger-ui/`](http://localhost:8080/swagger-ui/)

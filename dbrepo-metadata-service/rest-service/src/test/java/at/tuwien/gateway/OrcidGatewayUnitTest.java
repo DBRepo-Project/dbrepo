@@ -1,8 +1,6 @@
 package at.tuwien.gateway;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.exception.OrcidNotFoundException;
 import lombok.extern.log4j.Log4j2;
@@ -25,9 +23,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class OrcidGatewayUnitTest extends BaseUnitTest {
+public class OrcidGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
     @Qualifier("keycloakRestTemplate")

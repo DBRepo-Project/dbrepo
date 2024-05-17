@@ -3,12 +3,23 @@
     <SubsetToolbar />
     <v-toolbar
       color="secondary"
-      :title="executionUTC"
-      flat />
+      flat>
+      <v-toolbar-title>
+        <v-skeleton-loader
+          v-if="loadingSubset"
+          type="subtitle"
+          color="secondary"
+          width="500" />
+        <span
+          v-else
+          v-text="executionUTC" />
+      </v-toolbar-title>
+    </v-toolbar>
     <v-card tile>
       <QueryResults
         id="query-results"
         ref="queryResults"
+        :loading="loadingSubset"
         v-model="subset.id"
         type="query"
         class="mt-0 mb-0" />

@@ -8,7 +8,8 @@
       color="info" />
     <v-form
       ref="form"
-      v-model="valid">
+      v-model="valid"
+      :disabled="disabled">
       <v-row
         v-for="(c, idx) in columns"
         :key="`r-${idx}`"
@@ -26,7 +27,7 @@
             :hint="$t('pages.table.subpages.schema.name.hint')" />
         </v-col>
         <v-col cols="2">
-          <v-autocomplete
+          <v-select
             v-model="c.type"
             :items="columnTypes"
             item-title="text"
@@ -92,9 +93,9 @@
             :variant="inputVariant"
             :rules="[v => !!v || $t('validation.required')]"
             :items="filterDateFormats(c)"
-            :label="$t('pages.table.subpages.schema.fsp.label')"
-            :item-title="item => `${item.example}`"
-            item-title="id" />
+            item-title="unix_format"
+            item-value="id"
+            :label="$t('pages.table.subpages.schema.fsp.label')" />
         </v-col>
         <v-col v-if="shift(c)" :cols="shift(c)" />
         <v-col cols="auto" class="pl-2">
@@ -156,11 +157,20 @@
       <v-row>
         <v-col>
           <v-btn
+            v-if="back"
+            :color="disabled ? '' : 'tertiary'"
+            :variant="buttonVariant"
+            size="small"
+            class="mr-2"
+            :disabled="disabled"
+            :text="$t('navigation.back')"
+            @click="goBack" />
+          <v-btn
             color="secondary"
             variant="flat"
             size="small"
             :loading="loading"
-            :disabled="submitDisabled"
+            :disabled="disabled"
             :text="submitText"
             @click="submit" />
         </v-col>
@@ -180,13 +190,13 @@ export default {
         return []
       }
     },
-    disabled: {
+    back: {
       type: Boolean,
       default () {
         return false
       }
     },
-    submitDisabled: {
+    disabled: {
       type: Boolean,
       default () {
         return false
@@ -260,19 +270,14 @@ export default {
       return shift
     },
     submit () {
-      this.columns.forEach(c => {
-        delete c.sets_values
-        delete c.enums_values
-        c.size = c.size ? c.size : null
-        c.d = c.d ? c.d : null
-      })
-      this.$emit('close', { success: true })
+      const tableService = useTableService()
+      this.$emit('close', { success: true, columns: tableService.prepareColumns(this.columns), constraints: tableService.prepareConstraints(this.columns) })
     },
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
     },
-    back () {
+    goBack () {
       this.$emit('back', { success: false })
     },
     canRemove (idx) {
@@ -304,6 +309,7 @@ export default {
         size: 0,
         d: 0
       })
+      this.$refs.form.validate()
     },
     formatValues (column) {
       if (column.type === 'set') {
@@ -341,7 +347,8 @@ export default {
     setDefaultSizeAndD (column) {
       column.size = this.defaultSize(column)
       column.d = this.defaultD(column)
-      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d)
+      column.dfid = null
+      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d, '& dfid', column.dfid)
     },
     hasDate (column) {
       return column.type === 'date' || column.type === 'datetime' || column.type === 'timestamp' || column.type === 'time'

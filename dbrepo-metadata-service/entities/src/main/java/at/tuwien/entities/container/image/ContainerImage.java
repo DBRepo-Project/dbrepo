@@ -36,6 +36,9 @@ public class ContainerImage {
     private String name;
 
     @Column(nullable = false)
+    private String registry;
+
+    @Column(nullable = false)
     private String version;
 
     @Column(nullable = false)

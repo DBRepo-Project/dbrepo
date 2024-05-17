@@ -1,15 +1,17 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useConceptService = (): any => {
   async function findAll () {
     const axios = useAxiosInstance()
     return new Promise((resolve, reject) => {
-      axios.get('/api/semantic/concept')
+      axios.get('/api/concept')
         .then((response) => {
           console.info('Found concept(s)')
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to find concepts', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }

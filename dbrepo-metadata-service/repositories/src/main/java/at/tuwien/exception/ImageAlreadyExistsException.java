@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.CONFLICT, reason = "Image already exists")
+@ResponseStatus(code = HttpStatus.CONFLICT, reason = "error.image.exists")
 public class ImageAlreadyExistsException extends Exception {
 
     public ImageAlreadyExistsException(String msg) {

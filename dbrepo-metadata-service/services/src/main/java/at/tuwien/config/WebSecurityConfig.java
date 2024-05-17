@@ -43,7 +43,8 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, KeycloakGateway keycloakGateway) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, KeycloakGateway keycloakGateway,
+                                           GatewayConfig gatewayConfig) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
@@ -54,7 +55,9 @@ public class WebSecurityConfig {
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/**", "GET"),
                 new AntPathRequestMatcher("/api/**", "HEAD"),
-                new AntPathRequestMatcher("/api/user/**", "POST")
+                new AntPathRequestMatcher("/api/user", "POST"),
+                new AntPathRequestMatcher("/api/user/token", "POST"),
+                new AntPathRequestMatcher("/api/user/token", "PUT")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
@@ -85,7 +88,8 @@ public class WebSecurityConfig {
         http.addFilterBefore(authTokenFilter(),
                 UsernamePasswordAuthenticationFilter.class
         );
-        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(authTokenFilter(), keycloakGateway)),
+        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(gatewayConfig,
+                        authTokenFilter(), keycloakGateway)),
                 UsernamePasswordAuthenticationFilter.class
         );
         return http.build();

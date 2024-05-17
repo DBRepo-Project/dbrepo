@@ -1,0 +1,56 @@
+apiVersion: v2
+name: dbrepo
+description: Helm Chart for installing DBRepo
+sources:
+  - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+type: application
+version: "1.4.3"
+appVersion: "1.4.3"
+keywords:
+  - dbrepo
+maintainers:
+  - name: Martin Weise
+    email: martin.weise@tuwien.ac.at
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.docs/images/signet_white.png
+dependencies:
+  - name: opensearch
+    alias: searchdb
+    version: 2.15.0
+    repository: https://opensearch-project.github.io/helm-charts/
+    condition: searchdb.enabled
+  - name: keycloak
+    alias: authservice
+    version: 17.3.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: authservice.enabled
+  - name: mariadb-galera
+    alias: datadb
+    version: 11.0.1
+    repository: https://charts.bitnami.com/bitnami
+    condition: datasb.enabled
+  - name: mariadb-galera
+    alias: metadatadb
+    version: 11.0.1
+    repository: https://charts.bitnami.com/bitnami
+    condition: metadatadb.enabled
+  - name: postgresql-ha
+    alias: authdb
+    version: 12.1.7
+    repository: https://charts.bitnami.com/bitnami
+    condition: authdb.enabled
+  - name: rabbitmq
+    alias: brokerservice
+    version: 14.0.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: brokerservice.enabled
+  - name: seaweedfs
+    alias: storageservice
+    version: 3.59.4
+    repository: https://seaweedfs.github.io/seaweedfs/helm
+    condition: storageservice.enabled
+  - name: tusd
+    alias: uploadservice
+    version: 0.1.2
+    repository: https://charts.sagikazarmark.dev
+    condition: uploadservice.enabled

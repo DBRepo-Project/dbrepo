@@ -1,73 +1,62 @@
 package at.tuwien.validation;
 
 import at.tuwien.SortType;
-import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.TableService;
+import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Log4j2
 @Component
 public class EndpointValidator {
 
-    private final QueryConfig queryConfig;
+    private final UserService userService;
     private final AccessService accessService;
-    private final DatabaseService databaseService;
-    private final TableService tableService;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, AccessService accessService, DatabaseService databaseService,
-                             TableService tableService) {
-        this.queryConfig = queryConfig;
+    public EndpointValidator(UserService userService, AccessService accessService) {
+        this.userService = userService;
         this.accessService = accessService;
-        this.databaseService = databaseService;
-        this.tableService = tableService;
     }
 
-    public void validateOnlyPrivateAccess(Long databaseId, Principal principal, boolean writeAccessOnly)
-            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
-        final Database database = databaseService.find(databaseId);
+    public void validateOnlyPrivateAccess(Database database, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
         if (database.getIsPublic()) {
-            log.trace("database with id {} is public: no access needed", databaseId);
+            log.trace("database with id {} is public: no access needed", database.getId());
             return;
         }
-        validateOnlyAccess(databaseId, principal, writeAccessOnly);
+        validateOnlyAccess(database, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateAccess(Long databaseId, Principal principal) throws NotAllowedException,
-            DatabaseNotFoundException, AccessDeniedException {
-        validateOnlyPrivateAccess(databaseId, principal, false);
+    public void validateOnlyPrivateAccess(Database database, Principal principal) throws NotAllowedException,
+            UserNotFoundException, AccessNotFoundException {
+        validateOnlyPrivateAccess(database, principal, false);
     }
 
-    public void validateOnlyAccess(Long databaseId, Principal principal, boolean writeAccessOnly)
-            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
+    public void validateOnlyAccess(Database database, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
         if (principal == null) {
-            log.error("Access not allowed: database with id {} is not public and no authorization provided", databaseId);
-            throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
+            throw new NotAllowedException("No principal provided");
         }
-        databaseService.find(databaseId);
-        log.trace("principal: {}", principal.getName());
-        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
+        final User user = userService.findByUsername(principal.getName());
+        final DatabaseAccess access = accessService.find(database, user);
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -75,9 +64,9 @@ public class EndpointValidator {
         }
     }
 
-    public void validateColumnCreateConstraints(TableCreateDto data) throws TableMalformedException {
+    public void validateColumnCreateConstraints(TableCreateDto data) throws MalformedException {
         if (data == null) {
-            throw new TableMalformedException("Validation failed: table data is null");
+            throw new MalformedException("Validation failed: table data is null");
         }
         final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
         final List<ColumnTypeDto> needSizeAndD = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
@@ -90,7 +79,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional0.isPresent()) {
             log.error("Validation failed: column {} needs size parameter", optional0.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional0.get().getName() + " needs size parameter");
+            throw new MalformedException("Validation failed: column " + optional0.get().getName() + " needs size parameter");
         }
         /* check size and d */
         final Optional<ColumnCreateDto> optional1 = data.getColumns()
@@ -100,7 +89,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional1.isPresent()) {
             log.error("Validation failed: column {} needs size and d parameter", optional1.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional1.get().getName() + " needs size and d parameter");
+            throw new MalformedException("Validation failed: column " + optional1.get().getName() + " needs size and d parameter");
         }
         final Optional<ColumnCreateDto> optional1a = data.getColumns()
                 .stream()
@@ -109,7 +98,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional1a.isPresent()) {
             log.error("Validation failed: column {} needs size (max 65) and d (max 30)", optional1a.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional1a.get().getName() + " needs size (max 65) and d (max 30)");
+            throw new MalformedException("Validation failed: column " + optional1a.get().getName() + " needs size (max 65) and d (max 30)");
         }
         final Optional<ColumnCreateDto> optional1b = data.getColumns()
                 .stream()
@@ -118,7 +107,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional1b.isPresent()) {
             log.error("Validation failed: column {} needs size >= d", optional1b.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional1b.get().getName() + " needs size >= d");
+            throw new MalformedException("Validation failed: column " + optional1b.get().getName() + " needs size >= d");
         }
         /* check enum */
         final Optional<ColumnCreateDto> optional2 = data.getColumns()
@@ -128,7 +117,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional2.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed enum value", optional2.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
+            throw new MalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
         }
         /* check set */
         final Optional<ColumnCreateDto> optional3 = data.getColumns()
@@ -138,7 +127,7 @@ public class EndpointValidator {
                 .findFirst();
         if (optional3.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed set value", optional3.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
+            throw new MalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
         }
         /* check date */
         final Optional<ColumnCreateDto> optional4 = data.getColumns()
@@ -148,11 +137,11 @@ public class EndpointValidator {
                 .findFirst();
         if (optional4.isPresent()) {
             log.error("Validation failed: column {} needs a format", optional4.get().getName());
-            throw new TableMalformedException("Validation failed: column " + optional4.get().getName() + " needs a format");
+            throw new MalformedException("Validation failed: column " + optional4.get().getName() + " needs a format");
         }
     }
 
-    public boolean validateOnlyMineOrWriteAccessOrHasRole(UUID ownerId, Principal principal, DatabaseAccess access, String role) {
+    public boolean validateOnlyMineOrWriteAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
         if (UserUtil.hasRole(principal, role)) {
             log.debug("validation passed: role {} present", role);
             return true;
@@ -162,46 +151,41 @@ public class EndpointValidator {
             log.error("validation failed: access is null");
             return false;
         }
-        if (ownerId.equals(UserUtil.getId(principal)) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
-            log.debug("validation passed: user id {} matches owner id {} and has write access {}", UserUtil.getId(principal), ownerId, access.getType());
+        if (owner.equals(principal) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
+            log.debug("validation passed: user {} matches owner {} and has write access {}", principal.getName(), owner.getUsername(), access.getType());
             return true;
         }
         if (access.getType().equals(AccessType.WRITE_ALL)) {
-            log.debug("validation passed: user with id {} has write all access", UserUtil.getId(principal));
+            log.debug("validation passed: user {} has write all access", principal.getName());
             return true;
         }
-        log.debug("validation failed: user with id {} has insufficient access {} or role", UserUtil.getId(principal), access.getType());
+        log.debug("validation failed: user {} has insufficient access {} or role", principal.getName(), access.getType());
         return false;
     }
 
-    public boolean validateOnlyMineOrReadAccessOrHasRole(UUID ownerId, Principal principal, DatabaseAccess access, String role) {
-        if (validateOnlyMineOrWriteAccessOrHasRole(ownerId, principal, access, role)) {
+    public boolean validateOnlyMineOrReadAccessOrHasRole(User creator, Principal principal, DatabaseAccess access, String role) {
+        if (validateOnlyMineOrWriteAccessOrHasRole(creator, principal, access, role)) {
             return true;
         }
         if (access.getType().equals(AccessType.READ)) {
-            log.debug("validation passed: user with id {} has read access", UserUtil.getId(principal));
+            log.debug("validation passed: user {} has read access", principal.getName());
             return true;
         }
-        log.debug("validation failed: user with id {} has insufficient access {} or role", UserUtil.getId(principal), access.getType());
+        log.debug("validation failed: user {} has insufficient access {} or role", principal.getName(), access.getType());
         return false;
     }
 
-    public void validateOnlyOwnerOrWriteAll(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, AccessDeniedException {
-        if (principal == null) {
-            log.error("Access not allowed: no authorization provided");
-            throw new NotAllowedException("Access not allowed: no authorization provided");
-        }
-        final Table table = tableService.find(databaseId, tableId);
-        log.trace("principal: {}", principal.getName());
+    @Transactional(readOnly = true)
+    public void validateOnlyOwnerOrWriteAll(Table table, User user) throws NotAllowedException,
+            AccessNotFoundException {
         log.trace("table creator: {}", table.getCreatedBy());
-        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
+        final DatabaseAccess access = accessService.find(table.getDatabase(), user);
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.READ)) {
             log.error("Access not allowed: insufficient access (only read-access)");
             throw new NotAllowedException("Access not allowed: insufficient access (only read-access)");
         }
-        if (table.getCreatedBy().equals(UserUtil.getId(principal)) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
+        if (table.getCreatedBy().equals(user.getId()) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.trace("grant access: table creator with write access");
             return;
         }
@@ -213,14 +197,13 @@ public class EndpointValidator {
         throw new NotAllowedException("Access not allowed: insufficient access (neither creator nor write-all access)");
     }
 
-    public void validateOnlyPrivateHasRole(Long databaseId, Principal principal, String role)
-            throws DatabaseNotFoundException, NotAllowedException {
-        final Database database = databaseService.find(databaseId);
+    public void validateOnlyPrivateHasRole(Database database, Principal principal, String role)
+            throws NotAllowedException {
         if (database.getIsPublic()) {
-            log.trace("database with id {} is public: no access needed", databaseId);
+            log.trace("database with id {} is public: no access needed", database.getId());
             return;
         }
-        log.trace("database with id {} is private", databaseId);
+        log.trace("database with id {} is private", database.getId());
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
@@ -260,65 +243,39 @@ public class EndpointValidator {
         }
     }
 
-    /**
-     * Do not allow aggregate functions and comments
-     * https://mariadb.com/kb/en/aggregate-functions/
-     */
-    public void validateForbiddenStatements(ExecuteStatementDto data) throws QueryMalformedException {
-        final List<String> words = new LinkedList<>();
-        Arrays.stream(queryConfig.getNotSupportedKeywords())
-                .forEach(keyword -> {
-                    final Pattern pattern = Pattern.compile(keyword);
-                    final Matcher matcher = pattern.matcher(data.getStatement());
-                    final boolean found = matcher.find();
-                    if (found) {
-                        words.add(keyword);
-                    }
-                });
-        if (words.isEmpty()) {
-            return;
-        }
-        log.error("Query contains forbidden keyword(s): {}", words);
-        throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
-    }
-
-    public void validateOnlyAccessOrPublic(Long databaseId, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
-        final Database database = databaseService.find(databaseId);
+    public void validateOnlyAccessOrPublic(Database database, Principal principal) throws NotAllowedException,
+            AccessNotFoundException {
         if (database.getIsPublic()) {
-            log.trace("database with id {} is public: no access needed", databaseId);
+            log.debug("database with id {} is public: no access needed", database.getId());
             return;
         }
-        log.trace("database with id {} is private", databaseId);
+        log.trace("database with id {} is private", database.getId());
         if (principal == null) {
-            log.error("Access not allowed: database with id {} is not public and no authorization provided", databaseId);
-            throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
+            log.error("Access not allowed: database with id {} is not public and no authorization provided", database.getId());
+            throw new NotAllowedException("Access not allowed: database with id " + database.getId() + " is not public and no authorization provided");
         }
-        log.trace("principal is {}", principal);
-        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
+        final User user = User.builder()
+                .id(UserUtil.getId(principal))
+                .build();
+        final DatabaseAccess access = accessService.find(database, user);
         log.trace("found access {}", access);
     }
 
-    public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, AccessDeniedException {
-        final Table table = tableService.find(databaseId, tableId);
-        if (principal == null) {
-            log.error("Access not allowed: no authorization provided");
-            throw new NotAllowedException("Access not allowed: no authorization provided");
-        }
-        log.trace("principal is {}", principal);
-        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
+    @Transactional(readOnly = true)
+    public void validateOnlyWriteOwnOrWriteAllAccess(Table table, User user) throws NotAllowedException,
+            AccessNotFoundException {
+        final DatabaseAccess access = accessService.find(table.getDatabase(), user);
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.WRITE_ALL)) {
-            log.debug("user {} has write-all access, skip.", principal.getName());
+            log.debug("user {} has write-all access, skip.", user.getId());
             return;
         }
-        if (table.getOwnedBy().equals(UserUtil.getId(principal)) && access.getType().equals(AccessType.WRITE_OWN)) {
-            log.debug("user {} has write-own access to their own table, skip.", principal.getName());
+        if (table.getOwnedBy().equals(user.getId()) && access.getType().equals(AccessType.WRITE_OWN)) {
+            log.debug("user {} has write-own access to their own table, skip.", user.getId());
             return;
         }
-        log.error("Access not allowed: no write access for table with id {}", tableId);
-        throw new NotAllowedException("Access not allowed: no write access for table with id " + tableId);
+        log.error("Access not allowed: no write access for table with id {}", table.getId());
+        throw new NotAllowedException("Access not allowed: no write access for table with id " + table.getId());
     }
 
     /**

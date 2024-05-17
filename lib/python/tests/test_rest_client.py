@@ -15,10 +15,10 @@ class DatabaseTest(TestCase):
         self.assertTrue(client.secure)
 
     @mock.patch.dict(os.environ, {
-        "DBREPO_ENDPOINT": "https://test.dbrepo.tuwien.ac.at",
-        "DBREPO_USERNAME": "foo",
-        "DBREPO_PASSWORD": "bar",
-        "DBREPO_SECURE": "False",
+        "REST_API_ENDPOINT": "https://test.dbrepo.tuwien.ac.at",
+        "REST_API_USERNAME": "foo",
+        "REST_API_PASSWORD": "bar",
+        "REST_API_SECURE": "false",
     })
     def test_constructor_environment_succeeds(self):
         # test

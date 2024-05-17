@@ -26,7 +26,7 @@ export default {
         },
         {
          title: this.$t('navigation.subsets'),
-          to: `/database/${this.$route.params.database_id}/query`,
+          to: `/database/${this.$route.params.database_id}/subset`,
           disabled: true
         }
       ]

@@ -19,7 +19,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
         :loading="downloadLoading"
         @click.stop="downloadSubset">
-        {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.export.data.xl') + ' ' : '') + $t('toolbars.subset.export.data.permanent') }}
+        {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.export.data.xl') + ' ' : '') + $t('toolbars.subset.export.data.permanent') }}
       </v-btn>
       <v-btn
         v-if="canPersistQuery"
@@ -33,21 +33,12 @@
       <v-btn
         v-if="canForgetQuery"
         :loading="loadingSave"
-        class="mb-1 ml-2"
         color="error"
         variant="flat"
-        :text="$t('toolbars.subset.unsave.permanent')"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-trash-can-outline' : null"
-        @click.stop="forget" />
-      <DownloadButton
-        v-if="identifiers.length > 0"
-        :pid="identifier.id"
         class="mb-1 ml-2"
-        color="tertiary"
-        :variant="buttonVariant"
-        prepend-icon="mdi-code-tags">
-        {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.export.metadata.xl') + ' ' : '') + $t('toolbars.subset.export.metadata.permanent') }}
-      </DownloadButton>
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-trash-can-outline' : null"
+        :text="$t('toolbars.subset.unsave.permanent')"
+        @click.stop="forget" />
       <v-btn
         v-if="canGetPid"
         class="mb-1 ml-2"
@@ -56,7 +47,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         :disabled="!executionUTC"
         :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/persist`">
-        {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.pid.xl') + ' ' : '') + $t('toolbars.subset.pid.permanent') }}
+        {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.pid.xl') + ' ' : '') + $t('toolbars.subset.pid.permanent') }}
       </v-btn>
       <template v-slot:extension>
         <v-tabs
@@ -202,6 +193,7 @@ export default {
       queryService.update(this.$route.params.database_id, this.$route.params.subset_id, { persist: true })
         .then((subset) => {
           this.subset = subset
+          this.loadingSave = false
         })
         .catch(() => {
           this.loadingSave = false

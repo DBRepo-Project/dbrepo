@@ -1,0 +1,19 @@
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+  namespace: {{ $.Values.namespace }}
+  labels:
+    service: search-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "search-service"
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    service: search-service
+{{- end }}

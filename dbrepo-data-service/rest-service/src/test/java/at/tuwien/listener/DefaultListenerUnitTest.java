@@ -1,9 +1,11 @@
 package at.tuwien.listener;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.exception.RemoteUnavailableException;
+import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,13 +27,17 @@ import java.util.HashMap;
 
 import static at.tuwien.utils.RabbitMqUtils.buildMessage;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith({SpringExtension.class, OutputCaptureExtension.class})
 @Testcontainers
-@MockOpensearch
-public class DefaultListenerUnitTest extends BaseUnitTest {
+public class DefaultListenerUnitTest extends AbstractUnitTest {
+
+    @MockBean
+    private MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     private DefaultListener defaultListener;
@@ -44,8 +51,8 @@ public class DefaultListenerUnitTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        MariaDbConfig.dropAllDatabases(CONTAINER_1);
-        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
+        MariaDbConfig.dropAllDatabases(CONTAINER_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
     }
 
     @Test
@@ -59,7 +66,7 @@ public class DefaultListenerUnitTest extends BaseUnitTest {
 
     @Test
     public void onMessage_routingKeyTableMissing_fails(CapturedOutput output) {
-        final Message request = buildMessage("dbrepo.database", "{}", new HashMap<>());
+        final Message request = buildMessage("dbrepo.", "{}", new HashMap<>());
 
         /* test */
         defaultListener.onMessage(request);
@@ -67,8 +74,13 @@ public class DefaultListenerUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void onMessage_messageMalformed_fails(CapturedOutput output) {
-        final Message request = buildMessage("dbrepo.database.table", "{,}", new HashMap<>());
+    public void onMessage_messageMalformed_fails(CapturedOutput output) throws TableNotFoundException,
+            RemoteUnavailableException {
+        final Message request = buildMessage("dbrepo.1.1", "{,}", new HashMap<>());
+
+        /* mock */
+        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
         defaultListener.onMessage(request);
@@ -76,12 +88,18 @@ public class DefaultListenerUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void onMessage_databaseNotFound_fails(CapturedOutput output) {
-        final Message request = buildMessage("dbrepo.database.table", "{\"id\":1}", new HashMap<>());
+    public void onMessage_tableNotFound_fails(CapturedOutput output) throws TableNotFoundException,
+            RemoteUnavailableException {
+        final Message request = buildMessage("dbrepo.1.1", "{\"id\":1}", new HashMap<>());
+
+        /* mock */
+        doThrow(TableNotFoundException.class)
+                .when(metadataServiceGateway)
+                .getTableById(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         defaultListener.onMessage(request);
-        assertTrue(output.getAll().contains("Failed to find database"));
+        assertTrue(output.getAll().contains("Failed to find table"));
     }
 
 }

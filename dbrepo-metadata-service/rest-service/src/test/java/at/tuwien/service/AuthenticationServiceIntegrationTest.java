@@ -1,9 +1,7 @@
 package at.tuwien.service;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockListeners;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
@@ -11,8 +9,6 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -24,14 +20,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Log4j2
 @Testcontainers
-@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockListeners
-@MockOpensearch
-public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
+public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -44,17 +36,17 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("fda")
             .withAdminPassword("fda")
-            .withRealmImportFile("./dbrepo-realm.json")
+            .withRealmImportFile("./init/dbrepo-realm.json")
             .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
 
     @DynamicPropertySource
     static void keycloakProperties(DynamicPropertyRegistry registry) {
-        registry.add("fda.keycloak.endpoint", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+        registry.add("dbrepo.endpoints.authService", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
     }
 
     @Test
-    public void delete_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            UserEmailAlreadyExistsException, UserAlreadyExistsException {
+    public void delete_succeeds() throws EmailExistsException, UserExistsException, ServiceException,
+            ServiceConnectionException, UserNotFoundException {
 
         /* mock */
         try {
@@ -63,14 +55,17 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
             /* ignore */
         }
         keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        final User request = User.builder()
+                .id(keycloakGateway.findByUsername(USER_1_USERNAME).getId())
+                .build();
 
         /* test */
-        authenticationService.delete(keycloakGateway.findByUsername(USER_1_USERNAME).getId());
+        authenticationService.delete(request);
     }
 
     @Test
-    public void create_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            UserEmailAlreadyExistsException, UserAlreadyExistsException {
+    public void create_succeeds() throws EmailExistsException, UserExistsException, ServiceException,
+            ServiceConnectionException {
 
         /* mock */
         try {

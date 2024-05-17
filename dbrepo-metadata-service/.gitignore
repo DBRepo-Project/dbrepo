@@ -11,6 +11,8 @@ target/
 ready
 mapping.xml
 schema.xsd
+*.versionsBackup
+metrics.txt
 
 ### STS ###
 .apt_generated

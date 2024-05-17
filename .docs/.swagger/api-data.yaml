@@ -8,18 +8,3110 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: __APPVERSION__
+  version: 1.4.3
 externalDocs:
   description: Sourcecode Documentation
-  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.3/system-services-metadata/
 servers:
-- url: http://localhost:9093
+- url: http://localhost
   description: Development instance
 - url: https://test.dbrepo.tuwien.ac.at
   description: Staging instance
-paths: {}
+paths:
+  /api/database/{databaseId}/view/{viewId}/data:
+    get:
+      tags:
+      - view-endpoint
+      summary: Get view data
+      operationId: getData
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: viewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Returned view data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    head:
+      tags:
+      - view-endpoint
+      summary: Get view data
+      operationId: getData_1
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: viewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Returned view data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/table/{tableId}/data:
+    get:
+      tags:
+      - table-endpoint
+      summary: Find table data
+      operationId: getData_2
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Found table data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    put:
+      tags:
+      - table-endpoint
+      summary: Update table data
+      operationId: updateTuple
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TupleUpdateDto'
+        required: true
+      responses:
+        "202":
+          description: Updated table data
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    post:
+      tags:
+      - table-endpoint
+      summary: Create table data
+      operationId: createTuple
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TupleDto'
+        required: true
+      responses:
+        "201":
+          description: Created table data
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    delete:
+      tags:
+      - table-endpoint
+      summary: Delete table data
+      operationId: deleteTuple
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TupleDeleteDto'
+        required: true
+      responses:
+        "202":
+          description: Deleted table data
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    head:
+      tags:
+      - table-endpoint
+      summary: Find table data
+      operationId: getData_3
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Found table data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/subset/{subsetId}/data:
+    get:
+      tags:
+      - subset-endpoint
+      summary: Re-execute some query
+      operationId: getData_4
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: subsetId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Get subset data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+    head:
+      tags:
+      - subset-endpoint
+      summary: Re-execute some query
+      operationId: getData_5
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: subsetId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Get subset data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+  /api/database/{databaseId}:
+    put:
+      tags:
+      - database-endpoint
+      summary: Update user password in database
+      operationId: update
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserPasswordDto'
+        required: true
+      responses:
+        "202":
+          description: Created a new database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+        "400":
+          description: Database create query is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - basicAuth: []
+  /api/database/{databaseId}/subset/{queryId}:
+    put:
+      tags:
+      - subset-endpoint
+      summary: Persist some query
+      operationId: persist
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: queryId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryPersistDto'
+        required: true
+      responses:
+        "202":
+          description: Persist query successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryDto'
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+  /api/database/{databaseId}/access/{userId}:
+    put:
+      tags:
+      - access-endpoint
+      summary: Modify access to some database
+      operationId: update_1
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDatabaseAccessDto'
+        required: true
+      responses:
+        "404":
+          description: Database or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Modify access query or database connection is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Access could not be updated in the data service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Modify access not permitted when no access is granted in the
+            first place
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Modify access succeeded
+      security:
+      - basicAuth: []
+    post:
+      tags:
+      - access-endpoint
+      summary: Give access to some database
+      operationId: create_4
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDatabaseAccessDto'
+        required: true
+      responses:
+        "202":
+          description: Granting access succeeded
+        "404":
+          description: Database or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Granting access not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Failed giving access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Granting access query or database connection is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Access could not be created in the data service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - basicAuth: []
+    delete:
+      tags:
+      - access-endpoint
+      summary: Revoke access to some database
+      operationId: revoke
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "202":
+          description: Revoked access successfully
+        "400":
+          description: Modify access query or database connection is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "User, database with access was not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Access could not be revoked in the data service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Revoke of access not permitted as no access was found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - basicAuth: []
+  /api/database:
+    post:
+      tags:
+      - database-endpoint
+      summary: Create database
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDatabaseDto'
+        required: true
+      responses:
+        "201":
+          description: Created a new database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+        "400":
+          description: Database create query is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - basicAuth: []
+  /api/database/{databaseId}/view:
+    post:
+      tags:
+      - view-endpoint
+      summary: Create view
+      operationId: create_1
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewCreateDto'
+        required: true
+      responses:
+        "202":
+          description: Created a new view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/table:
+    post:
+      tags:
+      - table-endpoint
+      summary: Create table
+      operationId: create_2
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TableCreateDto'
+        required: true
+      responses:
+        "202":
+          description: Created a new table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
+  /api/database/{databaseId}/table/{tableId}/data/import:
+    post:
+      tags:
+      - table-endpoint
+      summary: Insert data from csv
+      operationId: importData
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportCsvDto'
+        required: true
+      responses:
+        "202":
+          description: Import  successfully
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/subset:
+    get:
+      tags:
+      - subset-endpoint
+      summary: Find subsets
+      operationId: findAllById
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: persisted
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Found subsets
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+    post:
+      tags:
+      - subset-endpoint
+      summary: Create subset
+      operationId: create_3
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteStatementDto'
+        required: true
+      responses:
+        "201":
+          description: Created subset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/table/{tableId}/history:
+    get:
+      tags:
+      - table-endpoint
+      summary: Find table history
+      operationId: getHistory
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Found table history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/table/{tableId}/export:
+    get:
+      tags:
+      - table-endpoint
+      summary: Export table data
+      operationId: exportData
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Exported table data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/subset/{subsetId}:
+    get:
+      tags:
+      - subset-endpoint
+      summary: Find subset
+      operationId: findById
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: subsetId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: timestamp
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: Found subset
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/view/{viewId}:
+    delete:
+      tags:
+      - view-endpoint
+      summary: Delete view in database
+      operationId: delete
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: viewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "201":
+          description: Deleted table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
+      - bearerAuth: []
+  /api/database/{databaseId}/table/{tableId}:
+    delete:
+      tags:
+      - table-endpoint
+      summary: Delete table in database
+      operationId: delete_1
+      parameters:
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "201":
+          description: Deleted table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDto'
+      security:
+      - basicAuth: []
 components:
+  schemas:
+    QueryResultDto:
+      required:
+      - headers
+      - id
+      - result
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+        headers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+        id:
+          type: integer
+          format: int64
+    UpdateUserPasswordDto:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    ColumnBriefDto:
+      required:
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - name
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        alias:
+          type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+    ColumnDto:
+      required:
+      - auto_generated
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - is_null_allowed
+      - is_public
+      - name
+      - ordinal_position
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Date
+        alias:
+          type: string
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        mean:
+          type: number
+          example: 45.4
+        median:
+          type: number
+          example: 51
+        concept:
+          $ref: '#/components/schemas/ConceptDto'
+        unit:
+          $ref: '#/components/schemas/UnitDto'
+        table:
+          $ref: '#/components/schemas/TableDto'
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewDto'
+        enums:
+          type: array
+          items:
+            type: string
+        sets:
+          type: array
+          items:
+            type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        ordinal_position:
+          type: integer
+          format: int32
+          example: 0
+        internal_name:
+          type: string
+          example: mdb_date
+        date_format:
+          $ref: '#/components/schemas/ImageDateDto'
+        auto_generated:
+          type: boolean
+          example: false
+        index_length:
+          type: integer
+          format: int64
+        length:
+          type: integer
+          format: int64
+        column_type:
+          type: string
+          example: string
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+        data_length:
+          type: integer
+          format: int64
+          example: 34300
+        max_data_length:
+          type: integer
+          format: int64
+          example: 34300
+        num_rows:
+          type: integer
+          format: int64
+          example: 32
+        val_min:
+          type: number
+          example: 0
+        val_max:
+          type: number
+          example: 100
+        std_dev:
+          type: number
+          example: 5.32
+        is_public:
+          type: boolean
+          example: true
+        is_null_allowed:
+          type: boolean
+          example: false
+    ConceptDto:
+      required:
+      - columns
+      - created
+      - id
+      - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ConstraintsDto:
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            $ref: '#/components/schemas/UniqueDto'
+        checks:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyDto'
+        primary_key:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    ContainerDto:
+      required:
+      - created
+      - host
+      - id
+      - image
+      - internal_name
+      - name
+      - sidecar_host
+      - sidecar_port
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        image:
+          $ref: '#/components/schemas/ImageDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        internal_name:
+          type: string
+          example: data-db
+        sidecar_host:
+          type: string
+        sidecar_port:
+          type: integer
+          format: int32
+        ui_host:
+          type: string
+        ui_port:
+          type: integer
+          format: int32
+    CreatorDto:
+      required:
+      - creator_name
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: "Carberry, Josiah"
+        name_type:
+          type: string
+          example: Personal
+          enum:
+          - Personal
+          - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+          - ORCID
+          - ROR
+          - ISNI
+          - GRID
+        name_identifier_scheme_uri:
+          type: string
+          example: https://orcid.org/
+        affiliation_identifier:
+          type: string
+          example: https://ror.org/05gq02987
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+          - ROR
+          - GRID
+          - ISNI
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: https://ror.org/
+    DatabaseAccessDto:
+      required:
+      - created
+      - type
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDto'
+        type:
+          type: string
+          enum:
+          - read
+          - write_own
+          - write_all
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    DatabaseDto:
+      required:
+      - contact
+      - container
+      - created
+      - creator
+      - exchange_name
+      - id
+      - internal_name
+      - is_public
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableDto'
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewDto'
+        container:
+          $ref: '#/components/schemas/ContainerDto'
+        accesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatabaseAccessDto'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        subsets:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        contact:
+          $ref: '#/components/schemas/UserDto'
+        owner:
+          $ref: '#/components/schemas/UserDto'
+        image:
+          type: array
+          items:
+            type: string
+            format: byte
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        exchange_name:
+          type: string
+          example: dbrepo
+        exchange_type:
+          type: string
+          example: topic
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+    ForeignKeyDto:
+      type: object
+      properties:
+        name:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        referenced_table:
+          $ref: '#/components/schemas/TableBriefDto'
+        referenced_columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        on_update:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+        on_delete:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+    IdentifierDescriptionDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          example: "Air quality reports at Stephansplatz, Vienna"
+        language:
+          type: string
+          example: en
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        type:
+          type: string
+          example: Abstract
+          enum:
+          - Abstract
+          - Methods
+          - SeriesInformation
+          - TableOfContents
+          - TechnicalInfo
+          - Other
+    IdentifierDto:
+      required:
+      - created
+      - created_by
+      - creator
+      - creators
+      - database_id
+      - execution
+      - id
+      - last_modified
+      - publication_year
+      - publisher
+      - query
+      - query_hash
+      - query_normalized
+      - titles
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+          - database
+          - subset
+          - table
+          - view
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierTitleDto'
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDescriptionDto'
+        funders:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierFunderDto'
+        query:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        execution:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        language:
+          type: string
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        database_id:
+          type: integer
+          format: int64
+          example: 1
+        query_id:
+          type: integer
+          format: int64
+          example: 1
+        table_id:
+          type: integer
+          format: int64
+          example: 1
+        view_id:
+          type: integer
+          format: int64
+          example: 1
+        query_normalized:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        related_identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+        created_by:
+          type: string
+          format: uuid
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    IdentifierFunderDto:
+      required:
+      - funder_name
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: http://doi.org/10.13039/501100000780
+        funder_identifier_type:
+          type: string
+          example: Crossref Funder ID
+          enum:
+          - Crossref Funder ID
+          - ROR
+          - GND
+          - ISNI
+          - Other
+        scheme_uri:
+          type: string
+          example: http://doi.org/
+        award_number:
+          type: string
+          example: "824087"
+        award_title:
+          type: string
+          example: EOSC-Life
+    IdentifierTitleDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+          example: Airquality Demonstrator
+        language:
+          type: string
+          example: en
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        type:
+          type: string
+          enum:
+          - AlternativeTitle
+          - Subtitle
+          - TranslatedTitle
+          - Other
+    ImageDateDto:
+      required:
+      - created_at
+      - database_format
+      - has_time
+      - id
+      - unix_format
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        database_format:
+          type: string
+          example: '%d.%c.%Y'
+        unix_format:
+          type: string
+          example: dd.MM.YYYY
+        has_time:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    ImageDto:
+      required:
+      - default_port
+      - dialect
+      - driver_class
+      - id
+      - jdbc_method
+      - name
+      - registry
+      - version
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registry:
+          type: string
+          example: docker.io/library
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+          example: "10.5"
+        dialect:
+          type: string
+          example: org.hibernate.dialect.MariaDBDialect
+        driver_class:
+          type: string
+          example: org.mariadb.jdbc.Driver
+        date_formats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDateDto'
+        jdbc_method:
+          type: string
+          example: mariadb
+        default_port:
+          type: integer
+          format: int32
+          example: 3306
+    LicenseDto:
+      required:
+      - identifier
+      - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: https://opensource.org/licenses/MIT
+        description:
+          type: string
+          example: "A short and simple permissive license with conditions only requiring\
+            \ preservation of copyright and license notices. Licensed works, modifications,\
+            \ and larger works may be distributed under different terms and without\
+            \ source code."
+    RelatedIdentifierDto:
+      required:
+      - id
+      - relation
+      - type
+      - value
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+          - DOI
+          - URL
+          - URN
+          - ARK
+          - arXiv
+          - bibcode
+          - EAN13
+          - EISSN
+          - Handle
+          - IGSN
+          - ISBN
+          - ISTC
+          - LISSN
+          - LSID
+          - PMID
+          - PURL
+          - UPC
+          - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+          - IsCitedBy
+          - Cites
+          - IsSupplementTo
+          - IsSupplementedBy
+          - IsContinuedBy
+          - Continues
+          - IsDescribedBy
+          - Describes
+          - HasMetadata
+          - IsMetadataFor
+          - HasVersion
+          - IsVersionOf
+          - IsNewVersionOf
+          - IsPreviousVersionOf
+          - IsPartOf
+          - HasPart
+          - IsPublishedIn
+          - IsReferencedBy
+          - References
+          - IsDocumentedBy
+          - Documents
+          - IsCompiledBy
+          - Compiles
+          - IsVariantFormOf
+          - IsOriginalFormOf
+          - IsIdenticalTo
+          - IsReviewedBy
+          - Reviews
+          - IsDerivedFrom
+          - IsSourceOf
+          - IsRequiredBy
+          - Requires
+          - IsObsoletedBy
+          - Obsoletes
+    TableBriefDto:
+      required:
+      - columns
+      - description
+      - id
+      - internal_name
+      - is_versioned
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+    TableDto:
+      required:
+      - columns
+      - constraints
+      - created
+      - created_by
+      - creator
+      - database_id
+      - id
+      - internal_name
+      - is_public
+      - is_versioned
+      - name
+      - owner
+      - queue_name
+      - routing_key
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        alias:
+          type: string
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        owner:
+          $ref: '#/components/schemas/UserDto'
+        description:
+          type: string
+          example: Air Quality in Austria
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsDto'
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+        created_by:
+          type: string
+          format: uuid
+        queue_name:
+          type: string
+          example: air_quality
+        queue_type:
+          type: string
+          example: quorum
+        routing_key:
+          type: string
+          example: dbrepo.1.2
+        is_public:
+          type: boolean
+          example: true
+        num_rows:
+          type: integer
+          format: int64
+          example: 5
+        data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 16384
+        max_data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 0
+        avg_row_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 3276
+    UniqueDto:
+      required:
+      - columns
+      - table
+      - uid
+      type: object
+      properties:
+        uid:
+          type: integer
+          format: int64
+        table:
+          $ref: '#/components/schemas/TableDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+    UnitDto:
+      required:
+      - columns
+      - created
+      - id
+      - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    UserAttributesDto:
+      required:
+      - language
+      - theme
+      type: object
+      properties:
+        theme:
+          type: string
+          example: light
+        orcid:
+          type: string
+          example: https://orcid.org/0000-0002-1825-0097
+        affiliation:
+          type: string
+          example: Brown University
+        language:
+          type: string
+          example: en
+    UserBriefDto:
+      required:
+      - id
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+        qualified_name:
+          type: string
+          example: Josiah Carberry — @jcarberry
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+    UserDto:
+      required:
+      - attributes
+      - id
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        attributes:
+          $ref: '#/components/schemas/UserAttributesDto'
+        qualified_name:
+          type: string
+          example: Josiah Carberry — @jcarberry
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+    ViewDto:
+      required:
+      - created
+      - creator
+      - database
+      - database_id
+      - id
+      - internal_name
+      - name
+      - query
+      - query_hash
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        database:
+          $ref: '#/components/schemas/DatabaseDto'
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    ApiErrorDto:
+      required:
+      - code
+      - message
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          example: NOT_FOUND
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        message:
+          type: string
+          example: Error message
+        code:
+          type: string
+          example: error.service.code
+    TupleUpdateDto:
+      required:
+      - data
+      - keys
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties:
+            type: object
+        keys:
+          type: object
+          additionalProperties:
+            type: object
+    QueryPersistDto:
+      required:
+      - persist
+      type: object
+      properties:
+        persist:
+          type: boolean
+          example: true
+    QueryDto:
+      required:
+      - created
+      - creator
+      - database_id
+      - execution
+      - id
+      - identifiers
+      - is_persisted
+      - last_modified
+      - query
+      - query_hash
+      - query_normalized
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        execution:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+        type:
+          type: string
+          example: query
+          enum:
+          - query
+          - view
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        database_id:
+          type: integer
+          format: int64
+        query_normalized:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+        query_hash:
+          type: string
+          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+        is_persisted:
+          type: boolean
+          example: true
+        result_hash:
+          type: string
+          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    UpdateDatabaseAccessDto:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - read
+          - write_own
+          - write_all
+    CreateDatabaseDto:
+      required:
+      - container_id
+      - internal_name
+      - password
+      - privileged_password
+      - privileged_username
+      - user_id
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          example: foobar
+        password:
+          type: string
+          example: s3cr3t
+        container_id:
+          type: integer
+          format: int64
+          example: 1
+        internal_name:
+          type: string
+          example: weather
+        privileged_username:
+          type: string
+          example: root
+        privileged_password:
+          type: string
+          example: mariadb
+        user_id:
+          type: string
+          format: uuid
+          example: 0e695ea5-9249-4a75-a77a-eeac3ec1c2c0
+    ViewCreateDto:
+      required:
+      - is_public
+      - name
+      - query
+      type: object
+      properties:
+        name:
+          type: string
+          example: Air Quality
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+        is_public:
+          type: boolean
+          example: true
+    ColumnCreateDto:
+      required:
+      - name
+      - null_allowed
+      - type
+      type: object
+      properties:
+        name:
+          type: string
+          example: Date
+        type:
+          type: string
+          example: string
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        dfid:
+          type: integer
+          description: date format id
+          format: int64
+        enums:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            type: string
+            description: "enum values, only considered when type = ENUM"
+        sets:
+          type: array
+          description: "set values, only considered when type = SET"
+          items:
+            type: string
+            description: "set values, only considered when type = SET"
+        index_length:
+          type: integer
+          format: int64
+        null_allowed:
+          type: boolean
+          example: true
+    ConstraintsCreateDto:
+      required:
+      - checks
+      - foreign_keys
+      - primary_key
+      - uniques
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        checks:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyCreateDto'
+        primary_key:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    ForeignKeyCreateDto:
+      required:
+      - columns
+      - referenced_columns
+      - referenced_table
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            type: string
+        referenced_table:
+          type: string
+        referenced_columns:
+          type: array
+          items:
+            type: string
+        on_update:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+        on_delete:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+    TableCreateDto:
+      required:
+      - columns
+      - constraints
+      - name
+      - need_sequence
+      type: object
+      properties:
+        name:
+          maxLength: 64
+          minLength: 1
+          type: string
+          example: Air Quality
+        description:
+          maxLength: 180
+          minLength: 0
+          type: string
+          example: Air Quality in Austria
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnCreateDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsCreateDto'
+        need_sequence:
+          type: boolean
+    TupleDto:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties:
+            type: object
+    ImportCsvDto:
+      required:
+      - location
+      - separator
+      type: object
+      properties:
+        location:
+          type: string
+          example: file.csv
+        separator:
+          type: string
+          example: ","
+        quote:
+          type: string
+          example: '"'
+        skip_lines:
+          minimum: 0
+          type: integer
+          format: int64
+        false_element:
+          type: string
+        true_element:
+          type: string
+        null_element:
+          type: string
+          example: NA
+        line_termination:
+          type: string
+          example: \r\n
+    ExecuteStatementDto:
+      required:
+      - statement
+      type: object
+      properties:
+        statement:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+    TupleDeleteDto:
+      required:
+      - keys
+      type: object
+      properties:
+        keys:
+          type: object
+          additionalProperties:
+            type: object
   securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
     bearerAuth:
       type: http
       scheme: bearer

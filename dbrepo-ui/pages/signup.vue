@@ -72,6 +72,7 @@
         <v-card-text>
           <v-btn
             id="login"
+            variant="flat"
             :disabled="!valid"
             color="primary"
             type="submit"
@@ -120,7 +121,8 @@ export default {
           this.$router.push('/login')
           this.loading = false
         })
-        .catch(() => {
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
           this.loading = false
         })
         .finally(() => {
@@ -134,7 +136,8 @@ export default {
         .then((users) => {
           this.usernames = users.map(u => u.username)
         })
-        .catch(() => {
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
           this.loadingUsers = false
         })
         .finally(() => {

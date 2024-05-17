@@ -3,18 +3,15 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.QueryService;
+import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
-import at.tuwien.utils.PrincipalUtil;
-import at.tuwien.utils.UserUtil;
-import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -23,16 +20,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,30 +39,26 @@ import java.util.stream.Collectors;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/database/{databaseId}/view",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/database/{databaseId}/view")
 public class ViewEndpoint {
 
     private final ViewMapper viewMapper;
+    private final UserService userService;
     private final ViewService viewService;
-    private final QueryService queryService;
     private final DatabaseService databaseService;
-    private final EndpointValidator endpointValidator;
 
     @Autowired
     public ViewEndpoint(ViewService viewService, DatabaseService databaseService,
-                        ViewMapper viewMapper, QueryService queryService, EndpointValidator endpointValidator) {
+                        ViewMapper viewMapper, UserService userService) {
+        this.viewMapper = viewMapper;
+        this.userService = userService;
         this.viewService = viewService;
         this.databaseService = databaseService;
-        this.viewMapper = viewMapper;
-        this.queryService = queryService;
-        this.endpointValidator = endpointValidator;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_views_findall")
+    @Observed(name = "dbrepo_metadata_views_findall")
     @Operation(summary = "Find all views", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -81,23 +73,23 @@ public class ViewEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                      Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException {
-        log.debug("endpoint find all views, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
-        final Database database = databaseService.find(databaseId);
+                                                      Principal principal) throws UserNotFoundException,
+            DatabaseNotFoundException {
+        log.debug("endpoint find all views, databaseId={}", databaseId);
+        final Database database = databaseService.findById(databaseId);
+        final User user = principal != null ? userService.findByUsername(principal.getName()) : null;
         log.trace("find all views for database {}", database);
-        final List<ViewBriefDto> views = viewService.findAll(databaseId, principal)
+        final List<ViewBriefDto> views = viewService.findAll(database, user)
                 .stream()
                 .map(viewMapper::viewToViewBriefDto)
                 .collect(Collectors.toList());
-        log.trace("find all views resulted in views {}", views);
         return ResponseEntity.ok(views);
     }
 
     @PostMapping
     @Transactional
     @PreAuthorize("hasAuthority('create-database-view')")
-    @Observed(name = "dbr_view_create")
+    @Observed(name = "dbrepo_metadata_view_create")
     @Operation(summary = "Create a view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -143,28 +135,27 @@ public class ViewEndpoint {
     })
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @Valid @RequestBody ViewCreateDto data,
-                                               @NotNull Principal principal) throws DatabaseNotFoundException,
-            NotAllowedException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException,
-            UserNotFoundException {
-        log.debug("endpoint create view, databaseId={}, data={}, {}", databaseId, data, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        final Database database = databaseService.find(databaseId);
-        if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
+                                               @NotNull Principal principal) throws NotAllowedException,
+            MalformedException, ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+            UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
+        final Database database = databaseService.findById(databaseId);
+        if (!database.getOwner().equals(principal)) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
+        final User user = userService.findByUsername(principal.getName());
         log.trace("create view for database {}", database);
         final View view;
-        view = viewService.create(databaseId, data, principal);
+        view = viewService.create(database, user, data);
         final ViewBriefDto dto = viewMapper.viewToViewBriefDto(view);
-        log.trace("create view resulted in view {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_view_find")
+    @Observed(name = "dbrepo_metadata_view_find")
     @Operation(summary = "Find one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -185,20 +176,33 @@ public class ViewEndpoint {
     })
     public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
                                         @NotNull @PathVariable("viewId") Long viewId,
-                                        Principal principal) throws DatabaseNotFoundException, ViewNotFoundException,
-            UserNotFoundException {
-        log.debug("endpoint find view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
-        final Database database = databaseService.find(databaseId);
-        log.trace("find view for database {}", database);
-        final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId, principal));
-        log.trace("find view resulted in view {}", view);
-        return ResponseEntity.ok(view);
+                                        Principal principal) throws DatabaseNotFoundException,
+            ViewNotFoundException {
+        log.debug("endpoint find view, databaseId={}, viewId={}", databaseId, viewId);
+        final Database database = databaseService.findById(databaseId);
+        final View view = viewService.findById(database, viewId);
+        final HttpHeaders headers = new HttpHeaders();
+        if (principal != null) {
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
+                headers.set("X-Username", view.getDatabase().getContainer().getPrivilegedUsername());
+                headers.set("X-Password", view.getDatabase().getContainer().getPrivilegedPassword());
+                headers.set("X-Host", view.getDatabase().getContainer().getHost());
+                headers.set("X-Port", "" + view.getDatabase().getContainer().getPort());
+                headers.set("X-Type", view.getDatabase().getContainer().getImage().getJdbcMethod());
+                headers.set("X-Database", view.getDatabase().getInternalName());
+                headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(headers)
+                .body(viewMapper.viewToViewDto(view));
     }
 
     @DeleteMapping("/{viewId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-view')")
-    @Observed(name = "dbr_view_delete")
+    @Observed(name = "dbrepo_metadata_view_delete")
     @Operation(summary = "Delete one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -237,96 +241,18 @@ public class ViewEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("viewId") Long viewId,
-                                    @NotNull Principal principal) throws DatabaseNotFoundException,
-            ViewNotFoundException, UserNotFoundException, DatabaseConnectionException, ViewMalformedException,
-            QueryMalformedException, NotAllowedException {
-        log.debug("endpoint delete view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        final Database database = databaseService.find(databaseId);
-        if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
+                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
+        final Database database = databaseService.findById(databaseId);
+        if (!database.getOwner().equals(principal)) {
             log.error("Failed to delete view: not the database owner");
             throw new NotAllowedException("Failed to delete view: not the database owner");
         }
-        viewService.delete(databaseId, viewId, principal);
+        final View view = viewService.findById(database, viewId);
+        viewService.delete(view);
         return ResponseEntity.accepted()
-                .build();
-    }
-
-    @RequestMapping(value = "/{viewId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_view_data_findall")
-    @Operation(summary = "Find view data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Find data successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = QueryResultDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Pagination not in valid range or find data query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "View data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database, view, container or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
-    })
-    public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("viewId") Long viewId,
-                                               Principal principal,
-                                               @NotNull HttpServletRequest request,
-                                               @RequestParam(required = false) Long page,
-                                               @RequestParam(required = false) Long size)
-            throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
-            TableMalformedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
-            ImageNotSupportedException {
-        log.debug("endpoint find view data, databaseId={}, viewId={}, page={}, size={}, {}", databaseId, viewId, page, size, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        endpointValidator.validateDataParams(page, size);
-        final Database database = databaseService.find(databaseId);
-        final View view = viewService.findById(databaseId, viewId, principal);
-        if (!database.getIsPublic() && !view.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to view data of private view: principal is null");
-                throw new NotAllowedException("Failed to view data of private view: principal is null");
-            }
-            if (!UserUtil.hasRole(principal, "view-database-view-data")) {
-                log.error("Failed to view data of private view: role missing");
-                throw new NotAllowedException("Failed to view data of private view: role missing");
-            }
-        }
-        /* default */
-        if (page == null) {
-            log.trace("page is null: default to 0");
-            page = 0L;
-        }
-        if (size == null) {
-            log.trace("size is null: default to 10");
-            size = 10L;
-        }
-        /* find */
-        log.debug("find view data for database with id {}", databaseId);
-        final Long count = queryService.viewCount(databaseId, view, principal);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Count", "" + count);
-        headers.set("Access-Control-Expose-Headers", "X-Count");
-        if (request.getMethod().equals("GET")) {
-            final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
-            log.trace("execute view data for view with id {}", viewId);
-            log.debug("find view data resulted in result {}", result);
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(result);
-        }
-        return ResponseEntity.ok()
-                .headers(headers)
                 .build();
     }
 

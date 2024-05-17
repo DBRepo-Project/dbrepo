@@ -1,8 +1,12 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdCreatorDto;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
+import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.database.License;
 import at.tuwien.entities.identifier.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,9 +24,11 @@ public interface IdentifierMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     @Mappings({
-            @Mapping(target = "database.identifiers", ignore = true),
+            @Mapping(target = "databaseId", source = "database.id"),
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
+
+    IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
     default IdentifierTitle identifierToIdentifierTitle(Identifier data, String lang) {
         final Optional<IdentifierTitle> optional = data.getTitles()
@@ -79,13 +85,13 @@ public interface IdentifierMapper {
                 .build();
     }
 
-    @Mappings({
-            @Mapping(target = "titles", ignore = true),
-            @Mapping(target = "descriptions", ignore = true),
-    })
-    Identifier identifierCreateDtoToIdentifier(IdentifierSaveDto data);
+    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
     Identifier identifierUpdateDtoToIdentifier(IdentifierSaveDto data);
+
+    LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
+
+    License licenseDtoToLicense(LicenseDto data);
 
     IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierSaveTitleDto data);
 
@@ -93,7 +99,7 @@ public interface IdentifierMapper {
 
     IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(IdentifierFunderSaveDto data);
 
-    IdentifierSaveDto identifierUpdateDtoToIdentifierCreateDto(IdentifierSaveDto data);
+    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(IdentifierCreateDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 

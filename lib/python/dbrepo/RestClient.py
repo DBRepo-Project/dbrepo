@@ -36,8 +36,6 @@ class RestClient:
                  username: str = None,
                  password: str = None,
                  secure: bool = True) -> None:
-        logging.getLogger('requests').setLevel(logging.INFO)
-        logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
         self.endpoint = os.environ.get('REST_API_ENDPOINT', endpoint)
@@ -1119,7 +1117,7 @@ class RestClient:
         :raises QueryStoreError: The query store rejected the query.
         :raises MetadataConsistencyError: The service failed to parse columns from the metadata database.
         """
-        url = f'/api/database/{database_id}/query'
+        url = f'/api/database/{database_id}/subset'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -1162,7 +1160,7 @@ class RestClient:
         :raises MetadataConsistencyError: The service failed to parse columns from the metadata database.
         """
         headers = {}
-        url = f'/api/database/{database_id}/query/{query_id}/data'
+        url = f'/api/database/{database_id}/subset/{query_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="get", url=url, headers=headers)
@@ -1203,7 +1201,7 @@ class RestClient:
         :raises QueryStoreError: The query store rejected the query.
         :raises MetadataConsistencyError: The service failed to parse columns from the metadata database.
         """
-        url = f'/api/database/{database_id}/query/{query_id}/data'
+        url = f'/api/database/{database_id}/subset/{query_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="head", url=url)
@@ -1237,7 +1235,7 @@ class RestClient:
         :raises QueryStoreError: The query store rejected the query.
         :raises MetadataConsistencyError: The service failed to parse columns from the metadata database.
         """
-        url = f'/api/database/{database_id}/query/{query_id}'
+        url = f'/api/database/{database_id}/subset/{query_id}'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1267,7 +1265,7 @@ class RestClient:
         :raises NotExistsError: If thedatabase or user does not exist.
         :raises QueryStoreError: The query store rejected the query.
         """
-        url = f'/api/database/{database_id}/query'
+        url = f'/api/database/{database_id}/subset'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
@@ -1299,7 +1297,7 @@ class RestClient:
         :raises NotExistsError: If thedatabase or user does not exist.
         :raises QueryStoreError: The query store rejected the update.
         """
-        url = f'/api/database/{database_id}/query/{query_id}'
+        url = f'/api/database/{database_id}/subset/{query_id}'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateQuery(persist=persist))
         if response.status_code == 202:
             body = response.json()
@@ -1345,7 +1343,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         :raises ForbiddenError: If the action is not allowed.
         :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If the database, table/view/query or user does not exist.
+        :raises NotExistsError: If the database, table/view/subset or user does not exist.
         :raises ExternalSystemError: If the external system (DataCite) refused communication with the service.
         """
         url = f'/api/identifier'

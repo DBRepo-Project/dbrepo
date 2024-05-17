@@ -28,7 +28,6 @@ public interface MetadataService {
      *
      * @param parameters The parameters.
      * @return The xml record.
-     * @throws IdentifierNotFoundException The identifier was not found.
      */
     String getRecord(OaiRecordParameters parameters) throws IdentifierNotFoundException;
 
@@ -54,9 +53,8 @@ public interface MetadataService {
      * @return The user metadata.
      * @throws OrcidNotFoundException      The provided identifier is of ORCID type and does not exist.
      * @throws RorNotFoundException        The provided identifier is of ROR type and does not exist.
-     * @throws IdentifierNotFoundException The identifier is not supported.
      * @throws DoiNotFoundException        The doi was not found.
      */
     ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
-            DoiNotFoundException, IdentifierNotFoundException;
+            DoiNotFoundException, IdentifierNotSupportedException;
 }

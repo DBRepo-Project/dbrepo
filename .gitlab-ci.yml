@@ -5,8 +5,8 @@ variables:
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   DOC_VERSIONS: "latest,1.4.2,1.4.1,1.4.0,1.3.0"
-  APP_VERSION: "1.4.2"
-  CHART_VERSION: "1.4.2"
+  APP_VERSION: "1.4.3-rc.0"
+  CHART_VERSION: "1.4.3-rc.0"
 
 image: debian:12-slim
 
@@ -18,22 +18,12 @@ cache:
     - .m2/
 
 stages:
-  - lint
   - build
   - test
   - docs
   - release
   - verify
   - scan
-
-lint-yaml:
-  image: bash:5.2-alpine3.19
-  stage: build
-  script:
-    - "apk add yq"
-    - "yq '.services.[] | .environment' docker-compose.yml > ./doc.txt"
-    - "yq '.services.[] | .environment' docker-compose.prod.yml > ./other.txt"
-    - "cmp --silent ./doc.txt ./other.txt"
 
 build-metadata-service:
   image: maven:3-openjdk-17
@@ -45,7 +35,7 @@ build-metadata-service:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
 
 build-analyse-service:
-  image: python:3.9-slim
+  image: docker.io/python:3.11-alpine
   stage: build
   except:
     refs:
@@ -56,8 +46,20 @@ build-analyse-service:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
+build-data-db-sidecar:
+  image: docker.io/python:3.11-alpine
+  stage: build
+  except:
+    refs:
+      - /^release-.*/
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+
 build-lib:
-  image: python:3.11-slim
+  image: docker.io/python:3.11-alpine
   stage: build
   except:
     refs:
@@ -90,7 +92,7 @@ build-ui:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
 build-search-service:
-  image: python:3.10-alpine
+  image: docker.io/python:3.11-alpine
   stage: build
   except:
     refs:
@@ -123,10 +125,7 @@ build-helm:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - apk add sed helm curl
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - helm package ./helm-charts/dbrepo --destination ./build
+    - helm package ./helm/dbrepo --destination ./build
 
 verify-install-script:
   image: docker.io/docker:24-dind
@@ -186,7 +185,7 @@ test-data-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
-  image: python:3.9-slim
+  image: docker.io/python:3.11-alpine
   stage: test
   except:
     refs:
@@ -210,8 +209,33 @@ test-analyse-service:
       junit: ./dbrepo-analyse-service/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
+test-search-service:
+  image: docker.io/python:3.11-alpine
+  stage: test
+  except:
+    refs:
+      - /^release-.*/
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
+  needs:
+    - build-search-service
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.txt
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-search-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
 test-lib:
-  image: python:3.11-slim
+  image: docker.io/python:3.11-alpine
   stage: test
   except:
     refs:
@@ -538,12 +562,31 @@ release-images:
     refs:
       - /^release-.*/
   before_script:
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+  script:
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add make bash"
+    - "make release"
+
+release-images-unstable:
+  stage: release
+  image: docker:24-dind
+  dependencies:
+    - test-metadata-service
+    - test-data-service
+    - test-analyse-service
+  only:
+    refs:
+      - master
+      - dev
+  before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
-    - "make release"
+    - "CI_COMMIT_BRANCH=release-unstable make release-images"
 
 release-chart:
   stage: release
@@ -555,15 +598,12 @@ release-chart:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - apk add sed helm curl
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - helm package ./helm-charts/dbrepo --destination ./build
+    - helm package ./helm/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
 release-docs:
   stage: release
-  image: docker.io/python:3.11-slim
+  image: docker.io/python:3.11-alpine
   only:
     refs:
       - /^release-.*/

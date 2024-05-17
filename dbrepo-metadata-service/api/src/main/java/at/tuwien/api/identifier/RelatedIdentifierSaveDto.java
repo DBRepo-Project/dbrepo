@@ -16,6 +16,10 @@ import jakarta.validation.constraints.NotNull;
 public class RelatedIdentifierSaveDto {
 
     @NotNull
+    @Schema(example = "1")
+    private Long id;
+
+    @NotNull
     @Schema(example = "10.70124/dc4zh-9ce78")
     private String value;
 

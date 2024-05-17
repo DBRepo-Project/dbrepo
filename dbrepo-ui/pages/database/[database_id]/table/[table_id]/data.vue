@@ -1,83 +1,84 @@
 <template>
   <div>
-    <TableToolbar/>
+    <TableToolbar />
     <v-toolbar
       v-if="canViewTableData"
       :color="versionColor"
       :title="title"
       flat>
-      <v-spacer/>
+      <v-spacer />
       <v-btn
         v-if="canAddTuple"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-plus' : null"
         variant="flat"
         :text="$t('toolbars.table.data.add')"
-        class="mb-1 ml-2"
-        @click="addTuple"/>
+        class="ml-2"
+        @click="addTuple" />
       <v-btn
         v-if="canEditTuple"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-pencil' : null"
         color="warning"
         variant="flat"
         :text="$t('toolbars.table.data.edit')"
-        class="mb-1 ml-2"
-        @click="editTuple"/>
+        class="ml-2"
+        @click="editTuple" />
       <v-btn
         v-if="canDeleteTuple"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
         color="error"
         variant="flat"
         :text="$t('toolbars.table.data.delete')"
-        class="mb-1 ml-2"
+        class="ml-2"
         :loading="loadingDelete"
-        @click="deleteItems"/>
+        @click="deleteItems" />
       <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
         :text="$t('toolbars.table.data.download')"
-        class="mb-1 ml-2"
-        @click.stop="download"/>
+        class="ml-2"
+        @click.stop="download" />
       <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
-        class="mb-1 ml-2"
-        :disabled="loadingData !== 0"
-        :loading="loadingData > 0"
-        @click="reload"/>
+        class="ml-2"
+        :disabled="loadingData"
+        :loading="loadingData"
+        @click="reload" />
       <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-update' : null"
         variant="flat"
         :text="$t('toolbars.table.data.version')"
-        class="mb-1 ml-2"
-        @click.stop="pick"/>
+        class="ml-2"
+        @click.stop="pick" />
     </v-toolbar>
-    <TimeDrift/>
+    <TimeDrift />
     <v-card tile>
-      <v-progress-linear v-if="loadingData > 0 || error" :indeterminate="!error" :color="loadingColor"/>
       <v-card
         v-if="error"
         variant="flat">
         <v-card-text
-          v-text="$t('error.table.connection')"/>
+          v-text="$t('error.table.connection')" />
       </v-card>
       <v-data-table-server
         v-if="!error"
+        v-model="selection"
         flat
+        :show-select="canModify"
+        return-object
         :headers="headers"
-        :loading="loadingData > 0"
-        :options="options"
         :items="rows"
         :items-length="total"
+        :loading="loadingData"
+        :options.sync="options"
         :footer-props="footerProps"
-        @update:options="updateOptions">
-        <template v-if="canModify" v-slot:item.selection="{ item }">
-          <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
-        </template>
-        <template v-for="(blobColumn, idx) in blobColumns" v-slot:[blobColumn]="{ item }">
+        @update:options="loadData">
+        <template
+          v-for="(blobColumn, idx) in blobColumns"
+          v-slot:[blobColumn]="{ item }">
           <BlobDownload
-            :blob="item[blobColumn.substring(5)]"/>
+            :blob="item[blobColumn.substring(5)]" />
         </template>
       </v-data-table-server>
     </v-card>
@@ -87,7 +88,17 @@
       @close="closeVersion">
       <TimeTravel
         ref="timeTravel"
-        @close="pickVersion"/>
+        @close="pickVersion" />
+    </v-dialog>
+    <v-dialog
+      v-model="addTupleDialog"
+      persistent
+      max-width="640">
+      <EditTuple
+        :table="table"
+        :tuple="tuple"
+        :edit="false"
+        @close="close" />
     </v-dialog>
     <v-dialog
       v-model="editTupleDialog"
@@ -96,10 +107,10 @@
       <EditTuple
         :table="table"
         :tuple="tuple"
-        :edit="edit"
-        @close="close"/>
+        :edit="true"
+        @close="close" />
     </v-dialog>
-    <v-breadcrumbs :items="items" class="pa-0 mt-2"/>
+    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
@@ -107,9 +118,9 @@
 import TimeTravel from '@/components/dialogs/TimeTravel.vue'
 import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import {formatTimestampUTC, formatDateUTC, formatTimestamp, localizedMessage} from '@/utils'
-import {useUserStore} from '@/stores/user'
-import {useCacheStore} from '@/stores/cache'
+import {formatTimestampUTC, formatDateUTC, formatTimestamp} from '@/utils'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import BlobDownload from '@/components/table/BlobDownload.vue'
 
@@ -121,13 +132,15 @@ export default {
     TableToolbar,
     TimeDrift
   },
-  data() {
+  data () {
     return {
       loading: true,
-      loadingData: 0,
+      loadingData: false,
+      loadingCount: false,
       loadingDelete: false,
+      addTupleDialog: false,
       editTupleDialog: false,
-      total: null,
+      total: 0,
       footerProps: {
         showFirstLastPage: true,
         itemsPerPageOptions: [10, 25, 50, 100]
@@ -140,8 +153,8 @@ export default {
       version: null,
       lastReload: new Date(),
       tab: null,
-      edit: false,
       error: false,
+      tuple: null,
       options: {
         page: 1,
         itemsPerPage: 10
@@ -177,52 +190,52 @@ export default {
     }
   },
   computed: {
-    loadingColor() {
+    loadingColor () {
       return this.error ? 'error' : 'primary'
     },
-    roles() {
+    roles () {
       return this.userStore.getRoles
     },
-    database() {
+    database () {
       return this.cacheStore.getDatabase
     },
-    table() {
+    table () {
       return this.cacheStore.getTable
     },
-    user() {
+    user () {
       return this.userStore.getUser
     },
-    tables() {
+    tables () {
       return this.cacheStore.getTable
     },
-    access() {
+    access () {
       return this.userStore.getAccess
     },
-    title() {
+    title () {
       return (this.version ? this.$t('toolbars.database.history') : this.$t('toolbars.database.current')) + ' ' + this.versionFormatted
     },
-    blobColumns() {
+    blobColumns () {
       if (!this.table || !this.table.columns) {
         return []
       }
       return this.table.columns.filter(c => this.isFileField(c)).map(c => 'item.' + c.internal_name)
     },
-    versionColor() {
+    versionColor () {
       return this.version ? 'primary' : 'secondary'
     },
-    versionFormatted() {
+    versionFormatted () {
       if (this.version === null) {
         return ''
       }
       return this.version + ' (UTC)'
     },
-    versionISO() {
+    versionISO () {
       if (this.version === null) {
         return null
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
-    canModify() {
+    canModify () {
       if (!this.user || !this.access || !this.table) {
         return false
       }
@@ -231,7 +244,7 @@ export default {
       }
       return this.access.type === 'write_all'
     },
-    canViewTableData() {
+    canViewTableData () {
       /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
       if (!this.database) {
         return false
@@ -244,63 +257,55 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
-    canAddTuple() {
+    canAddTuple () {
       if (!this.roles) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
     },
-    canEditTuple() {
+    canEditTuple () {
       if (!this.roles || this.selection === null || this.selection.length !== 1) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
     },
-    canDeleteTuple() {
+    canDeleteTuple () {
       if (!this.roles || this.selection === null || this.selection.length < 1) {
         return false
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('delete-table-data')
-    },
-    tuple() {
-      return this.edit ? this.selection[0] : {}
-    },
+    }
   },
   watch: {
-    version() {
+    version () {
       this.reload()
     },
-    options() {
-      this.loadData()
-    },
-    table(newTable, oldTable) {
+    table (newTable, oldTable) {
       if (newTable !== oldTable && oldTable === null) {
         this.loadProperties()
       }
     }
   },
-  mounted() {
+  mounted () {
     this.reload()
     this.loadProperties()
   },
   methods: {
-    addTuple() {
-      const data = {}
-      this.edit = false
+    addTuple () {
+      this.tuple = {}
       this.table.columns.forEach((c) => {
-        data[c.internal_name] = null
+        this.tuple[c.internal_name] = null
       })
-      this.selection = []
+      this.addTupleDialog = true
+    },
+    editTuple () {
+      this.tuple = this.selection[0]
       this.editTupleDialog = true
     },
-    editTuple() {
-      this.edit = true
-      this.editTupleDialog = true
-    },
-    deleteItems() {
+    deleteItems () {
       this.loadingDelete = true
       const wait = []
       for (const select of this.selection) {
@@ -319,17 +324,21 @@ export default {
             })
         }
         const tupleService = useTupleService()
-        wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, {keys: constraints}))
+        wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
+          .catch(({message}) => {
+            this.$toast.error(message)
+          }))
       }
       Promise.all(wait)
         .then(() => {
           this.$toast.success(`Deleted ${this.selection.length} row(s)`)
-          this.$emit('modified', {success: true, action: 'delete'})
+          this.$emit('modified', { success: true, action: 'delete' })
+          this.selection = []
           this.reload()
         })
       this.loadingDelete = false
     },
-    download() {
+    download () {
       this.downloadLoading = true
       if (!this.version) {
         const tableService = useTableService()
@@ -342,7 +351,8 @@ export default {
             document.body.appendChild(link)
             link.click()
           })
-          .catch(() => {
+          .catch((error) => {
+            this.$toast.error(this.$t(error.code))
             this.downloadLoading = false
           })
           .finally(() => {
@@ -367,14 +377,14 @@ export default {
           })
       }
     },
-    pick() {
+    pick () {
       this.pickVersionDialog = true
     },
-    closeVersion() {
+    closeVersion () {
       this.pickVersionDialog = false
     },
-    pickVersion(event) {
-      const {success, timestamp} = event
+    pickVersion (event) {
+      const { success, timestamp } = event
       if (success) {
         if (timestamp === null) {
           this.version = null
@@ -384,12 +394,12 @@ export default {
       }
       this.pickVersionDialog = false
     },
-    loadProperties() {
+    loadProperties () {
       if (!this.table || this.headers.length > 0) {
         return
       }
       try {
-        this.headers = [{value: 'selection', title: '', sortable: false}]
+        this.headers = [{ value: 'selection', title: '', sortable: false }]
         this.table.columns.map((c) => {
           return {
             value: c.internal_name,
@@ -400,19 +410,21 @@ export default {
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (error) {
-        this.$toast.error(localizedMessage(this.$t, error, 'Failed to map table details'))
+        this.$toast.error(this.$t(error.code))
       }
       this.loading = false
     },
-    reload() {
+    reload () {
       this.lastReload = new Date()
-      this.loadData()
+      this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
       this.loadCount()
     },
-    loadData() {
-      this.loadingData++
+    loadData ({ page, itemsPerPage, sortBy }) {
+      this.options.page = page
+      this.options.itemsPerPage = itemsPerPage
       const tableService = useTableService()
-      tableService.getData(this.$route.params.database_id, this.$route.params.table_id, this.options.page - 1, this.options.itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
+      this.loadingData = true
+      tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (page - 1), itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
         .then((data) => {
           this.rows = data.result.map((row) => {
             for (const col in row) {
@@ -428,41 +440,38 @@ export default {
             }
             return row
           })
+          this.loadingData = false
         })
         .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, 'Failed to load data'))
+          this.$toast.error(this.$t(error.code))
           this.error = true
-        })
-        .finally(() => {
-          this.loadingData--
+          this.loadingData = false
         })
     },
-    loadCount() {
-      this.loadingData++
+    loadCount () {
       const tableService = useTableService()
+      this.loadingCount = true
       tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
         .then((count) => {
           this.total = count
+          this.loadingCount = false
         })
-        .catch(() => {
-          this.loadingData--
-        })
-        .finally(() => {
-          this.loadingData--
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
+          this.loadingCount = false
         })
     },
-    isFileField(column) {
+    isFileField (column) {
       return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
     },
-    close(event) {
-      console.debug('closed edit/create tuple dialog', event)
+    close ({ success }) {
+      console.debug('closed edit/create tuple dialog')
+      this.addTupleDialog = false
       this.editTupleDialog = false
-      this.reload()
-    },
-    updateOptions({page, itemsPerPage, sortBy}) {
-      this.options.page = page
-      this.options.itemsPerPage = itemsPerPage
-      this.loadData()
+      if (success) {
+        this.reload()
+        this.selection = []
+      }
     }
   }
 }
