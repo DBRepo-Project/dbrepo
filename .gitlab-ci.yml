@@ -619,6 +619,7 @@ release-docs:
   script:
     - make gen-docs-doc
     - eval $(ssh-agent -s)
+    - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
