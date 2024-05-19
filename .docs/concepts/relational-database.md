@@ -2,10 +2,6 @@
 author: Martin Weise
 ---
 
-# Data Database
-
-## tl;dr
-
 !!! debug "Debug Information"
 
     Image: [`bitnami/mariadb-galera:11.2.2-debian-11-r0`](https://hub.docker.com/r/bitnami/mariadb-galera)

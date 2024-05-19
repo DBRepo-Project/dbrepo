@@ -1,4 +1,10 @@
-# Application Developer Guide
+---
+author: Martin Weise
+---
+
+## Contributing
+
+We welcome contributions to DBRepo!
 
 ## Dependencies
 
@@ -105,3 +111,10 @@ repository.
 ## Documentation
 
 For consistency reasons across the documentation, the resolution needs to be 1280x800 (16:10 ratio)
+
+## Roadmap
+
+- [x] Q1: Python library, versioning in every component, bumping frontend versions, i18n
+- [ ] Q2: Kubernetes deployment guidelines for OpenShift
+- [ ] Q3: Frontend tests, database dashboards
+- [ ] Q4: Release of 2.0.0

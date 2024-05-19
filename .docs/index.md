@@ -1,24 +1,13 @@
 ---
 author: Martin Weise
-hide:
-- navigation
-social:
-  cards_layout_options:
-    title: Documentation that simply works
 ---
 
-## Problem Statement
+[![CI/CD Pipeline](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![Code Coverage](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![GitLab Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 
-Digital repositories see themselves more frequently encountered with the problem of making databases accessible in their
-collection. Challenges revolve around organizing, searching and retrieving content stored within databases and
-constitute a major technical burden as their internal representation greatly differs from static documents most digital
-repositories are designed for.
-
-## Application Areas
-
-We present a database repository system that allows researchers to ingest data into a central, versioned repository
-through common interfaces, provides efficient access to arbitrary subsets of data even when the underlying data store is
-evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable data.
 
 ## Features
 
@@ -44,12 +33,14 @@ edge devices like sensors and store them asynchronous in DBRepo. [Learn more.](.
 ### Cloud Native
 
 Our lightweight Helm chart allows for installations on any cloud provider or private-cloud setting that has an
-underlying PV storage provider. DBRepo can be installed from the Artifacthub repository. Databases are managed as 
-MariaDB Galera Cluster with high degree of availability ensuring your data is always accessible.
+underlying PV storage provider. DBRepo can be installed from 
+the [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo) repository. Databases are managed as MariaDB
+Galera Cluster with high degree of availability ensuring your data is always accessible.
 [Learn more.](../deployment-helm/)
 
-## More Information
+## Demo Site
 
-- Demonstration instance [https://dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at)
-- Test instance [https://test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
-- System description [https://doi.org/10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)
+We run a small demonstration instance so you can see the latest version of DBRepo in action. The demonstration instance
+is updated with new releases and should be considered ephemeral.
+
+[:fontawesome-solid-flask: Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary }
