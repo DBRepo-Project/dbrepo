@@ -2,12 +2,11 @@
 author: Martin Weise
 ---
 
-# Python Library
+[![PyPI - Version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/){ tabindex=-1 }
 
 ## tl;dr
 
 [:fontawesome-solid-cube: &nbsp;View Docs](../sphinx){ .md-button .md-button--primary }
-[:fontawesome-brands-python: &nbsp;PyPI](https://pypi.org/project/dbrepo/){ .md-button .md-button--secondary }
 
 ## Installing
 

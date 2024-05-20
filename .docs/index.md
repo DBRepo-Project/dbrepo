@@ -7,39 +7,23 @@ author: Martin Weise
 [![GitLab Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 
+Documentation for version: [v1.4.3](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
-## Features
+DBRepo is a repository for data in databases that are used from the beginning of a research project supporting data 
+evolution, -citation and -versioning. It implements the 
+[RDA WGDC recommendations](https://doi.org/10.1162/99608f92.be565013) on precisely identifying arbitrary subsets of 
+data.
 
-### Built-in search
+## Why use DBRepo?
 
-DBRepo makes your dataset searchable without extra effort: most metadata is generated automatically for data in your 
-databases. The fast and powerful OpenSearch database allows a fast retrieval of any information. Adding semantic mapping
-through a suggestion-feature, allows machines to properly understand the context of your data. [Learn more.](../system-services-search/)
+* **aaa** bbbb
 
-### Citable datasets
+Installing DBRepo is very easy or just [give it a try online](https://test.dbrepo.tuwien.ac.at).
 
-Adopting the recommendations of the RDA-WGDC, arbitrary subsets can be precisely, persistently identified using
-system-versioned tables of MariaDB and the DataCite schema for minting DOIs. External systems i.e. metadata harvesters
-(OpenAIRE, Google Datasets) can access these datasets through OAI-PMH, JSON-LD and FAIR Signposting protocols.
-[Learn more.](../system-services-metadata/)
+## Who is using DBRepo?
 
-### Powerful API for Data Scientists
+TBD
 
-With our strongly typed Python Library, Data Scientists can import, export and work with data from Jupyter Notebook or
-Python script, optionally using Pandas DataFrames. For example: the AMQP API Client can collect continuous data from
-edge devices like sensors and store them asynchronous in DBRepo. [Learn more.](../usage-python/)
-
-### Cloud Native
-
-Our lightweight Helm chart allows for installations on any cloud provider or private-cloud setting that has an
-underlying PV storage provider. DBRepo can be installed from 
-the [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo) repository. Databases are managed as MariaDB
-Galera Cluster with high degree of availability ensuring your data is always accessible.
-[Learn more.](../deployment-helm/)
-
-## Demo Site
-
-We run a small demonstration instance so you can see the latest version of DBRepo in action. The demonstration instance
-is updated with new releases and should be considered ephemeral.
+## How can I try DBRepo
 
 [:fontawesome-solid-flask: &nbsp;Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary }
