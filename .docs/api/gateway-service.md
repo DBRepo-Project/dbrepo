@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Gateway Service
-
 ## tl;dr
 
 !!! debug "Debug Information"

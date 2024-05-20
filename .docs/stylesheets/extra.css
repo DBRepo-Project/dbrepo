@@ -18,12 +18,12 @@ img.img-border {
 
 .md-main .md-content a:not(.action-button):not([tabindex]),
 .md-main .md-content a:not(.action-button):not([tabindex]) {
-  color: var(--md-typeset-color);
+  color: var(--md-primary-fg-color);
   border-bottom: 2px solid var(--md-primary-fg-color); }
   .md-main .md-content a:not(.action-button):not([tabindex]):focus, .md-main .md-content a:not(.action-button):not([tabindex]):hover,
   .md-main .md-content a:not(.action-button):not([tabindex]):focus,
   .md-main .md-content a:not(.action-button):not([tabindex]):hover {
-    color: var(--md-typeset-color);
+    color: var(--md-primary-fg-color--dark);
     border-bottom: 2px solid var(--md-primary-fg-color--dark); }
 
 .md-banner {

@@ -57,6 +57,7 @@ dbrepo:
     secretAccessKey: seaweedfsadmin
     importBucket: dbrepo-upload
     exportBucket: dbrepo-download
+    filePath: /tmp
   admin:
     username: admin
     password: admin

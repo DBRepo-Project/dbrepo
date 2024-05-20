@@ -6,11 +6,8 @@ author: Martin Weise
 
 ## tl;dr
 
-!!! debug "Debug Information"
-
-    PyPI: [`dbrepo`](https://pypi.org/project/dbrepo/)
-
-    * Full module documentation <a href="../sphinx" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+[:fontawesome-solid-cube: &nbsp;View Docs](../sphinx){ .md-button .md-button--primary }
+[:fontawesome-brands-python: &nbsp;PyPI](https://pypi.org/project/dbrepo/){ .md-button .md-button--secondary }
 
 ## Installing
 

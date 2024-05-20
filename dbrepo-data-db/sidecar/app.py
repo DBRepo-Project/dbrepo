@@ -121,10 +121,11 @@ app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-cli
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["ADMIN_USERNAME"] = os.getenv('ADMIN_USERNAME', 'admin')
 app.config["ADMIN_PASSWORD"] = os.getenv('ADMIN_PASSWORD', 'admin')
-app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
 app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
-app.config["S3_SECRET_ACCESS_KEY"] = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
 app.config["S3_EXPORT_BUCKET"] = os.getenv('S3_EXPORT_BUCKET', 'dbrepo-download')
+app.config["S3_FILE_PATH"] = os.getenv('S3_FILE_PATH', '/tmp')
+app.config["S3_SECRET_ACCESS_KEY"] = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
 app.config["S3_IMPORT_BUCKET"] = os.getenv('S3_IMPORT_BUCKET', 'dbrepo-upload')
 
 app.json_encoder = LazyJSONEncoder
@@ -182,7 +183,7 @@ def import_csv(filename):
     auth.current_user()
     logging.debug('endpoint import csv, filename=%s, body=%s', filename, request)
     s3_client = S3Client()
-    response = s3_client.download_file(filename)
+    response = s3_client.download_file(filename, app.config["S3_FILE_PATH"], app.config['S3_IMPORT_BUCKET'])
     if response is False:
         return Response(), 400
     return Response(json.dumps(response)), 202
@@ -194,7 +195,7 @@ def import_csv(filename):
 def import_csv(filename):
     logging.debug('endpoint export csv, filename=%s, body=%s', filename, request)
     s3_client = S3Client()
-    response = s3_client.upload_file(filename)
+    response = s3_client.upload_file(filename, app.config["S3_FILE_PATH"], app.config['S3_EXPORT_BUCKET'])
     if response is False:
         return Response(), 400
     return Response(), 202

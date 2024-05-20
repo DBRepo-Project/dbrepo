@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Analyse Service
-
 ## tl;dr
 
 !!! debug "Debug Information"

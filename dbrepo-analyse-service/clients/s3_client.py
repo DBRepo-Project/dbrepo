@@ -20,7 +20,7 @@ class S3Client:
         self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
         self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
 
-    def upload_file(self, filename: str, path: str = "/tmp/", bucket: str = "dbrepo-upload") -> bool:
+    def upload_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo-upload") -> bool:
         """
         Uploads a file to the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html.
@@ -43,15 +43,16 @@ class S3Client:
             logging.warning(f"Failed to upload file with key {filename}")
             raise ConnectionRefusedError(f"Failed to upload file with key {filename}", e)
 
-    def download_file(self, filename: str, bucket: str):
+    def download_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo-download"):
         """
         Downloads a file from the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
         :param filename: The filename.
+        :param path: The path the file is located.
         :param bucket: The bucket to download the file from.
         """
         self.file_exists(bucket, filename)
-        filepath = os.path.join("/tmp/", filename)
+        filepath = os.path.join(path, filename)
         self.client.download_file(bucket, filename, filepath)
         logging.info(f"Downloaded .csv with key {filename} into {filepath}")
 

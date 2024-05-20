@@ -20,32 +20,35 @@ class S3Client:
         self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
         self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
 
-    def upload_file(self, filename) -> bool:
+    def upload_file(self, filename, path, bucket) -> bool:
         """
         Uploads a file to the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html.
         :param filename: The filename.
+        :param path: The path.
+        :param bucket: The bucket.
         :return: True if the file was uploaded.
         """
-        filepath = os.path.join("/tmp/", filename)
+        filepath = os.path.join(path, filename)
         try:
-            self.client.upload_file(filepath, current_app.config['S3_EXPORT_BUCKET'], filename)
-            logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket dbrepo-download")
+            self.client.upload_file(filepath, bucket, filename)
+            logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket {bucket}")
             return True
         except ClientError as e:
             logging.error(e)
             return False
 
-    def download_file(self, filename) -> bool:
+    def download_file(self, filename, path, bucket) -> bool:
         """
         Downloads a file from the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
         :param filename: The filename.
+        :param path: The path.
+        :param bucket: The bucket.
         :return: True if the file was downloaded and saved.
         """
-        self.file_exists(current_app.config['S3_IMPORT_BUCKET'], filename)
-        filepath = os.path.join("/tmp/", filename)
-        bucket = current_app.config['S3_IMPORT_BUCKET']
+        self.file_exists(bucket, filename)
+        filepath = os.path.join(path, filename)
         try:
             self.client.download_file(bucket, filename, filepath)
             logging.info(f"Downloaded .csv with key {filename} into {filepath} from bucket {bucket}")

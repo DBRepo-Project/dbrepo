@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Broker Service
-
 ## tl;dr
 
 !!! debug "Debug Information"
@@ -40,14 +38,14 @@ queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples w
 the dot!) to this queue.
 
 <figure markdown>
-   ![Data ingest](images/queue-quorum.png)
+   ![Data ingest](../images/queue-quorum.png)
    <figcaption>Replicated quorum queue dbrepo in a cluster with three nodes</figcaption>
 </figure>
 
 The consumer takes care of writing it to the correct table in the [Data Service](../system-services-data).
 
 <figure markdown>
-   ![Data ingest](images/exchange-binding.png)
+   ![Data ingest](../images/exchange-binding.png)
    <figcaption>Architecture Broker Service</figcaption>
 </figure>
 

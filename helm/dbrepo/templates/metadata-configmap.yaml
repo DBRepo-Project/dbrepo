@@ -4,8 +4,11 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: metadata-db-setup
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ .Values.namespace }}
 data:
+  {{- with .Values.metadatadb.extraInitDbScripts }}
+  {{ toYaml . | nindent 2 }}
+  {{- end }}
   02-setup-data.sql: |
     BEGIN;
     INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)

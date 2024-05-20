@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
+import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.MariaDbMapper;
@@ -28,13 +29,15 @@ import java.util.*;
 @Service
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {
 
+    private final S3Config s3Config;
     private final MariaDbMapper mariaDbMapper;
     private final StorageService storageService;
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public TableServiceMariaDbImpl(MariaDbMapper mariaDbMapper, StorageService storageService,
+    public TableServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, StorageService storageService,
                                    DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.s3Config = s3Config;
         this.mariaDbMapper = mariaDbMapper;
         this.storageService = storageService;
         this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
@@ -213,6 +216,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Connection connection = dataSource.getConnection();
         try {
             /* import tuple */
+            data.setLocation(s3Config.getS3FilePath() + "/" + data.getLocation());
             connection.prepareStatement(mariaDbMapper.datasetToRawInsertQuery(table.getDatabase().getInternalName(), table, data))
                     .execute();
             connection.commit();
@@ -331,13 +335,14 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     public ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp)
             throws SQLException, SidecarExportException, StorageNotFoundException, StorageUnavailableException,
             QueryMalformedException {
-        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
             connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(table.getDatabase().getInternalName(),
-                            table.getInternalName(), table.getColumns(), timestamp, filename))
+                            table.getInternalName(), table.getColumns(), timestamp, filePath))
                     .executeUpdate();
             connection.commit();
         } catch (SQLException e) {
@@ -347,8 +352,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), filename);
-        return storageService.getResource(filename);
+        dataDatabaseSidecarGateway.exportFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), fileName);
+        return storageService.getResource(fileName);
     }
 
 }

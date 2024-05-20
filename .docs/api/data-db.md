@@ -60,7 +60,7 @@ the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html
 natively.
 
 <figure markdown>
-![Sidecar architecture detailed](images/architecture-data-db.svg)
+![Sidecar architecture detailed](../images/architecture-data-db.svg)
 <figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
 </figure>
 

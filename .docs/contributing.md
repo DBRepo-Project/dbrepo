@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-## Contributing
-
 We welcome contributions to DBRepo!
 
 ## Dependencies

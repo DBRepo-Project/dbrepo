@@ -369,7 +369,7 @@ public interface MariaDbMapper {
     }
 
     default String tableOrViewToRawExportQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
-                                               Instant timestamp, String filename) {
+                                               Instant timestamp, String filePath) {
         final StringBuilder statement = new StringBuilder("SELECT ");
         int[] idx = new int[]{0};
         columns.forEach(column -> {
@@ -399,21 +399,21 @@ public interface MariaDbMapper {
                     .append(mariaDbFormatter.format(timestamp))
                     .append("'");
         }
-        statement.append(" INTO OUTFILE '/tmp/")
-                .append(filename)
+        statement.append(" INTO OUTFILE '")
+                .append(filePath)
                 .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         statement.append(";");
         log.debug("mapped table/view export query: {}", statement);
         return statement.toString();
     }
 
-    default String subsetToRawExportQuery(String query, Instant timestamp, String filename) {
+    default String subsetToRawExportQuery(String query, Instant timestamp, String filePath) {
         final StringBuilder statement = new StringBuilder(query.replaceAll(";", ""))
                 .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(mariaDbFormatter.format(timestamp))
                 .append("'")
-                .append(" INTO OUTFILE '/tmp/")
-                .append(filename)
+                .append(" INTO OUTFILE '")
+                .append(filePath)
                 .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         log.debug("mapped export query: {}", statement);
         return statement.toString();
@@ -507,7 +507,7 @@ public interface MariaDbMapper {
     }
 
     default String datasetToRawInsertQuery(String databaseName, PrivilegedTableDto table, ImportCsvDto data) {
-        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '/tmp/")
+        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '")
                 .append(data.getLocation())
                 .append("' REPLACE INTO TABLE `")
                 .append(databaseName)

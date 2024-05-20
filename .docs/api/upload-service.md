@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Upload Service
-
 ## tl;dr
 
 !!! debug "Debug Information"
@@ -44,7 +42,7 @@ If your deployment is secured with SSL/TLS (recommended) set the `useSsl` variab
 The Upload Service communicates internally with the [Storage Service](../system-services-storage) (c.f. [Figure 1](#fig1)).
 
 <figure id="fig1" markdown>
-![Architecture of the Upload Service](images/architecture-upload-service.svg)
+![Architecture of the Upload Service](../images/architecture-upload-service.svg)
 <figcaption>Figure 1: Architecture of the Upload Service</figcaption>
 </figure>
 

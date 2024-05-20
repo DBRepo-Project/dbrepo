@@ -14,25 +14,40 @@ nav:
     - Migration Guide: migration.md
     - contributing.md
   - Concepts:
-    - Microservice: concepts/microservice.md
-    - Persistent Identifier: concepts/pid.md
-    - (Meta-)Data: concepts/data.md
-    - Analysis: concepts/analysis.md
+    - Overview: concepts/index.md
     - Authentication: concepts/authentication.md
-    - Message Broker: concepts/message-broker.md
-    - Gateway: concepts/gateway.md
+    - DBMS: concepts/dbms.md
+    - Messaging: concepts/messaging.md
+    - (Meta-)Data: concepts/metadata.md
+    - Persistent Identifier: concepts/pid.md
     - Search: concepts/search.md
     - Storage: concepts/storage.md
-    - Upload: concepts/upload.md
-    - Relational Database: concepts/relational-database.md
     - User Interface: concepts/ui.md
-  - Usage:
-    - Overview: usage-overview.md
-    - Python Library: usage-python.md
+  - API:
+    - Overview: api/index.md
+    - Databases:
+      - Data Database: api/data-db.md
+      - Metadata Database: api/metadata-db.md
+    - SDK:
+      - Python Library: api/python.md
+      - Swagger / OpenAPI: api/open-api.md
     - Services:
-      - Authentication Service: usage-authentication.md
-      - Storage Service: usage-storage.md
-      - Upload Service: usage-upload.md
+      - Analyse Service: api/analyse-service.md
+      - Auth Service: api/auth-service.md
+      - Data Service: api/data-service.md
+      - Gateway Service: api/gateway-service.md
+      - Metadata Service: api/metadata-service.md
+      - Search Service: api/search-service.md
+      - Storage Service: api/storage-service.md
+      - Upload Service: api/upload-service.md
+    - UI:
+      - Customization: api/ui.md
+  - Examples:
+    - COVID-19 Tweets: examples/covid19.md
+    - Influenza Monitoring: examples/influenza.md
+    - Manufacturing Data: examples/manufacturing.md
+    - Power Usage: examples/power.md
+    - Transportation Monitoring: examples/transportation.md
   - publications.md
   - contact.md
 extra_css:

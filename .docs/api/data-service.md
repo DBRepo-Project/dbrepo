@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-# Data Service
-
 ## tl;dr
 
 !!! debug "Debug Information"
@@ -25,8 +23,6 @@ via [Spring AMQP](https://docs.spring.io/spring-amqp/reference/html/). To increa
 Data Service up.
 
 ## Limitations
-
-* No clear differentiation for data-handling endpoints from the [Metadata Service](../system-services-metadata) yet.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

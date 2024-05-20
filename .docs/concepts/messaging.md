@@ -2,12 +2,14 @@
 author: Martin Weise
 ---
 
-## Index
+## Tuple
 
 TBD
 
-## Document
+## AMQP
 
 TBD
 
-## Query
+## MQTT
+
+TBD

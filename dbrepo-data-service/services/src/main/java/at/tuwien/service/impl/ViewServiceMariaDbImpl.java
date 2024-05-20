@@ -6,6 +6,7 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.MariaDbMapper;
@@ -27,13 +28,15 @@ import java.time.Instant;
 @Service
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
+    private final S3Config s3Config;
     private final MariaDbMapper mariaDbMapper;
     private final StorageService storageService;
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(MariaDbMapper mariaDbMapper, StorageService storageService,
+    public ViewServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, StorageService storageService,
                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.s3Config = s3Config;
         this.mariaDbMapper = mariaDbMapper;
         this.storageService = storageService;
         this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
@@ -133,13 +136,14 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
             StorageUnavailableException {
-        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
             connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(database.getInternalName(),
-                            view.getInternalName(), view.getColumns(), timestamp, filename))
+                            view.getInternalName(), view.getColumns(), timestamp, filePath))
                     .executeUpdate();
             connection.commit();
         } catch (SQLException e) {
@@ -149,8 +153,9 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), filename);
-        return storageService.getResource(filename);
+        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(),
+                database.getContainer().getSidecarPort(), fileName);
+        return storageService.getResource(fileName);
     }
 
 }
