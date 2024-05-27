@@ -598,11 +598,9 @@ release-chart:
       - /^release-.*/
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
-    - "echo ${CI_GPG_KEYRING} | base64 -d > ~/keyring.gpg"
     - "apk add sed helm curl"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
-    - "helm package --sign --key 'Martin Weise' ./helm/dbrepo --keyring ~/keyring.gpg --destination ./build"
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
     - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
 
@@ -618,6 +616,7 @@ release-docs:
     - "wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/bin/yq"
     - "chmod +x /usr/bin/yq"
     - "apt-get update && apt-get install -y git make sed wget ssh"
+    - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${VERSION}/swagger"
   script:
     - "make gen-swagger-doc gen-lib-doc gen-docs-doc"
@@ -627,6 +626,7 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${VERSION}/swagger/custom.css" # swagger
     - "cp -r ./site ./final/${VERSION}" # mkdocs
     - eval $(ssh-agent -s)
+    - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
@@ -637,6 +637,7 @@ release-docs:
 release-libs:
   stage: release
   image: docker.io/python:3.11-alpine
+  when: manual
   only:
     refs:
       - /^release-.*/

@@ -1,4 +1,5 @@
 site_name: Database Repository
+site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
 repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
