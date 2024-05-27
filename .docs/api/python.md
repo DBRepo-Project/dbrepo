@@ -6,7 +6,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:fontawesome-solid-cube: &nbsp;View Docs](../../sphinx/){ .md-button .md-button--primary tabindex=-1 }
+[:simple-python: &nbsp;Python Library](../../sphinx/){ .md-button .md-button--primary tabindex=-1 }
 
 ## Installing
 
