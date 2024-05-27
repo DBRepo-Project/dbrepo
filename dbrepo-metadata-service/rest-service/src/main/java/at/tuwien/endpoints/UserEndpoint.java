@@ -59,7 +59,7 @@ public class UserEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_users_list")
+    @Observed(name = "dbrepo_users_list")
     @Operation(summary = "Find all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -81,7 +81,7 @@ public class UserEndpoint {
     @PostMapping
     @Transactional(rollbackFor = {ServiceException.class, ServiceConnectionException.class})
     @PreAuthorize("!isAuthenticated()")
-    @Observed(name = "dbrepo_metadata_user_create")
+    @Observed(name = "dbrepo_user_create")
     @Operation(summary = "Create user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -107,6 +107,16 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Failed to create in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to create in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserExistsException, EmailExistsException, ServiceException, ServiceConnectionException,
@@ -124,7 +134,7 @@ public class UserEndpoint {
     }
 
     @PostMapping("/token")
-    @Observed(name = "dbrepo_metadata_user_token")
+    @Observed(name = "dbrepo_user_token")
     @Operation(summary = "Obtain user token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -132,6 +142,31 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TokenDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to get token",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find user in auth database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "428",
+                    description = "Account is not fully setup in auth service (requires password change?)",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to auth service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to get user in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
             throws ServiceException, ServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
@@ -157,7 +192,7 @@ public class UserEndpoint {
     }
 
     @PutMapping("/token")
-    @Observed(name = "dbrepo_metadata_user_refresh_token")
+    @Observed(name = "dbrepo_user_refresh_token")
     @Operation(summary = "Refresh user token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -165,6 +200,16 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TokenDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Invalid refresh token",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to auth service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TokenDto> refreshToken(@NotNull @Valid @RequestBody RefreshTokenRequestDto data)
             throws ServiceConnectionException, CredentialsInvalidException {
@@ -178,7 +223,7 @@ public class UserEndpoint {
     @GetMapping("/{userId}")
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
-    @Observed(name = "dbrepo_metadata_user_find")
+    @Observed(name = "dbrepo_user_find")
     @Operation(summary = "Get a user info", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -217,7 +262,7 @@ public class UserEndpoint {
     @PutMapping("/{userId}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
-    @Observed(name = "dbrepo_metadata_user_modify")
+    @Observed(name = "dbrepo_user_modify")
     @Operation(summary = "Modify user information", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -230,11 +275,21 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to modify user metadata",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/user in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
-                                          @NotNull Principal principal) throws ServiceException,
-            ServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException {
+                                          @NotNull Principal principal) throws NotAllowedException,
+            UserNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         User user = userService.findById(userId);
         if (!user.equals(principal)) {
@@ -250,7 +305,7 @@ public class UserEndpoint {
     @PutMapping("/{userId}/password")
     @Transactional
     @PreAuthorize("isAuthenticated()")
-    @Observed(name = "dbrepo_metadata_user_password_modify")
+    @Observed(name = "dbrepo_user_password_modify")
     @Operation(summary = "Modify user password", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -258,6 +313,26 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to change foreign user password",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/user in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to auth service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to get user in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> password(@NotNull @PathVariable("userId") UUID userId,
                                       @NotNull @Valid @RequestBody UserPasswordDto data,

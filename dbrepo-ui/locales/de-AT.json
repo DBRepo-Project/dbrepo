@@ -421,7 +421,7 @@
           }
         },
         "schema": {
-          "title": "Struktur",
+          "title": "System Versioniert",
           "bullet": "●",
           "assign": "Zuordnen",
           "remove": {
@@ -446,7 +446,10 @@
             "title": "Nullbar"
           },
           "sequence": {
-            "title": "Reihenfolge"
+            "title": "Sequenz"
+          },
+          "description": {
+            "title": "Beschreibung"
           },
           "name": {
             "label": "Name",
@@ -643,6 +646,13 @@
           },
           "image-remove": {
             "text": "Entferne Bild"
+          },
+          "scheme": {
+            "title": "Schema",
+            "subtitle": "Aktualisiert die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen.",
+            "submit": {
+              "text": "Aktualisieren"
+            }
           },
           "ownership": {
             "title": "Eigentum",
@@ -1020,7 +1030,8 @@
       "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden."
     },
     "axios": {
-      "connection": "Es konnte keine Verbindung hergestellt werden."
+      "connection": "Es konnte keine Verbindung hergestellt werden.",
+      "timeout": "Zeitüberschreitung der Verbindung."
     },
     "concept": {
       "missing": "Das Konzept konnte in der Metadatendatenbank nicht gefunden werden."
@@ -1120,7 +1131,9 @@
       "dataset": "Der Datensatz konnte nicht hochgeladen werden."
     },
     "schema": {
-      "id": "Die Spalte „id“ muss ein Primärschlüssel sein."
+      "id": "Die Spalte „id“ muss ein Primärschlüssel sein.",
+      "view": "Ansichtsschema konnte nicht zugeordnet werden.",
+      "table": "Tabellenschema konnte nicht zugeordnet werden."
     },
     "user": {
       "exists": "Benutzer mit Benutzername ist in der Authentifizierungsdatenbank vorhanden.",
@@ -1162,6 +1175,9 @@
   },
   "success": {
     "signup": "Konto erfolgreich erstellt.",
+    "clipboard": {
+      "user": "Benutzer-ID erfolgreich kopiert."
+    },
     "query": {
       "build": "Abfrage konnte nicht erstellt werden: Spalte nicht gefunden",
       "fatal": "Abfragen mit diesem Schema können derzeit nicht über die Benutzeroberfläche erstellt werden"
@@ -1188,6 +1204,10 @@
     "table": {
       "created": "Tabelle erfolgreich erstellt.",
       "semantics": "Semantische Instanz erfolgreich zugewiesen."
+    },
+    "schema": {
+      "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert.",
+      "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert."
     },
     "database": {
       "upload": "Datenbankbild erfolgreich hochgeladen.",

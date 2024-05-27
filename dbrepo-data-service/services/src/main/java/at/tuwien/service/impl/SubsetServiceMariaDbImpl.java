@@ -10,6 +10,7 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -33,6 +34,7 @@ import java.util.UUID;
 @Service
 public class SubsetServiceMariaDbImpl extends HibernateConnector implements SubsetService {
 
+    private final S3Config s3Config;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
     private final StorageService storageService;
@@ -40,9 +42,10 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
+    public SubsetServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
                                     StorageService storageService, MetadataServiceGateway metadataServiceGateway,
                                     DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.s3Config = s3Config;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
@@ -146,11 +149,12 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
             StorageUnavailableException {
+        final String filePath = s3Config.getS3FilePath() + "/" + filename;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
-            connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(query.getQuery(), timestamp, filename))
+            connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(query.getQuery(), timestamp, filePath))
                     .executeUpdate();
             connection.commit();
         } catch (SQLException e) {

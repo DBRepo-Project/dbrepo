@@ -93,7 +93,7 @@ export const useQueryService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/subset/${queryId}/data`, { params: mapFilter(null, page, size)})
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/subset/${queryId}/data`, { params: mapFilter(null, page, size), timeout: 30_000 })
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
           resolve(response.data)
@@ -109,7 +109,7 @@ export const useQueryService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
-      axios.head<void>(`/api/database/${databaseId}/subset/${queryId}/data`)
+      axios.head<void>(`/api/database/${databaseId}/subset/${queryId}/data`, { timeout: 30_000 })
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found', count, 'tuples for query', queryId, 'in database with id', databaseId)

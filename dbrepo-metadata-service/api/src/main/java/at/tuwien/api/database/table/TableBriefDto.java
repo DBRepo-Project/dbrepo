@@ -2,6 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.user.UserBriefDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -21,18 +22,22 @@ import java.util.List;
 @ToString
 public class TableBriefDto {
 
-    @NotNull(message = "id is required")
+    @NotNull
     private Long id;
 
-    @NotBlank(message = "name is required")
+    @NotNull
+    @JsonProperty("database_id")
+    private Long databaseId;
+
+    @NotBlank
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank(message = "description is required")
+    @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @NotBlank(message = "internal name is required")
+    @NotBlank
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
     private String internalName;
@@ -42,9 +47,11 @@ public class TableBriefDto {
     @Schema(example = "true")
     private Boolean isVersioned;
 
-    @NotNull(message = "owner is required")
+    @NotNull
     private UserBriefDto owner;
 
-    @NotNull(message = "columns are required")
+    @ToString.Exclude
+    @JsonIgnore
+    @NotNull
     private List<ColumnBriefDto> columns;
 }

@@ -1,6 +1,6 @@
 package at.tuwien.api.database.table.constraints;
 
-import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

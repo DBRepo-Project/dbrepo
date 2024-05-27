@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "error.store.persist")
+@ResponseStatus(code = HttpStatus.EXPECTATION_FAILED, reason = "error.store.persist")
 public class QueryStorePersistException extends Exception {
 
     public QueryStorePersistException(String message) {

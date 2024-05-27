@@ -57,6 +57,7 @@ dbrepo:
     secretAccessKey: seaweedfsadmin
     importBucket: dbrepo-upload
     exportBucket: dbrepo-download
+    filePath: /tmp
   admin:
     username: admin
     password: admin
@@ -67,3 +68,6 @@ dbrepo:
     password: fda
     client: dbrepo-client
     clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  defaultDateFormatId: 1
+  defaultTimeFormatId: 4
+  defaultTimestampFormatId: 3

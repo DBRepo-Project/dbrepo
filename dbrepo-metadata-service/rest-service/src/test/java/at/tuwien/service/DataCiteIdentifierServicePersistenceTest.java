@@ -61,12 +61,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     @Autowired
     private DatabaseRepository databaseRepository;
 
-    @Autowired
-    private ConceptRepository conceptRepository;
-
-    @Autowired
-    private UnitRepository unitRepository;
-
     private final ParameterizedTypeReference<DataCiteBody<DataCiteDoi>> dataCiteBodyParameterizedTypeReference = new ParameterizedTypeReference<>() {
     };
 
@@ -76,8 +70,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
         /* metadata database */
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1);
-        conceptRepository.save(CONCEPT_1);
-        unitRepository.save(UNIT_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
         databaseRepository.save(DATABASE_1);
     }

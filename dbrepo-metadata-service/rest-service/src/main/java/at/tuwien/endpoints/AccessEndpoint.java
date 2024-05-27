@@ -54,7 +54,7 @@ public class AccessEndpoint {
 
     @PostMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_access_give")
+    @Observed(name = "dbrepo_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -120,7 +120,7 @@ public class AccessEndpoint {
 
     @PutMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_access_modify")
+    @Observed(name = "dbrepo_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -175,7 +175,7 @@ public class AccessEndpoint {
 
     @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_access_get")
+    @Observed(name = "dbrepo_access_get")
     @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('admin')")
     @Operation(summary = "Check access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -218,7 +218,7 @@ public class AccessEndpoint {
 
     @DeleteMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_access_delete")
+    @Observed(name = "dbrepo_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {

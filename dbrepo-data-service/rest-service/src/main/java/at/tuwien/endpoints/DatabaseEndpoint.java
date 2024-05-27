@@ -13,7 +13,6 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
-import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -55,12 +53,11 @@ public class DatabaseEndpoint {
     }
 
     @PostMapping
-    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('admin')")
     @Operation(summary = "Create database", security = {@SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
-                    description = "Created a new database",
+                    description = "Created a database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
@@ -69,10 +66,25 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find container in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to create query store in database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data) throws DatabaseUnavailableException,
-            RemoteUnavailableException, ContainerNotFoundException, DatabaseMalformedException,
-            QueryStoreCreateException {
+    public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
+            throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
+            DatabaseMalformedException, QueryStoreCreateException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
         final PrivilegedContainerDto container = metadataServiceGateway.getContainerById(data.getContainerId());
@@ -94,17 +106,23 @@ public class DatabaseEndpoint {
     }
 
     @PutMapping("/{databaseId}")
-    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('admin')")
     @Operation(summary = "Update user password in database", security = {@SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Created a new database",
+                    description = "Updated user password in database"),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Database create query is malformed or image is not supported",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to update user password in database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

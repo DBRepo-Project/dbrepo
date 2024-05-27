@@ -30,7 +30,6 @@ public class ForeignKey {
     private String name;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
@@ -38,7 +37,6 @@ public class ForeignKey {
     private Table table;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "rtid", referencedColumnName = "id", nullable = false)

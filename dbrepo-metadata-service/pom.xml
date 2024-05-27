@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
 
     <description>Service that manages the metadata</description>
 
@@ -72,7 +72,6 @@
         <apache-jena.version>4.10.0</apache-jena.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
-        <jsql.version>4.6</jsql.version>
         <keycloak.version>21.0.2</keycloak.version>
         <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <testcontainers.version>1.19.1</testcontainers.version>
@@ -232,11 +231,6 @@
             <version>${rabbitmq.version}</version>
         </dependency>
         <!-- Testing -->
-        <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>${jsql.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>

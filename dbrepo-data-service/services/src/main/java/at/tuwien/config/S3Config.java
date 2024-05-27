@@ -33,6 +33,9 @@ public class S3Config {
     @Value("${dbrepo.s3.exportBucket}")
     private String s3ExportBucket;
 
+    @Value("${dbrepo.s3.filePath}")
+    private String s3FilePath;
+
     @Bean
     public S3Client s3client() {
         final AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(

@@ -1,6 +1,7 @@
 
 package at.tuwien.api.database.table.constraints.unique;
 
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import jakarta.validation.constraints.NotNull;
@@ -23,8 +24,13 @@ public class UniqueDto {
     private Long uid;
 
     @NotNull
-    private TableDto table;
+    private String name;
 
     @NotNull
+    @ToString.Exclude
+    private TableBriefDto table;
+
+    @NotNull
+    @ToString.Exclude
     private List<ColumnDto> columns;
 }

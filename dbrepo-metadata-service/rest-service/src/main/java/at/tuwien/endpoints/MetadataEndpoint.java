@@ -43,7 +43,7 @@ public class MetadataEndpoint {
             @ExampleObject(value = "GetRecord"),
             @ExampleObject(value = "ListMetadataFormats"),
     })
-    @Observed(name = "dbrepo_metadata_oai_identify")
+    @Observed(name = "dbrepo_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -56,7 +56,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=Identify", produces = MediaType.TEXT_XML_VALUE)
-    @Observed(name = "dbrepo_metadata_oai_identify")
+    @Observed(name = "dbrepo_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -71,7 +71,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = MediaType.TEXT_XML_VALUE)
-    @Observed(name = "dbrepo_metadata_oai_identifiers_list")
+    @Observed(name = "dbrepo_oai_identifiers_list")
     @Operation(summary = "List the identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
@@ -81,7 +81,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)
-    @Observed(name = "dbrepo_metadata_oai_record_get")
+    @Observed(name = "dbrepo_oai_record_get")
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
@@ -116,7 +116,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListMetadataFormats", produces = MediaType.TEXT_XML_VALUE)
-    @Observed(name = "dbrepo_metadata_oai_metadataformats_list")
+    @Observed(name = "dbrepo_oai_metadataformats_list")
     @Operation(summary = "List the metadata formats")
     public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");

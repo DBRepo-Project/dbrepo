@@ -1,6 +1,9 @@
 package at.tuwien.service;
 
+import at.tuwien.api.database.ViewColumnDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
@@ -21,8 +24,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Log4j2
 @SpringBootTest
@@ -68,24 +71,49 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(VIEW_2_ID, response.getId());
         assertNotNull(response.getHeaders());
         assertEquals(4, response.getHeaders().size());
-        assertEquals(List.of(Map.of("date", 0), Map.of("location", 1), Map.of("rainfall", 2), Map.of("mintemp", 3)), response.getHeaders());
+        assertEquals(List.of(Map.of("date", 0), Map.of("location", 1), Map.of("mintemp", 2), Map.of("location", 3)), response.getHeaders());
         assertNotNull(response.getResult());
         assertEquals(3, response.getResult().size());
         /* row 0 */
         assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
         assertEquals("Albury", response.getResult().get(0).get("location"));
         assertEquals(13.4, response.getResult().get(0).get("mintemp"));
-        assertEquals(0.6, response.getResult().get(0).get("rainfall"));
         /* row 1 */
         assertEquals(Instant.ofEpochSecond(1228176000), response.getResult().get(1).get("date"));
         assertEquals("Albury", response.getResult().get(1).get("location"));
         assertEquals(7.4, response.getResult().get(1).get("mintemp"));
-        assertEquals(0.0, response.getResult().get(1).get("rainfall"));
         /* row 2 */
         assertEquals(Instant.ofEpochSecond(1228262400), response.getResult().get(2).get("date"));
         assertEquals("Albury", response.getResult().get(2).get("location"));
         assertEquals(12.9, response.getResult().get(2).get("mintemp"));
-        assertEquals(0.0, response.getResult().get(2).get("rainfall"));
+    }
+
+    @Test
+    public void getSchemas_succeeds() throws ViewMalformedException, SQLException, ViewNotFoundException,
+            DatabaseMalformedException, ViewSchemaException {
+
+        /* test */
+        final List<ViewDto> response = viewService.getSchemas(DATABASE_1_PRIVILEGED_DTO);
+        final ViewDto view0 = response.get(0);
+        assertEquals("not_in_metadata_db2", view0.getName());
+        assertEquals("not_in_metadata_db2", view0.getInternalName());
+        assertEquals(DATABASE_1_ID, view0.getVdbid());
+        assertEquals(DATABASE_1_ID, view0.getDatabase().getId());
+        assertEquals(DATABASE_1_OWNER, view0.getCreatedBy());
+        assertEquals(DATABASE_1_OWNER, view0.getCreator().getId());
+        assertFalse(view0.getIsInitialView());
+        assertEquals(DATABASE_1_PUBLIC, view0.getIsPublic());
+        assertTrue(view0.getQuery().length() >= 69);
+        assertNotNull(view0.getQueryHash());
+        assertEquals(4, view0.getColumns().size());
+        final ViewColumnDto column0a = view0.getColumns().get(0);
+        assertEquals("date", column0a.getInternalName());
+        final ViewColumnDto column1a = view0.getColumns().get(1);
+        assertEquals("location", column1a.getInternalName());
+        final ViewColumnDto column2a = view0.getColumns().get(2);
+        assertEquals("MinTemp", column2a.getInternalName());
+        final ViewColumnDto column3a = view0.getColumns().get(3);
+        assertEquals("Rainfall", column3a.getInternalName());
     }
 
 }

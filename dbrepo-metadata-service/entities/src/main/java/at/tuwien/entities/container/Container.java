@@ -22,10 +22,6 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_containers")
-@NamedQueries({
-        @NamedQuery(name = "Container.findDefaultTimestampFormat", query = "select d from ContainerImageDate d where d.hasTime = true order by d.id limit 1"),
-        @NamedQuery(name = "Container.findDefaultDateFormat", query = "select d from ContainerImageDate d where d.hasTime = false order by d.id limit 1"),
-})
 public class Container {
 
     @Id
@@ -69,7 +65,7 @@ public class Container {
     })
     private List<Database> databases;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST})
     @JoinColumns({
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })

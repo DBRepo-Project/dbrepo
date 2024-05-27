@@ -17,7 +17,7 @@ project = "dbrepo"
 current_year = datetime.date.today().year
 copyright = f'{current_year} the DBRepo Developers'
 author = "Martin Weise"
-release = "__APPVERSION__"
+release = ""
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

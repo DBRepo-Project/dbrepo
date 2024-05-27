@@ -1,7 +1,6 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.amqp.ExchangeDto;
-import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.config.RabbitConfig;
@@ -45,29 +44,27 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final RabbitConfig rabbitConfig;
     private final AccessService accessService;
-    private final BrokerService messageQueueService;
+    private final BrokerService brokerService;
     private final DatabaseMapper databaseMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
-    private final AuthenticationService authenticationService;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, RabbitConfig rabbitConfig, AccessService accessService,
-                            BrokerService messageQueueService, DatabaseMapper databaseMapper,
-                            StorageService storageService, DatabaseService databaseService, AuthenticationService authenticationService) {
+                            BrokerService brokerService, DatabaseMapper databaseMapper,
+                            StorageService storageService, DatabaseService databaseService) {
         this.userService = userService;
         this.rabbitConfig = rabbitConfig;
         this.accessService = accessService;
-        this.messageQueueService = messageQueueService;
+        this.brokerService = brokerService;
         this.databaseMapper = databaseMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
-        this.authenticationService = authenticationService;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_database_findall")
+    @Observed(name = "dbrepo_database_findall")
     @Operation(summary = "List databases")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -76,19 +73,19 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
     })
-    public ResponseEntity<List<DatabaseDto>> list(@RequestParam(name = "internal_name", required = false) String internalName) {
+    public ResponseEntity<List<DatabaseBriefDto>> list(@RequestParam(name = "internal_name", required = false) String internalName) {
         log.debug("endpoint list databases, internalName={}", internalName);
-        List<DatabaseDto> dtos = new LinkedList<>();
+        List<DatabaseBriefDto> dtos = new LinkedList<>();
         if (internalName != null) {
             try {
-                dtos = List.of(databaseMapper.databaseToDatabaseDto(databaseService.findByInternalName(internalName)));
+                dtos = List.of(databaseMapper.databaseToDatabaseBriefDto(databaseService.findByInternalName(internalName)));
             } catch (DatabaseNotFoundException e) {
                 /* ignore */
             }
         } else {
             dtos = databaseService.findAll()
                     .stream()
-                    .map(databaseMapper::databaseToDatabaseDto)
+                    .map(databaseMapper::databaseToDatabaseBriefDto)
                     .toList();
         }
         log.trace("list databases resulted in {} database(s)", dtos.size());
@@ -103,7 +100,7 @@ public class DatabaseEndpoint {
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('create-database')")
-    @Observed(name = "dbrepo_metadata_database_create")
+    @Observed(name = "dbrepo_database_create")
     @Operation(summary = "Create database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -122,7 +119,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Container, user or database could not be found",
+                    description = "Failed to fin container/user/database in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -131,8 +128,13 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -149,10 +151,107 @@ public class DatabaseEndpoint {
                 .body(dto);
     }
 
+    @PutMapping("/{databaseId}/metadata/table")
+    @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
+    @PreAuthorize("hasAuthority('find-database')")
+    @Observed(name = "dbrepo_tables_refresh")
+    @Operation(summary = "Refresh database tables metadata", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Refreshed database tables metadata",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Failed to parse payload at search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to refresh table metadata",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to fin user/database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<DatabaseDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                            @NotNull Principal principal) throws ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException {
+        log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
+        Database database = databaseService.findById(databaseId);
+        if (!database.getOwner().equals(principal)) {
+            log.error("Failed to refresh database tables metadata: not owner");
+            throw new NotAllowedException("Failed to refresh tables metadata: not owner");
+        }
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.updateTableMetadata(database));
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{databaseId}/metadata/view")
+    @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
+    @PreAuthorize("hasAuthority('find-database')")
+    @Observed(name = "dbrepo_views_refresh")
+    @Operation(summary = "Refresh database views metadata", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Refreshed database views metadata",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Refresh view metadata is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<DatabaseDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                           @NotNull Principal principal) throws ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException {
+        log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
+        Database database = databaseService.findById(databaseId);
+        if (!database.getOwner().equals(principal)) {
+            log.error("Failed to refresh database views metadata: not owner");
+            throw new NotAllowedException("Failed to refresh database views metadata: not owner");
+        }
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.updateViewMetadata(database));
+        return ResponseEntity.ok(dto);
+    }
+
     @PutMapping("/{databaseId}/visibility")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
-    @Observed(name = "dbrepo_metadata_database_visibility")
+    @Observed(name = "dbrepo_database_visibility")
     @Operation(summary = "Update database visibility", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -160,13 +259,23 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "Visibility modification is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Visibility modification is not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -189,7 +298,7 @@ public class DatabaseEndpoint {
     @PutMapping("/{databaseId}/owner")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
-    @Observed(name = "dbrepo_metadata_database_transfer")
+    @Observed(name = "dbrepo_database_transfer")
     @Operation(summary = "Update database owner", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -204,6 +313,16 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Transfer of ownership is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -229,7 +348,7 @@ public class DatabaseEndpoint {
     @PutMapping("/{databaseId}/image")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-image')")
-    @Observed(name = "dbrepo_metadata_database_image")
+    @Observed(name = "dbrepo_database_image")
     @Operation(summary = "Update database image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -249,6 +368,16 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "410",
                     description = "File was not found in the Storage Service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -277,7 +406,7 @@ public class DatabaseEndpoint {
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_database_find")
+    @Observed(name = "dbrepo_database_find")
     @Operation(summary = "Find some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -290,8 +419,13 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
+            @ApiResponse(responseCode = "502",
                     description = "Connection to the broker service could not be established",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to find queue information in broker service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -314,7 +448,7 @@ public class DatabaseEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {
             /* extra effort only when having access */
-            final ExchangeDto exchange = messageQueueService.findExchange(rabbitConfig.getExchangeName());
+            final ExchangeDto exchange = brokerService.findExchange(rabbitConfig.getExchangeName());
             dto.setExchangeType(exchange.getType());
             final Authentication authentication = (Authentication) principal;
             if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {

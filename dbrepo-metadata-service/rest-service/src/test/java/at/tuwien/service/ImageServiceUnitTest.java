@@ -31,7 +31,7 @@ public class ImageServiceUnitTest extends AbstractUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
-    private ImageServiceImpl imageService;
+    private ImageService imageService;
 
     @Test
     public void getAll_succeeds() {

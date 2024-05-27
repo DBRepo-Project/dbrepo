@@ -74,7 +74,7 @@
       </v-data-table>
     </v-card>
     <v-card
-      v-if="table"
+      v-if="table && hasStructure"
       variant="flat"
       rounded="0"
       tile
@@ -82,7 +82,7 @@
       <v-card-text>
         <v-container>
           <ul>
-            <li>
+            <li v-if="table.constraints.primary_key.length > 0">
               <strong>PRIMARY KEY</strong>
               (<i v-text="primaryKeysColumns" />)
             </li>
@@ -168,7 +168,8 @@ export default {
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
         { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
-        { value: 'auto_generated', title: this.$t('pages.table.subpages.schema.sequence.title') }
+        { value: 'auto_generated', title: this.$t('pages.table.subpages.schema.sequence.title') },
+        { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
       userStore: useUserStore(),
@@ -213,6 +214,10 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
+    },
+    hasStructure () {
+      const constraints = this.table.constraints
+      return constraints.primary_key.length > 0 || constraints.foreign_keys.length > 0 || constraints.checks.length > 0 || constraints.uniques.length > 0
     }
   },
   methods: {

@@ -7,6 +7,7 @@ import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -76,6 +77,7 @@ public class TableDto {
     @Schema(example = "dbrepo.1.2")
     private String routingKey;
 
+    @Size(max = 2048)
     @Schema(example = "Air Quality in Austria")
     private String description;
 
