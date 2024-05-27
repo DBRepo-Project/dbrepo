@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.SubsetService;
@@ -25,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -62,10 +64,25 @@ public class SubsetEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryDto[].class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to find subsets",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<QueryDto>> findAllById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                      @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
-                                                      Principal principal)
+    public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
+                                               @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
+                                               Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}, principal.name={}", databaseId,
@@ -94,7 +111,36 @@ public class SubsetEndpoint {
     @Operation(summary = "Find subset", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Found subset")
+                    description = "Found subset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QueryDto.class)),
+                            @Content(mediaType = "text/csv")}),
+            @ApiResponse(responseCode = "400",
+                    description = "Malformed select query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to find subset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to find acceptable representation",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("subsetId") Long subsetId,
@@ -165,6 +211,36 @@ public class SubsetEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Malformed select query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to find subset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to insert query into query store of data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Failed to execute query as it contains non-supported keywords",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<QueryResultDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                  @Valid @RequestBody ExecuteStatementDto data,
@@ -173,10 +249,10 @@ public class SubsetEndpoint {
                                                  @RequestParam(required = false) Long size,
                                                  @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException, QueryStoreInsertException, TableMalformedException,
-            PaginationException, QueryNotSupportedException, NotAllowedException, UserNotFoundException {
-        log.debug("endpoint find subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, size={}, timestamp={}",
+            QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
+            StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
+            QueryNotSupportedException, NotAllowedException, UserNotFoundException {
+        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, size={}, timestamp={}",
                 databaseId, data.getStatement(), principal.getName(), page, size, timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
@@ -206,18 +282,39 @@ public class SubsetEndpoint {
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
         log.info("Created subset with id {} in data database", queryResult.getId());
-        return ResponseEntity.ok(queryResult);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(queryResult);
     }
 
     @RequestMapping(value = "/{subsetId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_subset_data")
-    @Operation(summary = "Re-execute some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Retrieved subset data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Get subset data",
+                    description = "Retrieved subset data",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Malformed select query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to retrieve subset data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<QueryResultDto> getData(@NotNull @PathVariable("databaseId") Long databaseId,
                                                   @NotNull @PathVariable("subsetId") Long subsetId,
@@ -273,13 +370,38 @@ public class SubsetEndpoint {
     @PutMapping("/{queryId}")
     @PreAuthorize("hasAuthority('persist-query')")
     @Observed(name = "dbrepo_subset_persist")
-    @Operation(summary = "Persist some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Persist subset", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Persist query successful",
+                    description = "Persisted subset",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Malformed select query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to persist subset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database or query in query store of the data database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to persist subset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to communicate with database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
                                             @NotNull @PathVariable("queryId") Long queryId,

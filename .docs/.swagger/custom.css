@@ -3,6 +3,10 @@ body {
     background: #eee;
 }
 
+#logo {
+    margin-top: 1rem;
+}
+
 .scheme-container {
     background: none !important;
     box-shadow: none !important;

@@ -580,6 +580,20 @@
                 "consumerConcurrentMin": {
                     "type": "integer"
                 },
+                "default": {
+                    "properties": {
+                        "date": {
+                            "type": "integer"
+                        },
+                        "time": {
+                            "type": "integer"
+                        },
+                        "timestamp": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -642,6 +656,9 @@
                             "type": "object"
                         },
                         "endpoint": {
+                            "type": "string"
+                        },
+                        "filePath": {
                             "type": "string"
                         }
                     },
@@ -749,6 +766,10 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "extraInitDbScripts": {
+                    "properties": {},
+                    "type": "object"
                 },
                 "fullnameOverride": {
                     "type": "string"

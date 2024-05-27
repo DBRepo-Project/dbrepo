@@ -44,7 +44,7 @@ public class MessageEndpoint {
     }
 
     @GetMapping
-    @Observed(name = "dbrepo_metadata_maintenance_findall")
+    @Observed(name = "dbrepo_maintenance_findall")
     @Operation(summary = "Find maintenance messages")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -72,7 +72,7 @@ public class MessageEndpoint {
     }
 
     @GetMapping("/message/{messageId}")
-    @Observed(name = "dbrepo_metadata_maintenance_find")
+    @Observed(name = "dbrepo_maintenance_find")
     @Operation(summary = "Find one maintenance message")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -95,7 +95,7 @@ public class MessageEndpoint {
     }
 
     @PostMapping
-    @Observed(name = "dbrepo_metadata_maintenance_create")
+    @Observed(name = "dbrepo_maintenance_create")
     @Operation(summary = "Create maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('create-maintenance-message')")
     @ApiResponses(value = {
@@ -114,7 +114,7 @@ public class MessageEndpoint {
     }
 
     @PutMapping("/{messageId}")
-    @Observed(name = "dbrepo_metadata_maintenance_update")
+    @Observed(name = "dbrepo_maintenance_update")
     @Operation(summary = "Update maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('update-maintenance-message')")
     @ApiResponses(value = {
@@ -141,7 +141,7 @@ public class MessageEndpoint {
     }
 
     @DeleteMapping("/{messageId}")
-    @Observed(name = "dbrepo_metadata_maintenance_delete")
+    @Observed(name = "dbrepo_maintenance_delete")
     @Operation(summary = "Delete maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('delete-maintenance-message')")
     @ApiResponses(value = {

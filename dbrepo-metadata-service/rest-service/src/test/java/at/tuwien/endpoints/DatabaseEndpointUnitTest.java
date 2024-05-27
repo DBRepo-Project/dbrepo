@@ -420,10 +420,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.list(internalName);
+        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(internalName);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final List<DatabaseDto> body = response.getBody();
+        final List<DatabaseBriefDto> body = response.getBody();
         assertEquals(databases.size(), body.size());
     }
 

@@ -95,7 +95,6 @@ export const useUserService = (): any => {
           resolve(response.data)
         }).catch((error) => {
           console.error('Failed to obtain user token', error)
-
           reject(axiosErrorToApiError(error))
       })
     })
@@ -115,7 +114,6 @@ export const useUserService = (): any => {
           resolve(response.data)
         }).catch((error) => {
           console.error('Failed to refresh user token', error)
-
           reject(axiosErrorToApiError(error))
       })
     })

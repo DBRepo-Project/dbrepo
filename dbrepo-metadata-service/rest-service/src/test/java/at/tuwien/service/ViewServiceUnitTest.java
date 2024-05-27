@@ -57,9 +57,8 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        doNothing()
-                .when(dataServiceGateway)
-                .createView(DATABASE_1_ID, request);
+        when(dataServiceGateway.createView(DATABASE_1_ID, request))
+                .thenReturn(VIEW_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))

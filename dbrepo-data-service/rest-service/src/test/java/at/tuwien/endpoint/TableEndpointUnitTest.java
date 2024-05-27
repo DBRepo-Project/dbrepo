@@ -3,10 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.query.ImportCsvDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.api.database.table.TupleDeleteDto;
-import at.tuwien.api.database.table.TupleDto;
-import at.tuwien.api.database.table.TupleUpdateDto;
+import at.tuwien.api.database.table.*;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -61,17 +58,17 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_succeeds() throws DatabaseUnavailableException, TableMalformedException,
-            DatabaseNotFoundException, TableExistsException, RemoteUnavailableException, SQLException {
+            DatabaseNotFoundException, TableExistsException, RemoteUnavailableException, SQLException,
+            TableNotFoundException, QueryMalformedException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doNothing()
-                .when(tableService)
-                .createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
+        when(tableService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO))
+                .thenReturn(TABLE_4_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
+        final ResponseEntity<TableDto> response = tableEndpoint.create(DATABASE_1_ID, TABLE_4_CREATE_INTERNAL_DTO);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -434,9 +431,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
-       assertThrows(NotAllowedException.class, () -> {
-           tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
-       });
+        assertThrows(NotAllowedException.class, () -> {
+            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        });
     }
 
     @Test

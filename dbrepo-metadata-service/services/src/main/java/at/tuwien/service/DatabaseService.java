@@ -7,6 +7,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -99,5 +101,11 @@ public interface DatabaseService {
      */
     Database modifyImage(Database database, byte[] image) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
+    Database updateTableMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
+            SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
+            ServiceConnectionException, MalformedException;
 
+    Database updateViewMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
+            SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
+            ServiceConnectionException;
 }

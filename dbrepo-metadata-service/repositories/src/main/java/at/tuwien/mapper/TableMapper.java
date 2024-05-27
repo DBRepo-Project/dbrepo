@@ -1,16 +1,16 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {IdentifierMapper.class, UserMapper.class}, imports = {Collectors.class})
+@Mapper(componentModel = "spring", uses = {IdentifierMapper.class, UserMapper.class}, imports = {Collectors.class, LinkedList.class})
 public interface TableMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TableMapper.class);
@@ -38,25 +38,53 @@ public interface TableMapper {
     })
     TableBriefDto tableToTableBriefDto(Table data);
 
-    @Mappings({
-            @Mapping(target = "table.constraints", ignore = true),
-    })
-    UniqueDto uniqueToUniqueDto(Unique data);
+    TableBriefDto tableDtoToTableBriefDto(TableDto data);
+
+    /* keep */
+    default UniqueDto uniqueToUniqueDto(Unique data) {
+        return UniqueDto.builder()
+                .uid(data.getUid())
+                .name("uk")
+                .columns(data.getColumns().stream().map(this::tableColumnToColumnDto).toList())
+                .table(tableToTableBriefDto(data.getTable()))
+                .build();
+    }
 
     @Mappings({
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(\"dbrepo.\" + data.getTdbid() + \".\" + data.getId())"),
-            @Mapping(target = "isPublic", source = "database.isPublic")
+            @Mapping(target = "isPublic", source = "database.isPublic"),
     })
     TableDto tableToTableDto(Table data);
 
-    /* keep */
     @Mappings({
-            @Mapping(target = "primaryKey", expression = "java(data.getPrimaryKey().stream().map(pk -> pk.getColumn().getInternalName()).collect(Collectors.toSet()))")
+            @Mapping(target = "table", ignore = true),
+            @Mapping(target = "referencedTable", ignore = true),
     })
-    ConstraintsDto constraintsToConstraintsDto(Constraints data);
+    ForeignKeyDto foreignKeyToForeignKeyDto(ForeignKey foreignKey);
+
+    @Mappings({
+            @Mapping(target = "foreignKey", ignore = true),
+    })
+    ForeignKeyReferenceDto foreignKeyReferenceToForeignKeyReferenceDto(ForeignKeyReference foreignKeyReference);
+
+    @Mappings({
+            @Mapping(target = "table", ignore = true)
+    })
+    TableColumn columnDtoToTableColumn(ColumnDto columnDto);
+
+    @Mappings({
+            @Mapping(target = "table", ignore = true)
+    })
+    Unique uniqueDtoToUnique(UniqueDto data);
+
+    @Mappings({
+            @Mapping(target = "constraints.primaryKey", expression = "java(new LinkedList<>())"),
+            @Mapping(target = "ownedBy", source = "owner.id"),
+    })
+    Table tableDtoToTable(TableDto data);
 
     /* keep */
     default Constraints constraintsCreateDtoToConstraints(ConstraintsCreateDto data, Database database, Table table) {
@@ -151,12 +179,12 @@ public interface TableMapper {
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
             @Mapping(target = "isPublic", source = "table.database.isPublic"),
+            @Mapping(target = "description", source = "description"),
             @Mapping(target = "table.columns", ignore = true),
             @Mapping(target = "table.constraints", ignore = true),
             @Mapping(target = "views", ignore = true)
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
-
 
     @Named("internalMapping")
     default String nameToInternalName(String data) {

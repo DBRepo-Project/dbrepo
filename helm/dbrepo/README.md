@@ -1,16 +1,16 @@
 # DBRepo Helm chart
 
-[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__CHARTVERSION__/) is a database repository system that
+[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/) is a database repository system that
 allows researchers to ingest data into a central, versioned repository through common interfaces.
 
 ## TL;DR
 
 Download the
-sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/helm-charts/dbrepo/values.yaml?inline=true)
+sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.3"
+helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
 ```
 
 ## Prerequisites
@@ -27,7 +27,7 @@ helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.3"
+helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -64,17 +64,18 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Metadata Database
 
-| Name                             | Description                                                    | Value         |
-| -------------------------------- | -------------------------------------------------------------- | ------------- |
-| `metadatadb.enabled`             | Enable the Metadata Database.                                  | `true`        |
-| `metadatadb.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.    | `false`       |
-| `metadatadb.host`                | The hostname for the microservices.                            | `metadata-db` |
-| `metadatadb.rootUser.user`       | The root username.                                             | `root`        |
-| `metadatadb.rootUser.password`   | The root user password.                                        | `dbrepo`      |
-| `metadatadb.jdbcExtraArgs`       | The extra arguments for JDBC connections in the microservices. | `""`          |
-| `metadatadb.db.name`             | The database name.                                             | `fda`         |
-| `metadatadb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.            | `false`       |
-| `metadatadb.replicaCount`        | The number of replicas, should be uneven (2n+1).               | `3`           |
+| Name                             | Description                                                      | Value         |
+| -------------------------------- | ---------------------------------------------------------------- | ------------- |
+| `metadatadb.enabled`             | Enable the Metadata Database.                                    | `true`        |
+| `metadatadb.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.      | `false`       |
+| `metadatadb.host`                | The hostname for the microservices.                              | `metadata-db` |
+| `metadatadb.rootUser.user`       | The root username.                                               | `root`        |
+| `metadatadb.rootUser.password`   | The root user password.                                          | `dbrepo`      |
+| `metadatadb.jdbcExtraArgs`       | The extra arguments for JDBC connections in the microservices.   | `""`          |
+| `metadatadb.db.name`             | The database name.                                               | `fda`         |
+| `metadatadb.extraInitDbScripts`  | Additional init.db scripts that are executed on the first start. | `{}`          |
+| `metadatadb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.              | `false`       |
+| `metadatadb.replicaCount`        | The number of replicas, should be uneven (2n+1).                 | `3`           |
 
 ### Auth Service
 
@@ -169,19 +170,23 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Data Service
 
-| Name                                | Description                                                    | Value                                                                                                                       |
-| ----------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `dataservice.enabled`               | Enable the Metadata Service.                                   | `true`                                                                                                                      |
-| `dataservice.endpoint`              | The endpoint for the microservices.                            | `http://data-service`                                                                                                       |
-| `dataservice.grant.read`            | The default database permissions for users with read access.   | `SELECT`                                                                                                                    |
-| `dataservice.grant.write`           | The default database permissions for users with write access.  | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
-| `dataservice.s3.endpoint`           | The S3-capable endpoint the microservice connects to.          | `http://storageservice-s3:9000`                                                                                             |
-| `dataservice.s3.auth.username`      | The S3-capable endpoint username (or access key id).           | `seaweedfsadmin`                                                                                                            |
-| `dataservice.s3.auth.password`      | The S3-capable endpoint user password (or access key secret).  | `seaweedfsadmin`                                                                                                            |
-| `dataservice.consumerConcurrentMin` | The minimum broker service consumer number.                    | `1`                                                                                                                         |
-| `dataservice.consumerConcurrentMax` | The maximum broker service consumer number.                    | `5`                                                                                                                         |
-| `dataservice.requeueRejected`       | Enable re-queueing of rejected messages to the broker service. | `false`                                                                                                                     |
-| `dataservice.replicaCount`          | The number of replicas.                                        | `2`                                                                                                                         |
+| Name                                | Description                                                              | Value                                                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `dataservice.enabled`               | Enable the Metadata Service.                                             | `true`                                                                                                                      |
+| `dataservice.endpoint`              | The endpoint for the microservices.                                      | `http://data-service`                                                                                                       |
+| `dataservice.grant.read`            | The default database permissions for users with read access.             | `SELECT`                                                                                                                    |
+| `dataservice.grant.write`           | The default database permissions for users with write access.            | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
+| `dataservice.default.date`          | The default date format id for dates.                                    | `3`                                                                                                                         |
+| `dataservice.default.time`          | The default date format id for times.                                    | `4`                                                                                                                         |
+| `dataservice.default.timestamp`     | The default date format id for timestamps.                               | `1`                                                                                                                         |
+| `dataservice.s3.endpoint`           | The S3-capable endpoint the microservice connects to.                    | `http://storageservice-s3:9000`                                                                                             |
+| `dataservice.s3.auth.username`      | The S3-capable endpoint username (or access key id).                     | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.auth.password`      | The S3-capable endpoint user password (or access key secret).            | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.filePath`           | The local location to download/upload files from/to S3-capable endpoint. | `/s3`                                                                                                                       |
+| `dataservice.consumerConcurrentMin` | The minimum broker service consumer number.                              | `1`                                                                                                                         |
+| `dataservice.consumerConcurrentMax` | The maximum broker service consumer number.                              | `5`                                                                                                                         |
+| `dataservice.requeueRejected`       | Enable re-queueing of rejected messages to the broker service.           | `false`                                                                                                                     |
+| `dataservice.replicaCount`          | The number of replicas.                                                  | `2`                                                                                                                         |
 
 ### Search Service
 

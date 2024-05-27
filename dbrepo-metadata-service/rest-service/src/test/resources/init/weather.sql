@@ -9,15 +9,7 @@ CREATE TABLE weather_location
     location VARCHAR(255) PRIMARY KEY,
     lat      DOUBLE PRECISION NULL,
     lng      DOUBLE PRECISION NULL
-) WITH SYSTEM VERSIONING;
-
-CREATE VIEW `hs_weather_location` AS
-SELECT *
-FROM (SELECT ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
-      FROM `weather_location` FOR SYSTEM_TIME ALL
-      GROUP BY inserted_at, deleted_at
-      ORDER BY deleted_at DESC LIMIT 50) AS v
-ORDER BY v.inserted_at, v.deleted_at ASC;
+) WITH SYSTEM VERSIONING COMMENT 'Weather location';
 
 CREATE TABLE weather_aus
 (
@@ -29,29 +21,19 @@ CREATE TABLE weather_aus
     FOREIGN KEY (location) REFERENCES weather_location (location),
     UNIQUE (`date`),
     CHECK (`mintemp` > 0)
-) WITH SYSTEM VERSIONING;
-
-CREATE VIEW `hs_weather_aus` AS
-SELECT *
-FROM (SELECT ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
-      FROM `weather_aus` FOR SYSTEM_TIME ALL
-      GROUP BY inserted_at, deleted_at
-      ORDER BY deleted_at DESC LIMIT 50) AS v
-ORDER BY v.inserted_at, v.deleted_at ASC;
+) WITH SYSTEM VERSIONING COMMENT 'Weather in the world';
 
 CREATE TABLE sensor
 (
     `timestamp` TIMESTAMP NOT NULL PRIMARY KEY,
     `value`     DECIMAL
-) WITH SYSTEM VERSIONING;
+) WITH SYSTEM VERSIONING COMMENT 'Some sensor data';
 
-CREATE VIEW `hs_sensor` AS
-SELECT *
-FROM (SELECT ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
-      FROM `sensor` FOR SYSTEM_TIME ALL
-      GROUP BY inserted_at, deleted_at
-      ORDER BY deleted_at DESC LIMIT 50) AS v
-ORDER BY v.inserted_at, v.deleted_at ASC;
+CREATE TABLE sensor_2
+(
+    `timestamp` TIMESTAMP NOT NULL PRIMARY KEY,
+    `value`     DECIMAL
+) WITH SYSTEM VERSIONING COMMENT 'Hello sensor';
 
 -- sequence not in metadata on purpose
 CREATE SEQUENCE weather_aut_seq NOCACHE;
@@ -69,8 +51,6 @@ CREATE TABLE weather_aut
     CHECK (`mintemp` > 0)
 ) WITH SYSTEM VERSIONING;
 
--- no history view in data database on purpose
-
 -- table not in metadata on purpose
 CREATE TABLE weather_aut_without_versioning
 (
@@ -83,8 +63,6 @@ CREATE TABLE weather_aut_without_versioning
     UNIQUE (`date`),
     CHECK (`mintemp` > 0)
 );
-
--- no history view in data database on purpose
 
 -- view not in metadata on purpose
 CREATE VIEW weather_aut_merge AS

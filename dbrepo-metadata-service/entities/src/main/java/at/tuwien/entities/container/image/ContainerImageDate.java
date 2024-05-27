@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
 import java.time.Instant;
 
 @Data
@@ -27,12 +28,15 @@ public class ContainerImageDate {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @EqualsAndHashCode.Include
     @Column(name = "iid")
     private Long iid;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "iid", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinColumns({
+            @JoinColumn(name = "iid", insertable = false, updatable = false)
+    })
     private ContainerImage image;
 
     @Column(name = "example", nullable = false)

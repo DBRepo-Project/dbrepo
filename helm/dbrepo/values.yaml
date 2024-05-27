@@ -42,6 +42,7 @@ admin:
 ## @skip metadatadb.metrics.enabled The Prometheus settings.
 ## @skip metadatadb.galera The Galera settings.
 ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
+## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
 ## @skip metadatadb.service The initial database scripts.
 ## @param metadatadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
 ## @param metadatadb.replicaCount The number of replicas, should be uneven (2n+1).
@@ -65,6 +66,12 @@ metadatadb:
       user: mariabackup
       password: mariabackup
   initdbScriptsConfigMap: metadata-db-setup
+  extraInitDbScripts: { }
+  #    03-additional-data.sql: |
+  #      BEGIN;
+  #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
+  #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
+  #      COMMIT;
   service:
     type: ClusterIP
     annotations: { }
@@ -171,7 +178,7 @@ datadb:
         protocol: TCP
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.3
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
       securityContext:
         runAsUser: 1001
         runAsGroup: 0
@@ -207,10 +214,10 @@ datadb:
         periodSeconds: 30
       volumeMounts:
         - name: s3
-          mountPath: /tmp
+          mountPath: /s3
   extraVolumeMounts:
     - name: s3
-      mountPath: /tmp
+      mountPath: /s3
   extraVolumes:
     - name: s3
       emptyDir: { }
@@ -429,7 +436,7 @@ brokerservice:
 analyseservice:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.3
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.4
     pullPolicy: Always
     debug: false
   s3:
@@ -459,7 +466,7 @@ analyseservice:
 metadataservice:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.3
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.4
     pullPolicy: Always
     debug: false
   admin:
@@ -492,10 +499,14 @@ metadataservice:
 ## @skip dataservice.image
 ## @param dataservice.grant.read The default database permissions for users with read access.
 ## @param dataservice.grant.write The default database permissions for users with write access.
+## @param dataservice.default.date The default date format id for dates.
+## @param dataservice.default.time The default date format id for times.
+## @param dataservice.default.timestamp The default date format id for timestamps.
 ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
 ## @skip dataservice.s3.bucket
 ## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
 ## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
 ## @param dataservice.consumerConcurrentMin The minimum broker service consumer number.
 ## @param dataservice.consumerConcurrentMax The maximum broker service consumer number.
 ## @param dataservice.requeueRejected Enable re-queueing of rejected messages to the broker service.
@@ -505,12 +516,16 @@ dataservice:
   enabled: true
   endpoint: http://data-service
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.3
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.4
     pullPolicy: Always
     debug: false
   grant:
     read: SELECT
     write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
+  default:
+    date: 3
+    time: 4
+    timestamp: 1
   s3:
     endpoint: http://storageservice-s3:9000
     bucket:
@@ -519,6 +534,7 @@ dataservice:
     auth:
       username: seaweedfsadmin
       password: seaweedfsadmin
+    filePath: /s3
   consumerConcurrentMin: 1
   consumerConcurrentMax: 5
   requeueRejected: false
@@ -536,12 +552,12 @@ searchservice:
   enabled: true
   endpoint: http://search-service
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.3
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.4
     pullPolicy: Always
     debug: false
   init:
     image:
-      name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service-init:1.4.3
+      name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service-init:1.4.4
       pullPolicy: Always
   replicaCount: 2
 
@@ -588,7 +604,7 @@ storageservice:
       username: seaweedfsadmin
       password: seaweedfsadmin
   init:
-    image: s210.dl.hpc.tuwien.ac.at/dbrepo/storage-service-init:1.4.3
+    image: s210.dl.hpc.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
     pullPolicy: Always
 
 ## @section User Interface
@@ -617,7 +633,7 @@ storageservice:
 ui:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.3
+    name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.4
     pullPolicy: Always
     debug: false
   public:

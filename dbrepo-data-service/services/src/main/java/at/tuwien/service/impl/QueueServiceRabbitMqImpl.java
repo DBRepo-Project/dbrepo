@@ -9,7 +9,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +30,6 @@ public class QueueServiceRabbitMqImpl extends HibernateConnector implements Queu
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void insert(PrivilegedTableDto table, Map<String, Object> data) throws SQLException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();

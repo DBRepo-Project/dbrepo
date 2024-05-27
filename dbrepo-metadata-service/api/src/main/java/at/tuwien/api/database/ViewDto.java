@@ -1,6 +1,5 @@
 package at.tuwien.api.database;
 
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,7 +11,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 import java.util.List;
@@ -35,6 +33,7 @@ public class ViewDto {
     private Long vdbid;
 
     @NotNull
+    @ToString.Exclude
     private DatabaseDto database;
 
     @NotBlank
@@ -77,7 +76,7 @@ public class ViewDto {
     private UserDto creator;
 
     @NotNull
-    private List<ColumnDto> columns;
+    private List<ViewColumnDto> columns;
 
     @JsonProperty("last_modified")
     @Schema(example = "2021-03-12T15:26:21Z")
