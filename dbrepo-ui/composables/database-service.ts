@@ -17,6 +17,38 @@ export const useDatabaseService = (): any => {
     });
   }
 
+  async function refreshTablesMetadata(databaseId: number): Promise<DatabaseDto> {
+    const axios = useAxiosInstance();
+    console.debug('refresh database tables metadata');
+    return new Promise<DatabaseDto>((resolve, reject) => {
+      axios.put<DatabaseDto>('/api/database/' + databaseId + '/metadata/table', {})
+        .then((response) => {
+          console.info('Refreshed database tables metadata');
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to refresh database tables metadata', error);
+          reject(axiosErrorToApiError(error));
+        });
+    });
+  }
+
+  async function refreshViewsMetadata(databaseId: number): Promise<DatabaseDto> {
+    const axios = useAxiosInstance();
+    console.debug('refresh database views metadata');
+    return new Promise<DatabaseDto>((resolve, reject) => {
+      axios.put<DatabaseDto>('/api/database/' + databaseId + '/metadata/view', {})
+        .then((response) => {
+          console.info('Refreshed database views metadata');
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to refresh database views metadata', error);
+          reject(axiosErrorToApiError(error));
+        });
+    });
+  }
+
   async function findCount(): Promise<number> {
     const axios = useAxiosInstance();
     console.debug('find databases count');
@@ -185,6 +217,8 @@ export const useDatabaseService = (): any => {
 
   return {
     findAll,
+    refreshTablesMetadata,
+    refreshViewsMetadata,
     findOne,
     findCount,
     getServerTime,

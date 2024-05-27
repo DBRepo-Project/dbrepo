@@ -3,6 +3,7 @@ package at.tuwien.mvc;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.endpoints.*;
 import at.tuwien.test.AbstractUnitTest;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.extern.log4j.Log4j2;
@@ -69,9 +70,10 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
 
     private void generic_openApiDocs(Class<?> endpoint) {
         final List<Method> methods = Arrays.stream(endpoint.getMethods())
-                .filter(m -> m.getDeclaringClass().equals(AccessEndpoint.class))
+                .filter(m -> m.getDeclaringClass().equals(endpoint))
                 .toList();
         methods.forEach(m -> {
+            assertNotNull(m.getDeclaredAnnotation(Operation.class).summary());
             final List<Class<?>> exceptions = Arrays.stream(m.getExceptionTypes())
                     .toList();
             final List<Class<?>> invalidExceptions = exceptions.stream()

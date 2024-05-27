@@ -13,6 +13,7 @@ import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.MariaDbMapper;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -31,21 +32,62 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
 
     private final S3Config s3Config;
     private final MariaDbMapper mariaDbMapper;
+    private final SchemaService schemaService;
     private final StorageService storageService;
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public TableServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, StorageService storageService,
+    public TableServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, SchemaService schemaService,
+                                   StorageService storageService,
                                    DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
         this.s3Config = s3Config;
         this.mariaDbMapper = mariaDbMapper;
+        this.schemaService = schemaService;
         this.storageService = storageService;
         this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
     }
 
     @Override
-    public void createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
-            TableMalformedException, TableExistsException {
+    public List<TableDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, TableNotFoundException,
+            QueryMalformedException, DatabaseMalformedException {
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        final List<TableDto> tables = new LinkedList<>();
+        try {
+            /* inspect tables before views */
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
+            statement.setString(1, database.getInternalName());
+            final ResultSet resultSet1 = statement.executeQuery();
+            while (resultSet1.next()) {
+                final String tableName = resultSet1.getString(1);
+                if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
+                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), tableName);
+                    continue;
+                }
+                final TableDto table = schemaService.inspectTable(database, tableName);
+                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(table.getInternalName()))) {
+                    tables.add(table);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get table schemas: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get table schemas: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Found {} table schema(s)", tables.size());
+        return tables;
+    }
+
+    @Override
+    public TableDto find(PrivilegedDatabaseDto database, String tableName) throws TableNotFoundException, SQLException,
+            QueryMalformedException {
+        return schemaService.inspectTable(database, tableName);
+    }
+
+    @Override
+    public TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
+            TableMalformedException, TableExistsException, TableNotFoundException, QueryMalformedException {
         final String tableName = mariaDbMapper.nameToInternalName(data.getName());
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -72,6 +114,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             dataSource.close();
         }
         log.info("Created table with name {}", tableName);
+        return find(database, tableName);
     }
 
     @Override

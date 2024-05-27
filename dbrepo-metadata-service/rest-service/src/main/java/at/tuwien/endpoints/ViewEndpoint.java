@@ -58,7 +58,7 @@ public class ViewEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_views_findall")
+    @Observed(name = "dbrepo_views_findall")
     @Operation(summary = "Find all views", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -89,7 +89,7 @@ public class ViewEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasAuthority('create-database-view')")
-    @Observed(name = "dbrepo_metadata_view_create")
+    @Observed(name = "dbrepo_view_create")
     @Operation(summary = "Create a view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -113,7 +113,7 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or user could not be found",
+                    description = "Failed to find database/user in metadata database.",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -127,8 +127,13 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -155,7 +160,7 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_view_find")
+    @Observed(name = "dbrepo_view_find")
     @Operation(summary = "Find one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -202,7 +207,7 @@ public class ViewEndpoint {
     @DeleteMapping("/{viewId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-view')")
-    @Observed(name = "dbrepo_metadata_view_delete")
+    @Observed(name = "dbrepo_view_delete")
     @Operation(summary = "Delete one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -233,8 +238,13 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

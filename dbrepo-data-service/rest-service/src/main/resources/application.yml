@@ -82,3 +82,6 @@ dbrepo:
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   routingKey: "${BROKER_ROUTING_KEY:#}"
   connectionTimeout: ${CONNECTION_TIMEOUT:10000}
+  defaultDateFormatId: "${DEFAULT_DATE_FORMAT_ID:3}"
+  defaultTimeFormatId: "${DEFAULT_TIME_FORMAT_ID:4}"
+  defaultTimestampFormatId: "${DEFAULT_TIMESTAMP_FORMAT_ID:1}"

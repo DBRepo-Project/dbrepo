@@ -42,7 +42,6 @@ public abstract class HibernateConnector {
                     .append("?currentSchema=")
                     .append(databaseName);
         }
-        log.debug("connecting via jdbc, url={}", stringBuilder);
         return stringBuilder.toString();
     }
 

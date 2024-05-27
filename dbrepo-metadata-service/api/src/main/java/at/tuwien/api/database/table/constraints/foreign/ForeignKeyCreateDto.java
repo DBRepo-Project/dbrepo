@@ -1,4 +1,4 @@
-package at.tuwien.api.database.table.constraints.foreignKey;
+package at.tuwien.api.database.table.constraints.foreign;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;

@@ -77,7 +77,7 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_tables_findall")
+    @Observed(name = "dbrepo_tables_findall")
     @Operation(summary = "List all tables", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -114,7 +114,7 @@ public class TableEndpoint {
     @GetMapping("/{tableId}/suggest")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Observed(name = "dbrepo_metadata_semantic_table_analyse")
+    @Observed(name = "dbrepo_semantic_table_analyse")
     @Operation(summary = "Suggest table semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -122,8 +122,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Failed to parse statistic in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Could not find the table",
+                    description = "Failed to find database/table in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -152,11 +157,31 @@ public class TableEndpoint {
     @PutMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasAuthority('admin')")
-    @Observed(name = "dbrepo_metadata_statistic_table_update")
+    @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update table statistics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated table statistics successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Payload malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/table in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId,
@@ -174,7 +199,7 @@ public class TableEndpoint {
     @PutMapping("/{tableId}/column/{columnId}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
-    @Observed(name = "dbrepo_metadata_semantics_column_save")
+    @Observed(name = "dbrepo_semantics_column_save")
     @Operation(summary = "Update a table column semantic mapping", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -193,7 +218,17 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Table or database could not be found",
+                    description = "Failed to find user/table/database/ontology in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -225,7 +260,7 @@ public class TableEndpoint {
     @GetMapping("/{tableId}/column/{columnId}/suggest")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Observed(name = "dbrepo_metadata_semantic_column_analyse")
+    @Observed(name = "dbrepo_semantic_column_analyse")
     @Operation(summary = "Suggest table column semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -233,13 +268,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Could not find the table column",
+            @ApiResponse(responseCode = "400",
+                    description = "Generated query is malformed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "417",
-                    description = "Generated query is malformed",
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/table in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -265,7 +300,7 @@ public class TableEndpoint {
     @PostMapping
     @Transactional(rollbackFor = {ServiceConnectionException.class, DatabaseNotFoundException.class, ServiceException.class})
     @PreAuthorize("hasAuthority('create-table')")
-    @Observed(name = "dbrepo_metadata_table_create")
+    @Observed(name = "dbrepo_table_create")
     @Operation(summary = "Create a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -290,6 +325,16 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
                     description = "Create table conflicts with existing table name",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -322,7 +367,7 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_tables_find")
+    @Observed(name = "dbrepo_tables_find")
     @Operation(summary = "Get information about table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -340,8 +385,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Could not communicate with the broker service",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -380,7 +430,7 @@ public class TableEndpoint {
     @DeleteMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
-    @Observed(name = "dbrepo_metadata_table_delete")
+    @Observed(name = "dbrepo_table_delete")
     @Operation(summary = "Delete a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -400,7 +450,17 @@ public class TableEndpoint {
                     description = "Table, database or container could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("tableId") Long tableId,

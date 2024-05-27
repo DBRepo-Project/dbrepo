@@ -624,6 +624,7 @@ class View(BaseModel):
     is_public: bool
     initial_view: bool
     last_modified: Timestamp
+    columns: List[ViewColumn]
     identifiers: List[Identifier] = field(default_factory=list)
 
 
@@ -877,6 +878,7 @@ class Column(BaseModel):
     is_public: bool
     is_null_allowed: bool
     alias: Optional[str] = None
+    description: Optional[str] = None
     size: Optional[int] = None
     d: Optional[int] = None
     mean: Optional[float] = None
@@ -894,6 +896,27 @@ class Column(BaseModel):
     val_min: Optional[float] = None
     val_max: Optional[float] = None
     std_dev: Optional[float] = None
+
+
+class ViewColumn(BaseModel):
+    id: int
+    name: str
+    database_id: int
+    internal_name: str
+    auto_generated: bool
+    column_type: ColumnType
+    is_public: bool
+    is_null_allowed: bool
+    alias: Optional[str] = None
+    size: Optional[int] = None
+    d: Optional[int] = None
+    mean: Optional[float] = None
+    median: Optional[float] = None
+    concept: Optional[Concept] = None
+    unit: Optional[Unit] = None
+    date_format: Optional[ImageDate] = None
+    index_length: Optional[int] = None
+    length: Optional[int] = None
 
 
 class Table(BaseModel):

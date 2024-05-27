@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "error.database.invalid")
+@ResponseStatus(code = HttpStatus.EXPECTATION_FAILED, reason = "error.database.invalid")
 public class DatabaseMalformedException extends Exception {
 
     public DatabaseMalformedException(String message) {

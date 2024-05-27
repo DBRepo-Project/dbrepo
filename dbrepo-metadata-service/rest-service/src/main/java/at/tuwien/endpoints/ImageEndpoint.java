@@ -51,7 +51,7 @@ public class ImageEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_image_findall")
+    @Observed(name = "dbrepo_image_findall")
     @Operation(summary = "Find all images")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -71,7 +71,7 @@ public class ImageEndpoint {
 
     @PostMapping
     @Transactional
-    @Observed(name = "dbrepo_metadata_image_create")
+    @Observed(name = "dbrepo_image_create")
     @PreAuthorize("hasAuthority('create-image')")
     @Operation(summary = "Create image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -108,7 +108,7 @@ public class ImageEndpoint {
 
     @GetMapping("/{imageId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_image_find")
+    @Observed(name = "dbrepo_image_find")
     @Operation(summary = "Find some image")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -133,7 +133,7 @@ public class ImageEndpoint {
 
     @PutMapping("/{imageId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_image_update")
+    @Observed(name = "dbrepo_image_update")
     @PreAuthorize("hasAuthority('modify-image')")
     @Operation(summary = "Update some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -162,7 +162,7 @@ public class ImageEndpoint {
 
     @DeleteMapping("/{imageId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_image_delete")
+    @Observed(name = "dbrepo_image_delete")
     @PreAuthorize("hasAuthority('delete-image')")
     @Operation(summary = "Delete some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {

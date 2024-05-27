@@ -53,7 +53,7 @@ public class ContainerEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_container_findall")
+    @Observed(name = "dbrepo_container_findall")
     @Operation(summary = "Find all containers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -75,7 +75,7 @@ public class ContainerEndpoint {
 
     @PostMapping
     @Transactional
-    @Observed(name = "dbrepo_metadata_container_create")
+    @Observed(name = "dbrepo_container_create")
     @PreAuthorize("hasAuthority('create-container')")
     @Operation(summary = "Create container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -107,7 +107,7 @@ public class ContainerEndpoint {
 
     @GetMapping("/{containerId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_container_find")
+    @Observed(name = "dbrepo_container_find")
     @Operation(summary = "Find some container")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -135,6 +135,7 @@ public class ContainerEndpoint {
                 log.trace("attach privileged credential information");
                 headers.set("X-Username", container.getPrivilegedUsername());
                 headers.set("X-Password", container.getPrivilegedPassword());
+                headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
             }
         }
         return ResponseEntity.ok()
@@ -144,7 +145,7 @@ public class ContainerEndpoint {
 
     @DeleteMapping("/{containerId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_container_delete")
+    @Observed(name = "dbrepo_container_delete")
     @PreAuthorize("hasAuthority('delete-container')")
     @Operation(summary = "Delete some container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {

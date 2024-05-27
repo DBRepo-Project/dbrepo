@@ -2,6 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.ImportCsvDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -11,11 +12,13 @@ import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
+import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.QueryNotFoundException;
-import at.tuwien.exception.TableMalformedException;
+import at.tuwien.config.QueryConfig;
+import at.tuwien.exception.*;
 import com.github.dockerjava.zerodep.shaded.org.apache.commons.codec.binary.Hex;
+import com.google.common.hash.Hashing;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
@@ -26,6 +29,7 @@ import org.mapstruct.Named;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.sql.Date;
 import java.text.Normalizer;
@@ -37,7 +41,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {MetadataMapper.class})
 public interface MariaDbMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MariaDbMapper.class);
@@ -100,6 +104,54 @@ public interface MariaDbMapper {
                 .result(resultList)
                 .headers(headers)
                 .build();
+    }
+
+    default String databaseTablesSelectRawQuery() {
+        final String statement = "SELECT DISTINCT t.`TABLE_NAME` FROM information_schema.TABLES t WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries'";
+        log.trace("mapped select tables statement: {}", statement);
+        return statement;
+    }
+
+    default String databaseTableSelectRawQuery() {
+        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
+        log.trace("mapped select table statement: {}", statement);
+        return statement;
+    }
+
+    default String databaseViewSelectRawQuery() {
+        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'VIEW' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
+        log.trace("mapped select view statement: {}", statement);
+        return statement;
+    }
+
+    default String columnsCheckConstraintSelectRawQuery() {
+        final String statement = "SELECT DISTINCT c.`CHECK_CLAUSE` FROM information_schema.COLUMNS k JOIN information_schema.CHECK_CONSTRAINTS c ON k.TABLE_NAME = c.TABLE_NAME WHERE k.TABLE_SCHEMA = ? AND k.TABLE_NAME = ?";
+        log.trace("mapped select column constraint statement: {}", statement);
+        return statement;
+    }
+
+    default String databaseTableColumnsSelectRawQuery() {
+        final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?;";
+        log.trace("mapped select columns statement: {}", statement);
+        return statement;
+    }
+
+    default String databaseTableConstraintsSelectRawQuery() {
+        final String statement = "SELECT k.`ORDINAL_POSITION`, c.`CONSTRAINT_TYPE`, k.`CONSTRAINT_NAME`, k.`COLUMN_NAME` FROM information_schema.TABLE_CONSTRAINTS c JOIN information_schema.KEY_COLUMN_USAGE k ON c.`TABLE_NAME` = k.`TABLE_NAME` AND c.`CONSTRAINT_NAME` = k.`CONSTRAINT_NAME`WHERE c.`CONSTRAINT_TYPE` = 'UNIQUE' AND LOWER(k.`COLUMN_NAME`) != 'row_end' AND c.`TABLE_SCHEMA` = ? AND c.`TABLE_NAME` = ? ORDER BY k.`ORDINAL_POSITION` ASC;";
+        log.trace("mapped select table constraints statement: {}", statement);
+        return statement;
+    }
+
+    default String viewCreateRawQuery(String viewName, String query) {
+        final String statement = "CREATE VIEW IF NOT EXISTS `" + viewName + "` AS (" + query + ")";
+        log.trace("mapped create view statement: {}", statement);
+        return statement;
+    }
+
+    default String databaseViewsSelectRawQuery() {
+        final String statement = "SELECT DISTINCT t.`TABLE_NAME` FROM information_schema.TABLES t WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'VIEW'";
+        log.trace("mapped select views statement: {}", statement);
+        return statement;
     }
 
     default String tableCreateDtoToCreateSequenceRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
@@ -174,7 +226,9 @@ public interface MariaDbMapper {
                     /* null expressions */
                     .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
-                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
+                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
+                    /* comments */
+                    .append(!column.getDescription().isEmpty() ? (" COMMENT \"" + column.getDescription() + "\"") : "");
         }
         /* create primary key index */
         stringBuilder.append(", PRIMARY KEY (")
@@ -227,6 +281,12 @@ public interface MariaDbMapper {
                                 .append("CHECK (")
                                 .append(ck)
                                 .append(")"));
+            }
+            if (!data.getDescription().isBlank()) {
+                /* create table comments */
+                stringBuilder.append(" COMMENT \"")
+                        .append(data.getDescription())
+                        .append("\"");
             }
         }
         stringBuilder.append(") WITH SYSTEM VERSIONING;");
@@ -419,10 +479,40 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default TableDto resultSetToTable(DatabaseDto database, ResultSet resultSet) throws SQLException,
-            QueryMalformedException {
+    /**
+     * Map the inspected schema to either an existing view/table and append e.g. column or (if not existing) create a new view/table.
+     * @param database The database.
+     * @param resultSet The inspected schema.
+     * @return The database containing the updated view/table.
+     * @throws SQLException
+     */
+    default ViewDto schemaResultSetToView(DatabaseDto database, ResultSet resultSet) throws SQLException {
+        return ViewDto.builder()
+                .name(resultSet.getString(1))
+                .internalName(resultSet.getString(1))
+                .vdbid(database.getId())
+                .database(database)
+                .isInitialView(false)
+                .isPublic(database.getIsPublic())
+                .query(resultSet.getString(9))
+                .queryHash(Hashing.sha256()
+                        .hashString(resultSet.getString(9), StandardCharsets.UTF_8)
+                        .toString())
+                .columns(new LinkedList<>())
+                .identifiers(new LinkedList<>())
+                .creator(database.getOwner())
+                .createdBy(database.getOwner().getId())
+                .build();
+    }
+
+    ViewColumnDto columnDtoToViewColumnDto(ColumnDto data);
+
+    ColumnDto viewColumnDtoToColumnDto(ViewColumnDto data);
+
+    default TableDto schemaResultSetToTable(DatabaseDto database, ResultSet resultSet) throws SQLException,
+            TableNotFoundException {
         if (!resultSet.next()) {
-            throw new QueryMalformedException("Failed to map table");
+            throw new TableNotFoundException("Failed to find table in the information schema");
         }
         final TableDto table = TableDto.builder()
                 .name(resultSet.getString(1))
@@ -434,7 +524,9 @@ public interface MariaDbMapper {
                 .maxDataLength(resultSet.getLong(6))
                 .tdbid(database.getId())
                 .queueName("dbrepo")
-                .routingKey("dbrepo." + database.getInternalName() + "." + resultSet.getString(1))
+                .routingKey("dbrepo")
+                .columns(new LinkedList<>())
+                .identifiers(new LinkedList<>())
                 .creator(database.getOwner())
                 .createdBy(database.getOwner().getId())
                 .owner(database.getOwner())
@@ -444,6 +536,7 @@ public interface MariaDbMapper {
                         .uniques(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
                         .build())
+                .isPublic(database.getIsPublic())
                 .build();
         if (resultSet.getString(7) != null && !resultSet.getString(7).isEmpty()) {
             table.setCreated(Timestamp.valueOf(resultSet.getString(7))
@@ -452,42 +545,121 @@ public interface MariaDbMapper {
         return table;
     }
 
-    default TableDto resultSetToTable(ResultSet resultSet, TableDto table, ImageDateDto defaultDateFormat,
-                                      ImageDateDto defaultTimestampFormat) throws SQLException {
-        /* columns */
-        final List<ColumnDto> columns = new LinkedList<>();
-        while (resultSet.next()) {
-            /* constraints */
-            if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
-                table.getConstraints().getPrimaryKey().add(resultSet.getString(10));
-            }
-            final ColumnDto column = ColumnDto.builder()
-                    .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
-                    .autoGenerated(resultSet.getString(2) != null && resultSet.getString(2).startsWith("nextval"))
-                    .isNullAllowed(resultSet.getString(3).equals("YES"))
-                    .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
-                    .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
-                    .name(resultSet.getString(10))
-                    .internalName(resultSet.getString(10))
-                    .build();
-            /* fix boolean and set size for others */
-            if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
-                column.setColumnType(ColumnTypeDto.BOOL);
-            } else if (resultSet.getString(5) != null) {
-                column.setSize(resultSet.getLong(5));
-            } else if (resultSet.getString(6) != null) {
-                column.setSize(resultSet.getLong(6));
-            }
-            if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
-                column.setDateFormat(defaultTimestampFormat);
-            } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
-                column.setDateFormat(defaultDateFormat);
-            }
-            log.trace("mapped result set to column {}", column);
-            columns.add(column);
+    default TableDto resultSetToConstraint(ResultSet resultSet, TableDto table) throws SQLException {
+        final String type = resultSet.getString(2);
+        final String name = resultSet.getString(3);
+        final String columnName = resultSet.getString(4);
+        final Optional<ColumnDto> optional = table.getColumns().stream()
+                .filter(c -> c.getInternalName().equals(columnName))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find table column: {}", columnName);
+            throw new IllegalArgumentException("Failed to find table column");
         }
-        table.setColumns(columns);
+        final ColumnDto column = optional.get();
+        if (type.equals("UNIQUE")) {
+            final Optional<UniqueDto> optional2 = table.getConstraints().getUniques().stream().filter(u -> u.getName().equals(name)).findFirst();
+            if (optional2.isPresent()) {
+                optional2.get()
+                        .getColumns()
+                        .add(column);
+                return table;
+            }
+            table.getConstraints()
+                    .getUniques()
+                    .add(UniqueDto.builder()
+                            .name(name)
+                            .columns(new LinkedList<>(List.of(column)))
+                            .build());
+            return table;
+        }
         return table;
+    }
+
+    TableBriefDto tableDtoToTableBriefDto(TableDto data);
+
+    default TableDto resultSetToTable(ResultSet resultSet, TableDto table, QueryConfig queryConfig) throws SQLException {
+        final ColumnDto column = ColumnDto.builder()
+                .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
+                .autoGenerated(resultSet.getString(2) != null && resultSet.getString(2).startsWith("nextval"))
+                .isNullAllowed(resultSet.getString(3).equals("YES"))
+                .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
+                .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
+                .name(resultSet.getString(10))
+                .internalName(resultSet.getString(10))
+                .table(table)
+                .tableId(table.getId())
+                .databaseId(table.getTdbid())
+                .description(resultSet.getString(11))
+                .build();
+        /* constraints */
+        if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
+            table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
+                    .table(tableDtoToTableBriefDto(table))
+                    .column(column)
+                    .build());
+        }
+        /* fix boolean and set size for others */
+        if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
+            column.setColumnType(ColumnTypeDto.BOOL);
+        } else if (resultSet.getString(5) != null) {
+            column.setSize(resultSet.getLong(5));
+        } else if (resultSet.getString(6) != null) {
+            column.setSize(resultSet.getLong(6));
+        }
+        if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultTimestampFormatId())
+                    .build());
+        } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultDateFormatId())
+                    .build());
+        } else if (column.getColumnType().equals(ColumnTypeDto.TIME)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultTimeFormatId())
+                    .build());
+        }
+        table.getColumns()
+                .add(column);
+        return table;
+    }
+
+    default ViewDto resultSetToTable(ResultSet resultSet, ViewDto view, QueryConfig queryConfig) throws SQLException {
+        final ViewColumnDto column = ViewColumnDto.builder()
+                .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
+                .autoGenerated(resultSet.getString(2) != null && resultSet.getString(2).startsWith("nextval"))
+                .isNullAllowed(resultSet.getString(3).equals("YES"))
+                .columnType(ColumnTypeDto.valueOf(resultSet.getString(4).toUpperCase()))
+                .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
+                .name(resultSet.getString(10))
+                .internalName(resultSet.getString(10))
+                .databaseId(view.getDatabase().getId())
+                .build();
+        /* fix boolean and set size for others */
+        if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
+            column.setColumnType(ColumnTypeDto.BOOL);
+        } else if (resultSet.getString(5) != null) {
+            column.setSize(resultSet.getLong(5));
+        } else if (resultSet.getString(6) != null) {
+            column.setSize(resultSet.getLong(6));
+        }
+        if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultTimestampFormatId())
+                    .build());
+        } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultDateFormatId())
+                    .build());
+        } else if (column.getColumnType().equals(ColumnTypeDto.TIME)) {
+            column.setDateFormat(ImageDateDto.builder()
+                    .id(queryConfig.getDefaultTimeFormatId())
+                    .build());
+        }
+        view.getColumns()
+                .add(column);
+        return view;
     }
 
     default List<TableHistoryDto> resultSetToTableHistory(ResultSet resultSet) throws SQLException {
@@ -672,7 +844,7 @@ public interface MariaDbMapper {
 
     default void columnToDateSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
         log.trace("mapping column to date set");
-        set.append(set.length() != 0 ? ", " : "")
+        set.append(!set.isEmpty() ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = STR_TO_DATE(");
@@ -702,7 +874,7 @@ public interface MariaDbMapper {
 
     default void columnToBoolSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
         log.trace("mapping column to bool set, data={}, column={}, set=(generated)", data, column);
-        set.append(set.length() != 0 ? ", " : "")
+        set.append(!set.isEmpty() ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
@@ -1021,22 +1193,28 @@ public interface MariaDbMapper {
         throw new IllegalArgumentException("Column type not known");
     }
 
+    /**
+     * Parse columns from a SQL statement of a known database.
+     * @param database The database.
+     * @param query The SQL statement.
+     * @return The list of columns.
+     * @throws JSQLParserException The table/view or column was not found in the database.
+     */
     default List<ColumnDto> parseColumns(DatabaseDto database, String query) throws JSQLParserException {
         final List<ColumnDto> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final net.sf.jsqlparser.statement.Statement statement = parserRealSql.parse(new StringReader(query));
-        log.debug("parse columns from query: {}", query);
+        log.trace("parse columns from query: {}", query);
         /* bi-directional mapping */
         database.getTables()
                 .forEach(table -> table.getColumns()
                         .forEach(column -> column.setTable(table)));
         /* check */
-        if (!(statement instanceof Select)) {
+        if (!(statement instanceof Select selectStatement)) {
             log.error("Query attempts to update the dataset, not a SELECT statement");
             throw new JSQLParserException("Query attempts to update the dataset");
         }
         /* start parsing */
-        final Select selectStatement = (Select) statement;
         final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
         final List<SelectItem> clauses = ps.getSelectItems();
         log.trace("columns referenced in the from-clause: {}", clauses);
@@ -1053,7 +1231,8 @@ public interface MariaDbMapper {
         final List<ColumnDto> allColumns = Stream.of(database.getViews()
                                 .stream()
                                 .map(ViewDto::getColumns)
-                                .flatMap(List::stream),
+                                .flatMap(List::stream)
+                                .map(this::viewColumnDtoToColumnDto),
                         database.getTables()
                                 .stream()
                                 .map(TableDto::getColumns)
@@ -1061,8 +1240,6 @@ public interface MariaDbMapper {
                 .flatMap(i -> i)
                 .toList();
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
-        /* Checking if all tables or views exist */
-        log.trace("table/view/join referenced in the statement: {}", fromItems.stream().map(this::fromItemToFromItems).flatMap(List::stream).collect(Collectors.toList()));
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {
             final SelectExpressionItem item = (SelectExpressionItem) clause;
@@ -1099,6 +1276,9 @@ public interface MariaDbMapper {
             if (item.getAlias() != null) {
                 resultColumn.setAlias(item.getAlias().getName().replace("`", ""));
             }
+            resultColumn.setDatabaseId(database.getId());
+            resultColumn.setTable(resultColumn.getTable());
+            resultColumn.setTableId(resultColumn.getTable().getId());
             log.trace("found column with internal name {} and alias {}", resultColumn.getInternalName(), resultColumn.getAlias());
             columns.add(resultColumn);
         }
@@ -1142,11 +1322,11 @@ public interface MariaDbMapper {
         return found;
     }
 
-    default List<FromItem> fromItemToFromItems(FromItem data) {
+    default List<FromItem> fromItemToFromItems(FromItem data) throws JSQLParserException {
         return fromItemToFromItems(data, 0);
     }
 
-    default List<FromItem> fromItemToFromItems(FromItem data, Integer level) {
+    default List<FromItem> fromItemToFromItems(FromItem data, Integer level) throws JSQLParserException {
         final List<FromItem> fromItems = new LinkedList<>();
         if (data instanceof net.sf.jsqlparser.schema.Table table) {
             fromItems.add(data);
@@ -1156,9 +1336,19 @@ public interface MariaDbMapper {
         if (data instanceof SubJoin subJoin) {
             log.trace("from-item is of type sub-join: level ~> {}", level);
             for (Join join : subJoin.getJoinList()) {
-                fromItems.addAll(fromItemToFromItems(join.getRightItem(), level + 1));
+                final List<FromItem> tmp = fromItemToFromItems(join.getRightItem(), level + 1);
+                if (tmp == null) {
+                    log.error("Failed to find right sub-join table: {}", join.getRightItem());
+                    throw new JSQLParserException("Failed to find right sub-join table");
+                }
+                fromItems.addAll(tmp);
             }
-            fromItems.addAll(fromItemToFromItems(((SubJoin) data).getLeft(), level + 1));
+            final List<FromItem> tmp = fromItemToFromItems(subJoin.getLeft(), level + 1);
+            if (tmp == null) {
+                log.error("Failed to find left sub-join table: {}", subJoin.getLeft());
+                throw new JSQLParserException("Failed to find left sub-join table");
+            }
+            fromItems.addAll(tmp);
             return fromItems;
         }
         log.warn("unknown from-item {}", data);

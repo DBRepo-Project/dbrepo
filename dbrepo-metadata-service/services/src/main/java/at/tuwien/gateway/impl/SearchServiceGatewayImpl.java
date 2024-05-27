@@ -1,10 +1,13 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.TableMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,16 +18,22 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @Log4j2
 @Service
 public class SearchServiceGatewayImpl implements SearchServiceGateway {
 
+    private final TableMapper tableMapper;
     private final RestTemplate restTemplate;
     private final DatabaseMapper databaseMapper;
 
     @Autowired
-    public SearchServiceGatewayImpl(@Qualifier("searchServiceRestTemplate") RestTemplate restTemplate,
+    public SearchServiceGatewayImpl(TableMapper tableMapper,
+                                    @Qualifier("searchServiceRestTemplate") RestTemplate restTemplate,
                                     DatabaseMapper databaseMapper) {
+        this.tableMapper = tableMapper;
         this.restTemplate = restTemplate;
         this.databaseMapper = databaseMapper;
     }
@@ -33,6 +42,31 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     public DatabaseDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
         final DatabaseDto payload = databaseMapper.databaseToDatabaseDto(database);
+        payload.getTables()
+                .forEach(table -> {
+                    table.setIsPublic(database.getIsPublic());
+                    table.getColumns()
+                            .forEach(column -> {
+                                column.setTable(table);
+                                column.setTableId(table.getId());
+                                column.setDatabaseId(payload.getId());
+                                column.setIsPublic(payload.getIsPublic());
+                            });
+                    table.getConstraints()
+                            .getUniques()
+                            .forEach(uk -> {
+                                uk.setTable(tableMapper.tableDtoToTableBriefDto(table));
+                                uk.getTable().setDatabaseId(database.getId());
+                                uk.setColumns(new LinkedList<>());
+//                                uk.getColumns()
+//                                        .forEach(column -> {
+//                                            column.setTable(table);
+//                                            column.setTableId(table.getId());
+//                                            column.setDatabaseId(database.getId());
+//                                            column.setIsPublic(database.getIsPublic());
+//                                        });
+                            });
+                });
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
@@ -48,8 +82,8 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
             log.error("Failed to update database: not found");
             throw new DatabaseNotFoundException("Failed to update database: not found", e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to update database: body is null");
-            throw new SearchServiceException("Failed to update database: body is null", e);
+            log.error("Failed to update database: malformed payload: {}", e.getMessage());
+            throw new SearchServiceException("Failed to update database: malformed payload", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update database: response code is not 202");

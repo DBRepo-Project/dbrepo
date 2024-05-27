@@ -14,8 +14,13 @@ import java.time.Instant;
 import java.util.List;
 
 public interface TableService {
-    void createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
-            TableMalformedException, TableExistsException;
+
+    List<TableDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, TableNotFoundException, QueryMalformedException, DatabaseMalformedException;
+
+    TableDto find(PrivilegedDatabaseDto database, String tableName) throws TableNotFoundException, SQLException, QueryMalformedException;
+
+    TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
+            TableMalformedException, TableExistsException, TableNotFoundException, QueryMalformedException;
 
     void delete(PrivilegedTableDto table) throws SQLException, QueryMalformedException;
 

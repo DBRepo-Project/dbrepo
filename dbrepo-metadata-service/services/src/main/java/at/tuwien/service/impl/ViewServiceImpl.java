@@ -1,19 +1,18 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import lombok.extern.log4j.Log4j2;
-import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +27,14 @@ import java.util.Optional;
 public class ViewServiceImpl implements ViewService {
 
     private final ViewMapper viewMapper;
-    private final QueryMapper queryMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, DataServiceGateway dataServiceGateway,
+    public ViewServiceImpl(ViewMapper viewMapper, DataServiceGateway dataServiceGateway,
                            DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
         this.viewMapper = viewMapper;
-        this.queryMapper = queryMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
@@ -102,17 +99,13 @@ public class ViewServiceImpl implements ViewService {
                 .queryHash(Hashing.sha256()
                         .hashString(data.getQuery(), StandardCharsets.UTF_8)
                         .toString())
+                .columns(new LinkedList<>())
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())
                 .build();
         /* create in data service */
         data.setName(view.getInternalName());
-        dataServiceGateway.createView(database.getId(), data);
-        try {
-            view.setColumns(viewMapper.tableColumnsToViewColumns(view, queryMapper.parseColumns(data.getQuery(), database)));
-        } catch (JSQLParserException e) {
-            throw new MalformedException("Failed to parse columns from view: " + e.getMessage(), e);
-        }
+        final ViewDto dto = dataServiceGateway.createView(database.getId(), data);
         database.getViews()
                 .add(view);
         database = databaseRepository.save(database);

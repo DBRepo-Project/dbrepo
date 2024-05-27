@@ -7,6 +7,7 @@ import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.observation.annotation.Observed;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
@@ -39,6 +40,7 @@ public class DefaultListener implements MessageListener {
 
     @Override
     @Observed(name = "dbrepo_message_receive")
+    @Operation(summary = "Received AMQP message from Broker Service")
     public void onMessage(Message message) {
         final MessageProperties properties = message.getMessageProperties();
         final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
