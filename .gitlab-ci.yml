@@ -621,7 +621,7 @@ release-docs:
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${VERSION}/swagger"
   script:
-    - "make gen-swagger-doc gen-lib-doc gen-docs-doc"
+    - "make gen-lib-doc gen-docs-doc"
     - "cp -r ./lib/python/docs/build/html ./final/${VERSION}/sphinx" # sphinx
     - "cp .docs/.swagger/api.yaml ./final/${VERSION}/swagger/api.yaml" # swagger
     - "cp .docs/.swagger/swagger-ui.html ./final/${VERSION}/swagger/index.html" # swagger
