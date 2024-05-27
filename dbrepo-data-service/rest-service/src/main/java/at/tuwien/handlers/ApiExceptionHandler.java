@@ -25,7 +25,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(DatabaseMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseMalformedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
@@ -88,7 +88,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(QueryStoreCreateException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryStoreCreateException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
@@ -102,14 +102,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(QueryStoreInsertException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryStoreInsertException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(QueryStorePersistException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryStorePersistException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
@@ -186,6 +186,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ExceptionHandler(TableSchemaException.class)
+    public ResponseEntity<ApiErrorDto> handle(TableSchemaException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e) {
@@ -203,6 +210,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(ViewNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ExceptionHandler(ViewSchemaException.class)
+    public ResponseEntity<ApiErrorDto> handle(ViewSchemaException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 

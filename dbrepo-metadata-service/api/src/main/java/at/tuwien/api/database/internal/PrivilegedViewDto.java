@@ -1,6 +1,7 @@
 package at.tuwien.api.database.internal;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
@@ -78,7 +79,7 @@ public class PrivilegedViewDto {
     private UserDto creator;
 
     @NotNull(message = "columns are required")
-    private List<ColumnDto> columns;
+    private List<ViewColumnDto> columns;
 
     @JsonProperty("last_modified")
     @Schema(example = "2021-03-12T15:26:21Z")

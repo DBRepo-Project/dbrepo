@@ -55,11 +55,18 @@ select `date`, `location`, `mintemp`, `rainfall`
 from `weather_aus`
 where `location` = 'Albury');
 
-CREATE VIEW `hs_weather_aus` AS
-SELECT *
-FROM (SELECT `id`, ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
-      FROM `weather_aus` FOR SYSTEM_TIME ALL
-      GROUP BY inserted_at, deleted_at
-      ORDER BY deleted_at DESC
-      LIMIT 50) AS v
-ORDER BY v.inserted_at, v.deleted_at ASC;
+CREATE TABLE not_in_metadata_db
+(
+    id          BIGINT       NOT NULL PRIMARY KEY,
+    given_name  VARCHAR(255) NOT NULL,
+    middle_name VARCHAR(255) NULL,
+    family_name VARCHAR(255) NOT NULL,
+    age         INT          NOT NULL CHECK ( age > 0 AND age < 120 ),
+    UNIQUE (given_name, family_name)
+) WITH SYSTEM VERSIONING;
+
+CREATE VIEW not_in_metadata_db2 AS
+(
+select `date`, `location`, `mintemp` as `MinTemp`, `rainfall` as `Rainfall`
+from `weather_aus`
+where `location` = 'Vienna');

@@ -20,10 +20,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -43,36 +41,33 @@ public class AccessEndpoint {
     }
 
     @PostMapping("/{userId}")
-    @Transactional
-    @Observed(name = "dbrepo_database_access_create")
     @PreAuthorize("hasAuthority('admin')")
     @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Granting access succeeded",
-                    content = {@Content}),
+                    description = "Granting access succeeded"),
             @ApiResponse(responseCode = "400",
                     description = "Granting access query or database connection is malformed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
-                    description = "Failed giving access",
+                    description = "Not allowed to give access",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or user not found",
+                    description = "Failed to find database/user in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Granting access not permitted",
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to give access in the database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Access could not be created in the data service",
+                    description = "Failed to establish connection to metadata service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -99,40 +94,45 @@ public class AccessEndpoint {
     }
 
     @PutMapping("/{userId}")
-    @Transactional
-    @Observed(name = "dbrepo_database_access_update")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Modify access to some database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update access to some database", security = {@SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Modify access succeeded",
+                    description = "Update access succeeded",
                     content = {@Content}),
             @ApiResponse(responseCode = "400",
-                    description = "Modify access query or database connection is malformed",
+                    description = "Update access query or database connection is malformed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
-                    description = "Modify access not permitted when no access is granted in the first place",
+                    description = "Not allowed to update access",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or user not found",
+                    description = "Failed to find database/user in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to update access in database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Access could not be updated in the data service",
+                    description = "Failed to establish connection with metadata service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> update(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody UpdateDatabaseAccessDto accessDto) throws NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException {
-        log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}", databaseId, userId, accessDto);
+                                    @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
+            DatabaseMalformedException {
+        log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
+                access.getType());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         final PrivilegedUserDto user = metadataServiceGateway.getUserById(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
@@ -140,7 +140,7 @@ public class AccessEndpoint {
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
         }
         try {
-            accessService.update(database, user, accessDto.getType());
+            accessService.update(database, user, access.getType());
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {
@@ -149,31 +149,33 @@ public class AccessEndpoint {
     }
 
     @DeleteMapping("/{userId}")
-    @Transactional
-    @Observed(name = "dbrepo_database_access_revoke")
     @PreAuthorize("hasAuthority('admin')")
     @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Revoked access successfully",
-                    content = {@Content}),
+                    description = "Revoked access successfully"),
             @ApiResponse(responseCode = "400",
-                    description = "Modify access query or database connection is malformed",
+                    description = "Revoke access query or database connection is malformed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
-                    description = "Revoke of access not permitted as no access was found",
+                    description = "Not allowed to revoke access",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "User, database with access was not found",
+                    description = "Failed to find database/user in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Failed to revoke access in database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Access could not be revoked in the data service",
+                    description = "Failed to establish connection with the metadata service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

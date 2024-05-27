@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.UNAUTHORIZED, reason = "error.user.credentials")
+@ResponseStatus(code = HttpStatus.FORBIDDEN, reason = "error.user.credentials")
 public class CredentialsInvalidException extends Exception {
 
     public CredentialsInvalidException(String msg) {

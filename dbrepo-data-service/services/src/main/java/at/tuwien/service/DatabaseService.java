@@ -1,10 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
-import at.tuwien.exception.DatabaseMalformedException;
+import at.tuwien.exception.*;
 
 import java.sql.SQLException;
 

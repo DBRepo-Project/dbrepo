@@ -1,6 +1,7 @@
 package at.tuwien.api.database.table.constraints;
 
-import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -26,5 +27,5 @@ public class ConstraintsDto {
     private Set<String> checks;
 
     @JsonProperty("primary_key")
-    private Set<String> primaryKey;
+    private Set<PrimaryKeyDto> primaryKey;
 }

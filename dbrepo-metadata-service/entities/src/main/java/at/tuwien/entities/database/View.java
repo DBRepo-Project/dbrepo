@@ -10,7 +10,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.*;
-import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -58,10 +57,10 @@ public class View {
     })
     private User creator;
 
-    @Column(name = "vname", nullable = false)
+    @Column(name = "vname", nullable = false, columnDefinition = "VARCHAR(64)")
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(64)")
     private String internalName;
 
     @Column(name = "public", nullable = false)
@@ -95,27 +94,9 @@ public class View {
     })
     private Database database;
 
-    /**
-     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
-     * Custom equality function implementation.
-     *
-     * @param other The other view
-     * @return True if views are equal, false otherwise
-     */
-    public boolean equals(FromItem other) {
-        if (other == null) {
-            return false;
-        }
-        final net.sf.jsqlparser.schema.Table table = (net.sf.jsqlparser.schema.Table) other;
-        return this.internalName.equals(table.getName().replace("`", ""));
-    }
-
     @ToString.Exclude
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumns({
-            @JoinColumn(name = "vid", referencedColumnName = "id", updatable = false)
-    })
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "view")
     @OrderColumn(name = "ordinalPosition")
     private List<ViewColumn> columns;
 

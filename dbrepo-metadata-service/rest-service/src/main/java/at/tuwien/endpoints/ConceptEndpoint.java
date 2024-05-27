@@ -36,7 +36,7 @@ public class ConceptEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_semantic_concepts_findall")
+    @Observed(name = "dbrepo_semantic_concepts_findall")
     @Operation(summary = "List semantic concepts")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

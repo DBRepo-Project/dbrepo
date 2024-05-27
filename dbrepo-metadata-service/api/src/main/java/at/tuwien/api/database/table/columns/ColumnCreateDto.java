@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.columns;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -35,6 +36,10 @@ public class ColumnCreateDto {
 
     @Schema(example = "0")
     private Long d;
+
+    @Size(max = 2048)
+    @Schema(example = "Formatted as YYYY-MM-dd")
+    private String description;
 
     @NotNull
     @JsonProperty("null_allowed")

@@ -1,11 +1,11 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.ViewService;
@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 
 @Log4j2
 @RestController
@@ -52,40 +53,125 @@ public class ViewEndpoint {
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
+    @Observed(name = "dbrepo_view_schema_list")
+    @Operation(summary = "Find view schemas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found view schemas",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ViewDto[].class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Database schema is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/view in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "View schema could not be mapped to known columns",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "View schema could not be retrieved",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<List<ViewDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
+            throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
+            ViewMalformedException, ViewNotFoundException, DatabaseMalformedException, ViewSchemaException {
+        log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
+        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        try {
+            return ResponseEntity.ok(viewService.getSchemas(database));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
     @Operation(summary = "Create view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Created a new view",
+                    description = "Created view",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = ViewDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "View schema is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "View schema could not be mapped",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
+    public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+                                          @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
-            viewService.create(database, data);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(viewService.create(database, data));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .build();
     }
 
     @DeleteMapping("/{viewId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Delete view in database", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Delete view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",
-                    description = "Deleted table",
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted view"),
+            @ApiResponse(responseCode = "400",
+                    description = "Database schema is malformed",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find view in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "View schema could not be mapped",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("viewId") Long viewId)
@@ -104,15 +190,39 @@ public class ViewEndpoint {
     }
 
     @RequestMapping(value = "/{viewId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
-    @PreAuthorize("hasAuthority('view-database-view-data')")
     @Observed(name = "dbrepo_view_data")
-    @Operation(summary = "Get view data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Retrieve view data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Returned view data",
+                    description = "Retrieved view data",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Request pagination is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to retrieve view data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find view in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "View schema could not be mapped",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<QueryResultDto> getData(@NotBlank @PathVariable("databaseId") Long databaseId,
                                                   @NotBlank @PathVariable("viewId") Long viewId,
@@ -123,8 +233,8 @@ public class ViewEndpoint {
                                                   Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             QueryMalformedException, ViewMalformedException, PaginationException, NotAllowedException {
-        log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId, viewId,
-                page, size, timestamp);
+        log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
+                viewId, page, size, timestamp);
         endpointValidator.validateDataParams(page, size);
         /* parameters */
         if (page == null) {
@@ -140,7 +250,9 @@ public class ViewEndpoint {
             timestamp = Instant.now();
         }
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
-        metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+        if (!view.getIsPublic()) {
+            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+        }
         try {
             final Long count = viewService.count(view, timestamp);
             final HttpHeaders headers = new HttpHeaders();

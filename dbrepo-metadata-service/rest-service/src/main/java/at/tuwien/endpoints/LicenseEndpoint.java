@@ -40,7 +40,7 @@ public class LicenseEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_license_findall")
+    @Observed(name = "dbrepo_license_findall")
     @Operation(summary = "Get all licenses")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

@@ -36,7 +36,7 @@ public class UnitEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_semantic_units_findall")
+    @Observed(name = "dbrepo_semantic_units_findall")
     @Operation(summary = "List semantic units")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

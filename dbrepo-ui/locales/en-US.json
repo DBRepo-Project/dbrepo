@@ -421,7 +421,7 @@
           }
         },
         "schema": {
-          "title": "Structure",
+          "title": "System Versioned",
           "bullet": "●",
           "assign": "Assign",
           "remove": {
@@ -447,6 +447,9 @@
           },
           "sequence": {
             "title": "Sequence"
+          },
+          "description": {
+            "title": "Description"
           },
           "name": {
             "label": "Name",
@@ -643,6 +646,13 @@
           },
           "image-remove": {
             "text": "Remove Image"
+          },
+          "scheme": {
+            "title": "Schema",
+            "subtitle": "Update the metadata on the database schema to display system-versioned tables and views in the UI.",
+            "submit": {
+              "text": "Refresh"
+            }
           },
           "ownership": {
             "title": "Ownership",
@@ -1020,7 +1030,8 @@
       "missing": "Failed to find access in metadata database."
     },
     "axios": {
-      "connection": "Failed to establish connection."
+      "connection": "Failed to establish connection.",
+      "timeout": "Connection timed out."
     },
     "concept": {
       "missing": "Failed to find concept in metadata database."
@@ -1120,7 +1131,9 @@
       "dataset": "Failed to upload dataset."
     },
     "schema": {
-      "id": "Column \"id\" must be a primary key."
+      "id": "Column \"id\" must be a primary key.",
+      "view": "Failed to map view schema.",
+      "table": "Failed to map table schema."
     },
     "user": {
       "exists": "User with username exists in auth database.",
@@ -1162,6 +1175,9 @@
   },
   "success": {
     "signup": "Successfully created account.",
+    "clipboard": {
+      "user": "Successfully copied user id."
+    },
     "query": {
       "build": "Failed to build query: column not found",
       "fatal": "Query with this schema is not buildable through the UI at the moment"
@@ -1188,6 +1204,10 @@
     "table": {
       "created": "Successfully created table.",
       "semantics": "Successfully assigned semantic instance."
+    },
+    "schema": {
+      "tables": "Successfully refreshed database tables metadata.",
+      "views": "Successfully refreshed database views metadata."
     },
     "database": {
       "upload": "Successfully uploaded database image.",

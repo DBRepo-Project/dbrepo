@@ -1,13 +1,11 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.UpdateDatabaseAccessDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
@@ -20,6 +18,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -211,12 +210,12 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void createView(Long databaseId, ViewCreateDto data) throws ServiceConnectionException, ServiceException {
-        final ResponseEntity<Void> response;
+    public ViewDto createView(Long databaseId, ViewCreateDto data) throws ServiceConnectionException, ServiceException {
+        final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view";
         log.debug("create view in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), Void.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), ViewDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to create view: {}", e.getMessage());
@@ -229,6 +228,11 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             log.error("Failed to create view: wrong http code: {}", response.getStatusCode());
             throw new ServiceException("Failed to create view: wrong http code: " + response.getStatusCode());
         }
+        if (response.getBody() == null) {
+            log.error("Failed to create view: empty body: {}", response.getStatusCode());
+            throw new ServiceException("Failed to create view: empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
     }
 
     @Override
@@ -267,7 +271,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to find query: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to delete table", e);
+            throw new ServiceConnectionException("Failed to find query", e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find query: not found: {}", e.getMessage());
             throw new QueryNotFoundException("Failed to find query: not found", e);
@@ -296,7 +300,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to export query: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to delete table: " + e.getMessage(), e);
+            throw new ServiceConnectionException("Failed to export query: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to export query: not found: {}", e.getMessage());
             throw new QueryNotFoundException("Failed to export query: not found: " + e.getMessage(), e);
@@ -309,6 +313,67 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             throw new ServiceException("Failed to export query: wrong http code: " + response.getStatusCode());
         }
         return response.getBody();
+    }
+
+    @Override
+    public List<TableDto> getTableSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException {
+        final ResponseEntity<TableDto[]> response;
+        final String url = "/api/database/" + databaseId + "/table";
+        log.debug("retrieve table schema metadata in data service");
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), TableDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
+                 HttpServerErrorException.InternalServerError e) {
+            log.error("Failed to get table schemas: {}", e.getMessage());
+            throw new ServiceConnectionException("Failed to get table schemas: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to get table schemas: not found: {}", e.getMessage());
+            throw new QueryNotFoundException("Failed to get table schemas: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to get table schemas: {}", e.getMessage());
+            throw new ServiceException("Failed to get table schemas: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get table schemas: wrong http code: {}", response.getStatusCode());
+            throw new ServiceException("Failed to get table schemas: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get table schemas: empty body: {}", response.getStatusCode());
+            throw new ServiceException("Failed to get table schemas: empty body: " + response.getStatusCode());
+        }
+        final List<TableDto> tables = Arrays.asList(response.getBody());
+        log.debug("found {} table(s) in data service", tables.size());
+        return tables;
+    }
+
+    @Override
+    public List<ViewDto> getViewSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException {
+        final ResponseEntity<ViewDto[]> response;
+        final String url = "/api/database/" + databaseId + "/view";
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), ViewDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
+                 HttpServerErrorException.InternalServerError e) {
+            log.error("Failed to get view schemas: {}", e.getMessage());
+            throw new ServiceConnectionException("Failed to get view schemas: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to get view schemas: not found: {}", e.getMessage());
+            throw new QueryNotFoundException("Failed to get view schemas: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to get view schemas: {}", e.getMessage());
+            throw new ServiceException("Failed to get view schemas: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to get view schemas: wrong http code: {}", response.getStatusCode());
+            throw new ServiceException("Failed to get view schemas: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to get view schemas: empty body: {}", response.getStatusCode());
+            throw new ServiceException("Failed to get view schemas: empty body: " + response.getStatusCode());
+        }
+        final List<ViewDto> views = Arrays.asList(response.getBody());
+        log.debug("found {} view(s) in data service", views.size());
+        return views;
     }
 
 }

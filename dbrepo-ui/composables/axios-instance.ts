@@ -1,6 +1,5 @@
-import axios, {AxiosError, type AxiosInstance} from 'axios'
+import axios, {type AxiosInstance} from 'axios'
 import {useUserStore} from '@/stores/user'
-import {axiosErrorToApiError} from '@/utils'
 
 let instance: AxiosInstance | null = null;
 
@@ -9,7 +8,7 @@ export const useAxiosInstance = () => {
   const userStore = useUserStore()
   if (!instance) {
     instance = axios.create({
-      timeout: 10000,
+      timeout: 10_000,
       params: {},
       headers: {
         Accept: 'application/json',
@@ -44,9 +43,9 @@ export const useAxiosInstance = () => {
           config.headers.Authorization = `Bearer ${response.access_token}`
           return config
         })
-        .catch((error: AxiosError) => {
-          if (axiosErrorToApiError(error).code === 'error.user.credentials') {
-            console.error('Invalid user credentials: perform logout')
+        .catch((error: ApiErrorDto) => {
+          if (error.code === 'error.user.credentials') {
+            console.warn('User session expired.')
             userStore.logout()
           }
           return config

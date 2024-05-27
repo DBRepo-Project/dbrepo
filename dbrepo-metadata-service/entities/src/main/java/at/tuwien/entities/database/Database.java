@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
