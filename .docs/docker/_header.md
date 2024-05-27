@@ -10,7 +10,7 @@
 
 # Supported tags
 
-* [`1.4.x`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-__APP_VERSION__/dbrepo-DIR/Dockerfile/)
+* [`1.4.3`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.4.3/dbrepo-DIR/Dockerfile/)
 * [`latest`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-latest/dbrepo-DIR/Dockerfile/)
 
 # Non-supported tags
@@ -29,8 +29,8 @@
 
 * **Source of this description:**
 
-  [docs repo's `.docs/docker` directory](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tree/release-__APP_VERSION__/.docs/docker)
-  ([history](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/release-__APP_VERSION__/.docs/docker))
+  [docs repo's `.docs/docker` directory](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tree/release-1.4.3/.docs/docker)
+  ([history](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/release-1.4.3/.docs/docker))
 
 # What is DBRepo?
 

@@ -569,7 +569,6 @@ docs-registry:
     - "apt-get update && apt-get install -y sed"
   script:
     - pip install -r ./requirements.txt
-    - find .docs -type f -exec sed -i -e "s/__APP_VERSION__/${APP_VERSION}/g" {} \;
     - python3 .docs/docker/release.py
 
 release-images:
@@ -588,7 +587,7 @@ release-images:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
   script:
-    - "make release"
+    - "make release-images"
 
 release-chart:
   stage: release
