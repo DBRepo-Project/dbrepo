@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -43,10 +44,12 @@ public class ColumnDto {
     private Integer ordinalPosition;
 
     @NotBlank
+    @Size(max = 64)
     @Schema(example = "Date")
     private String name;
 
     @NotBlank
+    @Size(max = 64)
     @JsonProperty("internal_name")
     @Schema(example = "mdb_date")
     private String internalName;
@@ -113,10 +116,16 @@ public class ColumnDto {
 
     private UnitDto unit;
 
+    @Size(max = 2048)
+    @Schema(example = "Formatted as YYYY-MM-dd")
+    private String description;
+
     @ToString.Exclude
+    @JsonIgnore
     private transient TableDto table;
 
     @ToString.Exclude
+    @JsonIgnore
     private transient List<ViewDto> views;
 
     @NotNull

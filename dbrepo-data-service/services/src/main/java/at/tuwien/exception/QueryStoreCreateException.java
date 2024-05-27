@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "error.store.invalid")
+@ResponseStatus(code = HttpStatus.EXPECTATION_FAILED, reason = "error.store.invalid")
 public class QueryStoreCreateException extends Exception {
 
     public QueryStoreCreateException(String message) {

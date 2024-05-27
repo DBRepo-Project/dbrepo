@@ -53,7 +53,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    @ResponseStatus(code = HttpStatus.FORBIDDEN)
     @ExceptionHandler(CredentialsInvalidException.class)
     public ResponseEntity<ApiErrorDto> handle(CredentialsInvalidException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());

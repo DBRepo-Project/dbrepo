@@ -504,7 +504,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<List<QueryDto>> response = subsetEndpoint.findAllById(databaseId, null, principal);
+        final ResponseEntity<List<QueryDto>> response = subsetEndpoint.list(databaseId, null, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         return response.getBody();
     }

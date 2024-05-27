@@ -5,7 +5,6 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.ImageRepository;
-import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,10 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class ImageServiceIntegrationTest extends AbstractUnitTest {
+public class ImageServicePersistenceTest extends AbstractUnitTest {
 
     @Autowired
-    private ImageServiceImpl imageService;
+    private ImageService imageService;
 
     @Autowired
     private ImageRepository imageRepository;

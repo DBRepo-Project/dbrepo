@@ -16,7 +16,7 @@
           lines="two"
           :title="table.name"
           :class="clazz(table)"
-          :subtitle="table.description ? table.description : '(no description)'"
+          :subtitle="table.description ? table.description : ''"
           :to="`/database/${$route.params.database_id}/table/${table.id}/info`">
           <template v-slot:append>
             <v-tooltip

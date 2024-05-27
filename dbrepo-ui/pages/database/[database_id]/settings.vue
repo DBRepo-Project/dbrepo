@@ -173,6 +173,27 @@
             </v-row>
           </v-card-text>
         </v-card>
+        <v-divider />
+        <v-card
+          v-if="canUpdateScheme"
+          :title="$t('pages.database.subpages.settings.scheme.title')"
+          :subtitle="$t('pages.database.subpages.settings.scheme.subtitle')"
+          variant="flat"
+          rounded="0">
+          <v-card-text>
+            <v-row>
+              <v-col>
+                <v-btn
+                  size="small"
+                  variant="flat"
+                  color="tertiary"
+                  :loading="loadingSchema"
+                  :text="$t('pages.database.subpages.settings.scheme.submit.text')"
+                  @click="refreshSchema" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
       </v-window-item>
       <v-dialog
         v-model="editAccessDialog"
@@ -205,6 +226,7 @@ export default {
       loading: false,
       loadingUpload: false,
       loadingImage: false,
+      loadingSchema: false,
       validUpload: false,
       loadingDeleteImage: false,
       fileModel: null,
@@ -318,6 +340,12 @@ export default {
         return false
       }
       return this.roles.includes('modify-database-owner')
+    },
+    canUpdateScheme () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.roles.includes('find-database')
     },
     canModifyAccess () {
       if (!this.isOwner) {
@@ -462,6 +490,28 @@ export default {
         })
         .finally(() => {
           this.loading = false
+        })
+    },
+    refreshSchema () {
+      this.loadingSchema = true
+      const databaseService = useDatabaseService()
+      databaseService.refreshTablesMetadata(this.$route.params.database_id)
+        .then(() => {
+          this.$toast.success(this.$t('success.schema.tables'))
+          databaseService.refreshViewsMetadata(this.$route.params.database_id)
+            .then(() => {
+              this.$toast.success(this.$t('success.schema.views'))
+              this.cacheStore.reloadDatabase()
+              this.loadingSchema = false
+            })
+            .catch(({code}) => {
+              this.$toast.error(this.$t(code))
+              this.loadingSchema = false
+            })
+        })
+        .catch(({code}) => {
+          this.$toast.error(this.$t(code))
+          this.loadingSchema = false
         })
     },
     giveAccess () {

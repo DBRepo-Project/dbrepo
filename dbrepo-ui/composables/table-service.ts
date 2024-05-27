@@ -71,7 +71,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, page, size)})
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size), timeout: 30_000 })
         .then((response) => {
           console.info('Got data for table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)
@@ -87,7 +87,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
+      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null), timeout: 30_000 })
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)

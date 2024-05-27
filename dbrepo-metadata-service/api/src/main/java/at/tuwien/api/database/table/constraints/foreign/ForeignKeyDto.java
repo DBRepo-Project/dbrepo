@@ -1,8 +1,9 @@
-package at.tuwien.api.database.table.constraints.foreignKey;
+package at.tuwien.api.database.table.constraints.foreign;
 
-import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -17,19 +18,25 @@ import java.util.List;
 @ToString
 public class ForeignKeyDto {
 
-    @NonNull
+    private Long id;
+
+    @NotNull
     private String name;
 
-    @NonNull
-    private List<ColumnDto> columns;
+    @NotNull
+    private ColumnDto column;
 
-    @NonNull
+    @NotNull
+    private List<ForeignKeyReferenceDto> references;
+
+    @NotNull
+    @ToString.Exclude
+    private TableDto table;
+
+    @NotNull
+    @ToString.Exclude
     @JsonProperty("referenced_table")
-    private TableBriefDto referencedTable;
-
-    @NonNull
-    @JsonProperty("referenced_columns")
-    private List<ColumnDto> referencedColumns;
+    private TableDto referencedTable;
 
     @JsonProperty("on_update")
     private ReferenceTypeDto onUpdate;

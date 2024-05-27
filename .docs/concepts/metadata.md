@@ -1,5 +1,0 @@
----
-author: Martin Weise
----
-
-TBD

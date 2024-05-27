@@ -9,8 +9,9 @@ ready
 schema.xsd
 final/
 build/
-swagger/
 *.tar
+tmp.yaml
+.docs/.swagger/api-*
 
 # docs
 .docs/.swagger/dist/

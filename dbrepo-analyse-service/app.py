@@ -187,6 +187,7 @@ def get_health():
 
 
 @app.route("/api/analyse/datatypes", methods=["GET"], endpoint="analyse_analyse_datatypes")
+@metrics.gauge(name='dbrepo_analyse_datatypes', description='Time needed to analyse datatypes of dataset')
 @swag_from("as-yml/analyse_datatypes.yml")
 def analyse_datatypes():
     filename: str = request.args.get('filename')
@@ -212,6 +213,7 @@ def analyse_datatypes():
 
 
 @app.route("/api/analyse/keys", methods=["GET"], endpoint="analyse_analyse_keys")
+@metrics.gauge(name='dbrepo_analyse_keys', description='Time needed to analyse keys of dataset')
 @swag_from("as-yml/analyse_keys.yml")
 def analyse_keys():
     filename: str = request.args.get("filename")
@@ -234,6 +236,7 @@ def analyse_keys():
 @app.route("/api/analyse/database/<database_id>/table/<table_id>/statistics", methods=["GET"],
            endpoint="analyse_analyse_table_stat")
 @auth.login_required(role=['admin', 'export-query-data', 'export-table-data'])
+@metrics.gauge(name='dbrepo_analyse_table_stat', description='Time needed to analyse table statistics')
 @swag_from("as-yml/analyse_table_stat.yml")
 def analyse_table_stat(database_id: int = None, table_id: int = None):
     if database_id is None:

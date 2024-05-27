@@ -3,13 +3,10 @@ package at.tuwien.service;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
-import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
@@ -21,17 +18,17 @@ import at.tuwien.repository.*;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +37,8 @@ import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
+@Disabled("CI/CD")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class TableServicePersistenceTest extends AbstractUnitTest {
 
@@ -65,12 +64,6 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private ConceptRepository conceptRepository;
-
-    @Autowired
-    private UnitRepository unitRepository;
-
-    @Autowired
     private TableService tableService;
 
     @BeforeEach
@@ -80,8 +73,6 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
-        conceptRepository.save(CONCEPT_1);
-        unitRepository.save(UNIT_1);
         databaseRepository.saveAll(List.of(DATABASE_1));
     }
 

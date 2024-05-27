@@ -66,10 +66,8 @@ public class PrivilegedContainerDto {
     @ToString.Exclude
     private String password;
 
-    @JsonProperty("default_timestamp_format")
-    private ImageDateDto defaultTimestampFormat;
+    private Long defaultTimestampFormatId;
 
-    @JsonProperty("default_date_format")
-    private ImageDateDto defaultDateFormat;
+    private Long defaultDateFormatId;
 
 }

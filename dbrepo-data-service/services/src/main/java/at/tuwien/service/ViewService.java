@@ -10,8 +10,22 @@ import at.tuwien.exception.*;
 
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 
 public interface ViewService {
+
+    /**
+     *
+     * @param database
+     * @return The list of view metadata.
+     * @throws SQLException
+     * @throws DatabaseMalformedException
+     * @throws ViewMalformedException
+     * @throws ViewNotFoundException
+     * @throws ViewSchemaException
+     */
+    List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
+            ViewMalformedException, ViewNotFoundException, ViewSchemaException;
 
     /**
      * Creates a view in the given data database.
@@ -21,7 +35,7 @@ public interface ViewService {
      * @throws SQLException           The connection to the data database was unsuccessful.
      * @throws ViewMalformedException The query is malformed and was rejected by the data database.
      */
-    void create(PrivilegedDatabaseDto database, ViewCreateDto data) throws SQLException,
+    ViewDto create(PrivilegedDatabaseDto database, ViewCreateDto data) throws SQLException,
             ViewMalformedException;
 
     /**

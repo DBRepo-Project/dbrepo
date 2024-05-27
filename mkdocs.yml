@@ -16,9 +16,9 @@ nav:
   - Concepts:
     - Overview: concepts/index.md
     - Authentication: concepts/authentication.md
-    - DBMS: concepts/dbms.md
+    - Databases: concepts/databases.md
     - Messaging: concepts/messaging.md
-    - (Meta-)Data: concepts/metadata.md
+    - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md
     - Search: concepts/search.md
     - Storage: concepts/storage.md

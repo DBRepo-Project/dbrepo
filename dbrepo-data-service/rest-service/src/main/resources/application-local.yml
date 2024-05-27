@@ -68,3 +68,6 @@ dbrepo:
     password: fda
     client: dbrepo-client
     clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  defaultDateFormatId: 1
+  defaultTimeFormatId: 4
+  defaultTimestampFormatId: 3

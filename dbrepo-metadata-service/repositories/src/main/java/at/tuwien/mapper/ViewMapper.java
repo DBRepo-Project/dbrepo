@@ -3,16 +3,12 @@ package at.tuwien.mapper;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.ViewColumn;
-import at.tuwien.entities.database.table.columns.TableColumn;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -44,24 +40,9 @@ public interface ViewMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
-    @Transactional(readOnly = true)
-    default TableColumn viewColumnToTableColumn(ViewColumn data) {
-        return data.getColumn()
-                .toBuilder()
-                .alias(data.getAlias())
-                .build();
-    }
-
-    default List<ViewColumn> tableColumnsToViewColumns(View view, List<TableColumn> data) {
-        final int[] idx = new int[]{0};
-        return data.stream()
-                .map(c -> ViewColumn.builder()
-                        .ordinalPosition(idx[0]++)
-                        .column(c)
-                        .view(view)
-                        .alias(c.getAlias())
-                        .build())
-                .toList();
-    }
+    @Mappings({
+            @Mapping(target = "createdBy", source = "creator.id"),
+    })
+    View viewDtoToView(ViewDto data);
 
 }

@@ -130,6 +130,7 @@ app.config["S3_IMPORT_BUCKET"] = os.getenv('S3_IMPORT_BUCKET', 'dbrepo-upload')
 
 app.json_encoder = LazyJSONEncoder
 
+
 @token_auth.verify_token
 def verify_token(token: str):
     if token is None or token == "":
@@ -177,6 +178,7 @@ def health():
 
 
 @app.route("/sidecar/import/<string:filename>", methods=["POST"], endpoint="sidecar_import")
+@metrics.gauge(name='dbrepo_sidecar_import_dataset', description='Time needed to import dataset from S3')
 @auth.login_required(role=['admin', 'import-database-data'])
 @swag_from("ds-yml/import.yml")
 def import_csv(filename):
@@ -190,6 +192,7 @@ def import_csv(filename):
 
 
 @app.route("/sidecar/export/<string:filename>", methods=["POST"], endpoint="sidecar_export")
+@metrics.gauge(name='dbrepo_sidecar_export_dataset', description='Time needed to export dataset to S3')
 @auth.login_required(role=['admin', 'export-query-data', 'export-table-data'])
 @swag_from("ds-yml/export.yml")
 def import_csv(filename):
