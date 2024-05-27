@@ -5,8 +5,8 @@ variables:
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   DOC_VERSIONS: "latest,1.4.3,1.4.2,1.4.1,1.4.0"
-  APP_VERSION: "1.4.3"
-  CHART_VERSION: "1.4.3"
+  APP_VERSION: "1.4.4"
+  CHART_VERSION: "1.4.4"
 
 image: debian:12-slim
 
@@ -596,6 +596,9 @@ release-chart:
   only:
     refs:
       - /^release-.*/
+  except:
+    refs:
+      - release-latest
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
     - "apk add sed helm curl"
