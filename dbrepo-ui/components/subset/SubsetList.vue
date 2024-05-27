@@ -20,13 +20,10 @@
           <v-list-item
             lines="two"
             :title="title(item)"
+            :subtitle="subtitle(item)"
             :class="clazz(item)"
             :to="link(item)"
             :href="link(item)">
-            <v-list-item-subtitle
-              class="mt-2">
-              <pre>{{ item.query }}</pre>
-            </v-list-item-subtitle>
             <template v-slot:append>
               <v-tooltip
                 v-if="hasPublishedIdentifier(item)"
@@ -96,6 +93,13 @@ export default {
       }
       const identifierService = useIdentifierService()
       return identifierService.identifierPreferEnglishTitle(query.identifiers[0])
+    },
+    subtitle (query) {
+      if (query.identifiers.length === 0) {
+        return null
+      }
+      const identifierService = useIdentifierService()
+      return identifierService.identifierPreferEnglishDescription(query.identifiers[0])
     },
     link (query) {
       return `/database/${this.$route.params.database_id}/subset/${query.id}/info`

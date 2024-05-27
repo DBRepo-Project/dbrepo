@@ -518,6 +518,27 @@ class RestClient:
             raise NotExistsError(f'Failed to delete table: not found')
         raise ResponseCodeError(f'Failed to delete table: response code: {response.status_code} is not 202 (ACCEPTED)')
 
+    def get_table_metadata(self, database_id: int) -> Database:
+        """
+        Generate metadata of all system-versioned tables in a database with given id.
+
+        :param database_id: The database id.
+
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        :raises ForbiddenError: If the action is not allowed.
+        :raises NotExistsError: If the container does not exist.
+        """
+        url = f'/api/database/{database_id}/metadata/table'
+        response = self._wrapper(method="put", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return Database.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get tables metadata: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get tables metadata: not found')
+        raise ResponseCodeError(f'Failed to get tables metadata: response code: {response.status_code} is not 200 (OK)')
+
     def get_views(self, database_id: int) -> List[View]:
         """
         Gets views of a database with given database id.
@@ -654,6 +675,27 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get view data: not found')
         raise ResponseCodeError(f'Failed to get view data: response code: {response.status_code} is not 200 (OK)')
+
+    def get_views_metadata(self, database_id: int) -> Database:
+        """
+        Generate metadata of all views in a database with given id.
+
+        :param database_id: The database id.
+
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        :raises ForbiddenError: If the action is not allowed.
+        :raises NotExistsError: If the container does not exist.
+        """
+        url = f'/api/database/{database_id}/metadata/view'
+        response = self._wrapper(method="put", url=url, force_auth=True)
+        if response.status_code == 200:
+            body = response.json()
+            return Database.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get views metadata: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get views metadata: not found')
+        raise ResponseCodeError(f'Failed to get views metadata: response code: {response.status_code} is not 200 (OK)')
 
     def get_table_data(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
                        timestamp: datetime.datetime = None, df: bool = False) -> Result | DataFrame:
@@ -1319,7 +1361,7 @@ class RestClient:
                           publication_day: int = None, publication_month: int = None,
                           related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
         """
-        Create an identifier
+        Create an identifier draft.
 
         :param database_id: The database id of the created identifier.
         :param type: The type of the created identifier.
@@ -1366,6 +1408,93 @@ class RestClient:
             raise ExternalSystemError(f'Failed to create identifier: external system rejected communication')
         raise ResponseCodeError(
             f'Failed to create identifier: response code: {response.status_code} is not 201 (CREATED)')
+
+    def save_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
+                        titles: List[CreateIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
+                        publication_year: int, descriptions: List[CreateIdentifierDescription] = None,
+                        funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
+                        language: Language = None, query_id: int = None, view_id: int = None, table_id: int = None,
+                        publication_day: int = None, publication_month: int = None,
+                        related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
+        """
+        Save an existing identifier and update the metadata attached to it.
+
+        :param identifier_id: The identifier id.
+        :param database_id: The database id of the created identifier.
+        :param type: The type of the created identifier.
+        :param titles: The titles of the created identifier.
+        :param publisher: The publisher of the created identifier.
+        :param creators: The creator(s) of the created identifier.
+        :param publication_year: The publication year of the created identifier.
+        :param descriptions: The description(s) of the created identifier. Optional.
+        :param funders: The funders(s) of the created identifier. Optional.
+        :param licenses: The license(s) of the created identifier. Optional.
+        :param language: The language of the created identifier. Optional.
+        :param query_id: The query id of the created identifier. Required when type=SUBSET, otherwise invalid. Optional.
+        :param view_id: The view id of the created identifier. Required when type=VIEW, otherwise invalid. Optional.
+        :param table_id: The table id of the created identifier. Required when type=TABLE, otherwise invalid. Optional.
+        :param publication_day: The publication day of the created identifier. Optional.
+        :param publication_month: The publication month of the created identifier. Optional.
+        :param related_identifiers: The related identifier(s) of the created identifier. Optional.
+
+        :returns: The identifier, if successful.
+
+        :raises ResponseCodeError: If something went wrong with the creation of the identifier.
+        :raises ForbiddenError: If the action is not allowed.
+        :raises MalformedError: If the payload is rejected by the service.
+        :raises NotExistsError: If the database, table/view/subset or user does not exist.
+        :raises ExternalSystemError: If the external system (DataCite) refused communication with the service.
+        """
+        url = f'/api/identifier/{identifier_id}'
+        payload = CreateIdentifier(database_id=database_id, type=type, titles=titles, publisher=publisher,
+                                   creators=creators, publication_year=publication_year, descriptions=descriptions,
+                                   funders=funders, licenses=licenses, language=language, query_id=query_id,
+                                   view_id=view_id, table_id=table_id, publication_day=publication_day,
+                                   publication_month=publication_month, related_identifiers=related_identifiers)
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=payload)
+        if response.status_code == 201:
+            body = response.json()
+            return Identifier.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to save identifier: service rejected malformed payload')
+        if response.status_code == 403 or response.status_code == 405:
+            raise ForbiddenError(f'Failed to save identifier: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to save identifier: not found')
+        if response.status_code == 503:
+            raise ExternalSystemError(f'Failed to save identifier: external system rejected communication')
+        raise ResponseCodeError(
+            f'Failed to save identifier: response code: {response.status_code} is not 202 (ACCEPTED)')
+
+    def publish_identifier(self, identifier_id: int) -> Identifier:
+        """
+        Publish an identifier with given id.
+
+        :param identifier_id: The identifier id.
+
+        :returns: The identifier, if successful.
+
+        :raises ResponseCodeError: If something went wrong with the creation of the identifier.
+        :raises ForbiddenError: If the action is not allowed.
+        :raises MalformedError: If the payload is rejected by the service.
+        :raises NotExistsError: If the database, table/view/subset or user does not exist.
+        :raises ExternalSystemError: If the external system (DataCite) refused communication with the service.
+        """
+        url = f'/api/identifier/{identifier_id}/publish'
+        response = self._wrapper(method="put", url=url, force_auth=True)
+        if response.status_code == 201:
+            body = response.json()
+            return Identifier.model_validate(body)
+        if response.status_code == 400:
+            raise MalformedError(f'Failed to publish identifier: service rejected malformed payload')
+        if response.status_code == 403 or response.status_code == 405:
+            raise ForbiddenError(f'Failed to publish identifier: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to publish identifier: not found')
+        if response.status_code == 503:
+            raise ExternalSystemError(f'Failed to publish identifier: external system rejected communication')
+        raise ResponseCodeError(
+            f'Failed to publish identifier: response code: {response.status_code} is not 201 (CREATED)')
 
     def suggest_identifier(self, uri: str) -> Identifier:
         """

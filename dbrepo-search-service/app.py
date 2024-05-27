@@ -217,6 +217,7 @@ def health():
 
 
 @app.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
+@metrics.gauge(name='dbrepo_search_index_list', description='Time needed to list search index')
 @swag_from("os-yml/get_index.yml")
 def get_index(index: str):
     """
@@ -239,6 +240,7 @@ def get_index(index: str):
 
 
 @app.route("/api/search/<string:type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@metrics.gauge(name='dbrepo_search_type_list', description='Time needed to list search types')
 @swag_from("os-yml/get_fields.yml")
 def get_fields(type: str):
     """
@@ -256,6 +258,7 @@ def get_fields(type: str):
 
 
 @app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
+@metrics.gauge(name='dbrepo_search_fuzzy', description='Time needed to search fuzzy')
 @swag_from("os-yml/get_fuzzy_search.yml")
 def get_fuzzy_search():
     """
@@ -274,6 +277,7 @@ def get_fuzzy_search():
 
 
 @app.route("/api/search/<string:type>", methods=["POST"], endpoint="search_post_general_search")
+@metrics.gauge(name='dbrepo_search_type', description='Time needed to search by type')
 @swag_from("os-yml/post_general_search.yml")
 def post_general_search(type):
     """
@@ -353,6 +357,8 @@ def post_general_search(type):
 
 
 @app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="database_put_database")
+@metrics.gauge(name='dbrepo_search_update_database',
+               description='Time needed to update a database in the search database')
 @auth.login_required(role=['admin'])
 @swag_from("os-yml/update_database.yml")
 def update_database(database_id: int):
@@ -376,6 +382,8 @@ def update_database(database_id: int):
 
 
 @app.route("/api/search/database/<int:database_id>", methods=["DELETE"], endpoint="database_delete_database")
+@metrics.gauge(name='dbrepo_search_delete_database',
+               description='Time needed to delete a database in the search database')
 @auth.login_required(role=['admin'])
 @swag_from("os-yml/delete_database.yml")
 def delete_database(database_id: int):

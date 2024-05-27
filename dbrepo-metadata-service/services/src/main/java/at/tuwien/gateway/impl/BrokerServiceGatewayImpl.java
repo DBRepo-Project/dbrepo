@@ -126,8 +126,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         final String url = "/api/exchanges/" + rabbitConfig.getVirtualHost() + "/" + name;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
-        log.trace("gateway broker find exchange, virtual host={}, exchange={}", rabbitConfig.getVirtualHost(), name);
-        log.debug("find exchange from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<ExchangeDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), ExchangeDto.class);

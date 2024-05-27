@@ -44,10 +44,14 @@ public interface DatabaseMapper {
     }
 
     @Mappings({
-            @Mapping(target = "id", source = "id"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
     })
     DatabaseDto databaseToDatabaseDto(Database data);
+
+    @Mappings({
+            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
+    })
+    DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);
 

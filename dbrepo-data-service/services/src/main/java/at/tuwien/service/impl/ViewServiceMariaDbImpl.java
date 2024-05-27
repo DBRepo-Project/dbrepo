@@ -6,9 +6,14 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.config.QueryConfig;
+import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.MariaDbMapper;
+import at.tuwien.mapper.MetadataMapper;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -16,38 +21,103 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.LinkedList;
+import java.util.List;
 
 @Log4j2
 @Service
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
+    private final S3Config s3Config;
+    private final QueryConfig queryConfig;
     private final MariaDbMapper mariaDbMapper;
+    private final SchemaService schemaService;
     private final StorageService storageService;
+    private final MetadataMapper metadataMapper;
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(MariaDbMapper mariaDbMapper, StorageService storageService,
+    public ViewServiceMariaDbImpl(S3Config s3Config, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
+                                  SchemaService schemaService, StorageService storageService,
+                                  MetadataMapper metadataMapper,
                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.s3Config = s3Config;
+        this.queryConfig = queryConfig;
         this.mariaDbMapper = mariaDbMapper;
+        this.schemaService = schemaService;
         this.storageService = storageService;
+        this.metadataMapper = metadataMapper;
         this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
     }
 
     @Override
-    public void create(PrivilegedDatabaseDto database, ViewCreateDto data) throws SQLException,
+    public List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
+            ViewMalformedException, ViewNotFoundException, ViewSchemaException {
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        final List<ViewDto> views = new LinkedList<>();
+        try {
+            /* inspect tables before views */
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseViewsSelectRawQuery());
+            statement.setString(1, database.getInternalName());
+            final ResultSet resultSet1 = statement.executeQuery();
+            while (resultSet1.next()) {
+                final String viewName = resultSet1.getString(1);
+                if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
+                    log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), viewName);
+                    continue;
+                }
+                final ViewDto view;
+                view = schemaService.inspectView(database, viewName);
+                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(view.getInternalName()))) {
+                    views.add(view);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get view schemas: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to get view schemas: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Found {} view schema(s)", views.size());
+        return views;
+    }
+
+    @Override
+    public ViewDto create(PrivilegedDatabaseDto database, ViewCreateDto data) throws SQLException,
             ViewMalformedException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
+        ViewDto view = ViewDto.builder()
+                .name(data.getName())
+                .internalName(data.getName())
+                .isPublic(database.getIsPublic())
+                .creator(database.getOwner())
+                .createdBy(database.getOwner().getId())
+                .identifiers(new LinkedList<>())
+                .isInitialView(false)
+                .vdbid(database.getId())
+                .database(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database))
+                .columns(new LinkedList<>())
+                .build();
         try {
             /* create view if not exists */
-            connection.prepareStatement("CREATE VIEW IF NOT EXISTS `" + data.getName() + "` AS (" + data.getQuery() + ")")
+            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(data.getName(), data.getQuery()))
                     .execute();
+            /* select view columns */
+            final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
+            statement2.setString(1, database.getInternalName());
+            statement2.setString(2, data.getName());
+            final ResultSet resultSet2 = statement2.executeQuery();
+            while (resultSet2.next()) {
+                view = mariaDbMapper.resultSetToTable(resultSet2, view, queryConfig);
+            }
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -56,7 +126,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         } finally {
             dataSource.close();
         }
-        log.info("Created view with name {}", data.getName());
+        log.info("Created view with name {}", view.getName());
+        return view;
     }
 
     @Override
@@ -67,11 +138,15 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         final QueryResultDto queryResult;
         try {
             /* find table data */
+            final List<ColumnDto> mappedColumns = view.getColumns()
+                    .stream()
+                    .map(metadataMapper::viewColumnDtoToColumnDto)
+                    .toList();
             final ResultSet resultSet = connection.prepareStatement(
-                            mariaDbMapper.selectDatasetRawQuery(view.getDatabase().getInternalName(), view.getInternalName(),
-                                    view.getColumns(), timestamp, size, page))
+                            mariaDbMapper.selectDatasetRawQuery(view.getDatabase().getInternalName(),
+                                    view.getInternalName(), mappedColumns, timestamp, size, page))
                     .executeQuery();
-            queryResult = mariaDbMapper.resultListToQueryResultDto(view.getColumns(), resultSet);
+            queryResult = mariaDbMapper.resultListToQueryResultDto(mappedColumns, resultSet);
             queryResult.setId(view.getId());
             connection.commit();
         } catch (SQLException e) {
@@ -105,7 +180,6 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
 
 
     @Override
-    @Transactional
     public Long count(PrivilegedViewDto view, Instant timestamp) throws SQLException,
             QueryMalformedException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(view.getDatabase());
@@ -133,13 +207,18 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
             StorageUnavailableException {
-        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
+            final List<ColumnDto> columns = view.getColumns()
+                    .stream()
+                    .map(metadataMapper::viewColumnDtoToColumnDto)
+                    .toList();
             connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(database.getInternalName(),
-                            view.getInternalName(), view.getColumns(), timestamp, filename))
+                            view.getInternalName(), columns, timestamp, filePath))
                     .executeUpdate();
             connection.commit();
         } catch (SQLException e) {
@@ -149,8 +228,9 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), filename);
-        return storageService.getResource(filename);
+        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(),
+                database.getContainer().getSidecarPort(), fileName);
+        return storageService.getResource(fileName);
     }
 
 }

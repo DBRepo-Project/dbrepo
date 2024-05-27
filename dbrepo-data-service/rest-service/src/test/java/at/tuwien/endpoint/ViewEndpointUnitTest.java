@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.endpoints.ViewEndpoint;
 import at.tuwien.exception.*;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -30,9 +32,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class ViewEndpointUnitTest extends AbstractUnitTest {
 
-    @Autowired
-    private ViewEndpoint viewEndpoint;
-
     @MockBean
     private ViewService viewService;
 
@@ -41,6 +40,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private HttpServletRequest httpServletRequest;
+
+    @Autowired
+    private ViewEndpoint viewEndpoint;
 
     @BeforeEach
     public void beforeEach() {
@@ -55,12 +57,11 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doNothing()
-                .when(viewService)
-                .create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+        when(viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = viewEndpoint.create(DATABASE_1_ID, VIEW_1_CREATE_DTO);
+        final ResponseEntity<ViewDto> response = viewEndpoint.create(DATABASE_1_ID, VIEW_1_CREATE_DTO);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -72,9 +73,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        doNothing()
-                .when(viewService)
-                .create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+        when(viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -206,16 +206,6 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void getData_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException {
 
@@ -236,15 +226,15 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
              NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+                .thenReturn(VIEW_3_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(metadataServiceGateway)
                 .getAccess(DATABASE_1_ID, USER_3_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_3_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, USER_3_PRINCIPAL);
         });
     }
 

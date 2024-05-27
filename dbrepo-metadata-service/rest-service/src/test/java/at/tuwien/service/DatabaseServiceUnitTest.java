@@ -48,7 +48,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
-    private DatabaseServiceImpl databaseService;
+    private DatabaseService databaseService;
 
     @BeforeEach
     public void beforeEach() {

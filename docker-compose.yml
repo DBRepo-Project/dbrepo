@@ -80,6 +80,8 @@ services:
     container_name: dbrepo-auth-service
     hostname: auth-service
     image: dbrepo-auth-service:latest
+    ports:
+      - "8080:8080"
     build:
       context: ./dbrepo-auth-service
       network: host
@@ -135,7 +137,8 @@ services:
       GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+#      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_LEVEL: trace
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
       METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
@@ -287,6 +290,7 @@ services:
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
       S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
+      S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     volumes:
@@ -483,7 +487,12 @@ services:
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
-      STORAGE_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://storage-service:9000}
+      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
+      S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
+      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     healthcheck:
       test: wget -qO- localhost:8080/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s

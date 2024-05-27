@@ -26,17 +26,17 @@ public class ForeignKeyReference {
     private Long id;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fkid", referencedColumnName = "fkid", nullable = false)
     private ForeignKey foreignKey;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn column;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false)
     })

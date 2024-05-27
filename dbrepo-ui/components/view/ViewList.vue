@@ -13,10 +13,6 @@
           :title="view.name"
           :class="clazz(view)"
           :to="`/database/${$route.params.database_id}/view/${view.id}/info`">
-          <v-list-item-subtitle
-            class="mt-2">
-            <pre v-text="view.query" />
-          </v-list-item-subtitle>
           <template v-slot:append>
             <v-tooltip
               v-if="hasPublishedIdentifier(view)"

@@ -85,7 +85,7 @@ public class IdentifierEndpoint {
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json"})
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_identifier_list")
+    @Observed(name = "dbrepo_identifier_list")
     @Operation(summary = "Find all identifiers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -140,7 +140,7 @@ public class IdentifierEndpoint {
             MediaType.TEXT_XML_VALUE, "text/csv", "text/bibliography", "text/bibliography; style=apa",
             "text/bibliography; style=ieee", "text/bibliography; style=bibtex"})
     @Transactional(readOnly = true)
-    @Observed(name = "dbrepo_metadata_identifier_find")
+    @Observed(name = "dbrepo_identifier_find")
     @Operation(summary = "Find some identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -158,37 +158,48 @@ public class IdentifierEndpoint {
             @ApiResponse(responseCode = "400",
                     description = "Identifier could not be exported, the requested style is not known",
                     content = {@Content(
-                            mediaType = "text/bibliography",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Identifier could not be found",
                     content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to find acceptable representation",
+                    content = {@Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
                     description = "Exported resource was not found",
                     content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "410",
                     description = "Failed to retrieve from S3 endpoint",
                     content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "422",
                     description = "Failed to retrieve from database sidecar",
                     content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to data service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Identifier could not exported from database as it is not reachable",
+                    description = "Failed to find in data service",
                     content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> find(@Valid @PathVariable("identifierId") Long identifierId,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
-            ServiceException, ServiceConnectionException, MalformedException, FormatNotAvailableException, QueryNotFoundException {
+            ServiceException, ServiceConnectionException, MalformedException, FormatNotAvailableException,
+            QueryNotFoundException {
         log.debug("endpoint find identifier, identifierId={}, accept={}", identifierId, accept);
         final Identifier identifier = identifierService.find(identifierId);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -252,7 +263,7 @@ public class IdentifierEndpoint {
 
     @DeleteMapping("/{identifierId}")
     @Transactional
-    @Observed(name = "dbrepo_metadata_identifier_delete")
+    @Observed(name = "dbrepo_identifier_delete")
     @PreAuthorize("hasAuthority('delete-identifier')")
     @Operation(summary = "Delete some identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -267,7 +278,17 @@ public class IdentifierEndpoint {
                     description = "Identifier or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to delete in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("identifierId") Long identifierId)
             throws IdentifierNotFoundException, NotAllowedException, ServiceException, ServiceConnectionException,
@@ -286,7 +307,7 @@ public class IdentifierEndpoint {
 
     @PutMapping("/{identifierId}/publish")
     @Transactional
-    @Observed(name = "dbrepo_metadata_identifier_publish")
+    @Observed(name = "dbrepo_identifier_publish")
     @PreAuthorize("hasAuthority('publish-identifier')")
     @Operation(summary = "Publish identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -315,8 +336,13 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "DataCite system did not respond",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -332,7 +358,7 @@ public class IdentifierEndpoint {
 
     @PutMapping("/{identifierId}")
     @Transactional(rollbackFor = {Exception.class})
-    @Observed(name = "dbrepo_metadata_identifier_save")
+    @Observed(name = "dbrepo_identifier_save")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
     @Operation(summary = "Save identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -361,8 +387,13 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "DataCite system did not respond",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -452,7 +483,7 @@ public class IdentifierEndpoint {
 
     @PostMapping
     @Transactional(rollbackFor = {Exception.class})
-    @Observed(name = "dbrepo_metadata_identifier_create")
+    @Observed(name = "dbrepo_identifier_create")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
     @Operation(summary = "Draft identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -481,8 +512,13 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "DataCite system did not respond",
+                    description = "Failed to save in search service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -492,7 +528,7 @@ public class IdentifierEndpoint {
             UserNotFoundException, NotAllowedException, MalformedException, ServiceConnectionException,
             SearchServiceException, ServiceException, QueryNotFoundException, SearchServiceConnectionException,
             IdentifierNotFoundException, ViewNotFoundException {
-        log.debug("endpoint create identifier");
+        log.debug("endpoint create identifier, data.databaseId={}", data.getDatabaseId());
         final Database database = databaseService.findById(data.getDatabaseId());
         final User user = userService.findByUsername(principal.getName());
         /* check access */
@@ -512,7 +548,7 @@ public class IdentifierEndpoint {
     }
 
     @GetMapping("/retrieve")
-    @Observed(name = "dbrepo_metadata_identifier_retrieve")
+    @Observed(name = "dbrepo_identifier_retrieve")
     @Operation(summary = "Retrieve metadata from identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

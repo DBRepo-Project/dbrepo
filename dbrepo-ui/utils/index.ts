@@ -1049,6 +1049,15 @@ export function isActiveMessage(message: any) {
 }
 
 export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
+  if (error.code === 'ECONNABORTED') {
+    /* timeout */
+    const errorObj: ApiErrorDto = {
+      status: error.code,
+      code: 'error.axios.timeout',
+      message: error.message
+    }
+    return errorObj
+  }
   if (error.response?.data) {
     const errorObj: ApiErrorDto = (error.response?.data as ApiErrorDto)
     return errorObj

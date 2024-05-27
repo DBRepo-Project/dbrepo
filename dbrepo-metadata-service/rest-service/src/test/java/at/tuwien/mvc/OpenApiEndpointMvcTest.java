@@ -3,6 +3,7 @@ package at.tuwien.mvc;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.endpoints.*;
 import at.tuwien.test.AbstractUnitTest;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.extern.log4j.Log4j2;
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,9 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -116,7 +114,7 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
 
     private void generic_openApiDocs(Class<?> endpoint) {
         final List<Method> methods = Arrays.stream(endpoint.getMethods())
-                .filter(m -> m.getDeclaringClass().equals(AccessEndpoint.class))
+                .filter(m -> m.getDeclaringClass().equals(endpoint))
                 .toList();
         methods.forEach(m -> {
             final List<Class<?>> exceptions = Arrays.stream(m.getExceptionTypes())
@@ -126,6 +124,7 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
                     .toList();
             assertTrue(invalidExceptions.isEmpty(), "method '" + m.getName() + "' throws exception(s) outside package scope at.tuwien: " + invalidExceptions.stream().map(Class::getName).toList());
             exceptions.forEach(exception -> {
+                assertNotNull(m.getDeclaredAnnotation(Operation.class).summary());
                 final int status = exception.getAnnotation(ResponseStatus.class)
                         .code()
                         .value();
@@ -143,7 +142,7 @@ public class OpenApiEndpointMvcTest extends AbstractUnitTest {
                         assertNotNull(response.content());
                         assertTrue(response.content().length > 0);
                         final Content content0 = response.content()[0];
-                        assertEquals(MediaType.APPLICATION_JSON_VALUE, content0.mediaType());
+                        assertEquals(MediaType.APPLICATION_JSON_VALUE, content0.mediaType(), "method " + m.getName() + " and status " + status + " should return JSON");
                         assertEquals(ApiErrorDto.class, content0.schema().implementation());
                     });
                 }

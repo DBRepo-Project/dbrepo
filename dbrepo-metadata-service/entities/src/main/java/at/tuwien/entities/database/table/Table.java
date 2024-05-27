@@ -10,7 +10,6 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.OrderBy;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
-import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -29,8 +28,11 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@jakarta.persistence.Table(name = "mdb_tables")
+@jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
+})
 public class Table {
 
     @Id
@@ -48,7 +50,7 @@ public class Table {
     private UUID createdBy;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -60,27 +62,27 @@ public class Table {
     private UUID ownedBy;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User owner;
 
-    @Column(name = "tname", nullable = false)
+    @Column(name = "tname", nullable = false, columnDefinition = "VARCHAR(64)")
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(64)")
     private String internalName;
 
     @Column(name = "queue_name", nullable = false, updatable = false)
     private String queueName;
 
-    @Column(name = "tdescription", columnDefinition = "TEXT")
+    @Column(name = "tdescription", columnDefinition = "VARCHAR(2048)")
     private String description;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -128,32 +130,6 @@ public class Table {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof Table other)) {
-            return false;
-        }
-        return this.id.equals(other.getId());
-    }
-
-    /**
-     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
-     * Custom equality function implementation.
-     *
-     * @param other The other table
-     * @return True if tables are equal, false otherwise
-     */
-    public boolean equals(FromItem other) {
-        if (other == null) {
-            return false;
-        }
-        final net.sf.jsqlparser.schema.Table table = (net.sf.jsqlparser.schema.Table) other;
-        return this.internalName.equals(table.getName().replace("`", ""));
-    }
 
 }
 
