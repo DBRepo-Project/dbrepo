@@ -618,7 +618,7 @@ release-docs:
   before_script:
     - "wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/bin/yq"
     - "chmod +x /usr/bin/yq"
-    - "apk add --update sed wget openssh alpine-sdk"
+    - "apk add --update alpine-sdk bash sed wget openssh"
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${VERSION}/swagger"
   script:
