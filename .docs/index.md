@@ -15,14 +15,21 @@ project supporting data evolution, -citation and -versioning. It implements the 
 
 ## Why use DBRepo?
 
-* **aaa** bbbb
+* **Built-in search** makes your dataset searchable without extra effort: most metadata is generated 
+  automatically for data in your databases.
+* **Citable datasets** adopting the recommendations of the RDA-WGDC, arbitrary subsets can be precisely, persistently 
+  identified using system-versioned tables of MariaDB and the DataCite schema for minting DOIs.
+* **Powerful API for Data Scientists** with our strongly typed Python Library, Data Scientists can import, export and
+  work with data from Jupyter Notebook or Python script, optionally using Pandas DataFrames.
+* **Cloud Native** our lightweight Helm chart allows for installations on any cloud provider or private-cloud setting 
+  that has an underlying PV storage provider.
 
 Installing DBRepo is very easy or
 [give it a try online](https://test.dbrepo.tuwien.ac.at){ target="_blank" }.
 
 ## Who is using DBRepo?
 
-TBD
+![Logos of DBRepo adopters](../images/logos.png)
 
 ## How can I try DBRepo
 
