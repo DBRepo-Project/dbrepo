@@ -41,7 +41,7 @@ If your TLS private key as a password, you need to specify it in the `dbrepo.con
 
 ### User Interface
 
-To serve the [User Interface](../system-other-ui/) under different port than `80`, change the port mapping in 
+To serve the [User Interface](./system-other-ui/) under different port than `80`, change the port mapping in 
 the `docker-compose.yml` to e.g. port `8000`:
 
 ```yaml title="docker-compose.yml"
@@ -61,7 +61,7 @@ services:
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 

@@ -17,11 +17,11 @@ TBD
 ## Data Ingest
 
 <figure markdown>
-![Data ingest](../images/data-ingest.svg)
+![Data ingest](./images/data-ingest.svg)
 <figcaption>Figure 1: Modes of data ingest</figcaption>
 </figure>
 
-More [usage examples](../usage-overview/) include how to ingest datasets, data dumps, live data, etc.
+More [usage examples](./usage-overview/) include how to ingest datasets, data dumps, live data, etc.
 
 ### Generation of Metadata in DBRepo
 

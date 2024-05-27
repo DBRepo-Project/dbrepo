@@ -13,8 +13,8 @@ author: Martin Weise
 
 ## Overview
 
-By default, users are created using the [User Interface](../system-other-ui) and the sign-up page in the User Interface.
-This creates a new user in the [Authentication Database](../system-databases-authentication), the user identity is then
+By default, users are created using the [User Interface](./system-other-ui) and the sign-up page in the User Interface.
+This creates a new user in the [Authentication Database](./system-databases-authentication), the user identity is then
 managed by the
 Authentication Service.
 
@@ -36,7 +36,7 @@ We organize the roles into default- and escalated composite roles. There are thr
 Each of the composite role has a set of other associated composite roles.
 
 <figure markdown>
-![Grouped Roles](../images/groups-roles.png)
+![Grouped Roles](./images/groups-roles.png)
 <figcaption>Three groups (Researchers, Developers, Data Stewards) and their composite roles associated.</figcaption>
 </figure>
 
@@ -203,7 +203,7 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

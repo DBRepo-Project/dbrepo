@@ -8,7 +8,7 @@ example, you can configure the logo :material-numeric-1-circle-outline: in Figur
 image as well, in this example we want to mount a custom logo `my_logo.png` into the container and specify the name.
 
 <figure markdown>
-![Architecture of the UI microservice](../images/screenshots/ui-config-step-1.png){ .img-border }
+![Architecture of the UI microservice](./images/screenshots/ui-config-step-1.png){ .img-border }
 <figcaption>Figure 2: Architecture of the UI microservice</figcaption>
 </figure>
 
@@ -39,7 +39,7 @@ The server-client architecture of the User Interface is shown in [Figure 3](#fig
 User Interface on development.
 
 <figure id="fig3" markdown>
-![Architecture of the UI microservice](../images/architecture-ui.svg)
+![Architecture of the UI microservice](./images/architecture-ui.svg)
 <figcaption>Figure 3: Architecture of the User Interface</figcaption>
 </figure>
 
@@ -52,7 +52,7 @@ User Interface on development.
 
 ### Example
 
-See the [Usage Overview](../usage-overview/) page for detailed examples.
+See the [Usage Overview](./usage-overview/) page for detailed examples.
 
 ## Limitations
 
@@ -61,7 +61,7 @@ See the [Usage Overview](../usage-overview/) page for detailed examples.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

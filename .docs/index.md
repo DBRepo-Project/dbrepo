@@ -29,7 +29,7 @@ Installing DBRepo is very easy or
 
 ## Who is using DBRepo?
 
-![Logos of DBRepo adopters](../images/logos.png)
+![Logos of DBRepo adopters](./images/logos.png)
 
 ## How can I try DBRepo
 

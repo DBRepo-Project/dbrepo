@@ -38,26 +38,26 @@ queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples w
 the dot!) to this queue.
 
 <figure markdown>
-   ![Data ingest](../images/queue-quorum.png)
+   ![Data ingest](./images/queue-quorum.png)
    <figcaption>Replicated quorum queue dbrepo in a cluster with three nodes</figcaption>
 </figure>
 
-The consumer takes care of writing it to the correct table in the [Data Service](../system-services-data).
+The consumer takes care of writing it to the correct table in the [Data Service](./system-services-data).
 
 <figure markdown>
-   ![Data ingest](../images/exchange-binding.png)
+   ![Data ingest](./images/exchange-binding.png)
    <figcaption>Architecture Broker Service</figcaption>
 </figure>
 
 ## Limitations
 
-* No support for MQTT in the [Metadata Service](../system-services-metadata) 
-  and [Data Service](../system-services-data) because of MQTT's missing permission system.
+* No support for MQTT in the [Metadata Service](./system-services-metadata) 
+  and [Data Service](./system-services-data) because of MQTT's missing permission system.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

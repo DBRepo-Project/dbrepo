@@ -2,6 +2,12 @@
 author: Martin Weise
 ---
 
-All services are documented using the 
-[![OpenAPI 3.0](https://img.shields.io/badge/OpenAPI-3.0-leaf?logo=swagger&logoColor=white)](https://www.openapis.org/){ tabindex=-1 }
-documentation standard.
+[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1-leaf?logo=swagger&logoColor=white)](./swagger/){ tabindex=-1 }
+
+## tl;dr
+
+[::simple-swagger: &nbsp;DBRepo REST API](./swagger/){ .md-button .md-button--primary tabindex=-1 }
+
+## Overview
+
+All services are documented using the [OpenAPI 3.1](https://www.openapis.org/) documentation standard.

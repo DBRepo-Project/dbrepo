@@ -6,7 +6,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:fontawesome-solid-cube: &nbsp;View Docs](../sphinx){ .md-button .md-button--primary }
+[:fontawesome-solid-cube: &nbsp;View Docs](./sphinx/){ .md-button .md-button--primary tabindex=-1 }
 
 ## Installing
 
@@ -77,17 +77,17 @@ client.import_table_data(database_id=1, table_id=1, file_path="sensor.csv", sepa
 print(f"Finished.")
 ```
 
-The library is well-documented, please see the [full documentation](../sphinx) or
+The library is well-documented, please see the [full documentation](./sphinx) or
 the [PyPI page](https://pypi.org/project/dbrepo/).
 
 ## Supported Features & Best-Practices
 
-- Manage user account ([docs](../usage-overview/#create-user-account))
-- Manage databases ([docs](../usage-overview/#create-database))
-- Manage database access & visibility ([docs](../usage-overview/#private-database-access))
-- Import dataset ([docs](../usage-overview/#private-database-access))
-- Create persistent identifiers ([docs](../usage-overview/#assign-database-pid))
-- Execute queries ([docs](../usage-overview/#export-subset))
+- Manage user account ([docs](./usage-overview/#create-user-account))
+- Manage databases ([docs](./usage-overview/#create-database))
+- Manage database access & visibility ([docs](./usage-overview/#private-database-access))
+- Import dataset ([docs](./usage-overview/#private-database-access))
+- Create persistent identifiers ([docs](./usage-overview/#assign-database-pid))
+- Execute queries ([docs](./usage-overview/#export-subset))
 - Get data from tables/views/subsets
 
 ## Secrets

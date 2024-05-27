@@ -14,7 +14,7 @@ author: Martin Weise
     Image: [`dbrepo/data-db-sidecar:__APPVERSION__`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
 
     * Ports: 3305/tcp
-    * Swagger UI: `http://<hostname>:1080/swagger-ui/` <a href="../swagger/sidecar" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Swagger UI: `http://<hostname>:1080/swagger-ui/` <a href="./swagger/sidecar" target="_blank">:fontawesome-solid-square-up-right: view online</a>
 
 ## Overview
 
@@ -55,12 +55,12 @@ mariadb-galera:
 ### Sidecar
 
 We deploy a sidecar that handles the CSV-file upload/download operations between
-the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and
+the [Storage Service](./system-services-storage) and the Data Database using a Python Flask application and
 the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
 natively.
 
 <figure markdown>
-![Sidecar architecture detailed](../images/architecture-data-db.svg)
+![Sidecar architecture detailed](./images/architecture-data-db.svg)
 <figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
 </figure>
 
@@ -98,7 +98,7 @@ MariaDB Galera.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security
