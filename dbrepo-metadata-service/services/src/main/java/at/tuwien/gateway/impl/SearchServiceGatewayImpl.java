@@ -1,6 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -66,6 +67,14 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
 //                                            column.setIsPublic(database.getIsPublic());
 //                                        });
                             });
+                });
+        payload.getViews()
+                .stream()
+                .map(ViewDto::getColumns)
+                .flatMap(List::stream)
+                .forEach(columns -> {
+                    columns.setIsPublic(database.getIsPublic());
+                    columns.setDatabaseId(database.getId());
                 });
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
