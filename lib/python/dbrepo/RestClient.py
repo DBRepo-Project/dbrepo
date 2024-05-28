@@ -61,14 +61,13 @@ class RestClient:
         if headers is not None:
             logging.debug(f'headers: {headers}')
         if payload is not None:
-            logging.debug(f'payload: {payload}')
-            payload = payload.model_dump_json()
+            logging.debug(f'payload: {payload.model_dump()}')
         if self.username is not None and self.password is not None:
             logging.debug(f'username: {self.username}, password: (hidden)')
             return requests.request(method=method, url=url, auth=(self.username, self.password), verify=self.secure,
-                                    json=payload, headers=headers, params=params, stream=stream)
-        return requests.request(method=method, url=url, verify=self.secure, json=payload, headers=headers,
-                                params=params, stream=stream)
+                                    json=payload.model_dump(), headers=headers, params=params, stream=stream)
+        return requests.request(method=method, url=url, verify=self.secure, json=payload.model_dump(),
+                                headers=headers, params=params, stream=stream)
 
     def upload(self, file_path: str) -> str:
         """
@@ -767,9 +766,9 @@ class RestClient:
             f'Failed to insert table data: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def import_table_data(self, database_id: int, table_id: int, separator: str, file_path: str,
-                          quote: str = None, skip_lines: int = None, false_encoding: str = None,
+                          quote: str = None, skip_lines: int = 0, false_encoding: str = None,
                           true_encoding: str = None, null_encoding: str = None,
-                          line_encoding: str = None) -> None:
+                          line_encoding: str = "\r\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id.
 
@@ -778,10 +777,10 @@ class RestClient:
         :param separator: The csv column separator.
         :param file_path: The path of the file that is imported on the storage service.
         :param quote: The column data quotation character. Optional.
-        :param skip_lines: The number of lines to skip. Optional.
+        :param skip_lines: The number of lines to skip. Optional. Default: 0.
         :param false_encoding: The encoding of boolean false. Optional.
         :param true_encoding: The encoding of boolean true. Optional.
-        :param null_encoding: The encoding of null. Optional. Default: empty string "".
+        :param null_encoding: The encoding of null. Optional.
         :param line_encoding: The encoding of the line termination. Optional. Default: CR (Windows).
 
         :raises ResponseCodeError: If something went wrong with the insert.

@@ -1,4 +1,4 @@
-all:
+all: build
 
 clean:
 	rm -rf ./python/dist/* ./docs/build/* ./dist/*

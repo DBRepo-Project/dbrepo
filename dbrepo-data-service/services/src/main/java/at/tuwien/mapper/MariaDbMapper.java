@@ -226,9 +226,14 @@ public interface MariaDbMapper {
                     /* null expressions */
                     .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
-                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
-                    /* comments */
-                    .append(!column.getDescription().isEmpty() ? (" COMMENT \"" + column.getDescription() + "\"") : "");
+                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
+            if (column.getDescription() != null && !column.getDescription().isEmpty()) {
+                /* comments */
+                stringBuilder.append(" COMMENT \"")
+                        .append(column.getDescription())
+                        .append("\"");
+            }
+
         }
         /* create primary key index */
         stringBuilder.append(", PRIMARY KEY (")

@@ -499,7 +499,6 @@ class CreateTable(BaseModel):
 class CreateTableColumn(BaseModel):
     name: str
     type: ColumnType
-    primary_key: bool
     null_allowed: bool
     index_length: Optional[int] = None
     size: Optional[int] = None
@@ -993,8 +992,12 @@ class CreateForeignKey(BaseModel):
     on_delete: Optional[str] = None
 
 
+class PrimaryKey(BaseModel):
+    pkid: int
+
+
 class Constraints(BaseModel):
     uniques: List[Unique]
     foreign_keys: List[ForeignKey]
     checks: List[str]
-    primary_key: List[str]
+    primary_key: List[PrimaryKey]
