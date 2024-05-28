@@ -829,7 +829,7 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         """
         if upload:
-            client = UploadClient(endpoint=self.endpoint)
+            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
             filename = client.upload(file_path=file_path)
         else:
             filename = file_path

@@ -6,6 +6,9 @@ dist/
 dbrepo.egg-info/
 build/
 
+# debug
+debug.py
+
 # secrets
 .pypirc
 
