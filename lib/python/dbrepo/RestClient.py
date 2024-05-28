@@ -789,7 +789,7 @@ class RestClient:
         :raises NotExistsError: If the table does not exist.
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB data could not be imported).
         """
-        client = UploadClient(endpoint=self.endpoint)
+        client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
         filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -867,7 +867,7 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         """
         if upload:
-            client = UploadClient(endpoint=self.endpoint)
+            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
             filename = client.upload(file_path=file_path)
         else:
             filename = file_path
