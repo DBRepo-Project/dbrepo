@@ -287,7 +287,7 @@ public interface MariaDbMapper {
                                 .append(ck)
                                 .append(")"));
             }
-            if (!data.getDescription().isBlank()) {
+            if (data.getDescription() != null && !data.getDescription().isBlank()) {
                 /* create table comments */
                 stringBuilder.append(" COMMENT \"")
                         .append(data.getDescription())
