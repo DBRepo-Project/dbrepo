@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.mapper.SemanticMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.UnitService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +25,11 @@ import java.util.List;
 public class UnitEndpoint {
 
     private final UnitService unitService;
-    private final SemanticMapper semanticMapper;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public UnitEndpoint(SemanticMapper semanticMapper, UnitService unitService) {
-        this.semanticMapper = semanticMapper;
+    public UnitEndpoint(MetadataMapper metadataMapper, UnitService unitService) {
+        this.metadataMapper = metadataMapper;
         this.unitService = unitService;
     }
 
@@ -49,7 +48,7 @@ public class UnitEndpoint {
         log.debug("endpoint list units");
         final List<UnitDto> dtos = unitService.findAll()
                 .stream()
-                .map(semanticMapper::tableColumnUnitToUnitDto)
+                .map(metadataMapper::tableColumnUnitToUnitDto)
                 .toList();
         log.trace("Find all units resulted in dtos {}", dtos);
         return ResponseEntity.ok()

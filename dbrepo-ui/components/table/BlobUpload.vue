@@ -39,8 +39,9 @@ export default {
           this.value = filename
           this.$emit('blob', { column: this.column, s3key: filename })
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
         })
     }
   }

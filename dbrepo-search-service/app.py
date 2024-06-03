@@ -361,8 +361,9 @@ def post_general_search(type):
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['admin'])
 @swag_from("os-yml/update_database.yml")
-def update_database(database_id: int):
+def update_database(database_id: int) -> Database | ApiError:
     logging.debug(f"updating database with id: {database_id}")
+    logging.debug(f"====> {request.json}")
     try:
         payload: Database = Database.model_validate(request.json)
     except ValidationError as e:

@@ -1212,6 +1212,7 @@
     "database": {
       "upload": "Datenbankbild erfolgreich hochgeladen.",
       "transfer": "Der Datenbankeigentümer wurde erfolgreich übertragen.",
+      "visibility": "Die Datenbanksichtbarkeit wurde erfolgreich aktualisiert.",
       "image": {
         "update": "Datenbankbild erfolgreich aktualisiert.",
         "remove": "Datenbankbild erfolgreich entfernt."
@@ -1226,7 +1227,9 @@
     },
     "user": {
       "info": "Benutzerinformationen erfolgreich aktualisiert.",
-      "theme": "Benutzerthema erfolgreich aktualisiert."
+      "theme": "Benutzerthema erfolgreich aktualisiert.",
+      "password": "Benutzerkennwort erfolgreich aktualisiert.",
+      "login": "Erfolgreich angemeldet."
     },
     "view": {
       "create": "Ansicht erfolgreich erstellt.",

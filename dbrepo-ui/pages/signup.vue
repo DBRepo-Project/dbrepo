@@ -117,12 +117,14 @@ export default {
       const userService = useUserService()
       userService.create(this.createAccount)
         .then(() => {
-          this.$toast.success(this.$t('success.signup'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.signup'))
           this.$router.push('/login')
           this.loading = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loading = false
         })
         .finally(() => {
@@ -136,8 +138,9 @@ export default {
         .then((users) => {
           this.usernames = users.map(u => u.username)
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingUsers = false
         })
         .finally(() => {

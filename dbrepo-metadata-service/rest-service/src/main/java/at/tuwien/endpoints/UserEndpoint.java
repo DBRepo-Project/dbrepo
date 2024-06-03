@@ -9,7 +9,7 @@ import at.tuwien.api.user.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.UserMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
@@ -22,7 +22,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
@@ -43,16 +42,16 @@ import java.util.UUID;
 @RequestMapping(path = "/api/user")
 public class UserEndpoint {
 
-    private final UserMapper userMapper;
     private final UserService userService;
+    private final MetadataMapper userMapper;
     private final DatabaseService databaseService;
     private final AuthenticationService authenticationService;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService,
+    public UserEndpoint(UserService userService, MetadataMapper userMapper, DatabaseService databaseService,
                         AuthenticationService authenticationService) {
-        this.userMapper = userMapper;
         this.userService = userService;
+        this.userMapper = userMapper;
         this.databaseService = databaseService;
         this.authenticationService = authenticationService;
     }

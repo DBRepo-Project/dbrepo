@@ -24,9 +24,6 @@ public class ForeignKeyDto {
     private String name;
 
     @NotNull
-    private ColumnDto column;
-
-    @NotNull
     private List<ForeignKeyReferenceDto> references;
 
     @NotNull

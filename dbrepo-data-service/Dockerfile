@@ -21,7 +21,7 @@ COPY ./services ./services
 RUN mvn clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM eclipse-temurin:17-jdk as runtime
+FROM amazoncorretto:17-alpine3.19 as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 WORKDIR /app

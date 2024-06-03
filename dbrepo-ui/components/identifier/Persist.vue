@@ -1339,7 +1339,8 @@ export default {
     },
     createOrSave () {
       if (!this.formValid) {
-        this.$toast.info(this.$t('error.identifier.form'))
+        const toast = useToastInstance()
+        toast.info(this.$t('error.identifier.form'))
         return
       }
       if (!this.identifier.id) {
@@ -1355,12 +1356,14 @@ export default {
       identifierService.save(payload)
         .then((identifier) => {
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.pid.saved'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.pid.saved'))
           this.identifier = identifier
           this.loadingSave = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingSave = false
         })
         .finally(() => {
@@ -1374,13 +1377,15 @@ export default {
       identifierService.create(payload)
         .then((identifier) => {
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.pid.created'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.pid.created'))
           this.identifier = identifier
           this.$router.push(this.nextTo)
           this.loadingSave = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingSave = false
         })
         .finally(() => {
@@ -1392,7 +1397,8 @@ export default {
       const identifierService = useIdentifierService()
       identifierService.publish(this.identifier.id)
         .then(() => {
-          this.$toast.success(this.$t('success.pid.published'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.pid.published'))
           this.cacheStore.reloadDatabase()
           this.loadingPublish = false
         })
@@ -1409,7 +1415,8 @@ export default {
       identifierService.remove(this.identifier.id)
         .then(() => {
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.pid.deleted'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.pid.deleted'))
           this.$router.push(this.backTo)
           this.loadingDelete = false
         })

@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.mapper.SemanticMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.ConceptService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +25,12 @@ import java.util.List;
 public class ConceptEndpoint {
 
     private final ConceptService conceptService;
-    private final SemanticMapper semanticMapper;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public ConceptEndpoint(ConceptService conceptService, SemanticMapper semanticMapper) {
+    public ConceptEndpoint(ConceptService conceptService, MetadataMapper metadataMapper) {
         this.conceptService = conceptService;
-        this.semanticMapper = semanticMapper;
+        this.metadataMapper = metadataMapper;
     }
 
     @GetMapping
@@ -49,7 +48,7 @@ public class ConceptEndpoint {
         log.debug("endpoint list concepts");
         final List<ConceptDto> dtos = conceptService.findAll()
                 .stream()
-                .map(semanticMapper::tableColumnConceptToConceptDto)
+                .map(metadataMapper::tableColumnConceptToConceptDto)
                 .toList();
         log.trace("Find all concepts resulted in dtos {}", dtos);
         return ResponseEntity.ok()

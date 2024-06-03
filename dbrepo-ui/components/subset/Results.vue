@@ -110,7 +110,8 @@ export default {
             this.loadingExecute = false
           })
           .catch(({code}) => {
-            this.$toast.error(this.$t(code))
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
             this.loadingExecute = false
           })
           .finally(() => {
@@ -125,7 +126,8 @@ export default {
             this.loadingExecute = false
           })
           .catch(({code}) => {
-            this.$toast.error(this.$t(code))
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
             this.loadingExecute = false
           })
           .finally(() => {
@@ -146,7 +148,8 @@ export default {
             this.loadingCount = false
           })
           .catch(({code}) => {
-            this.$toast.error(this.$t(code))
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
             this.loadingCount = false
           })
           .finally(() => {
@@ -160,7 +163,8 @@ export default {
             this.loadingCount = false
           })
           .catch(({code}) => {
-            this.$toast.error(this.$t(code))
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
             this.loadingCount = false
           })
           .finally(() => {

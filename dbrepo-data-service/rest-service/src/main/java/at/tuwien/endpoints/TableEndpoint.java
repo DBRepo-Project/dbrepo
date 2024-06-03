@@ -212,7 +212,9 @@ public class TableEndpoint {
     @PostMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_create")
-    @Operation(summary = "Create table data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Insert a raw data tuple",
+            description = "Inserts a raw data tuple into a table with at least WRITE_OWN access. Then update the table statistics.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created table data"),
@@ -237,13 +239,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> createTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                            @NotBlank @PathVariable("tableId") Long tableId,
-                                            @Valid @RequestBody TupleDto data,
-                                            @NotNull Principal principal)
+    public ResponseEntity<Void> insertRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                               @NotBlank @PathVariable("tableId") Long tableId,
+                                               @Valid @RequestBody TupleDto data,
+                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint create table data, databaseId={}, tableId={}", databaseId, tableId);
+        log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
@@ -262,7 +264,9 @@ public class TableEndpoint {
     @PutMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_update")
-    @Operation(summary = "Update table data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Update a raw data tuple",
+            description = "Updates a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated table data"),
@@ -287,13 +291,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> updateTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                            @NotBlank @PathVariable("tableId") Long tableId,
-                                            @Valid @RequestBody TupleUpdateDto data,
-                                            @NotNull Principal principal)
+    public ResponseEntity<Void> updateRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                               @NotBlank @PathVariable("tableId") Long tableId,
+                                               @Valid @RequestBody TupleUpdateDto data,
+                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint update table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
+        log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
@@ -313,7 +317,9 @@ public class TableEndpoint {
     @DeleteMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('delete-table-data')")
     @Observed(name = "dbrepo_table_data_delete")
-    @Operation(summary = "Delete table data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Delete table data",
+            description = "Deletes a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted table data"),
@@ -338,13 +344,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> deleteTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                            @NotBlank @PathVariable("tableId") Long tableId,
-                                            @Valid @RequestBody TupleDeleteDto data,
-                                            @NotNull Principal principal)
+    public ResponseEntity<Void> deleteRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                               @NotBlank @PathVariable("tableId") Long tableId,
+                                               @Valid @RequestBody TupleDeleteDto data,
+                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint update table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
+        log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
@@ -524,12 +530,14 @@ public class TableEndpoint {
     @PostMapping("/{tableId}/data/import")
     @Observed(name = "dbrepo_table_data_import")
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Operation(summary = "Import dataset", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Import data from a dataset",
+            description = "Deletes a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Import dataset successfully"),
+                    description = "Imported dataset successfully"),
             @ApiResponse(responseCode = "400",
-                    description = "Import dataset query is malformed",
+                    description = "Dataset query is malformed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -549,10 +557,10 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> importData(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                           @NotBlank @PathVariable("tableId") Long tableId,
-                                           @Valid @RequestBody ImportCsvDto data,
-                                           @NotNull Principal principal)
+    public ResponseEntity<Void> importDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                              @NotBlank @PathVariable("tableId") Long tableId,
+                                              @Valid @RequestBody ImportCsvDto data,
+                                              @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, StorageNotFoundException, SidecarImportException, NotAllowedException {
         log.debug("endpoint insert table data, databaseId={}, tableId={}, data.location={}", databaseId, tableId, data.getLocation());

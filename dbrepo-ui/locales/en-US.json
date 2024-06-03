@@ -1212,6 +1212,7 @@
     "database": {
       "upload": "Successfully uploaded database image.",
       "transfer": "Successfully transferred the database owner.",
+      "visibility": "Successfully updated the database visibility.",
       "image": {
         "update": "Successfully updated database image.",
         "remove": "Successfully removed database image."
@@ -1226,7 +1227,9 @@
     },
     "user": {
       "info": "Successfully updated user information.",
-      "theme": "Successfully updated user theme."
+      "theme": "Successfully updated user theme.",
+      "password": "Successfully updated user password.",
+      "login": "Successfully logged in."
     },
     "view": {
       "create": "Successfully created view.",

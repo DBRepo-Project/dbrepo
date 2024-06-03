@@ -5,7 +5,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.*;
-import at.tuwien.service.impl.DatabaseServiceImpl;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -64,7 +62,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Transactional(readOnly = true)
     public void findById_succeeds() throws DatabaseNotFoundException {
 
         /* test */

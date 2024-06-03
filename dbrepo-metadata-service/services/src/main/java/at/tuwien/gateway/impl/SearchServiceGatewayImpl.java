@@ -2,13 +2,10 @@ package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.TableMapper;
+import at.tuwien.mapper.MetadataMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,63 +23,27 @@ import java.util.List;
 @Service
 public class SearchServiceGatewayImpl implements SearchServiceGateway {
 
-    private final TableMapper tableMapper;
     private final RestTemplate restTemplate;
-    private final DatabaseMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public SearchServiceGatewayImpl(TableMapper tableMapper,
-                                    @Qualifier("searchServiceRestTemplate") RestTemplate restTemplate,
-                                    DatabaseMapper databaseMapper) {
-        this.tableMapper = tableMapper;
+    public SearchServiceGatewayImpl(@Qualifier("searchServiceRestTemplate") RestTemplate restTemplate,
+                                    MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
-        this.databaseMapper = databaseMapper;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
     public DatabaseDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
-        final DatabaseDto payload = databaseMapper.databaseToDatabaseDto(database);
-        payload.getTables()
-                .forEach(table -> {
-                    table.setIsPublic(database.getIsPublic());
-                    table.getColumns()
-                            .forEach(column -> {
-                                column.setTable(table);
-                                column.setTableId(table.getId());
-                                column.setDatabaseId(payload.getId());
-                                column.setIsPublic(payload.getIsPublic());
-                            });
-                    table.getConstraints()
-                            .getUniques()
-                            .forEach(uk -> {
-                                uk.setTable(tableMapper.tableDtoToTableBriefDto(table));
-                                uk.getTable().setDatabaseId(database.getId());
-                                uk.setColumns(new LinkedList<>());
-//                                uk.getColumns()
-//                                        .forEach(column -> {
-//                                            column.setTable(table);
-//                                            column.setTableId(table.getId());
-//                                            column.setDatabaseId(database.getId());
-//                                            column.setIsPublic(database.getIsPublic());
-//                                        });
-                            });
-                });
-        payload.getViews()
-                .stream()
-                .map(ViewDto::getColumns)
-                .flatMap(List::stream)
-                .forEach(columns -> {
-                    columns.setIsPublic(database.getIsPublic());
-                    columns.setDatabaseId(database.getId());
-                });
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
         final String url = "/api/search/database/" + database.getId();
         log.debug("update database in search service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(payload, headers), DatabaseDto.class);
+            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(
+                    metadataMapper.customDatabaseToDatabaseDto(database), headers), DatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to update database: {}", e.getMessage());

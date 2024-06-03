@@ -18,7 +18,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.TableMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -52,25 +52,25 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/database/{databaseId}/table")
 public class TableEndpoint {
 
-    private final TableMapper tableMapper;
     private final UserService userService;
     private final TableService tableService;
     private final RabbitConfig rabbitMqConfig;
     private final EntityService entityService;
     private final BrokerService messageQueueService;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, UserService userService, TableService tableService,
-                         RabbitConfig rabbitMqConfig, EntityService entityService, BrokerService messageQueueService,
+    public TableEndpoint(UserService userService, TableService tableService, RabbitConfig rabbitMqConfig, 
+                         EntityService entityService, BrokerService messageQueueService, MetadataMapper metadataMapper,
                          DatabaseService databaseService, EndpointValidator endpointValidator) {
-        this.tableMapper = tableMapper;
         this.userService = userService;
         this.tableService = tableService;
         this.rabbitMqConfig = rabbitMqConfig;
         this.entityService = entityService;
         this.messageQueueService = messageQueueService;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
     }
@@ -105,7 +105,7 @@ public class TableEndpoint {
         endpointValidator.validateOnlyPrivateHasRole(database, principal, "list-tables");
         final List<TableBriefDto> dto = database.getTables()
                 .stream()
-                .map(tableMapper::tableToTableBriefDto)
+                .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList());
         log.trace("list tables resulted in tables {}", dto);
         return ResponseEntity.ok(dto);
@@ -251,7 +251,7 @@ public class TableEndpoint {
         TableColumn column = tableService.findColumnById(table, columnId);
         column = tableService.update(column, updateDto);
         log.info("Updated table semantics of table with id {}", tableId);
-        final ColumnDto columnDto = tableMapper.tableColumnToColumnDto(column);
+        final ColumnDto columnDto = metadataMapper.tableColumnToColumnDto(column);
         log.trace("find table data resulted in column {}", columnDto);
         return ResponseEntity.accepted()
                 .body(columnDto);
@@ -359,7 +359,7 @@ public class TableEndpoint {
             throw new MalformedException("Failed to create table: date column(s) " + failedDateColumns.stream().map(ColumnCreateDto::getName).toList() + " do not contain date format id");
         }
         final Table table = tableService.createTable(database, data, principal);
-        final TableDto dto = tableMapper.tableToTableDto(table);
+        final TableDto dto = metadataMapper.customTableToTableDto(table);
         log.debug("create table resulted in table.id={}", dto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -402,7 +402,7 @@ public class TableEndpoint {
             ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
-        final TableDto dto = tableMapper.tableToTableDto(table);
+        final TableDto dto = metadataMapper.customTableToTableDto(table);
         final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {
             /* extra effort only when logged-in */

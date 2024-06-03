@@ -4,7 +4,7 @@ import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.exception.MessageNotFoundException;
-import at.tuwien.mapper.BannerMessageMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.BannerMessageRepository;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
@@ -18,13 +18,13 @@ import java.util.Optional;
 @Service
 public class BannerMessageServiceImpl implements BannerMessageService {
 
-    private final BannerMessageMapper bannerMessageMapper;
+    private final MetadataMapper metadataMapper;
     private final BannerMessageRepository bannerMessageRepository;
 
     @Autowired
-    public BannerMessageServiceImpl(BannerMessageMapper bannerMessageMapper,
+    public BannerMessageServiceImpl(MetadataMapper metadataMapper,
                                     BannerMessageRepository bannerMessageRepository) {
-        this.bannerMessageMapper = bannerMessageMapper;
+        this.metadataMapper = metadataMapper;
         this.bannerMessageRepository = bannerMessageRepository;
     }
 
@@ -50,7 +50,7 @@ public class BannerMessageServiceImpl implements BannerMessageService {
 
     @Override
     public BannerMessage create(BannerMessageCreateDto data) {
-        final BannerMessage entity = bannerMessageMapper.bannerMessageCreateDtoToBannerMessage(data);
+        final BannerMessage entity = metadataMapper.bannerMessageCreateDtoToBannerMessage(data);
         final BannerMessage message = bannerMessageRepository.save(entity);
         log.info("Created banner message with id {}", message.getId());
         return message;
@@ -61,7 +61,7 @@ public class BannerMessageServiceImpl implements BannerMessageService {
         message.setMessage(data.getMessage());
         message.setDisplayEnd(data.getDisplayEnd());
         message.setDisplayStart(data.getDisplayStart());
-        message.setType(bannerMessageMapper.bannerMessageTypeDtoToBannerMessageType(data.getType()));
+        message.setType(metadataMapper.bannerMessageTypeDtoToBannerMessageType(data.getType()));
         message = bannerMessageRepository.save(message);
         log.info("Updated banner message with id {}", message.getId());
         return message;

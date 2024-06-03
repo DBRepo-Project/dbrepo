@@ -531,8 +531,7 @@ class DatabaseTest(unittest.TestCase):
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            response = client.delete_database_access(database_id=1,
-                                                     user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
 
     def test_delete_database_access_malformed_fails(self):
         with requests_mock.Mocker() as mock:
@@ -541,8 +540,7 @@ class DatabaseTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.delete_database_access(database_id=1,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except MalformedError:
                 pass
 
@@ -553,8 +551,7 @@ class DatabaseTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.delete_database_access(database_id=1,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except ForbiddenError:
                 pass
 
@@ -565,8 +562,7 @@ class DatabaseTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.delete_database_access(database_id=1,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except NotExistsError:
                 pass
 
@@ -576,8 +572,7 @@ class DatabaseTest(unittest.TestCase):
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)
             # test
             try:
-                response = RestClient().delete_database_access(database_id=1,
-                                                               user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                RestClient().delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except AuthenticationError:
                 pass
 

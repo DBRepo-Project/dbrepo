@@ -92,7 +92,8 @@ export default {
         .then(() => {
           console.info('Deleted table with id ', this.table.id)
           this.cacheStore.reloadDatabase()
-          this.$toast.success('Successfully deleted table with id ' + this.table.id)
+          const toast = useToastInstance()
+          toast.success('Successfully deleted table with id ' + this.table.id)
           this.$router.push(`/database/${this.$route.params.database_id}/table`)
         })
         .finally(() => {

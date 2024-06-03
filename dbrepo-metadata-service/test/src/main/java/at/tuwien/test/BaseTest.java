@@ -18,10 +18,7 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
@@ -1517,6 +1514,10 @@ public abstract class BaseTest {
     public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
     public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
     public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
+    public final static Long TABLE_1_AVG_ROW_LENGTH = 3L;
+    public final static Long TABLE_1_NUM_ROWS = 3L;
+    public final static Long TABLE_1_DATA_LENGTH = 2000L;
+    public final static Long TABLE_1_MAX_DATA_LENGTH = Long.MAX_VALUE;
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
@@ -1537,6 +1538,10 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
             .isPublic(DATABASE_1_PUBLIC)
+            .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
+            .numRows(TABLE_1_NUM_ROWS)
+            .dataLength(TABLE_1_DATA_LENGTH)
+            .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
             .build();
 
     public final static Table TABLE_1 = Table.builder()
@@ -1557,6 +1562,10 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .owner(USER_1)
             .lastModified(TABLE_1_LAST_MODIFIED)
+            .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
+            .numRows(TABLE_1_NUM_ROWS)
+            .dataLength(TABLE_1_DATA_LENGTH)
+            .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
             .build();
 
     public final static TableDto TABLE_1_DTO = TableDto.builder()
@@ -1574,6 +1583,10 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_1_CONSTRAINT_DTO */
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
+            .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
+            .numRows(TABLE_1_NUM_ROWS)
+            .dataLength(TABLE_1_DATA_LENGTH)
+            .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
             .build();
 
     public final static List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -1665,6 +1678,10 @@ public abstract class BaseTest {
     public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_2_ID;
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
+    public final static Long TABLE_2_AVG_ROW_LENGTH = 3L;
+    public final static Long TABLE_2_NUM_ROWS = 3L;
+    public final static Long TABLE_2_DATA_LENGTH = 2000L;
+    public final static Long TABLE_2_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
     public final static Table TABLE_2 = Table.builder()
             .id(TABLE_2_ID)
@@ -1679,9 +1696,14 @@ public abstract class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .columns(new LinkedList<>() /* TABLE_2_COLUMNS */)
             .constraints(null) /* TABLE_2_CONSTRAINTS */
+            .creator(USER_2)
             .createdBy(USER_2_ID)
-            .ownedBy(USER_2_ID)
             .owner(USER_2)
+            .ownedBy(USER_2_ID)
+            .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
+            .numRows(TABLE_2_NUM_ROWS)
+            .dataLength(TABLE_2_DATA_LENGTH)
+            .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
     public final static PrivilegedTableDto TABLE_2_PRIVILEGED_DTO = PrivilegedTableDto.builder()
@@ -1698,8 +1720,13 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .columns(new LinkedList<>() /* TABLE_2_COLUMNS_DTO */)
             .constraints(null) /* TABLE_2_CONSTRAINTS_DTO */
-            .createdBy(USER_1_ID)
-            .owner(USER_1_DTO)
+            .creator(USER_2_DTO)
+            .createdBy(USER_2_ID)
+            .owner(USER_2_DTO)
+            .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
+            .numRows(TABLE_2_NUM_ROWS)
+            .dataLength(TABLE_2_DATA_LENGTH)
+            .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
     public final static TableDto TABLE_2_DTO = TableDto.builder()
@@ -1714,8 +1741,13 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(new LinkedList<>() /* TABLE_2_COLUMNS_DTO */)
             .constraints(null) /* TABLE_2_CONSTRAINTS_DTO */
+            .creator(USER_2_DTO)
             .createdBy(USER_2_ID)
             .owner(USER_2_DTO)
+            .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
+            .numRows(TABLE_2_NUM_ROWS)
+            .dataLength(TABLE_2_DATA_LENGTH)
+            .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
     public final static TableBriefDto TABLE_2_BRIEF_DTO = TableBriefDto.builder()
@@ -1738,6 +1770,10 @@ public abstract class BaseTest {
     public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_3_ID;
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
+    public final static Long TABLE_3_AVG_ROW_LENGTH = 6L;
+    public final static Long TABLE_3_NUM_ROWS = 6L;
+    public final static Long TABLE_3_DATA_LENGTH = 1800L;
+    public final static Long TABLE_3_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
     public final static Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
@@ -1752,9 +1788,14 @@ public abstract class BaseTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .columns(new LinkedList<>() /* TABLE_3_COLUMNS */)
             .constraints(null) /* TABLE_3_CONSTRAINTS */
+            .creator(USER_3)
             .createdBy(USER_3_ID)
-            .ownedBy(USER_3_ID)
             .owner(USER_3)
+            .ownedBy(USER_3_ID)
+            .avgRowLength(TABLE_3_AVG_ROW_LENGTH)
+            .numRows(TABLE_3_NUM_ROWS)
+            .dataLength(TABLE_3_DATA_LENGTH)
+            .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
             .build();
 
     public final static TableDto TABLE_3_DTO = TableDto.builder()
@@ -1769,8 +1810,13 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(new LinkedList<>() /* TABLE_3_COLUMNS_DTO */)
             .constraints(null) /* TABLE_3_CONSTRAINTS_DTO */
+            .creator(USER_3_DTO)
             .createdBy(USER_3_ID)
             .owner(USER_3_DTO)
+            .avgRowLength(TABLE_3_AVG_ROW_LENGTH)
+            .numRows(TABLE_3_NUM_ROWS)
+            .dataLength(TABLE_3_DATA_LENGTH)
+            .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
             .build();
 
     public final static TableBriefDto TABLE_3_BRIEF_DTO = TableBriefDto.builder()
@@ -1980,19 +2026,23 @@ public abstract class BaseTest {
 
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "Sensor 2";
-    public final static String TABLE_4_INTERNAL_NAME = "sensor_2";
+    public final static String TABLE_4_INTERNALNAME = "sensor_2";
     public final static Boolean TABLE_4_VERSIONED = true;
     public final static Boolean TABLE_4_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_4_DESCRIPTION = "Hello sensor";
-    public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNAL_NAME;
+    public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
     public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
+    public final static Long TABLE_4_AVG_ROW_LENGTH = 0L;
+    public final static Long TABLE_4_NUM_ROWS = 0L;
+    public final static Long TABLE_4_DATA_LENGTH = 1000L;
+    public final static Long TABLE_4_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
     public final static Table TABLE_4 = Table.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
-            .internalName(TABLE_4_INTERNAL_NAME)
+            .internalName(TABLE_4_INTERNALNAME)
             .description(TABLE_4_DESCRIPTION)
             .database(null /* DATABASE_1 */)
             .name(TABLE_4_NAME)
@@ -2000,17 +2050,22 @@ public abstract class BaseTest {
             .columns(new LinkedList<>()) /* TABLE_4_COLUMNS */
             .constraints(null) /* TABLE_4_CONSTRAINTS */
             .isVersioned(TABLE_4_VERSIONED)
+            .creator(USER_1)
             .createdBy(USER_1_ID)
-            .ownedBy(USER_1_ID)
             .owner(USER_1)
+            .ownedBy(USER_1_ID)
             .created(TABLE_4_CREATED)
             .lastModified(TABLE_4_LAST_MODIFIED)
+            .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
+            .numRows(TABLE_4_NUM_ROWS)
+            .dataLength(TABLE_4_DATA_LENGTH)
+            .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
             .build();
 
     public final static TableDto TABLE_4_DTO = TableDto.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
-            .internalName(TABLE_4_INTERNAL_NAME)
+            .internalName(TABLE_4_INTERNALNAME)
             .description(TABLE_4_DESCRIPTION)
             .name(TABLE_4_NAME)
             .queueName(TABLE_4_QUEUE_NAME)
@@ -2018,19 +2073,31 @@ public abstract class BaseTest {
             .columns(new LinkedList<>()) /* TABLE_4_COLUMNS_DTO */
             .constraints(null) /* TABLE_4_CONSTRAINTS_DTO */
             .isVersioned(TABLE_4_VERSIONED)
+            .creator(USER_1_DTO)
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
             .created(TABLE_4_CREATED)
+            .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
+            .numRows(TABLE_4_NUM_ROWS)
+            .dataLength(TABLE_4_DATA_LENGTH)
+            .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
             .build();
 
     public final static TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_4_ID)
-            .internalName(TABLE_4_INTERNAL_NAME)
+            .internalName(TABLE_4_INTERNALNAME)
             .description(TABLE_4_DESCRIPTION)
             .name(TABLE_4_NAME)
             .columns(new LinkedList<>() /* TABLE_4_COLUMNS */)
             .isVersioned(TABLE_4_VERSIONED)
             .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final static ColumnBriefDto TABLE_4_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(44L)
+            .name("Timestamp")
+            .internalName("timestamp")
+            .columnType(ColumnTypeDto.TIMESTAMP)
             .build();
 
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
@@ -2338,6 +2405,13 @@ public abstract class BaseTest {
     public final static List<String> COLUMN_8_2_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_8_2_SET_VALUES = null;
     public final static List<String> COLUMN_8_2_SET_VALUES_DTO = null;
+
+    public final static ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(COLUMN_8_1_ID)
+            .name(COLUMN_8_1_NAME)
+            .internalName(COLUMN_8_1_INTERNAL_NAME)
+            .columnType(ColumnTypeDto.BIGINT)
+            .build();
 
     public final static List<TableColumn> TABLE_8_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_8_1_ID)
@@ -2658,6 +2732,13 @@ public abstract class BaseTest {
             .isPersisted(QUERY_6_PERSISTED)
             .build();
 
+    public final static ColumnBriefDto TABLE_1_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(1L)
+            .name("id")
+            .internalName("id")
+            .columnType(ColumnTypeDto.BIGINT)
+            .build();
+
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(1L)
                     .ordinalPosition(0)
@@ -2772,6 +2853,13 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
+    public final static ColumnBriefDto TABLE_2_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(6L)
+            .name("location")
+            .internalName("location")
+            .columnType(ColumnTypeDto.VARCHAR)
+            .build();
+
     public final static List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(6L)
                     .table(TABLE_2_DTO)
@@ -2813,6 +2901,13 @@ public abstract class BaseTest {
                     .enums(null)
                     .sets(null)
                     .build());
+
+    public final static ColumnBriefDto TABLE_3_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(9L)
+            .columnType(ColumnTypeDto.BIGINT)
+            .name("id")
+            .internalName("id")
+            .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .id(9L)
@@ -3723,6 +3818,13 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build());
 
+    public final static ColumnBriefDto TABLE_5_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(45L)
+            .name("id")
+            .internalName("id")
+            .columnType(ColumnTypeDto.BIGINT)
+            .build();
+
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(45L)
                     .ordinalPosition(0)
@@ -4344,6 +4446,13 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build());
 
+    public final static ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(66L)
+            .name("id")
+            .internalName("id")
+            .columnType(ColumnTypeDto.BIGINT)
+            .build();
+
     public final static List<ColumnDto> TABLE_6_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(66L)
                     .ordinalPosition(0)
@@ -4442,6 +4551,13 @@ public abstract class BaseTest {
             .description(TABLE_6_DESCRIPTION)
             .columns(TABLE_6_COLUMNS_CREATE)
             .constraints(TABLE_6_CONSTRAINTS_CREATE)
+            .build();
+
+    public final static ColumnBriefDto TABLE_7_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(26L)
+            .name("name_id")
+            .internalName("name_id")
+            .columnType(ColumnTypeDto.BIGINT)
             .build();
 
     public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
@@ -6745,6 +6861,7 @@ public abstract class BaseTest {
             .owner(USER_1)
             .contactPerson(USER_1_ID)
             .contact(USER_1)
+            .subsets(new LinkedList<>())
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>())
@@ -7249,7 +7366,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_1)
                     .column(TABLE_1_COLUMNS.get(0))
-                    .pkid(1L)
+                    .id(1L)
                     .build())))
             .build();
 
@@ -7259,8 +7376,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_1_BRIEF_DTO)
-                    .column(TABLE_1_COLUMNS_DTO.get(0))
-                    .pkid(1L)
+                    .column(TABLE_1_COLUMNS_BRIEF_0_DTO)
+                    .id(1L)
                     .build())))
             .build();
 
@@ -7280,7 +7397,7 @@ public abstract class BaseTest {
                     .onUpdate(ReferenceType.NO_ACTION)
                     .build())))
             .uniques(new LinkedList<>(List.of(Unique.builder()
-                    .uid(1L)
+                    .id(1L)
                     .table(TABLE_2)
                     .name("uk_1")
                     .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS.get(1))))
@@ -7288,7 +7405,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_2)
                     .column(TABLE_2_COLUMNS.get(0))
-                    .pkid(2L)
+                    .id(2L)
                     .build())))
             .build();
 
@@ -7308,15 +7425,15 @@ public abstract class BaseTest {
                     .onUpdate(ReferenceTypeDto.NO_ACTION)
                     .build())))
             .uniques(new LinkedList<>(List.of(UniqueDto.builder()
-                    .uid(1L)
+                    .id(1L)
                     .table(TABLE_2_BRIEF_DTO)
                     .name("uk_1")
                     .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS_DTO.get(1))))
                     .build())))
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_2_BRIEF_DTO)
-                    .column(TABLE_2_COLUMNS_DTO.get(0))
-                    .pkid(2L)
+                    .column(TABLE_2_COLUMNS_BRIEF_0_DTO)
+                    .id(2L)
                     .build())))
             .build();
 
@@ -7327,7 +7444,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_3)
                     .column(TABLE_3_COLUMNS.get(0))
-                    .pkid(3L)
+                    .id(3L)
                     .build())))
             .build();
 
@@ -7337,8 +7454,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_3_BRIEF_DTO)
-                    .column(TABLE_3_COLUMNS_DTO.get(0))
-                    .pkid(3L)
+                    .column(TABLE_3_COLUMNS_BRIEF_0_DTO)
+                    .id(3L)
                     .build())))
             .build();
 
@@ -7349,7 +7466,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_4)
                     .column(TABLE_4_COLUMNS.get(0))
-                    .pkid(4L)
+                    .id(4L)
                     .build())))
             .build();
 
@@ -7359,8 +7476,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_4_BRIEF_DTO)
-                    .column(TABLE_4_COLUMNS_DTO.get(0))
-                    .pkid(4L)
+                    .column(TABLE_4_COLUMNS_BRIEF_0_DTO)
+                    .id(4L)
                     .build())))
             .build();
 
@@ -7371,7 +7488,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_5)
                     .column(TABLE_5_COLUMNS.get(0))
-                    .pkid(5L)
+                    .id(5L)
                     .build())))
             .build();
 
@@ -7381,8 +7498,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_5_BRIEF_DTO)
-                    .column(TABLE_5_COLUMNS_DTO.get(0))
-                    .pkid(5L)
+                    .column(TABLE_5_COLUMNS_BRIEF_0_DTO)
+                    .id(5L)
                     .build())))
             .build();
 
@@ -7393,7 +7510,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_6)
                     .column(TABLE_6_COLUMNS.get(0))
-                    .pkid(6L)
+                    .id(6L)
                     .build())))
             .build();
 
@@ -7403,8 +7520,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_6_BRIEF_DTO)
-                    .column(TABLE_6_COLUMNS_DTO.get(0))
-                    .pkid(6L)
+                    .column(TABLE_6_COLUMNS_BRIEF_0_DTO)
+                    .id(6L)
                     .build())))
             .build();
 
@@ -7440,7 +7557,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_7)
                     .column(TABLE_7_COLUMNS.get(0))
-                    .pkid(7L)
+                    .id(7L)
                     .build())))
             .build();
 
@@ -7475,8 +7592,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_7_BRIEF_DTO)
-                    .column(TABLE_7_COLUMNS_DTO.get(0))
-                    .pkid(7L)
+                    .column(TABLE_7_COLUMNS_BRIEF_0_DTO)
+                    .id(7L)
                     .build())))
             .build();
 
@@ -7487,7 +7604,7 @@ public abstract class BaseTest {
             .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
                     .table(TABLE_8)
                     .column(TABLE_8_COLUMNS.get(0))
-                    .pkid(8L)
+                    .id(8L)
                     .build())))
             .build();
 
@@ -7497,8 +7614,8 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_8_BRIEF_DTO)
-                    .column(TABLE_8_COLUMNS_DTO.get(0))
-                    .pkid(8L)
+                    .column(TABLE_8_COLUMNS_BRIEF_0_DTO)
+                    .id(8L)
                     .build())))
             .build();
 
