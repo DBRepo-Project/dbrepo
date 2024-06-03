@@ -8,7 +8,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.ContainerAlreadyExistsException;
 import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.mapper.ContainerMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.ContainerService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,12 +42,12 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/container")
 public class ContainerEndpoint {
 
-    private final ContainerMapper containerMapper;
+    private final MetadataMapper metadataMapper;
     private final ContainerService containerService;
 
     @Autowired
-    public ContainerEndpoint(ContainerService containerService, ContainerMapper containerMapper) {
-        this.containerMapper = containerMapper;
+    public ContainerEndpoint(ContainerService containerService, MetadataMapper metadataMapper) {
+        this.metadataMapper = metadataMapper;
         this.containerService = containerService;
     }
 
@@ -66,7 +66,7 @@ public class ContainerEndpoint {
         log.debug("endpoint find all containers, limit={}", limit);
         final List<Container> containers = containerService.getAll(limit);
         final List<ContainerBriefDto> dtos = containers.stream()
-                .map(containerMapper::containerToDatabaseContainerBriefDto)
+                .map(metadataMapper::containerToDatabaseContainerBriefDto)
                 .collect(Collectors.toList());
         log.trace("find all containers resulted in containers {}", dtos);
         return ResponseEntity.ok()
@@ -99,7 +99,7 @@ public class ContainerEndpoint {
             throws ImageNotFoundException, ContainerAlreadyExistsException {
         log.debug("endpoint create container, data={}", data);
         final Container container = containerService.create(data);
-        final ContainerBriefDto dto = containerMapper.containerToDatabaseContainerBriefDto(container);
+        final ContainerBriefDto dto = metadataMapper.containerToDatabaseContainerBriefDto(container);
         log.trace("create container resulted in container {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -126,7 +126,7 @@ public class ContainerEndpoint {
             throws ContainerNotFoundException {
         log.debug("endpoint find container, containerId={}", containerId);
         final Container container = containerService.find(containerId);
-        final ContainerDto dto = containerMapper.containerToContainerDto(container);
+        final ContainerDto dto = metadataMapper.containerToContainerDto(container);
         log.trace("find container resulted in container {}", dto);
         final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {

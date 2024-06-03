@@ -62,11 +62,12 @@ class RestClient:
             logging.debug(f'headers: {headers}')
         if payload is not None:
             logging.debug(f'payload: {payload.model_dump()}')
+            payload = payload.model_dump()
         if self.username is not None and self.password is not None:
             logging.debug(f'username: {self.username}, password: (hidden)')
             return requests.request(method=method, url=url, auth=(self.username, self.password), verify=self.secure,
-                                    json=payload.model_dump(), headers=headers, params=params, stream=stream)
-        return requests.request(method=method, url=url, verify=self.secure, json=payload.model_dump(),
+                                    json=payload, headers=headers, params=params, stream=stream)
+        return requests.request(method=method, url=url, verify=self.secure, json=payload,
                                 headers=headers, params=params, stream=stream)
 
     def upload(self, file_path: str) -> str:

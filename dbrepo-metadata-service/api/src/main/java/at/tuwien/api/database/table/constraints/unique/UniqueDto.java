@@ -21,7 +21,7 @@ import java.util.List;
 public class UniqueDto {
 
     @NotNull
-    private Long uid;
+    private Long id;
 
     @NotNull
     private String name;

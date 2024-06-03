@@ -34,7 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -177,17 +176,17 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.createTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.updateTuple(DATABASE_1_ID, TABLE_1_ID, TupleUpdateDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleUpdateDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.deleteTuple(DATABASE_1_ID, TABLE_1_ID, TupleDeleteDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDeleteDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -207,7 +206,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.importData(DATABASE_1_ID, TABLE_1_ID, ImportCsvDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportCsvDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

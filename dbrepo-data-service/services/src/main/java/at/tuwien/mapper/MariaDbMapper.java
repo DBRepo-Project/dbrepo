@@ -8,6 +8,7 @@ import at.tuwien.api.database.query.ImportCsvDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
+import javax.swing.table.TableColumn;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -583,6 +585,8 @@ public interface MariaDbMapper {
 
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
+    ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
+
     default TableDto resultSetToTable(ResultSet resultSet, TableDto table, QueryConfig queryConfig) throws SQLException {
         final ColumnDto column = ColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
@@ -601,7 +605,7 @@ public interface MariaDbMapper {
         if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
             table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
                     .table(tableDtoToTableBriefDto(table))
-                    .column(column)
+                    .column(columnDtoToColumnBriefDto(column))
                     .build());
         }
         /* fix boolean and set size for others */

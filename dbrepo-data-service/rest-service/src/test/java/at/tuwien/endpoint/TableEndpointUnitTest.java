@@ -205,7 +205,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -221,7 +221,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -242,7 +242,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -265,7 +265,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -287,7 +287,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -309,7 +309,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -331,7 +331,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -363,7 +363,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -382,7 +382,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -406,7 +406,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -432,7 +432,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -466,7 +466,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -492,7 +492,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -526,7 +526,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -555,7 +555,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -570,7 +570,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -590,7 +590,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -612,7 +612,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -642,7 +642,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -664,7 +664,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -694,7 +694,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -828,7 +828,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -843,7 +843,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL);
         });
     }
 
@@ -863,7 +863,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -885,7 +885,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -907,7 +907,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -928,7 +928,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -950,7 +950,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
 }

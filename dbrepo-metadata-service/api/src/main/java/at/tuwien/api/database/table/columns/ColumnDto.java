@@ -122,7 +122,7 @@ public class ColumnDto {
 
     @ToString.Exclude
     @JsonIgnore
-    private transient TableDto table;
+    private TableDto table;
 
     @ToString.Exclude
     @JsonIgnore

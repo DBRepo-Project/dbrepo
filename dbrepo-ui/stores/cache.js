@@ -30,25 +30,33 @@ export const useCacheStore = defineStore('cache', {
       const messageService = useMessageService()
       messageService.findAll('active')
         .then(messages => this.messages = messages)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to reload messages', error)
+        })
     },
     reloadOntologies () {
       const ontologyService = useOntologyService()
       ontologyService.findAll()
         .then(ontologies => this.ontologies = ontologies)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to reload ontologies', error)
+        })
     },
     reloadDatabase () {
       const databaseService = useDatabaseService()
       databaseService.findOne(this.database.id)
         .then(database => this.database = database)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to reload database', error)
+        })
     },
     reloadTable () {
       const tableService = useTableService()
       tableService.findOne(this.table.database_id, this.table.id)
         .then(table => this.table = table)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to reload table', error)
+        })
     },
     setRouteDatabase (databaseId) {
       if (!databaseId) {
@@ -58,7 +66,9 @@ export const useCacheStore = defineStore('cache', {
       const databaseService = useDatabaseService()
       databaseService.findOne(databaseId)
         .then(database => this.database = database)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to set route database', error)
+        })
     },
     setRouteTable (databaseId, tableId) {
       if (!databaseId || !tableId) {
@@ -68,7 +78,9 @@ export const useCacheStore = defineStore('cache', {
       const tableService = useTableService()
       tableService.findOne(databaseId, tableId)
         .then(table => this.table = table)
-        .catch(() => {})
+        .catch((error) => {
+          console.error('Failed to set route table', error)
+        })
     }
   },
 })

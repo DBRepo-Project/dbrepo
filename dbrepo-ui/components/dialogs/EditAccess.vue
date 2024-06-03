@@ -171,7 +171,8 @@ export default {
       const accessService = useAccessService()
       accessService.remove(this.$route.params.database_id, this.userId)
         .then(() => {
-          this.$toast.success(this.$t('notifications.access.revoked'))
+          const toast = useToastInstance()
+          toast.success(this.$t('notifications.access.revoked'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -182,7 +183,8 @@ export default {
       const accessService = useAccessService()
       accessService.modify(this.$route.params.database_id, this.userId, this.modify)
         .then(() => {
-          this.$toast.success(this.$t('notifications.access.modified'))
+          const toast = useToastInstance()
+          toast.success(this.$t('notifications.access.modified'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -193,7 +195,8 @@ export default {
       const accessService = useAccessService()
       accessService.create(this.$route.params.database_id, this.userId, this.modify)
         .then(() => {
-          this.$toast.success(this.$t('notifications.access.created'))
+          const toast = useToastInstance()
+          toast.success(this.$t('notifications.access.created'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {

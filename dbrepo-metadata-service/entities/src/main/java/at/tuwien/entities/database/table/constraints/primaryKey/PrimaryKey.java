@@ -22,8 +22,8 @@ public class PrimaryKey {
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "foreign-key-sequence")
     @GenericGenerator(name = "foreign-key-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
-    private Long pkid;
+    @Column(name = "pkid", updatable = false, nullable = false)
+    private Long id;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient

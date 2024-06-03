@@ -16,7 +16,7 @@ import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -57,27 +57,27 @@ public class IdentifierEndpoint {
     private final TableService tableService;
     private final AccessService accessService;
     private final EndpointConfig endpointConfig;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final MetadataService metadataService;
-    private final IdentifierMapper identifierMapper;
     private final EndpointValidator endpointValidator;
     private final IdentifierService identifierService;
     private final DataServiceGateway dataServiceGateway;
 
     @Autowired
     public IdentifierEndpoint(UserService userService, ViewService viewService, TableService tableService,
-                              AccessService accessService, EndpointConfig endpointConfig,
+                              AccessService accessService, EndpointConfig endpointConfig, MetadataMapper metadataMapper,
                               DatabaseService databaseService, MetadataService metadataService,
-                              IdentifierMapper identifierMapper, EndpointValidator endpointValidator,
-                              IdentifierService identifierService, DataServiceGateway dataServiceGateway) {
+                              EndpointValidator endpointValidator, IdentifierService identifierService,
+                              DataServiceGateway dataServiceGateway) {
         this.userService = userService;
         this.viewService = viewService;
         this.tableService = tableService;
         this.accessService = accessService;
         this.endpointConfig = endpointConfig;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.metadataService = metadataService;
-        this.identifierMapper = identifierMapper;
         this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
         this.dataServiceGateway = dataServiceGateway;
@@ -121,14 +121,14 @@ public class IdentifierEndpoint {
             case "application/json":
                 log.trace("accept header matches json");
                 final List<IdentifierDto> resource1 = identifiers.stream()
-                        .map(identifierMapper::identifierToIdentifierDto)
+                        .map(metadataMapper::identifierToIdentifierDto)
                         .toList();
                 log.debug("find identifier resulted in identifiers {}", resource1);
                 return ResponseEntity.ok(resource1);
             case "application/ld+json":
                 log.trace("accept header matches json-ld");
                 final List<LdDatasetDto> resource2 = identifiers.stream()
-                        .map(i -> identifierMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
+                        .map(i -> metadataMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
                         .toList();
                 log.debug("find identifier resulted in identifiers {}", resource2);
                 return ResponseEntity.ok(resource2);
@@ -209,12 +209,12 @@ public class IdentifierEndpoint {
             switch (accept) {
                 case "application/json":
                     log.trace("accept header matches json");
-                    final IdentifierDto resource1 = identifierMapper.identifierToIdentifierDto(identifier);
+                    final IdentifierDto resource1 = metadataMapper.identifierToIdentifierDto(identifier);
                     log.debug("find identifier resulted in identifier {}", resource1);
                     return ResponseEntity.ok(resource1);
                 case "application/ld+json":
                     log.trace("accept header matches json-ld");
-                    final LdDatasetDto resource2 = identifierMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl());
+                    final LdDatasetDto resource2 = metadataMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl());
                     log.debug("find identifier resulted in identifier {}", resource2);
                     return ResponseEntity.ok(resource2);
                 case "text/csv":
@@ -253,7 +253,7 @@ public class IdentifierEndpoint {
             log.trace("no accept header present");
         }
         final HttpHeaders headers = new HttpHeaders();
-        final String url = identifierMapper.identifierToLocationUrl(endpointConfig.getWebsiteUrl(), identifier);
+        final String url = metadataMapper.identifierToLocationUrl(endpointConfig.getWebsiteUrl(), identifier);
         headers.add("Location", url);
         log.debug("find identifier resulted in http redirect, headers={}, url={}", headers, url);
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
@@ -353,7 +353,7 @@ public class IdentifierEndpoint {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
         final Identifier identifier = identifierService.find(identifierId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(identifierMapper.identifierToIdentifierDto(identifierService.publish(identifierId)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.publish(identifierId)));
     }
 
     @PutMapping("/{identifierId}")
@@ -478,7 +478,7 @@ public class IdentifierEndpoint {
             }
         }
         return ResponseEntity.accepted()
-                .body(identifierMapper.identifierToIdentifierDto(identifierService.save(database, user, data)));
+                .body(metadataMapper.identifierToIdentifierDto(identifierService.save(database, user, data)));
     }
 
     @PostMapping
@@ -544,7 +544,7 @@ public class IdentifierEndpoint {
         }
         final Identifier identifier = identifierService.create(database, user, data);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(identifierMapper.identifierToIdentifierDto(identifier));
+                .body(metadataMapper.identifierToIdentifierDto(identifier));
     }
 
     @GetMapping("/retrieve")

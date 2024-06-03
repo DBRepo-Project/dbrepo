@@ -511,6 +511,7 @@ class CreateTableColumn(BaseModel):
 class CreateTableConstraints(BaseModel):
     uniques: List[List[str]] = field(default_factory=list)
     checks: List[str] = field(default_factory=list)
+    primary_key: List[str] = field(default_factory=list)
     foreign_keys: List[CreateForeignKey] = field(default_factory=list)
 
 
@@ -945,7 +946,12 @@ class Table(BaseModel):
 class TableMinimal(BaseModel):
     id: int
     database_id: int
-    name: str
+
+
+class ColumnMinimal(BaseModel):
+    id: int
+    table_id: int
+    database_id: int
 
 
 class Database(BaseModel):
@@ -970,16 +976,17 @@ class Database(BaseModel):
 
 
 class Unique(BaseModel):
-    uid: int
+    id: int
     table: TableMinimal
-    columns: List[Column]
+    columns: List[ColumnMinimal]
 
 
 class ForeignKey(BaseModel):
+    id: int
     name: str
-    columns: List[Column]
+    columns: List[ColumnMinimal]
     referenced_table: TableMinimal
-    referenced_columns: List[Column]
+    referenced_columns: List[ColumnMinimal]
     on_update: Optional[str] = None
     on_delete: Optional[str] = None
 
@@ -993,7 +1000,9 @@ class CreateForeignKey(BaseModel):
 
 
 class PrimaryKey(BaseModel):
-    pkid: int
+    id: int
+    table: TableMinimal
+    column: ColumnMinimal
 
 
 class Constraints(BaseModel):

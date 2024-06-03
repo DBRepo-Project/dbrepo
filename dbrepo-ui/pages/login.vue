@@ -116,6 +116,8 @@ export default {
           const userId = userService.tokenToUserId(data.access_token)
           userService.findOne(userId)
             .then((user) => {
+              const toast = useToastInstance()
+              toast.info(this.$t('success.user.login'))
               switch (user.attributes.theme) {
                 case 'dark':
                   this.$vuetify.theme.global.name = 'tuwThemeDark'
@@ -133,13 +135,14 @@ export default {
               this.userStore.setUser(user)
               this.$router.push('/database')
             })
-            .catch(error => {
-              this.$toast.error(this.$t(error.code))
+            .catch(({code}) => {
+              const toast = useToastInstance()
+              toast.error(this.$t(code))
             })
         })
-        .catch((error) => {
-          console.error('Failed to login', error)
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loading = false
         })
         .finally(() => {

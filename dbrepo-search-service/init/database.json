@@ -763,7 +763,37 @@
                 "type": "keyword"
               },
               "primary_key": {
-                "type": "keyword"
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "table": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "keyword"
+                      },
+                      "database_id": {
+                        "type": "keyword"
+                      }
+                    }
+                  },
+                  "column": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "keyword"
+                      },
+                      "table_id": {
+                        "type": "keyword"
+                      },
+                      "database_id": {
+                        "type": "keyword"
+                      }
+                    }
+                  }
+                }
               }
             }
           },

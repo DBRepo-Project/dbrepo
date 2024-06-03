@@ -7,7 +7,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
@@ -40,11 +40,11 @@ public class AccessEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
-    private final DatabaseMapper databaseMapper;
+    private final MetadataMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public AccessEndpoint(UserService userService, AccessService accessService, DatabaseMapper databaseMapper,
+    public AccessEndpoint(UserService userService, AccessService accessService, MetadataMapper databaseMapper,
                           DatabaseService databaseService) {
         this.userService = userService;
         this.accessService = accessService;

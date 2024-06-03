@@ -10,7 +10,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
-import at.tuwien.mapper.ExternalMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
@@ -26,18 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +36,6 @@ public class MetadataServiceImpl implements MetadataService {
 
     private final RorGateway rorGateway;
     private final OrcidGateway orcidGateway;
-    private final ExternalMapper externalMapper;
     private final MetadataConfig metadataConfig;
     private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
@@ -57,13 +44,12 @@ public class MetadataServiceImpl implements MetadataService {
     private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public MetadataServiceImpl(RorGateway rorGateway, OrcidGateway orcidGateway, ExternalMapper externalMapper,
-                               MetadataConfig metadataConfig, MetadataMapper metadataMapper,
-                               TemplateEngine templateEngine, CrossrefGateway crossrefGateway,
-                               IdentifierService identifierService, IdentifierRepository identifierRepository) {
+    public MetadataServiceImpl(RorGateway rorGateway, OrcidGateway orcidGateway, MetadataConfig metadataConfig,
+                               MetadataMapper metadataMapper, TemplateEngine templateEngine,
+                               CrossrefGateway crossrefGateway, IdentifierService identifierService,
+                               IdentifierRepository identifierRepository) {
         this.rorGateway = rorGateway;
         this.orcidGateway = orcidGateway;
-        this.externalMapper = externalMapper;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
@@ -175,7 +161,7 @@ public class MetadataServiceImpl implements MetadataService {
             DoiNotFoundException, IdentifierNotSupportedException {
         if (url.contains("orcid.org")) {
             final OrcidDto orcidDto = orcidGateway.findByUrl(url);
-            return externalMapper.orcidDtoToExternalMetadataDto(orcidDto);
+            return metadataMapper.orcidDtoToExternalMetadataDto(orcidDto);
         } else if (url.contains("ror.org")) {
             final int idx = url.lastIndexOf('/');
             if (idx + 1 >= url.length()) {
@@ -184,7 +170,7 @@ public class MetadataServiceImpl implements MetadataService {
             }
             final String id = url.substring(idx + 1);
             final RorDto rorDto = rorGateway.findById(id);
-            return externalMapper.rorDtoToExternalMetadataDto(rorDto);
+            return metadataMapper.rorDtoToExternalMetadataDto(rorDto);
         } else if (url.contains("doi.org")) {
             final int idx = url.indexOf("doi.org/");
             if (idx + 1 >= url.length()) {
@@ -193,7 +179,7 @@ public class MetadataServiceImpl implements MetadataService {
             }
             final String id = url.substring(idx + 8);
             final CrossrefDto crossrefDto = crossrefGateway.findById(id);
-            return externalMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
+            return metadataMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
         }
         log.error("Failed to find metadata: unsupported identifier {}", url);
         throw new IdentifierNotSupportedException("Failed to find metadata: unsupported identifier " + url);

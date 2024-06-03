@@ -123,12 +123,14 @@ export default {
       const viewService = useViewService()
       viewService.remove(this.$route.params.database_id, this.$route.params.view_id)
         .then(() => {
-          this.$toast.success(this.$t('success.view.delete'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.view.delete'))
           this.cacheStore.reloadDatabase()
           this.$router.push(`/database/${this.$route.params.database_id}/view`)
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingDelete = false

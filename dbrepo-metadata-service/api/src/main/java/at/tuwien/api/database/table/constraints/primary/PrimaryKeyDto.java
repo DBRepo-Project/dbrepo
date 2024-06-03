@@ -1,7 +1,7 @@
 package at.tuwien.api.database.table.constraints.primary;
 
 import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class PrimaryKeyDto {
 
-    private Long pkid;
+    private Long id;
 
     @NotNull
     @ToString.Exclude
@@ -23,5 +23,5 @@ public class PrimaryKeyDto {
 
     @NotNull
     @ToString.Exclude
-    private ColumnDto column;
+    private ColumnBriefDto column;
 }

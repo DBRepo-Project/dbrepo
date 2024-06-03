@@ -193,7 +193,7 @@ export default {
       return this.userStore.getRoles
     },
     primaryKeysColumns () {
-      return this.table.constraints.primary_key.join(', ')
+      return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
     },
     canAssignSemanticInformation () {
       if (!this.user) {
@@ -252,7 +252,8 @@ export default {
       const { success } = event
       console.debug('closed dialog', event)
       if (success) {
-        this.$toast.success(this.$t('success.table.semantics'))
+        const toast = useToastInstance()
+        toast.success(this.$t('success.table.semantics'))
         this.cacheStore.reloadTable()
       }
       this.dialogSemantic = false

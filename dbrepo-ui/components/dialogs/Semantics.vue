@@ -243,7 +243,8 @@ export default {
           this.recommendations = recommendations
         })
         .catch((error) => {
-          this.$toast.error(this.$t('error.semantics.timeout'))
+          const toast = useToastInstance()
+          toast.error(this.$t('error.semantics.timeout'))
         })
         .finally(() => {
           this.loadingSemantics = false

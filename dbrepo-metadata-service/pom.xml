@@ -34,26 +34,6 @@
             <email>martin.weise@tuwien.ac.at</email>
             <organization>TU Wien</organization>
         </developer>
-        <developer>
-            <name>Moritz Staudinger</name>
-            <email>moritz.staudinger@tuwien.ac.at</email>
-            <organization>TU Wien</organization>
-        </developer>
-        <developer>
-            <name>Tobias Grantner</name>
-            <email>tobias.grantner@tuwien.ac.at</email>
-            <organization>TU Wien</organization>
-        </developer>
-        <developer>
-            <name>Sotirios Tsepelakis</name>
-            <email>sotirios.tsepelakis@tuwien.ac.at</email>
-            <organization>TU Wien</organization>
-        </developer>
-        <developer>
-            <name>Geoffrey Karnbach</name>
-            <email>geoffrey.karnbach@tuwien.ac.at</email>
-            <organization>TU Wien</organization>
-        </developer>
     </developers>
 
     <properties>
@@ -191,6 +171,11 @@
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commons-validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-hibernate6</artifactId>
+            <version>${jackson-datatype.version}</version>
         </dependency>
         <!-- Authentication -->
         <dependency>
