@@ -21,5 +21,19 @@ export const useToastInstance = () => {
     }
   }
 
-  return {error, success}
+  function info(message: string): void {
+    const toast: ToastPluginApi = useToast(props);
+    if (document) {
+      toast.info(message)
+    }
+  }
+
+  function warning(message: string): void {
+    const toast: ToastPluginApi = useToast(props);
+    if (document) {
+      toast.warning(message)
+    }
+  }
+
+  return {error, success, info, warning}
 };

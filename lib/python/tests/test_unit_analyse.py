@@ -7,7 +7,7 @@ from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import KeyAnalysis
 
 
-class AnalyseTest(unittest.TestCase):
+class AnalyseUnitTest(unittest.TestCase):
 
     def test_analyse_keys_succeeds(self):
         with requests_mock.Mocker() as mock:

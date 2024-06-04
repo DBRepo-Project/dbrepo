@@ -13,7 +13,7 @@ from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError
     MetadataConsistencyError, AuthenticationError
 
 
-class QueryTest(unittest.TestCase):
+class QueryUnitTest(unittest.TestCase):
 
     def test_execute_query_succeeds(self):
         with requests_mock.Mocker() as mock:

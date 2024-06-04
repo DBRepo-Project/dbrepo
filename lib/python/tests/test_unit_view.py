@@ -11,7 +11,7 @@ from dbrepo.api.dto import UserAttributes, User, View, Result
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
-class ViewTest(unittest.TestCase):
+class ViewUnitTest(unittest.TestCase):
 
     def test_get_views_empty_succeeds(self):
         with requests_mock.Mocker() as mock:

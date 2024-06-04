@@ -12,7 +12,7 @@ from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenEr
 from dbrepo.api.dto import ImageDate
 
 
-class DatabaseTest(unittest.TestCase):
+class DatabaseUnitTest(unittest.TestCase):
 
     def test_get_databases_empty_succeeds(self):
         with requests_mock.Mocker() as mock:

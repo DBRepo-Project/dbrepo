@@ -13,7 +13,7 @@ from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError
     AuthenticationError
 
 
-class IdentifierTest(unittest.TestCase):
+class IdentifierUnitTest(unittest.TestCase):
 
     def test_create_identifier_succeeds(self):
         with requests_mock.Mocker() as mock:

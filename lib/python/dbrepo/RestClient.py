@@ -48,7 +48,7 @@ class RestClient:
 
     def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
                  force_auth: bool = False, stream: bool = False) -> requests.Response:
-        if force_auth and (self.username is None or self.password is None):
+        if force_auth and (self.username is None and self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
         url = f'{self.endpoint}{url}'
         logging.debug(f'method: {method}')
@@ -60,15 +60,20 @@ class RestClient:
         logging.debug(f'secure: {self.secure}')
         if headers is not None:
             logging.debug(f'headers: {headers}')
+        else:
+            headers = dict()
+            logging.debug(f'no headers set')
         if payload is not None:
-            logging.debug(f'payload: {payload.model_dump()}')
             payload = payload.model_dump()
-        if self.username is not None and self.password is not None:
-            logging.debug(f'username: {self.username}, password: (hidden)')
-            return requests.request(method=method, url=url, auth=(self.username, self.password), verify=self.secure,
-                                    json=payload, headers=headers, params=params, stream=stream)
-        return requests.request(method=method, url=url, verify=self.secure, json=payload,
-                                headers=headers, params=params, stream=stream)
+        auth = None
+        if self.username is None and self.password is not None:
+            headers["Authorization"] = f"Bearer {self.password}"
+            logging.debug(f'configured for oidc/bearer auth')
+        elif self.username is not None and self.password is not None:
+            auth = (self.username, self.password)
+            logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
+        return requests.request(method=method, url=url, auth=auth, verify=self.secure,
+                                json=payload, headers=headers, params=params, stream=stream)
 
     def upload(self, file_path: str) -> str:
         """
@@ -85,6 +90,31 @@ class RestClient:
         if filename is None or len(filename) == 0:
             raise UploadError(f'Failed to upload the file to {self.endpoint}')
         return filename
+
+    def get_jwt_auth(self, username: str = None, password: str = None) -> JwtAuth:
+        """
+        Obtains a JWT auth object from the Auth Service containing e.g. the access token and refresh token.
+
+        :param username: The username used to authenticate with the Auth Service. Optional. Default: username from the `RestClient` constructor.
+        :param password: The password used to authenticate with the Auth Service. Optional. Default: password from the `RestClient` constructor.
+
+        :returns: JWT auth object from the Auth Service, if successful.
+
+        :raises ForbiddenError: If something went wrong with the authentication.
+        :raises ResponseCodeError: If something went wrong with the authentication.
+        """
+        if username is None:
+            username = self.username
+        if password is None:
+            password = self.password
+        url = f'{self.endpoint}/api/user/token'
+        response = requests.post(url=url, json=dict({"username": username, "password": password}))
+        if response.status_code == 202:
+            body = response.json()
+            return JwtAuth.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get JWT auth')
+        raise ResponseCodeError(f'Failed to get JWT auth: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def whoami(self) -> str | None:
         """
@@ -165,12 +195,14 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to create user: response code: {response.status_code} is not 201 (CREATED)')
 
-    def update_user(self, user_id: str, firstname: str = None, lastname: str = None, affiliation: str = None,
-                    orcid: str = None) -> User:
+    def update_user(self, user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None,
+                    affiliation: str = None, orcid: str = None) -> User:
         """
         Updates a user with given user id.
 
         :param user_id: The user id of the user that should be updated.
+        :param theme: The user theme. One of "light", "dark", "light-contrast", "dark-contrast".
+        :param language: The user language localization. One of "en", "de".
         :param firstname: The updated given name. Optional.
         :param lastname: The updated family name. Optional.
         :param affiliation: The updated affiliation identifier. Optional.
@@ -184,8 +216,8 @@ class RestClient:
         """
         url = f'/api/user/{user_id}'
         response = self._wrapper(method="put", url=url, force_auth=True,
-                                 payload=UpdateUser(firstname=firstname, lastname=lastname, affiliation=affiliation,
-                                                    orcid=orcid))
+                                 payload=UpdateUser(theme=theme, language=language, firstname=firstname,
+                                                    lastname=lastname, affiliation=affiliation, orcid=orcid))
         if response.status_code == 202:
             body = response.json()
             return User.model_validate(body)
@@ -199,35 +231,6 @@ class RestClient:
             raise ForbiddenError(f'Failed to update user: foreign user')
         raise ResponseCodeError(
             f'Failed to update user: response code: {response.status_code} is not 202 (ACCEPTED)')
-
-    def update_user_theme(self, user_id: str, theme: str) -> User:
-        """
-        Updates the theme of a user with given user id.
-
-        :param user_id: The user id of the user that should be updated.
-        :param theme: The updated user theme name.
-
-        :returns: The user, if successful.
-
-        :raises ResponseCodeError: If something went wrong with the update.
-        :raises ForbiddenError: If the action is not allowed.
-        :raises NotExistsError: If theuser does not exist.
-        """
-        url = f'/api/user/{user_id}/theme'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserTheme(theme=theme))
-        if response.status_code == 202:
-            body = response.json()
-            return User.model_validate(body)
-        if response.status_code == 400:
-            raise ResponseCodeError(f'Failed to update user theme: invalid values')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update user password: not allowed')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to update user theme: user not found')
-        if response.status_code == 405:
-            raise ResponseCodeError(f'Failed to update user theme: foreign user')
-        raise ResponseCodeError(
-            f'Failed to update user theme: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def update_user_password(self, user_id: str, password: str) -> User:
         """

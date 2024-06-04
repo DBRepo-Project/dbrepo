@@ -10,7 +10,7 @@ from dbrepo.api.exceptions import ResponseCodeError, NotExistsError
 from dbrepo.api.dto import ImageDate
 
 
-class ContainerTest(unittest.TestCase):
+class ContainerUnitTest(unittest.TestCase):
 
     def test_get_containers_empty_succeeds(self):
         with requests_mock.Mocker() as mock:

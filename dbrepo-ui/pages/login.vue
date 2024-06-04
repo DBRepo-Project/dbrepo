@@ -117,7 +117,7 @@ export default {
           userService.findOne(userId)
             .then((user) => {
               const toast = useToastInstance()
-              toast.info(this.$t('success.user.login'))
+              toast.success(this.$t('success.user.login'))
               switch (user.attributes.theme) {
                 case 'dark':
                   this.$vuetify.theme.global.name = 'tuwThemeDark'

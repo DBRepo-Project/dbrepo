@@ -7,7 +7,7 @@ from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import License
 
 
-class DatabaseTest(unittest.TestCase):
+class DatabaseUnitTest(unittest.TestCase):
 
     def test_get_licenses_empty_succeeds(self):
         with requests_mock.Mocker() as mock:

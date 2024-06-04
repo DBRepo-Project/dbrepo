@@ -8,7 +8,7 @@ from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailE
     ForbiddenError, AuthenticationError
 
 
-class UserTest(unittest.TestCase):
+class UserUnitTest(unittest.TestCase):
 
     def test_whoami_fails(self):
         username = RestClient().whoami()
@@ -143,7 +143,8 @@ class UserTest(unittest.TestCase):
                      json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
-            response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
+            response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+                                          language='en', theme='light')
             self.assertEqual(exp, response)
 
     def test_update_user_not_allowed_fails(self):
@@ -153,7 +154,8 @@ class UserTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
+                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+                                              language='en', theme='light')
             except ForbiddenError as e:
                 pass
 
@@ -164,7 +166,8 @@ class UserTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
+                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+                                              language='en', theme='light')
             except NotExistsError as e:
                 pass
 
@@ -175,7 +178,8 @@ class UserTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
+                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+                                              language='en', theme='light')
             except ForbiddenError as e:
                 pass
 
@@ -185,62 +189,8 @@ class UserTest(unittest.TestCase):
             mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=405)
             # test
             try:
-                response = RestClient().update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
-            except AuthenticationError as e:
-                pass
-
-    def test_update_user_theme_succeeds(self):
-        with requests_mock.Mocker() as mock:
-            exp = User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise', given_name='Martin',
-                       attributes=UserAttributes(theme='dark'))
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=202,
-                     json=exp.model_dump())
-            # test
-            client = RestClient(username="a", password="b")
-            response = client.update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
-            self.assertEqual(exp, response)
-
-    def test_update_user_theme_not_allowed_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=403)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
-            except ForbiddenError as e:
-                pass
-
-    def test_update_user_theme_not_found_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=404)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
-            except NotExistsError as e:
-                pass
-
-    def test_update_user_theme_foreign_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=405)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
-            except ResponseCodeError as e:
-                pass
-
-    def test_update_user_theme_not_auth_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=405)
-            # test
-            try:
-                response = RestClient().update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
+                response = RestClient().update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
+                                                    language='en', theme='light')
             except AuthenticationError as e:
                 pass
 

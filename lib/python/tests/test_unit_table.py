@@ -13,7 +13,7 @@ from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError
     AuthenticationError
 
 
-class TableTest(unittest.TestCase):
+class TableUnitTest(unittest.TestCase):
 
     def test_create_table_succeeds(self):
         exp = Table(id=2,

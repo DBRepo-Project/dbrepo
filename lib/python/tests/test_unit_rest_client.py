@@ -4,7 +4,7 @@ from unittest import TestCase, mock, main
 from dbrepo.RestClient import RestClient
 
 
-class DatabaseTest(TestCase):
+class DatabaseUnitTest(TestCase):
 
     def test_constructor_succeeds(self):
         # test

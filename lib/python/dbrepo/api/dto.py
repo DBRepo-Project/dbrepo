@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import uuid
 from dataclasses import field
 from enum import Enum
 import datetime
 from typing import List, Optional, Any, Annotated
-from pydantic import BaseModel, ConfigDict, PlainSerializer
+from pydantic import BaseModel, ConfigDict, PlainSerializer, Field
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -17,6 +18,18 @@ class ImageDate(BaseModel):
     unix_format: str
     has_time: bool
     created_at: Timestamp
+
+
+class JwtAuth(BaseModel):
+    access_token: str
+    refresh_token: str
+    id_token: str
+    expires_in: int
+    refresh_expires_in: int
+    not_before_policy: int = Field(alias='not-before-policy')
+    scope: str
+    session_state: uuid.UUID
+    token_type: str
 
 
 class Image(BaseModel):
@@ -51,6 +64,8 @@ class CreateUser(BaseModel):
 
 
 class UpdateUser(BaseModel):
+    theme: str
+    language: str
     firstname: Optional[str] = None
     lastname: Optional[str] = None
     affiliation: Optional[str] = None
