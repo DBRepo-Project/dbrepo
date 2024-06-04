@@ -7,7 +7,7 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import UserAttributes, User, View, Result
+from dbrepo.api.dto import UserAttributes, User, View, Result, ViewColumn, ColumnType
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -33,6 +33,8 @@ class ViewUnitTest(unittest.TestCase):
                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                      attributes=UserAttributes(theme='light')),
                         is_public=True,
+                        columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
+                                            column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         identifiers=[])]
@@ -74,6 +76,8 @@ class ViewUnitTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
+                       columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
+                                           column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])
@@ -115,6 +119,8 @@ class ViewUnitTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
+                       columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
+                                           column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])

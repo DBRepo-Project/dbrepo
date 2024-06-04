@@ -8,7 +8,7 @@ from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
 from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, Result, \
-    Concept, Unit, TableStatistics, ColumnStatistic
+    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
     AuthenticationError
 
@@ -31,7 +31,13 @@ class TableUnitTest(unittest.TestCase):
                     queue_name='test',
                     routing_key='dbrepo.test_database_1234.test',
                     is_public=True,
-                    constraints=Constraints(primary_key=["ID"], uniques=[], foreign_keys=[], checks=[]),
+                    constraints=Constraints(uniques=[],
+                                            foreign_keys=[],
+                                            checks=[],
+                                            primary_key=[PrimaryKey(id=1,
+                                                                    table=TableMinimal(id=2, database_id=1),
+                                                                    column=ColumnMinimal(id=1, table_id=2,
+                                                                                         database_id=1))]),
                     columns=[Column(id=1,
                                     name="ID",
                                     database_id=1,
@@ -135,7 +141,13 @@ class TableUnitTest(unittest.TestCase):
                          queue_name='test',
                          routing_key='dbrepo.test_database_1234.test',
                          is_public=True,
-                         constraints=Constraints(primary_key=["ID"], uniques=[], foreign_keys=[], checks=[]),
+                         constraints=Constraints(uniques=[],
+                                                 foreign_keys=[],
+                                                 checks=[],
+                                                 primary_key=[PrimaryKey(id=1,
+                                                                         table=TableMinimal(id=2, database_id=1),
+                                                                         column=ColumnMinimal(id=1, table_id=2,
+                                                                                              database_id=1))]),
                          columns=[Column(id=1,
                                          name="ID",
                                          database_id=1,
@@ -169,7 +181,13 @@ class TableUnitTest(unittest.TestCase):
                         queue_name='test',
                         routing_key='dbrepo.test_database_1234.test',
                         is_public=True,
-                        constraints=Constraints(primary_key=["ID"], uniques=[], foreign_keys=[], checks=[]),
+                        constraints=Constraints(uniques=[],
+                                                foreign_keys=[],
+                                                checks=[],
+                                                primary_key=[PrimaryKey(id=1,
+                                                                        table=TableMinimal(id=2, database_id=1),
+                                                                        column=ColumnMinimal(id=1, table_id=2,
+                                                                                             database_id=1))]),
                         columns=[Column(id=1,
                                         name="ID",
                                         database_id=1,
