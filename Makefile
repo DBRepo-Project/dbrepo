@@ -2,8 +2,7 @@
 
 APP_VERSION ?= 1.4.3
 CHART_VERSION ?= 1.4.3
-REPOSITORY_1_URL ?= docker.io/dbrepo
-REPOSITORY_2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
+REPOSITORY_URL ?= docker.io/dbrepo
 
 .PHONY: all
 all: help

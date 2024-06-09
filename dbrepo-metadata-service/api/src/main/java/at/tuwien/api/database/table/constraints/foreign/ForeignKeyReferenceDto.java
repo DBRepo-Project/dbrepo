@@ -1,6 +1,6 @@
 package at.tuwien.api.database.table.constraints.foreign;
 
-import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -19,14 +19,14 @@ public class ForeignKeyReferenceDto {
 
     @NotNull
     @JsonProperty("foreign_key")
-    private ForeignKeyDto foreignKey;
+    private ForeignKeyBriefDto foreignKey;
 
     @NotNull
     @ToString.Exclude
-    private ColumnDto column;
+    private ColumnBriefDto column;
 
     @NotNull
     @ToString.Exclude
     @JsonProperty("referenced_column")
-    private ColumnDto referencedColumn;
+    private ColumnBriefDto referencedColumn;
 }

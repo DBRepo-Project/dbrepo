@@ -113,7 +113,7 @@
             <v-container v-if="table">
               <v-row
                 dense>
-                <v-col>
+                <v-col md="8">
                   <v-alert
                     border="start"
                     color="success"

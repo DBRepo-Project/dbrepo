@@ -45,7 +45,7 @@
         <commons-io.version>2.15.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
@@ -279,23 +279,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>at/tuwien/utils/**/*</exclude>
-                        <exclude>at/tuwien/seeder/**/*</exclude>
-                        <exclude>at/tuwien/mapper/**/*</exclude>
-                        <exclude>at/tuwien/handlers/**/*</exclude>
-                        <exclude>at/tuwien/exception/**/*</exclude>
-                        <exclude>at/tuwien/converters/**/*</exclude>
-                        <exclude>at/tuwien/utils/**/*</exclude>
-                        <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>at/tuwien/auth/**/*</exclude>
-                        <exclude>at/tuwien/gateway/impl/ApiTemplateInterceptorImpl.class</exclude>
-                        <exclude>**/testcontainers.properties</exclude>
-                        <exclude>**/HibernateConnector.class</exclude>
-                        <exclude>**/DbrepoMetadataServiceApplication.class</exclude>
-                    </excludes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>

@@ -28,6 +28,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
         TABLE_1_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
+        VIEW_1_DTO.setDatabase(DATABASE_1_DTO);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
         DATABASE_1.setTables(new LinkedList<>(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4)));
         DATABASE_1.setViews(new LinkedList<>(List.of(VIEW_1, VIEW_2, VIEW_3)));
@@ -41,6 +42,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_2_CONSTRAINTS.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_2_CONSTRAINTS.getForeignKeys().get(0));
         TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
         TABLE_2_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_2_COLUMNS_DTO));
+        TABLE_2_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         TABLE_2_DTO.setColumns(TABLE_2_COLUMNS_DTO);
         TABLE_2_DTO.setConstraints(TABLE_2_CONSTRAINTS_DTO);
         TABLE_3.setDatabase(DATABASE_1);
@@ -76,6 +78,8 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_5.setDatabase(DATABASE_2);
         TABLE_5.setColumns(new LinkedList<>(TABLE_5_COLUMNS));
         TABLE_5.setConstraints(TABLE_5_CONSTRAINTS);
+        TABLE_5_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_5_COLUMNS_DTO));
+        TABLE_5_PRIVILEGED_DTO.setDatabase(DATABASE_2_PRIVILEGED_DTO);
         TABLE_5_DTO.setColumns(TABLE_5_COLUMNS_DTO);
         TABLE_5_DTO.setConstraints(TABLE_5_CONSTRAINTS_DTO);
         TABLE_6.setDatabase(DATABASE_2);
@@ -88,8 +92,8 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_7_CONSTRAINTS.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS.getForeignKeys().get(1));
         TABLE_7_DTO.setColumns(TABLE_7_COLUMNS_DTO);
         TABLE_7_DTO.setConstraints(TABLE_7_CONSTRAINTS_DTO);
-        TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(0));
-        TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(1));
+        TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(0).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_0_DTO);
+        TABLE_7_CONSTRAINTS_DTO.getForeignKeys().get(1).getReferences().get(0).setForeignKey(TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_1_DTO);
         VIEW_4.setDatabase(DATABASE_2);
         IDENTIFIER_5.setDatabase(DATABASE_2);
         /* DATABASE 3 */

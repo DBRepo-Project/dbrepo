@@ -6,6 +6,7 @@ import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
@@ -40,7 +41,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Autowired
     public DatabaseServiceImpl(MetadataMapper metadataMapper, ContainerService containerService,
-                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway, 
+                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
                                SearchServiceGateway searchServiceGateway) {
         this.metadataMapper = metadataMapper;
         this.containerService = containerService;
@@ -222,7 +223,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                         fk.setTable(tableEntity);
                     });
             /* map primary key constraint */
-            for (PrimaryKeyDto key : table.getConstraints().getPrimaryKey()) {
+            for (PrimaryKey key : tableEntity.getConstraints().getPrimaryKey()) {
                 final Optional<TableColumn> optional = tableEntity.getColumns()
                         .stream()
                         .filter(c -> c.getInternalName().equals(key.getColumn().getInternalName()))
@@ -231,12 +232,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                     log.error("Failed to find primary key column {} in table {}.{}", key.getColumn().getInternalName(), database.getInternalName(), table.getInternalName());
                     throw new MalformedException("Failed to find primary key column: " + key.getColumn().getInternalName());
                 }
-                tableEntity.getConstraints()
-                        .getPrimaryKey()
-                        .add(PrimaryKey.builder()
-                                .table(tableEntity)
-                                .column(optional.get())
-                                .build());
+                key.setTable(tableEntity);
+                key.setColumn(optional.get());
             }
             database.getTables()
                     .add(tableEntity);

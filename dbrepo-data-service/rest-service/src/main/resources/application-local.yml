@@ -49,9 +49,9 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
   endpoints:
-    gatewayService: http://localhost
-    storageService: http://localhost:9000
-    authService: http://localhost:8080
+    metadataService: http://localhost
+    storageService: http://localhost/api/storage
+    authService: http://localhost/api/auth
   s3:
     accessKeyId: seaweedfsadmin
     secretAccessKey: seaweedfsadmin

@@ -54,7 +54,8 @@ public class DatabaseEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Create database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create database", security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a database",
@@ -84,7 +85,7 @@ public class DatabaseEndpoint {
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody CreateDatabaseDto data)
             throws DatabaseUnavailableException, RemoteUnavailableException, ContainerNotFoundException,
-            DatabaseMalformedException, QueryStoreCreateException {
+            DatabaseMalformedException, QueryStoreCreateException, ServiceException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
         final PrivilegedContainerDto container = metadataServiceGateway.getContainerById(data.getContainerId());
@@ -107,7 +108,8 @@ public class DatabaseEndpoint {
 
     @PutMapping("/{databaseId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Update user password in database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update user password in database", security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated user password in database"),
@@ -130,7 +132,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<Void> update(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @Valid @RequestBody UpdateUserPasswordDto data)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, ServiceException {
         log.debug("endpoint update user password in database, databaseId={}, data.username={}", databaseId,
                 data.getUsername());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);

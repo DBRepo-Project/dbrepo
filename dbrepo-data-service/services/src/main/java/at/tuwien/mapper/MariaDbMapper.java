@@ -8,16 +8,18 @@ import at.tuwien.api.database.query.ImportCsvDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
+import at.tuwien.utils.MariaDbUtil;
 import com.github.dockerjava.zerodep.shaded.org.apache.commons.codec.binary.Hex;
 import com.google.common.hash.Hashing;
 import net.sf.jsqlparser.JSQLParserException;
@@ -26,6 +28,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.*;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import javax.swing.table.TableColumn;
@@ -63,6 +67,45 @@ public interface MariaDbMapper {
         String slug = NONLATIN.matcher(normalized).replaceAll("_")
                 .replaceAll("-", "_");
         return slug.toLowerCase(Locale.ENGLISH);
+    }
+
+    default String databaseSetPasswordQuery(String username, String password) {
+        final StringBuilder statement = new StringBuilder("ALTER USER `")
+                .append(username)
+                .append("`@`%` IDENTIFIED BY '")
+                .append(password)
+                .append("';");
+        log.trace("mapped set password statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String databaseCreateUserQuery(String username, String password) {
+        final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
+                .append(username)
+                .append("`@`%` IDENTIFIED BY PASSWORD '")
+                .append(password)
+                .append("';");
+        log.trace("mapped create user statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String databaseGrantPrivilegesQuery(String username, String grants) {
+        final StringBuilder statement = new StringBuilder("GRANT ")
+                .append(grants)
+                .append(" ON *.* TO `")
+                .append(username)
+                .append("`@`%`;");
+        log.trace("mapped grant privileges statement: {}", statement);
+        return statement.toString();
+    }
+
+    @Named("createDatabase")
+    default String databaseCreateDatabaseQuery(String database) {
+        final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
+                .append(database)
+                .append("`");
+        log.trace("mapped create database statement: {}", statement);
+        return statement.toString();
     }
 
     default QueryResultDto resultListToQueryResultDto(List<ColumnDto> columns, ResultSet result) throws SQLException {
@@ -109,13 +152,13 @@ public interface MariaDbMapper {
     }
 
     default String databaseTablesSelectRawQuery() {
-        final String statement = "SELECT DISTINCT t.`TABLE_NAME` FROM information_schema.TABLES t WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries'";
+        final String statement = "SELECT DISTINCT t.`TABLE_NAME` FROM information_schema.TABLES t WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries' ORDER BY t.`TABLE_NAME` ASC";
         log.trace("mapped select tables statement: {}", statement);
         return statement;
     }
 
     default String databaseTableSelectRawQuery() {
-        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
+        final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION`, t.`TABLE_COMMENT` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'SYSTEM VERSIONED' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
         log.trace("mapped select table statement: {}", statement);
         return statement;
     }
@@ -133,13 +176,13 @@ public interface MariaDbMapper {
     }
 
     default String databaseTableColumnsSelectRawQuery() {
-        final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?;";
+        final String statement = "SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME`, IF(`COLUMN_COMMENT`='',NULL,`COLUMN_COMMENT`) AS `COLUMN_COMMENT` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?;";
         log.trace("mapped select columns statement: {}", statement);
         return statement;
     }
 
     default String databaseTableConstraintsSelectRawQuery() {
-        final String statement = "SELECT k.`ORDINAL_POSITION`, c.`CONSTRAINT_TYPE`, k.`CONSTRAINT_NAME`, k.`COLUMN_NAME` FROM information_schema.TABLE_CONSTRAINTS c JOIN information_schema.KEY_COLUMN_USAGE k ON c.`TABLE_NAME` = k.`TABLE_NAME` AND c.`CONSTRAINT_NAME` = k.`CONSTRAINT_NAME`WHERE c.`CONSTRAINT_TYPE` = 'UNIQUE' AND LOWER(k.`COLUMN_NAME`) != 'row_end' AND c.`TABLE_SCHEMA` = ? AND c.`TABLE_NAME` = ? ORDER BY k.`ORDINAL_POSITION` ASC;";
+        final String statement = "SELECT k.`ORDINAL_POSITION`, c.`CONSTRAINT_TYPE`, k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, k.`REFERENCED_COLUMN_NAME`, r.`DELETE_RULE`, r.`UPDATE_RULE` FROM information_schema.TABLE_CONSTRAINTS c JOIN information_schema.KEY_COLUMN_USAGE k ON c.`TABLE_NAME` = k.`TABLE_NAME` AND c.`CONSTRAINT_NAME` = k.`CONSTRAINT_NAME` LEFT JOIN information_schema.REFERENTIAL_CONSTRAINTS r ON r.`CONSTRAINT_NAME` = k.`CONSTRAINT_NAME` WHERE LOWER(k.`COLUMN_NAME`) != 'row_end' AND c.`TABLE_SCHEMA` = ? AND c.`TABLE_NAME` = ? ORDER BY k.`ORDINAL_POSITION` ASC;";
         log.trace("mapped select table constraints statement: {}", statement);
         return statement;
     }
@@ -157,7 +200,9 @@ public interface MariaDbMapper {
     }
 
     default String tableCreateDtoToCreateSequenceRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
-        return "CREATE SEQUENCE IF NOT EXISTS `" + tableCreateDtoToSequenceName(data) + "` NOCACHE";
+        final String statement = "CREATE SEQUENCE IF NOT EXISTS `" + tableCreateDtoToSequenceName(data) + "` NOCACHE";
+        log.trace("mapped create sequence statement: {}", statement);
+        return statement;
     }
 
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
@@ -212,6 +257,31 @@ public interface MariaDbMapper {
         return "";
     }
 
+    default String tableColumnStatisticsSelectRawQuery(List<ColumnDto> data, String table) {
+        final StringBuilder statement = new StringBuilder();
+        final int[] idx = new int[]{0};
+        data.stream()
+                .filter(column -> MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
+                .forEach(column -> statement.append(idx[0]++ > 0 ? " UNION " : "")
+                        .append("SELECT '")
+                        .append(column.getInternalName())
+                        .append("' as name, MIN(`")
+                        .append(column.getInternalName())
+                        .append("`) as min, MAX(`")
+                        .append(column.getInternalName())
+                        .append("`) as max, MEDIAN(`")
+                        .append(column.getInternalName())
+                        .append("`) OVER () as median, AVG(`")
+                        .append(column.getInternalName())
+                        .append("`) as mean, STDDEV(`")
+                        .append(column.getInternalName())
+                        .append("`) as std_dev FROM ")
+                        .append(table));
+        statement.append(";");
+        log.trace("mapped select column statistic statement: {}", statement);
+        return statement.toString();
+    }
+
     default String tableCreateDtoToCreateTableRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(nameToInternalName(data.getName()))
@@ -238,22 +308,25 @@ public interface MariaDbMapper {
 
         }
         /* create primary key index */
-        stringBuilder.append(", PRIMARY KEY (")
-                .append(String.join(",", data.getConstraints()
-                        .getPrimaryKey()
-                        .stream()
-                        .map(c -> {
-                            final Optional<ColumnCreateDto> optional = data.getColumns()
-                                    .stream()
-                                    .filter(cc -> cc.getName().equals(c))
-                                    .findFirst();
-                            log.trace("lookup {} in columns: {}", c, data.getColumns().stream().map(ColumnCreateDto::getName).toList());
-                            return "`" + nameToInternalName(c) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(optional.get());
-                        })
-                        .toArray(String[]::new)))
-                .append(")");
         if (data.getConstraints() != null) {
             log.trace("constraints are {}", data.getConstraints());
+            if (data.getConstraints().getPrimaryKey() != null && !data.getConstraints().getPrimaryKey().isEmpty()) {
+                /* create primary key index */
+                stringBuilder.append(", PRIMARY KEY (")
+                        .append(String.join(",", data.getConstraints()
+                                .getPrimaryKey()
+                                .stream()
+                                .map(c -> {
+                                    final Optional<ColumnCreateDto> optional = data.getColumns()
+                                            .stream()
+                                            .filter(cc -> cc.getName().equals(c))
+                                            .findFirst();
+                                    log.trace("lookup {} in columns: {}", c, data.getColumns().stream().map(ColumnCreateDto::getName).toList());
+                                    return "`" + nameToInternalName(c) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(optional.get());
+                                })
+                                .toArray(String[]::new)))
+                        .append(")");
+            }
             if (data.getConstraints().getUniques() != null) {
                 /* create unique indices */
                 data.getConstraints().getUniques()
@@ -289,15 +362,16 @@ public interface MariaDbMapper {
                                 .append(ck)
                                 .append(")"));
             }
-            if (data.getDescription() != null && !data.getDescription().isBlank()) {
-                /* create table comments */
-                stringBuilder.append(" COMMENT \"")
-                        .append(data.getDescription())
-                        .append("\"");
-            }
         }
-        stringBuilder.append(") WITH SYSTEM VERSIONING;");
-        log.trace("mapped create table query: {}", stringBuilder);
+        stringBuilder.append(") WITH SYSTEM VERSIONING");
+        if (data.getDescription() != null && !data.getDescription().isBlank()) {
+            /* create table comments */
+            stringBuilder.append(" COMMENT \"")
+                    .append(data.getDescription())
+                    .append("\"");
+        }
+        stringBuilder.append(";");
+        log.trace("mapped create table statement: {}", stringBuilder);
         return stringBuilder.toString();
     }
 
@@ -329,6 +403,23 @@ public interface MariaDbMapper {
             throw new QueryMalformedException("Failed to map number");
         }
         return data.getLong(1);
+    }
+
+    default TableStatisticDto resultSetToTableStatistic(ResultSet data) throws SQLException {
+        final TableStatisticDto statistic = TableStatisticDto.builder()
+                .columns(new LinkedHashMap<>())
+                .build();
+        while (data.next()) {
+            final ColumnStatisticDto columnStatistic = ColumnStatisticDto.builder()
+                    .min(data.getBigDecimal(2))
+                    .max(data.getBigDecimal(3))
+                    .median(data.getBigDecimal(4))
+                    .mean(data.getBigDecimal(5))
+                    .stdDev(data.getBigDecimal(6))
+                    .build();
+            statistic.getColumns().put(data.getString(1), columnStatistic);
+        }
+        return statistic;
     }
 
     /**
@@ -388,8 +479,9 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    @Named("dropTableQuery")
     default String dropTableRawQuery(String tableName) {
-        return "DROP TABLE IF EXISTS `" + tableName + "`;";
+        return "DROP TABLE `" + tableName + "`;";
     }
 
     default String tupleToRawInsertQuery(PrivilegedTableDto table, TupleDto data) throws TableMalformedException {
@@ -401,18 +493,17 @@ public interface MariaDbMapper {
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table.getInternalName())
                 .append("` (")
-                .append(table.getColumns()
+                .append(data.getData()
+                        .keySet()
                         .stream()
-                        .filter(column -> !column.getAutoGenerated())
-                        .map(column -> "`" + column.getInternalName() + "`")
+                        .map(o -> "`" + o + "`")
                         .collect(Collectors.joining(",")))
-                .append(") VALUES (");
-        final int[] idx = new int[]{1, 0};
-        table.getColumns()
-                .stream()
-                .filter(c -> !c.getAutoGenerated())
-                .forEach(c -> statement.append(idx[1]++ > 0 ? "," : "")
-                        .append("?"));
+                .append(") VALUES (")
+                .append(data.getData()
+                        .keySet()
+                        .stream()
+                        .map(o -> "?")
+                        .collect(Collectors.joining(",")));
         statement.append(");");
         for (int i = 0; i < table.getColumns().size(); i++) {
             final ColumnDto column = table.getColumns()
@@ -532,6 +623,7 @@ public interface MariaDbMapper {
                 .tdbid(database.getId())
                 .queueName("dbrepo")
                 .routingKey("dbrepo")
+                .description(resultSet.getString(10))
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .creator(database.getOwner())
@@ -552,10 +644,16 @@ public interface MariaDbMapper {
         return table;
     }
 
+    ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
+
     default TableDto resultSetToConstraint(ResultSet resultSet, TableDto table) throws SQLException {
         final String type = resultSet.getString(2);
         final String name = resultSet.getString(3);
         final String columnName = resultSet.getString(4);
+        final String referencedTable = resultSet.getString(5);
+        final String referencedColumnName = resultSet.getString(6);
+        final ReferenceTypeDto deleteRule = resultSet.getString(7) != null ? ReferenceTypeDto.fromType(resultSet.getString(7)) : null;
+        final ReferenceTypeDto updateRule = resultSet.getString(8) != null ? ReferenceTypeDto.fromType(resultSet.getString(8)) : null;
         final Optional<ColumnDto> optional = table.getColumns().stream()
                 .filter(c -> c.getInternalName().equals(columnName))
                 .findFirst();
@@ -564,7 +662,7 @@ public interface MariaDbMapper {
             throw new IllegalArgumentException("Failed to find table column");
         }
         final ColumnDto column = optional.get();
-        if (type.equals("UNIQUE")) {
+        if (type.equals("FOREIGN KEY") || type.equals("UNIQUE")) {
             final Optional<UniqueDto> optional2 = table.getConstraints().getUniques().stream().filter(u -> u.getName().equals(name)).findFirst();
             if (optional2.isPresent()) {
                 optional2.get()
@@ -572,17 +670,66 @@ public interface MariaDbMapper {
                         .add(column);
                 return table;
             }
+            if (type.equals("UNIQUE")) {
+                table.getConstraints()
+                        .getUniques()
+                        .add(UniqueDto.builder()
+                                .name(name)
+                                .columns(new LinkedList<>(List.of(column)))
+                                .build());
+                return table;
+            }
+            final Optional<ForeignKeyDto> optional1 = table.getConstraints()
+                    .getForeignKeys()
+                    .stream()
+                    .filter(fk -> fk.getName().equals(name))
+                    .findFirst();
+            final ForeignKeyReferenceDto foreignKeyReference = ForeignKeyReferenceDto.builder()
+                    .column(ColumnBriefDto.builder()
+                            .name(columnName)
+                            .internalName(columnName)
+                            .databaseId(table.getTdbid())
+                            .build())
+                    .referencedColumn(ColumnBriefDto.builder()
+                            .name(referencedColumnName)
+                            .internalName(referencedColumnName)
+                            .databaseId(table.getTdbid())
+                            .build())
+                    .build();
+            if (optional1.isPresent()) {
+                foreignKeyReference.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(optional1.get()));
+                optional1.get()
+                        .getReferences()
+                        .add(foreignKeyReference);
+                log.debug("found foreign key: create part ({}) referencing table {} ({})", columnName, referencedTable, referencedColumnName);
+                return table;
+            }
+            final ForeignKeyDto foreignKey = ForeignKeyDto.builder()
+                    .name(name)
+                    .table(tableDtoToTableBriefDto(table))
+                    .referencedTable(TableBriefDto.builder()
+                            .name(referencedTable)
+                            .internalName(referencedTable)
+                            .databaseId(table.getTdbid())
+                            .build())
+                    .references(new LinkedList<>(List.of(foreignKeyReference)))
+                    .onDelete(deleteRule)
+                    .onUpdate(updateRule)
+                    .build();
+            foreignKey.getReferences()
+                    .forEach(ref -> ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(foreignKey)));
             table.getConstraints()
-                    .getUniques()
-                    .add(UniqueDto.builder()
-                            .name(name)
-                            .columns(new LinkedList<>(List.of(column)))
-                            .build());
+                    .getForeignKeys()
+                    .add(foreignKey);
+            log.debug("create foreign key: add part ({}) referencing table {} ({})", columnName, referencedTable, referencedColumnName);
             return table;
         }
         return table;
     }
 
+    @Mappings({
+            @Mapping(target = "databaseId", source = "tdbid")
+    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
@@ -668,6 +815,7 @@ public interface MariaDbMapper {
         }
         view.getColumns()
                 .add(column);
+        log.trace("parsed view {}.{} column: {}", view.getDatabase().getInternalName(), view.getInternalName(), column.getInternalName());
         return view;
     }
 
@@ -720,15 +868,12 @@ public interface MariaDbMapper {
                     statement.append("@")
                             .append(column.getInternalName());
                     if (column.getDateFormat() != null) {
-                        log.trace("import column has date format, need to format it differently");
                         /* reformat dates */
                         columnToDateSet(data, column, set);
                     } else if (column.getColumnType().equals(ColumnTypeDto.BOOL)) {
-                        log.trace("import column has boolean format, need to format it differently");
                         /* reformat booleans */
                         columnToBoolSet(data, column, set);
                     } else {
-                        log.trace("import column has text format");
                         /* reformat others */
                         columnToTextSet(data, column, set);
                     }
@@ -737,6 +882,7 @@ public interface MariaDbMapper {
         statement.append(")")
                 .append(set.length() != 0 ? (" SET " + set) : "")
                 .append(";");
+        log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }
 
@@ -821,7 +967,7 @@ public interface MariaDbMapper {
                         log.error("Failed to find table column {}", key);
                         throw new IllegalArgumentException("Failed to find table column");
                     }
-                    if (optional.get().getAutoGenerated() || value == null) {
+                    if (optional.get().getAutoGenerated()) {
                         return;
                     }
                     statement.append(idx[0]++ == 0 ? "" : ", ")
@@ -840,7 +986,7 @@ public interface MariaDbMapper {
                         log.error("Failed to find table column {}", key);
                         throw new IllegalArgumentException("Failed to find table column");
                     }
-                    if (optional.get().getAutoGenerated() || value == null) {
+                    if (optional.get().getAutoGenerated()) {
                         return;
                     }
                     statement.append(jdx[0]++ == 0 ? "" : ", ")
@@ -852,13 +998,12 @@ public interface MariaDbMapper {
     }
 
     default void columnToDateSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        log.trace("mapping column to date set");
+        log.trace("import column has date format, need to format it: {}", column.getDateFormat().getUnixFormat());
         set.append(!set.isEmpty() ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = STR_TO_DATE(");
         if (data.getNullElement() != null) {
-            log.trace("import has null element present");
             set.append("IF(STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
@@ -882,13 +1027,11 @@ public interface MariaDbMapper {
     }
 
     default void columnToBoolSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        log.trace("mapping column to bool set, data={}, column={}, set=(generated)", data, column);
         set.append(!set.isEmpty() ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
         if (data.getNullElement() != null) {
-            log.trace("import has null element present");
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
@@ -902,9 +1045,7 @@ public interface MariaDbMapper {
     }
 
     default void columnToBoolSet2(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        log.trace("mapping column to inner bool set, data={}, column={}, set=(generated)", data, column);
         if (data.getTrueElement() != null) {
-            log.trace("import has true element present");
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
@@ -929,7 +1070,6 @@ public interface MariaDbMapper {
             return;
         }
         if (data.getFalseElement() != null) {
-            log.trace("import has false element present");
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
@@ -958,13 +1098,11 @@ public interface MariaDbMapper {
     }
 
     default void columnToTextSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        log.trace("mapping column to text set");
         set.append(!set.isEmpty() ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
         if (data.getNullElement() != null) {
-            log.trace("import has null element present");
             set.append("IF(STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
@@ -979,11 +1117,11 @@ public interface MariaDbMapper {
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement statement, ColumnTypeDto columnType, int idx,
-                                                      Object value) throws SQLException {
+                                                      String columnName, Object value) throws SQLException {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
@@ -992,26 +1130,26 @@ public interface MariaDbMapper {
                     try (ObjectOutputStream ois = new ObjectOutputStream(boas)) {
                         ois.writeObject(value);
                         statement.setBlob(idx, new ByteArrayInputStream(boas.toByteArray()));
-                        log.trace("prepare statement idx {} blob", idx);
+                        log.trace("prepare statement idx {} = {} blob", idx, columnName);
                     }
 
                 } catch (IOException e) {
-                    log.error("Failed to set blob: {}", e.getMessage());
+                    log.error("Failed to set blob/tinyblob/mediumblob/longblob: {}", e.getMessage());
                     throw new SQLException("Failed to set blob: " + e.getMessage(), e);
                 }
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.VARCHAR);
                     break;
                 }
-                log.trace("prepare statement idx {} string: {}", idx, value);
+                log.trace("prepare statement idx {} = {} text/char/varchar/tinytext/mediumtext/longtext/enum/set: {}", idx, columnName, value);
                 statement.setString(idx, String.valueOf(value));
                 break;
             case DATE:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DATE);
                     break;
                 }
@@ -1020,113 +1158,114 @@ public interface MariaDbMapper {
                 break;
             case BIGINT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BIGINT);
                     break;
                 }
-                log.trace("prepare statement idx {} long: {}", idx, value);
+                log.trace("prepare statement idx {} bigint: {}", idx, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case INT, MEDIUMINT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.INTEGER);
                     break;
                 }
-                log.trace("prepare statement idx {} long: {}", idx, value);
+                log.trace("prepare statement idx {} = {} int/mediumint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case TINYINT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TINYINT);
                     break;
                 }
-                log.trace("prepare statement idx {} long: {}", idx, value);
+                log.trace("prepare statement idx {} = {} tinyint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case SMALLINT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.SMALLINT);
                     break;
                 }
-                log.trace("prepare statement idx {} long: {}", idx, value);
+                log.trace("prepare statement idx {} = {} smallint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case DECIMAL:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DECIMAL);
                     break;
                 }
+                log.trace("prepare statement idx {} = {} decimal: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case FLOAT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.FLOAT);
                     break;
                 }
-                log.trace("prepare statement idx {} double: {}", idx, value);
+                log.trace("prepare statement idx {} = {} float: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case DOUBLE:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DOUBLE);
                     break;
                 }
-                log.trace("prepare statement idx {} double: {}", idx, value);
+                log.trace("prepare statement idx {} = {} double: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case BINARY, VARBINARY, BIT:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DECIMAL);
                     break;
                 }
+                log.trace("prepare statement idx {} = {} binary/varbinary/bit", idx, columnName);
                 statement.setBinaryStream(idx, (InputStream) value);
-                log.trace("prepare statement idx {} binary stream", idx);
                 break;
             case BOOL:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BOOLEAN);
                     break;
                 }
-                log.trace("prepare statement idx {} bool: {}", idx, value);
+                log.trace("prepare statement idx {} = {} bool: {}", idx, columnName, value);
                 statement.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
             case TIMESTAMP, DATETIME:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIMESTAMP);
                     break;
                 }
+                log.trace("prepare statement idx {} timestamp/datetime: {}", idx, value);
                 statement.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
-                log.trace("prepare statement idx {} timestamp: {}", idx, value);
                 break;
             case TIME:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIME);
                     break;
                 }
+                log.trace("prepare statement idx {} = {} time: {}", idx, columnName, value);
                 statement.setTime(idx, Time.valueOf(String.valueOf(value)));
-                log.trace("prepare statement idx {} time: {}", idx, value);
                 break;
             case YEAR:
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
+                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIME);
                     break;
                 }
-                log.trace("prepare statement idx {} string: {}", idx, value);
+                log.trace("prepare statement idx {} = {} year: {}", idx, columnName, value);
                 statement.setString(idx, String.valueOf(value));
                 break;
             default:
-                log.error("Failed to map column type {} at index {} for value {}", columnType, idx, value);
+                log.error("Failed to map column type {} at idx {} = {} for value {}", columnType, idx, columnName, value);
                 throw new IllegalArgumentException("Failed to map column type " + columnType);
         }
     }
@@ -1313,7 +1452,7 @@ public interface MariaDbMapper {
     }
 
     default boolean columnMatches(ColumnDto column, String tableOrView) {
-        if (column.getTable().getInternalName().equals(tableOrView)) {
+        if (column.getTable() != null && column.getTable().getInternalName().equals(tableOrView)) {
             log.trace("table '{}' found in column table", tableOrView);
             return true;
         }

@@ -6,6 +6,7 @@ import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
@@ -15,7 +16,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -37,12 +37,10 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             throws ServiceConnectionException, ServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
-        log.debug("create access in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.POST,
                     new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to create access: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to create access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -63,12 +61,10 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             throws ServiceConnectionException, ServiceException, AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
-        log.debug("update access in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT,
                     new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to update access: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to update access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -89,11 +85,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
-        log.debug("delete access in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to delete access: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to delete access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -113,11 +107,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public DatabaseDto createDatabase(CreateDatabaseDto data) throws ServiceConnectionException, ServiceException {
         final ResponseEntity<DatabaseDto> response;
         final String url = "/api/database";
-        log.debug("create database in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), DatabaseDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to create database: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to create database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
@@ -136,11 +128,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             ServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId;
-        log.debug("update database in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to update user password in database: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to update user password in database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -161,11 +151,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             DatabaseNotFoundException, TableExistsException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table";
-        log.debug("create table in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to create table: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to create table: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -189,11 +177,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             TableNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId;
-        log.debug("delete table in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to delete table: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to delete table: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -213,11 +199,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public ViewDto createView(Long databaseId, ViewCreateDto data) throws ServiceConnectionException, ServiceException {
         final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view";
-        log.debug("create view in data service");
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), ViewDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to create view: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to create view: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
@@ -240,11 +224,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             ViewNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/view/" + viewId;
-        log.debug("delete view in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to delete view: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to delete view: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -265,11 +247,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;
         final String url = "/api/database/" + databaseId + "/subset/" + queryId;
-        log.debug("get query in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), QueryDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, QueryDto.class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to find query: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to find query", e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -294,11 +274,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             ServiceException, QueryNotFoundException {
         final ResponseEntity<ExportResourceDto> response;
         final String url = "/api/database/" + databaseId + "/subset/" + queryId;
-        log.debug("export query in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), ExportResourceDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ExportResourceDto.class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to export query: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to export query: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -319,11 +297,9 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public List<TableDto> getTableSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException {
         final ResponseEntity<TableDto[]> response;
         final String url = "/api/database/" + databaseId + "/table";
-        log.debug("retrieve table schema metadata in data service");
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), TableDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto[].class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to get table schemas: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to get table schemas: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -351,9 +327,8 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         final ResponseEntity<ViewDto[]> response;
         final String url = "/api/database/" + databaseId + "/view";
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), ViewDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
-                 HttpServerErrorException.InternalServerError e) {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto[].class);
+        } catch (HttpServerErrorException e) {
             log.error("Failed to get view schemas: {}", e.getMessage());
             throw new ServiceConnectionException("Failed to get view schemas: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
@@ -374,6 +349,33 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         final List<ViewDto> views = Arrays.asList(response.getBody());
         log.debug("found {} view(s) in data service", views.size());
         return views;
+    }
+
+    @Override
+    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws ServiceConnectionException, ServiceException, TableNotFoundException {
+        final ResponseEntity<TableStatisticDto> response;
+        final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableStatisticDto.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to analyse table statistic: {}", e.getMessage());
+            throw new ServiceConnectionException("Failed to analyse table statistic: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to analyse table statistic: not found: {}", e.getMessage());
+            throw new TableNotFoundException("Failed to analyse table statistic: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to analyse table statistic: {}", e.getMessage());
+            throw new ServiceException("Failed to analyse table statistic: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to analyse table statistic: wrong http code: {}", response.getStatusCode());
+            throw new ServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to analyse table statistic: empty body: {}", response.getStatusCode());
+            throw new ServiceException("Failed to analyse table statistic: empty body: " + response.getStatusCode());
+        }
+        return response.getBody();
     }
 
 }

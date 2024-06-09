@@ -128,7 +128,7 @@ class RestClient:
         logging.info(f"No username set!")
         return None
 
-    def get_users(self) -> List[User]:
+    def get_users(self) -> List[UserBrief]:
         """
         Get all users.
 
@@ -140,7 +140,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[User]).validate_python(body)
+            return TypeAdapter(List[UserBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find users: response code: {response.status_code} is not 200 (OK)')
 
     def get_user(self, user_id: str) -> User:
@@ -439,7 +439,7 @@ class RestClient:
         :raises NameExistsError: If a table with this name already exists.
         :raises ForbiddenError: If the action is not allowed.
         :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If thecontainer does not exist.
+        :raises NotExistsError: If the container does not exist.
         """
         url = f'/api/database/{database_id}/table'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -459,7 +459,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to create table: response code: {response.status_code} is not 201 (CREATED)')
 
-    def get_tables(self, database_id: int) -> List[Table]:
+    def get_tables(self, database_id: int) -> List[TableBrief]:
         """
         Get all tables.
 
@@ -473,7 +473,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Table]).validate_python(body)
+            return TypeAdapter(List[TableBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find tables: response code: {response.status_code} is not 200 (OK)')
 
     def get_table(self, database_id: int, table_id: int) -> Table:
@@ -758,7 +758,7 @@ class RestClient:
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateData(data=data))
-        if response.status_code == 202:
+        if response.status_code == 201:
             return
         if response.status_code == 400 or response.status_code == 410:
             raise MalformedError(f'Failed to insert table data: service rejected malformed payload')
@@ -767,7 +767,7 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to insert table data: not found')
         raise ResponseCodeError(
-            f'Failed to insert table data: response code: {response.status_code} is not 202 (ACCEPTED)')
+            f'Failed to insert table data: response code: {response.status_code} is not 201 (CREATED)')
 
     def import_table_data(self, database_id: int, table_id: int, separator: str, file_path: str,
                           quote: str = None, skip_lines: int = 0, false_encoding: str = None,

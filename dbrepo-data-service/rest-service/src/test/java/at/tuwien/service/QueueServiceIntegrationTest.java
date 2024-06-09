@@ -4,6 +4,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
+import at.tuwien.exception.ServiceException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.impl.QueueServiceRabbitMqImpl;
@@ -50,7 +51,8 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void insert_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException, ContainerNotFoundException, TableNotFoundException {
+    public void insert_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
+            ContainerNotFoundException, TableNotFoundException, ServiceException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 4L);
             put("date", "2023-10-03");
@@ -73,7 +75,8 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void insert_onlyMandatoryFields_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException, TableNotFoundException {
+    public void insert_onlyMandatoryFields_succeeds() throws InterruptedException, SQLException,
+            RemoteUnavailableException, TableNotFoundException, ServiceException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 5L);
             put("date", "2023-10-04");

@@ -19,8 +19,10 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
+import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.datacite.doi.*;
@@ -87,6 +89,8 @@ public interface MetadataMapper {
     BannerMessageDto bannerMessageToBannerMessageDto(BannerMessage data);
 
     BannerMessageBriefDto bannerMessageToBannerMessageBriefDto(BannerMessage data);
+
+    ViewColumn viewColumnDtoToViewColumn(ViewColumnDto data);
 
     BannerMessage bannerMessageCreateDtoToBannerMessage(BannerMessageCreateDto data);
 
@@ -458,9 +462,7 @@ public interface MetadataMapper {
     TableColumnConcept conceptSaveDtoToTableColumnConcept(ConceptSaveDto data);
 
     @Mappings({
-            @Mapping(source = "id", target = "id"),
-            @Mapping(target = "name", expression = "java(data.getName())"),
-            @Mapping(target = "internalName", expression = "java(data.getInternalName())")
+            @Mapping(target = "databaseId", source = "tdbid"),
     })
     TableBriefDto tableToTableBriefDto(Table data);
 
@@ -480,13 +482,11 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "table.owner", ignore = true),
-            @Mapping(target = "table.creator", ignore = true),
-            @Mapping(target = "table.constraints", ignore = true),
             @Mapping(target = "referencedTable.owner", ignore = true),
-            @Mapping(target = "referencedTable.creator", ignore = true),
-            @Mapping(target = "referencedTable.constraints", ignore = true),
     })
     ForeignKeyDto foreignKeyToForeignKeyDto(ForeignKey data);
+
+    ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
 
     default ConstraintsDto constraintsToConstraintsDto(Constraints data) {
         if (data == null) {
@@ -539,6 +539,20 @@ public interface MetadataMapper {
                     pk.getColumn().setTableId(data.getId());
                     pk.getColumn().setDatabaseId(data.getDatabase().getId());
                 });
+        for (ForeignKeyDto fk : table.getConstraints().getForeignKeys()) {
+            for (ForeignKeyReferenceDto ref : fk.getReferences()) {
+                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                ref.getColumn().setTableId(table.getId());
+                ref.getColumn().setDatabaseId(table.getTdbid());
+                final Optional<TableColumn> optional = data.getDatabase().getTables().stream().map(Table::getColumns).flatMap(List::stream).filter(c -> c.getId().equals(ref.getReferencedColumn().getId())).findFirst();
+                if (optional.isEmpty()) {
+                    log.error("Failed to find foreign key referenced column {}.{} in columns: {}", table.getInternalName(), ref.getReferencedColumn().getInternalName(), data.getDatabase().getTables().stream().map(Table::getColumns).flatMap(List::stream).toList());
+                    throw new IllegalArgumentException("Failed to find foreign key referenced column");
+                }
+                ref.getReferencedColumn().setTableId(optional.get().getTable().getId());
+                ref.getReferencedColumn().setDatabaseId(optional.get().getTable().getTdbid());
+            }
+        }
         table.getConstraints()
                 .getUniques()
                 .forEach(uk -> {
@@ -585,10 +599,11 @@ public interface MetadataMapper {
     Table tableDtoToTable(TableDto data);
 
     @Mappings({
-            @Mapping(target = "table.owner", ignore = true),
-            @Mapping(target = "table.columns", ignore = true)
+            @Mapping(target = "table.owner", ignore = true)
     })
     PrimaryKeyDto primaryKeyToPrimaryKeyDto(PrimaryKey data);
+
+    ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto data);
 
     /* keep */
     default Constraints constraintsCreateDtoToConstraints(ConstraintsCreateDto data, Database database, Table table) {
@@ -617,40 +632,39 @@ public interface MetadataMapper {
                                 log.error("Failed to find foreign key referenced table {} in tables: {}", fk.getReferencedTable(), database.getTables().stream().map(Table::getInternalName).toList());
                                 throw new IllegalArgumentException("Failed to find foreign key referenced table");
                             }
+                            final List<ForeignKeyReference> references = new LinkedList<>();
+                            for (int i = 0; i < fk.getColumns().size(); i++) {
+                                final int k = i;
+                                final Optional<TableColumn> column = table.getColumns()
+                                        .stream()
+                                        .filter(cc -> cc.getInternalName().equals(fk.getColumns().get(k)))
+                                        .findFirst();
+                                if (column.isEmpty()) {
+                                    log.error("Failed to find foreign key column {}.{} in columns: {}", table.getInternalName(), fk.getColumns().get(k), optional.get().getColumns().stream().map(TableColumn::getInternalName).toList());
+                                    throw new IllegalArgumentException("Failed to find foreign key column");
+                                }
+                                final Optional<TableColumn> referencedColumn = optional.get()
+                                        .getColumns()
+                                        .stream()
+                                        .filter(cc -> cc.getInternalName().equals(fk.getReferencedColumns().get(k)))
+                                        .findFirst();
+                                if (referencedColumn.isEmpty()) {
+                                    log.error("Failed to find foreign key referenced column {} in referenced columns: {}", fk.getReferencedColumns().get(k), database.getTables().stream().filter(t -> t.getInternalName().equals(fk.getReferencedTable())).map(Table::getColumns).flatMap(List::stream).map(TableColumn::getInternalName).toList());
+                                    throw new IllegalArgumentException("Failed to find foreign key referenced column");
+                                }
+                                references.add(ForeignKeyReference.builder()
+                                        .column(column.get())
+                                        .referencedColumn(referencedColumn.get())
+                                        .foreignKey(null) // set at the end
+                                        .build());
+                            }
                             return ForeignKey.builder()
                                     .name("fk_" + table.getInternalName() + "_" + idx[1]++)
+                                    .table(table)
                                     .referencedTable(optional.get())
-                                    .references(fk.getReferencedColumns()
-                                            .stream()
-                                            .map(c -> {
-                                                final Optional<TableColumn> column = table.getColumns()
-                                                        .stream()
-                                                        .filter(cc -> cc.getInternalName().equals(c))
-                                                        .findFirst();
-                                                if (column.isEmpty()) {
-                                                    log.error("Failed to find foreign key column {} in columns: {}", c, table.getColumns().stream().map(TableColumn::getInternalName).toList());
-                                                    throw new IllegalArgumentException("Failed to find foreign key column");
-                                                }
-                                                final Optional<TableColumn> referencedColumn = database.getTables()
-                                                        .stream()
-                                                        .filter(t -> t.getInternalName().equals(fk.getReferencedTable()))
-                                                        .map(Table::getColumns)
-                                                        .flatMap(List::stream)
-                                                        .filter(cc -> cc.getInternalName().equals(c))
-                                                        .findFirst();
-                                                if (referencedColumn.isEmpty()) {
-                                                    log.error("Failed to find foreign key referenced column {} in referenced columns: {}", c, database.getTables().stream().filter(t -> t.getInternalName().equals(fk.getReferencedTable())).map(Table::getColumns).flatMap(List::stream).map(TableColumn::getInternalName).toList());
-                                                    throw new IllegalArgumentException("Failed to find foreign key referenced column");
-                                                }
-                                                return ForeignKeyReference.builder()
-                                                        .column(column.get())
-                                                        .referencedColumn(referencedColumn.get())
-                                                        .foreignKey(null) // set later
-                                                        .build();
-                                            })
-                                            .toList())
-                                    .onDelete(ReferenceType.CASCADE)
-                                    .onUpdate(ReferenceType.CASCADE)
+                                    .references(references)
+                                    .onDelete(referenceTypeDtoToReferenceType(fk.getOnDelete()))
+                                    .onUpdate(referenceTypeDtoToReferenceType(fk.getOnUpdate()))
                                     .build();
                         })
                         .toList())
@@ -790,6 +804,12 @@ public interface MetadataMapper {
             @Mapping(target = "database.views", ignore = true)
     })
     ViewDto viewToViewDto(View data);
+
+    @Mappings({
+            @Mapping(target = "databaseId", source = "view.vdbid"),
+            @Mapping(target = "isPublic", source = "view.isPublic")
+    })
+    ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 
     ViewBriefDto viewToViewBriefDto(View data);
 

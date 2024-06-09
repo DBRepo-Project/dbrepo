@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ConceptService {
 
+    TableColumnConcept create(TableColumnConcept concept);
+
     /**
      * Finds all table column concepts in the metadata database.
      *

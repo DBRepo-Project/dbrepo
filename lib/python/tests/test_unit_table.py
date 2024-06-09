@@ -8,7 +8,7 @@ from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
 from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, Result, \
-    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal
+    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
     AuthenticationError
 
@@ -126,38 +126,14 @@ class TableUnitTest(unittest.TestCase):
 
     def test_get_tables_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [Table(id=2,
-                         name="Test",
-                         description="Test Table",
-                         database_id=1,
-                         internal_name="test",
-                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                      attributes=UserAttributes(theme='light')),
-                         owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                    attributes=UserAttributes(theme='light')),
-                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                         is_versioned=True,
-                         created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
-                         queue_name='test',
-                         routing_key='dbrepo.test_database_1234.test',
-                         is_public=True,
-                         constraints=Constraints(uniques=[],
-                                                 foreign_keys=[],
-                                                 checks=[],
-                                                 primary_key=[PrimaryKey(id=1,
-                                                                         table=TableMinimal(id=2, database_id=1),
-                                                                         column=ColumnMinimal(id=1, table_id=2,
-                                                                                              database_id=1))]),
-                         columns=[Column(id=1,
-                                         name="ID",
-                                         database_id=1,
-                                         table_id=2,
-                                         internal_name="id",
-                                         auto_generated=True,
-                                         is_primary_key=True,
-                                         column_type=ColumnType.BIGINT,
-                                         is_public=True,
-                                         is_null_allowed=False)])]
+            exp = [TableBrief(id=2,
+                              name="Test",
+                              description="Test Table",
+                              database_id=1,
+                              internal_name="test",
+                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
+                                              attributes=UserAttributes(theme='light')),
+                              is_versioned=True)]
             # mock
             mock.get('/api/database/1/table', json=[exp[0].model_dump()])
             # test
@@ -380,7 +356,7 @@ class TableUnitTest(unittest.TestCase):
     def test_create_table_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/table/9/data', status_code=202)
+            mock.post('/api/database/1/table/9/data', status_code=201)
             # test
             client = RestClient(username="a", password="b")
             client.create_table_data(database_id=1, table_id=9,

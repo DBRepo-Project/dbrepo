@@ -27,6 +27,17 @@ public enum ReferenceTypeDto {
         this.type = type;
     }
 
+    public static ReferenceTypeDto fromType(String type) {
+        return switch (type) {
+            case "RESTRICT" -> ReferenceTypeDto.RESTRICT;
+            case "CASCADE" -> ReferenceTypeDto.CASCADE;
+            case "SET NULL" -> ReferenceTypeDto.SET_NULL;
+            case "NO ACTION" -> ReferenceTypeDto.NO_ACTION;
+            case "SET DEFAULT" -> ReferenceTypeDto.SET_DEFAULT;
+            default -> null;
+        };
+    }
+
     @Override
     public String toString() {
         return this.type;

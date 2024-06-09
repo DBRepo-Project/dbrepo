@@ -1,44 +1,43 @@
 <template>
-  <div v-if="view">
-    <v-toolbar flat>
-      <v-btn
-        class="mr-2"
-        size="small"
-        icon="mdi-arrow-left"
-        :to="`/database/${$route.params.database_id}/view`" />
-      <v-toolbar-title
-        :text="title" />
-      <v-spacer />
-      <v-btn
-        v-if="canDeleteView"
-        prepend-icon="mdi-delete"
-        class="mr-2"
-        variant="flat"
-        color="error"
-        :text="$vuetify.display.lgAndUp ? $t('navigation.delete') : ''"
-        :loading="loadingDelete"
-        @click="deleteView" />
-      <v-btn
-        v-if="canCreatePid"
-        prepend-icon="mdi-content-save-outline"
-        variant="flat"
-        color="primary"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
-        :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`" />
-      <template v-slot:extension>
-        <v-tabs
-          v-model="tab"
-          color="primary">
-          <v-tab
-            :text="$t('navigation.info')"
-            :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
-          <v-tab
-            :text="$t('navigation.data')"
-            :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
-        </v-tabs>
-      </template>
-    </v-toolbar>
-  </div>
+  <v-toolbar flat>
+    <v-btn
+      class="mr-2"
+      size="small"
+      icon="mdi-arrow-left"
+      :to="`/database/${$route.params.database_id}/view`" />
+    <v-toolbar-title
+      v-if="view"
+      :text="title" />
+    <v-spacer />
+    <v-btn
+      v-if="canDeleteView"
+      prepend-icon="mdi-delete"
+      class="mr-2"
+      variant="flat"
+      color="error"
+      :text="$vuetify.display.lgAndUp ? $t('navigation.delete') : ''"
+      :loading="loadingDelete"
+      @click="deleteView" />
+    <v-btn
+      v-if="canCreatePid"
+      prepend-icon="mdi-content-save-outline"
+      variant="flat"
+      color="primary"
+      :text="($vuetify.display.lgAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
+      :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`" />
+    <template v-slot:extension>
+      <v-tabs
+        v-model="tab"
+        color="primary">
+        <v-tab
+          :text="$t('navigation.info')"
+          :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
+        <v-tab
+          :text="$t('navigation.data')"
+          :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
+      </v-tabs>
+    </template>
+  </v-toolbar>
 </template>
 
 <script>
@@ -128,9 +127,9 @@ export default {
           this.cacheStore.reloadDatabase()
           this.$router.push(`/database/${this.$route.params.database_id}/view`)
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t(code))
+          toast.error(this.$t(code) + ": " + message)
         })
         .finally(() => {
           this.loadingDelete = false

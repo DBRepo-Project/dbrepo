@@ -19,8 +19,8 @@ import java.util.List;
 @Configuration
 public class GatewayConfig {
 
-    @Value("${dbrepo.endpoints.gatewayService}")
-    private String gatewayEndpoint;
+    @Value("${dbrepo.endpoints.metadataService}")
+    private String metadataEndpoint;
 
     @Value("${dbrepo.admin.username}")
     private String adminUsername;
@@ -31,8 +31,8 @@ public class GatewayConfig {
     @Bean
     public RestTemplate restTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
-        log.debug("add basic authentication for internal gateway: username={}, password=(hidden)", adminUsername);
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
+        log.debug("add basic authentication for metadata service: username={}, password=(hidden)", adminUsername);
         restTemplate.getInterceptors()
                 .addAll(List.of(new BasicAuthenticationInterceptor(adminUsername, adminPassword),
                         clientHttpRequestInterceptor()));

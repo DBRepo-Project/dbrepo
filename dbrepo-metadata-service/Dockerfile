@@ -30,6 +30,8 @@ RUN mvn clean install -DskipTests
 FROM amazoncorretto:17-alpine3.19 as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apk add --no-cache curl bash jq
+
 WORKDIR /app
 
 USER 65534

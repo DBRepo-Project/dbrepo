@@ -191,7 +191,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

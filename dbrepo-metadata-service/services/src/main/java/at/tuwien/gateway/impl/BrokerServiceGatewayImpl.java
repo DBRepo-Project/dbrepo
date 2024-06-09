@@ -2,7 +2,6 @@ package at.tuwien.gateway.impl;
 
 import at.tuwien.api.amqp.*;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
-import at.tuwien.config.GatewayConfig;
 import at.tuwien.config.RabbitConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -21,15 +20,12 @@ import org.springframework.web.client.RestTemplate;
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     private final RestTemplate restTemplate;
-    private final GatewayConfig gatewayConfig;
     private final RabbitConfig rabbitConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(GatewayConfig gatewayConfig,
-                                    @Qualifier("brokerRestTemplate") RestTemplate restTemplate,
+    public BrokerServiceGatewayImpl(@Qualifier("brokerRestTemplate") RestTemplate restTemplate,
                                     RabbitConfig rabbitMqConfig) {
         this.restTemplate = restTemplate;
-        this.gatewayConfig = gatewayConfig;
         this.rabbitConfig = rabbitMqConfig;
     }
 
@@ -37,7 +33,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     public void grantTopicPermission(String username, ExchangeUpdatePermissionsDto data)
             throws ServiceConnectionException, ServiceException {
         final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.debug("grant topic permission in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -57,7 +52,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantVirtualHostPermission(String username, GrantVirtualHostPermissionsDto data) throws ServiceConnectionException, ServiceException {
         final String url = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.debug("grant virtual host permissions in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -77,7 +71,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantExchangePermission(String username, GrantExchangePermissionsDto data) throws ServiceConnectionException, ServiceException {
         final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.debug("grant topic permissions in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -99,8 +92,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         final String url = "/api/queues/" + rabbitConfig.getVirtualHost() + "/" + name;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
-        log.trace("gateway broker find queue, virtual host={}, queue={}", rabbitConfig.getVirtualHost(), name);
-        log.debug("find queue from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<QueueDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), QueueDto.class);

@@ -4,6 +4,7 @@ import at.tuwien.api.database.UpdateDatabaseAccessDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.AccessService;
@@ -42,7 +43,8 @@ public class AccessEndpoint {
 
     @PostMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Granting access succeeded"),
@@ -76,10 +78,10 @@ public class AccessEndpoint {
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody UpdateDatabaseAccessDto data)
             throws NotAllowedException, QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, DatabaseMalformedException {
+            UserNotFoundException, DatabaseMalformedException, ServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final PrivilegedUserDto user = metadataServiceGateway.getUserById(userId);
+        final PrivilegedUserDto user = metadataServiceGateway.getPrivilegedUserById(userId);
         if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to create access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
@@ -95,7 +97,8 @@ public class AccessEndpoint {
 
     @PutMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Update access to some database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Update access succeeded",
@@ -130,11 +133,11 @@ public class AccessEndpoint {
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, ServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final PrivilegedUserDto user = metadataServiceGateway.getUserById(userId);
+        final UserDto user = metadataServiceGateway.getUserById(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
@@ -150,7 +153,8 @@ public class AccessEndpoint {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Revoked access successfully"),
@@ -183,10 +187,10 @@ public class AccessEndpoint {
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId) throws NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, ServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final PrivilegedUserDto user = metadataServiceGateway.getUserById(userId);
+        final UserDto user = metadataServiceGateway.getUserById(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to delete access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to delete access to user with id " + userId + ": no access");

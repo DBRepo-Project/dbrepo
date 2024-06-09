@@ -88,7 +88,7 @@
       v-model="pickVersionDialog"
       max-width="640"
       @close="closeVersion">
-      <TimeTravel
+      <TableHistory
         ref="timeTravel"
         @close="pickVersion" />
     </v-dialog>
@@ -117,7 +117,7 @@
 </template>
 
 <script>
-import TimeTravel from '@/components/dialogs/TimeTravel.vue'
+import TableHistory from '@/components/table/TableHistory.vue'
 import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import {formatTimestampUTC, formatDateUTC, formatTimestamp} from '@/utils'
@@ -130,7 +130,7 @@ export default {
   components: {
     BlobDownload,
     EditTuple,
-    TimeTravel,
+    TableHistory,
     TableToolbar,
     TimeDrift
   },
@@ -404,7 +404,7 @@ export default {
         return
       }
       try {
-        this.headers = [{ value: 'selection', title: '', sortable: false }]
+        this.headers = []
         this.table.columns.map((c) => {
           return {
             value: c.internal_name,
@@ -448,9 +448,9 @@ export default {
           })
           this.loadingData = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t(code))
+          toast.error(this.$t(code) + ": " + message)
           this.error = true
           this.loadingData = false
         })
@@ -463,9 +463,9 @@ export default {
           this.total = count
           this.loadingCount = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t(code))
+          toast.error(this.$t(code) + ": " + message)
           this.loadingCount = false
         })
     },

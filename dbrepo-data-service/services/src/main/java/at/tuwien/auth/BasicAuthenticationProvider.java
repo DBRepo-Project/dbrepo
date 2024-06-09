@@ -3,6 +3,7 @@ package at.tuwien.auth;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.config.GatewayConfig;
+import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.ServiceConnectionException;
 import at.tuwien.exception.ServiceException;
 import at.tuwien.gateway.KeycloakGateway;
@@ -53,7 +54,7 @@ public class BasicAuthenticationProvider implements AuthenticationManager {
             final TokenDto tokenDto = keycloakGateway.obtainUserToken(auth.getName(), auth.getCredentials().toString());
             final UserDetails userDetails = authTokenFilter.verifyJwt(tokenDto.getAccessToken());
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        } catch (ServletException | ServiceConnectionException | ServiceException e) {
+        } catch (ServletException | RemoteUnavailableException | ServiceException e) {
             throw new BadCredentialsException("Failed to authenticate with authentication service", e);
         }
     }

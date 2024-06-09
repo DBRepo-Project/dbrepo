@@ -14,6 +14,7 @@ hack/
 .svn/
 # Generated
 build/
+artifacthub-repo.yml
 # Common backup files
 *.swp
 *.bak

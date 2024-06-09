@@ -19,12 +19,6 @@ export default {
       type: String,
       default: () => 'query' /* query or view */
     },
-    view: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
     loading: {
       type: Boolean,
       default: () => {
@@ -57,15 +51,6 @@ export default {
     headers () {
       if (this.result.headers.length !== 0) {
         return this.result.headers
-      }
-      if (this.type === 'view' && this.view && this.view.columns) {
-        return this.view.columns.map((c) => {
-          return {
-            title: c.alias ? c.alias : c.internal_name,
-            value: c.alias ? c.alias : c.internal_name,
-            sortable: false
-          }
-        })
       }
       return []
     }

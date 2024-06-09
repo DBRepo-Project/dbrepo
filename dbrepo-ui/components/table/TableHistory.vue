@@ -54,7 +54,7 @@
 <script>
 import { Bar } from 'vue-chartjs'
 import { format } from 'date-fns'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '~/stores/cache.js'
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale)
@@ -153,23 +153,19 @@ export default {
       this.datetime = this.chartData.labels[idx]
       console.debug('date time', this.datetime, 'idx', idx)
     },
-    async loadHistory () {
-      try {
-        this.loading = true
-        const tableService = useTableService()
-        this.history = await tableService.history(this.table.database_id, this.table.id)
-        // this.chartData.labels = history.map(d => format(new Date(d.timestamp), 'dd.MM.yyyy HH:mm:ss'))
-        // this.chartData.datasets = [{
-        //   // backgroundColor: 'red',
-        //   data: history.map(d => d.total)
-        // }]
-        this.totalChanges = history.length
-        console.debug('history', this.chartData)
-      } catch (err) {
-        this.error = true
-        console.error('failed to load table history', err)
-      }
-      this.loading = false
+    loadHistory () {
+      this.loading = true
+      const tableService = useTableService()
+      tableService.history(this.table.database_id, this.table.id)
+        .then((history) => {
+          this.loading = false
+          this.history = history
+        })
+        .catch(({message}) => {
+          const toast = useToastInstance()
+          toast.error(message)
+          this.loading = false
+        })
     }
   }
 }

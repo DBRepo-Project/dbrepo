@@ -12,14 +12,7 @@ parameters:
     name: "body"
     required: true
     schema:
-      type: "object"
-      properties:
-        name:
-          type: "string"
-          example: "Air Quality"
-        internal_name:
-          type: "string"
-          example: "air_quality_abcd"
+      $ref: '#/components/schemas/DatabaseDto'
 security:
   - bearerAuth: [ ]
   - basicAuth: [ ]

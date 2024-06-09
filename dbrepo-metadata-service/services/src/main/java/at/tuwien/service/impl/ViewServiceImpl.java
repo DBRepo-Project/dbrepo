@@ -105,7 +105,13 @@ public class ViewServiceImpl implements ViewService {
                 .build();
         /* create in data service */
         data.setName(view.getInternalName());
-        final ViewDto dto = dataServiceGateway.createView(database.getId(), data);
+        final ViewDto rawView = dataServiceGateway.createView(database.getId(), data);
+        view.setColumns(rawView.getColumns()
+                .stream()
+                .map(metadataMapper::viewColumnDtoToViewColumn)
+                .toList());
+        view.getColumns()
+                .forEach(column -> column.setView(view));
         database.getViews()
                 .add(view);
         database = databaseRepository.save(database);

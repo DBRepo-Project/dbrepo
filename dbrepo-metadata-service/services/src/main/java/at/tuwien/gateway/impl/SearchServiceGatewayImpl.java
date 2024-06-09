@@ -1,7 +1,6 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.SearchServiceGateway;
@@ -15,9 +14,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.LinkedList;
-import java.util.List;
 
 @Log4j2
 @Service
@@ -40,7 +36,6 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
         final String url = "/api/search/database/" + database.getId();
-        log.debug("update database in search service");
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(
                     metadataMapper.customDatabaseToDatabaseDto(database), headers), DatabaseDto.class);
@@ -53,7 +48,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
             throw new DatabaseNotFoundException("Failed to update database: not found", e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to update database: malformed payload: {}", e.getMessage());
-            throw new SearchServiceException("Failed to update database: malformed payload", e);
+            throw new SearchServiceException("Failed to update database: malformed payload: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update database: response code is not 202");
@@ -66,7 +61,6 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     public void delete(Long databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/search/database/" + databaseId;
-        log.trace("delete to url {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |

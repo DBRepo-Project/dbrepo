@@ -119,7 +119,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     @Test
     public void createTable_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException,
             TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
-            SearchServiceConnectionException, MalformedException {
+            SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
+            SemanticEntityNotFoundException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
@@ -140,7 +141,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     @Test
     public void createTable_nonStandardColumnNames_succeeds() throws ServiceException, ServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
-            SearchServiceException, SearchServiceConnectionException, MalformedException {
+            SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
+            SemanticEntityNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -240,7 +242,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     @Test
     public void create_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
-            SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
+            SemanticEntityNotFoundException {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))

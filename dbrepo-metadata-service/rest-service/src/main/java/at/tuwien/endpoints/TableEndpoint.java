@@ -4,7 +4,6 @@ import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -62,7 +61,7 @@ public class TableEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(UserService userService, TableService tableService, RabbitConfig rabbitMqConfig, 
+    public TableEndpoint(UserService userService, TableService tableService, RabbitConfig rabbitMqConfig,
                          EntityService entityService, BrokerService messageQueueService, MetadataMapper metadataMapper,
                          DatabaseService databaseService, EndpointValidator endpointValidator) {
         this.userService = userService;
@@ -156,19 +155,19 @@ public class TableEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('update-table-statistic') or hasAuthority('admin')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update table statistics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated table statistics successfully"),
-            @ApiResponse(responseCode = "400",
-                    description = "Payload malformed",
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/table in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find database/table in metadata database",
+            @ApiResponse(responseCode = "400",
+                    description = "Failed to map column statistic to known columns",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -184,14 +183,12 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId,
-                                                @NotNull @Valid @RequestBody TableStatisticDto data)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
-        log.debug("endpoint update table statistics, databaseId={}, tableId={}, data.columns.size={}", databaseId,
-                tableId, data.getColumns().size());
+                                                @NotNull @PathVariable("tableId") Long tableId)
+            throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException, ServiceException, ServiceConnectionException {
+        log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
-        tableService.updateStatistics(table, data);
+        tableService.updateStatistics(table);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -344,7 +341,7 @@ public class TableEndpoint {
                                            @NotNull Principal principal) throws NotAllowedException, MalformedException,
             ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);

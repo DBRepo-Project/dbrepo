@@ -3,10 +3,13 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.user.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.AccessService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +26,13 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     @Value("${dbrepo.grant.default.write}")
     private String grantDefaultWrite;
 
+    private MariaDbMapper mariaDbMapper;
+
+    @Autowired
+    public AccessServiceMariaDbImpl(MariaDbMapper mariaDbMapper) {
+        this.mariaDbMapper = mariaDbMapper;
+    }
+
     @Override
     public void create(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access)
             throws SQLException, DatabaseMalformedException {
@@ -30,11 +40,11 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
         final Connection connection = dataSource.getConnection();
         try {
             /* create user if not exists */
-            connection.prepareStatement("CREATE USER IF NOT EXISTS `" + user.getUsername() + "`@`%` IDENTIFIED BY PASSWORD '" + user.getPassword() + "';")
+            connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery(user.getUsername(), user.getPassword()))
                     .execute();
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
-            connection.prepareStatement("GRANT " + grants + " ON *.* TO `" + user.getUsername() + "`@`%`;")
+            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
             /* grant query store */
             connection.prepareStatement("GRANT EXECUTE ON PROCEDURE `store_query` TO `" + user.getUsername() + "`@`%`;")
@@ -54,15 +64,14 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void update(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access)
+    public void update(PrivilegedDatabaseDto database, UserDto user, AccessTypeDto access)
             throws DatabaseMalformedException, SQLException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* grant access */
-            connection.prepareStatement("GRANT SELECT" +
-                            (access != AccessTypeDto.READ ? "CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE" : "") +
-                            " ON *.* TO `" + user.getUsername() + "`@`%`;")
+            final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
+            connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
             /* apply access rights */
             connection.prepareStatement("FLUSH PRIVILEGES;");
@@ -78,7 +87,7 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void delete(PrivilegedDatabaseDto database, PrivilegedUserDto user) throws DatabaseMalformedException,
+    public void delete(PrivilegedDatabaseDto database, UserDto user) throws DatabaseMalformedException,
             SQLException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();

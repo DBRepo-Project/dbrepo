@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from dataclasses import field
 from enum import Enum
 import datetime
@@ -28,7 +27,7 @@ class JwtAuth(BaseModel):
     refresh_expires_in: int
     not_before_policy: int = Field(alias='not-before-policy')
     scope: str
-    session_state: uuid.UUID
+    session_state: str
     token_type: str
 
 
@@ -75,11 +74,11 @@ class UpdateUser(BaseModel):
 class UserBrief(BaseModel):
     id: str
     username: str
-    name: str
-    orcid: str
-    qualified_name: str
-    given_name: str
-    family_name: str
+    name: Optional[str] = None
+    orcid: Optional[str] = None
+    qualified_name: Optional[str] = None
+    given_name: Optional[str] = None
+    family_name: Optional[str] = None
 
 
 class Container(BaseModel):
@@ -118,12 +117,12 @@ class ColumnBrief(BaseModel):
 
 class TableBrief(BaseModel):
     id: int
+    database_id: int
     name: str
-    description: str
-    owner: UserBrief
-    columns: List[ColumnBrief]
+    description: Optional[str]
     internal_name: str
     is_versioned: bool
+    owner: UserBrief
 
 
 class UserAttributes(BaseModel):
@@ -148,16 +147,6 @@ class UpdateUserTheme(BaseModel):
 
 class UpdateUserPassword(BaseModel):
     password: str
-
-
-class UserBrief(BaseModel):
-    id: str
-    username: str
-    name: Optional[str] = None
-    orcid: Optional[str] = None
-    qualified_name: Optional[str] = None
-    given_name: Optional[str] = None
-    family_name: Optional[str] = None
 
 
 class AccessType(str, Enum):
@@ -515,6 +504,8 @@ class CreateTableColumn(BaseModel):
     name: str
     type: ColumnType
     null_allowed: bool
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     index_length: Optional[int] = None
     size: Optional[int] = None
     d: Optional[int] = None
@@ -996,22 +987,44 @@ class Unique(BaseModel):
     columns: List[ColumnMinimal]
 
 
+class ForeignKeyReference(BaseModel):
+    id: int
+    foreign_key: ForeignKeyMinimal
+    column: ColumnMinimal
+    referenced_column: ColumnMinimal
+
+
+class ReferenceType(str, Enum):
+    """
+    Enumeration of reference types.
+    """
+    RESTRICT = "restrict"
+    CASCADE = "cascade"
+    SET_NULL = "set_null"
+    NO_ACTION = "no_action"
+    SET_DEFAULT = "set_default"
+
+
+class ForeignKeyMinimal(BaseModel):
+    id: int
+
+
 class ForeignKey(BaseModel):
     id: int
     name: str
-    columns: List[ColumnMinimal]
+    references: List[ForeignKeyReference]
+    table: TableMinimal
     referenced_table: TableMinimal
-    referenced_columns: List[ColumnMinimal]
-    on_update: Optional[str] = None
-    on_delete: Optional[str] = None
+    on_update: Optional[ReferenceType] = None
+    on_delete: Optional[ReferenceType] = None
 
 
 class CreateForeignKey(BaseModel):
-    columns: List[Column]
-    referenced_table: Table
-    referenced_columns: List[Column]
-    on_update: Optional[str] = None
-    on_delete: Optional[str] = None
+    columns: List[str]
+    referenced_table: str
+    referenced_columns: List[str]
+    on_update: Optional[ReferenceType] = None
+    on_delete: Optional[ReferenceType] = None
 
 
 class PrimaryKey(BaseModel):

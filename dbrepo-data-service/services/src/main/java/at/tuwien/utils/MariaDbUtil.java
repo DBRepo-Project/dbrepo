@@ -9,16 +9,36 @@ public class MariaDbUtil {
     /**
      * https://mariadb.com/kb/en/string-data-types/
      */
-    final static List<ColumnTypeDto> stringDataTypes = List.of(ColumnTypeDto.BINARY,
-            ColumnTypeDto.BLOB,
-            ColumnTypeDto.CHAR,
-            ColumnTypeDto.ENUM,
+    final static List<ColumnTypeDto> stringDataTypes = List.of(
+            ColumnTypeDto.BINARY,
+            ColumnTypeDto.VARBINARY,
+            ColumnTypeDto.TINYBLOB,
             ColumnTypeDto.MEDIUMBLOB,
             ColumnTypeDto.LONGBLOB,
-            ColumnTypeDto.LONGTEXT,
-            ColumnTypeDto.TEXT,
+            ColumnTypeDto.BLOB,
+            ColumnTypeDto.CHAR,
+            ColumnTypeDto.VARCHAR,
+            ColumnTypeDto.ENUM,
+            ColumnTypeDto.SET,
             ColumnTypeDto.TINYTEXT,
-            ColumnTypeDto.SET);
+            ColumnTypeDto.MEDIUMTEXT,
+            ColumnTypeDto.LONGTEXT,
+            ColumnTypeDto.TEXT);
+
+    /**
+     * https://mariadb.com/kb/en/numeric-data-type-overview/
+     */
+    final public static List<ColumnTypeDto> numericDataTypes = List.of(
+            ColumnTypeDto.TINYINT,
+            ColumnTypeDto.BOOL,
+            ColumnTypeDto.SMALLINT,
+            ColumnTypeDto.MEDIUMINT,
+            ColumnTypeDto.INT,
+            ColumnTypeDto.BIGINT,
+            ColumnTypeDto.DECIMAL,
+            ColumnTypeDto.FLOAT,
+            ColumnTypeDto.DOUBLE,
+            ColumnTypeDto.BIT);
 
     /**
      * https://mariadb.com/kb/en/date-and-time-data-types/

@@ -78,7 +78,7 @@
       variant="flat"
       rounded="0"
       tile
-      :title="$t('pages.table.subpages.schema.title')">
+      :title="$t('pages.table.subpages.schema.subtitle')">
       <v-card-text>
         <v-container>
           <ul>
@@ -87,12 +87,7 @@
               (<i v-text="primaryKeysColumns" />)
             </li>
             <li v-for="(foreignKey, i) in table.constraints.foreign_keys" :key="`fk-${i}`">
-              <strong>FOREIGN KEY</strong>
-              <span v-text="foreignKey.name" />
-              (<i v-text="foreignKeyColumns(foreignKey)" />)
-              <strong>REFERENCES</strong>
-              <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" />
-              (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
+              <strong>FOREIGN KEY</strong> <span v-text="foreignKey.name" /> (<i v-text="foreignKeyColumns(foreignKey)" />) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" /> (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong>UNIQUE INDEX</strong>
@@ -262,7 +257,7 @@ export default {
       if (!foreignKey) {
         return null
       }
-      return foreignKey.columns.map(c => c.internal_name).join(',')
+      return foreignKey.references.map(r => r.column.internal_name).join(',')
     },
     foreignKeyReferencedTable (foreignKey) {
       if (!foreignKey) {
@@ -274,7 +269,7 @@ export default {
       if (!foreignKey) {
         return null
       }
-      return foreignKey.referenced_columns.map(c => c.internal_name).join(',')
+      return foreignKey.references.map(r => r.referenced_column.internal_name).join(',')
     },
     uniqueColumns (uniqueConstraint) {
       if (!uniqueConstraint) {

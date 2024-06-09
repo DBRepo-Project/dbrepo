@@ -15,6 +15,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -45,17 +46,29 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, ServiceException {
         final ResponseEntity<ContainerDto> response;
         try {
-            response = restTemplate.exchange("/api/container/" + containerId, HttpMethod.GET, new HttpEntity<>(null),
+            response = restTemplate.exchange("/api/container/" + containerId, HttpMethod.GET, HttpEntity.EMPTY,
                     ContainerDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Failed to find container: {}", e.getMessage());
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to find container with id {}: {}", containerId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find container: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find container: body is null");
-            throw new ContainerNotFoundException("Failed to find container: body is null");
+            log.error("Failed to find container with id {}: {}", containerId, e.getMessage());
+            throw new ContainerNotFoundException("Failed to find container: " + e.getMessage());
+        }
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to find container with id {}: service responded unsuccessful: {}", containerId, response.getStatusCode());
+            throw new ServiceException("Failed to find container: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+            log.error("Failed to find all privileged container headers");
+            throw new ServiceException("Failed to find all privileged container headers");
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to find container with id {}: body is empty", containerId);
+            throw new ServiceException("Failed to find container with id " + containerId + ": body is empty");
         }
         final PrivilegedContainerDto container = metadataMapper.containerDtoToPrivilegedContainerDto(response.getBody());
         container.setUsername(response.getHeaders().get("X-Username").get(0));
@@ -64,89 +77,83 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public List<PrivilegedDatabaseDto> getDatabases() throws RemoteUnavailableException {
-        final ResponseEntity<PrivilegedDatabaseDto[]> response;
-        try {
-            response = restTemplate.exchange("/api/database", HttpMethod.GET, new HttpEntity<>(null),
-                    PrivilegedDatabaseDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Failed to find databases: {}", e.getMessage());
-            throw new RemoteUnavailableException("Failed to find databases: " + e.getMessage(), e);
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to find databases: body is null");
-            throw new RemoteUnavailableException("Failed to find databases: body is null");
-        }
-        return List.of(response.getBody());
-    }
-
-    @Override
-    public void updateTableStatistics(Long databaseId, Long tableId, TableStatisticDto data)
-            throws RemoteUnavailableException {
-        final ResponseEntity<Void> response;
-        try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/table/" + tableId, HttpMethod.PUT,
-                    new HttpEntity<>(data), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Failed to update table statistics: {}", e.getMessage());
-            throw new RemoteUnavailableException("Failed to update table statistics: " + e.getMessage(), e);
-        }
-        if (response.getStatusCode() != HttpStatus.ACCEPTED) {
-            log.error("Failed to update table statistics: unexpected status code");
-            throw new RemoteUnavailableException("Failed to update table statistics: unexpected status code");
-        }
-    }
-
-    @Override
-    public PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException {
+    public PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
         final ResponseEntity<PrivilegedDatabaseDto> response;
         try {
-            response = restTemplate.exchange("/api/database/" + id, HttpMethod.GET, new HttpEntity<>(null),
+            response = restTemplate.exchange("/api/database/" + id, HttpMethod.GET, HttpEntity.EMPTY,
                     PrivilegedDatabaseDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database with id {}: {}", id, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find database with id " + id + ": " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find database with id {}: body is null", id);
-            throw new DatabaseNotFoundException("Failed to find database id " + id + ": body is null", e);
+            throw new DatabaseNotFoundException("Failed to find database: body is null", e);
+        }
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
+            throw new ServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+            log.error("Failed to find all privileged database headers");
+            throw new ServiceException("Failed to find all privileged database headers");
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to find database with id {}: body is empty", id);
+            throw new ServiceException("Failed to find database with id " + id + ": body is empty");
         }
         final PrivilegedDatabaseDto database = response.getBody();
         database.getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
-        log.debug("found privileged database username={}, password={}", database.getContainer().getUsername(),
-                database.getContainer().getPassword().isEmpty() ? "(empty)" : "(hidden)");
+        log.debug("found privileged database username={}", database.getContainer().getUsername());
         return database;
     }
 
     @Override
     public PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, ServiceException {
         final ResponseEntity<PrivilegedDatabaseDto[]> response;
         try {
-            response = restTemplate.exchange("/api/database/", HttpMethod.GET, new HttpEntity<>(null), PrivilegedDatabaseDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange("/api/database/", HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database with internal name {}: {}", internalName, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find database with internal name " + internalName + ": " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
         }
-        if (response.getBody() == null || response.getBody().length != 1) {
-            log.error("Failed to find database with internal name {}: body is null", internalName);
-            throw new DatabaseNotFoundException("Failed to find database with internal name " + internalName + ": body is null");
+        if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
+            log.error("Failed to find database with internal name {}: service responded unsuccessful: {}", internalName, response.getStatusCode());
+            throw new ServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (response.getBody().length != 1) {
+            log.error("Failed to find database with internal name {}: body is empty", internalName);
+            throw new DatabaseNotFoundException("Failed to find database: body is empty");
         }
         return response.getBody()[0];
     }
 
     @Override
-    public PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException, RemoteUnavailableException {
+    public PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException,
+            RemoteUnavailableException, ServiceException {
         final ResponseEntity<TableDto> response;
         try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/table/" + id, HttpMethod.GET, new HttpEntity<>(null), TableDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange("/api/database/" + databaseId + "/table/" + id, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find table with id {}: {}", id, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find table with id " + id + ": " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to find table: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to find table with id {}: not found: {}", id, e.getMessage());
+            throw new TableNotFoundException("Failed to find table: " + e.getMessage());
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
+            throw new ServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port"))) {
+            log.error("Failed to find all privileged table headers");
+            throw new ServiceException("Failed to find all privileged table headers");
         }
         if (response.getBody() == null) {
-            log.error("Failed to find table with id {}: body is null", id);
-            throw new TableNotFoundException("Failed to find table with id " + id + ": body is null");
+            log.error("Failed to find table with id {}: body is empty", id);
+            throw new ServiceException("Failed to find table with id " + id + ": body is empty");
         }
         final PrivilegedTableDto table = metadataMapper.tableDtoToPrivilegedTableDto(response.getBody());
         table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
@@ -157,24 +164,34 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         table.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
         table.getDatabase().getContainer().setSidecarHost(response.getHeaders().get("X-Sidecar-Host").get(0));
         table.getDatabase().getContainer().setSidecarPort(Integer.parseInt(response.getHeaders().get("X-Sidecar-Port").get(0)));
-        log.debug("found privileged database username={}, password={}",
-                table.getDatabase().getContainer().getUsername(),
-                table.getDatabase().getContainer().getPassword().isEmpty() ? "(empty)" : "(hidden)");
+        log.debug("found privileged database username={}", table.getDatabase().getContainer().getUsername());
         return table;
     }
 
     @Override
-    public PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException, ViewNotFoundException {
+    public PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException,
+            ViewNotFoundException, ServiceException {
         final ResponseEntity<ViewDto> response;
         try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/view/" + id, HttpMethod.GET, new HttpEntity<>(null), ViewDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange("/api/database/" + databaseId + "/view/" + id, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find view with id {}: {}", id, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find view with id " + id + ": " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to find view: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to find view with id {}: not found: {}", id, e.getMessage());
+            throw new ViewNotFoundException("Failed to find view: " + e.getMessage());
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
+            throw new ServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database"))) {
+            log.error("Failed to find all privileged view headers");
+            throw new ServiceException("Failed to find all privileged view headers");
         }
         if (response.getBody() == null) {
-            log.error("Failed to find view with id {}: body is null", id);
-            throw new ViewNotFoundException("Failed to find view with id " + id + ": body is null");
+            log.error("Failed to find view with id {}: body is empty", id);
+            throw new ServiceException("Failed to find view with id " + id + ": body is empty");
         }
         final PrivilegedViewDto table = metadataMapper.viewDtoToPrivilegedViewDto(response.getBody());
         table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
@@ -187,101 +204,128 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public PrivilegedUserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException {
-        final ResponseEntity<PrivilegedUserDto> response;
+    public UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
+            ServiceException {
+        final ResponseEntity<UserDto> response;
         try {
-            response = restTemplate.exchange("/api/user/" + userId, HttpMethod.GET, new HttpEntity<>(null), PrivilegedUserDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange("/api/user/" + userId, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find user with id {}: {}", userId, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find user with id " + userId + ": " + e.getMessage(), e);
+            throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
+            throw new UserNotFoundException("Failed to find user: " + e.getMessage());
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
+            throw new ServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
-            log.error("Failed to find user: body is null");
-            throw new UserNotFoundException("Failed to find user: body is null");
+            log.error("Failed to find user with id {}: body is empty", userId);
+            throw new ServiceException("Failed to find user with id " + userId + ": body is empty");
         }
         return response.getBody();
+    }
+
+    @Override
+    public PrivilegedUserDto getPrivilegedUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
+            ServiceException {
+        final ResponseEntity<UserDto> response;
+        try {
+            response = restTemplate.exchange("/api/user/" + userId, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to find user with id {}: {}", userId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
+            throw new UserNotFoundException("Failed to find user: " + e.getMessage());
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
+            throw new ServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
+        }
+        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+            log.error("Failed to find all privileged user headers");
+            throw new ServiceException("Failed to find all privileged user headers");
+        }
+        if (response.getBody() == null) {
+            log.error("Failed to find user with id {}: body is empty", userId);
+            throw new ServiceException("Failed to find user with id " + userId + ": body is empty");
+        }
+        final PrivilegedUserDto user = metadataMapper.userDtoToPrivilegedUserDto(response.getBody());
+        user.setUsername(response.getHeaders().get("X-Username").get(0));
+        user.setPassword(response.getHeaders().get("X-Password").get(0));
+        return user;
     }
 
     @Override
     public DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
         try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/access/" + userId, HttpMethod.GET, new HttpEntity<>(null), DatabaseAccessDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange("/api/database/" + databaseId + "/access/" + userId, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database access for user with id {}: {}", userId, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find database access", e);
-        } catch (HttpClientErrorException.Forbidden e) {
+            throw new RemoteUnavailableException("Failed to find database access: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.Forbidden | HttpClientErrorException.NotFound e) {
             log.error("Failed to find database access for user with id {}: foreign user: {}", userId, e.getMessage());
-            throw new NotAllowedException("Failed to find database access: foreign user", e);
-        } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find database access for user with id {}: missing access: {}", userId, e.getMessage());
-            throw new NotAllowedException("Failed to find database access: missing access", e);
+            throw new NotAllowedException("Failed to find database access: foreign user: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find database access for user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
+            throw new ServiceException("Failed to find database access: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
-            log.error("Failed to find database access: body is null");
-            throw new NotAllowedException("Failed to find database access: body is null");
+            log.error("Failed to find database access: body is empty");
+            throw new ServiceException("Failed to find database access: body is empty");
         }
         return response.getBody();
     }
 
     @Override
-    public List<IdentifierDto> getIdentifiers(Long databaseId, Long subsetId) throws RemoteUnavailableException,
-            NotAllowedException {
+    public List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws ServiceException,
+            RemoteUnavailableException, DatabaseNotFoundException {
         final ResponseEntity<IdentifierDto[]> response;
-        final String url = "/api/identifier?dbid=" + databaseId + "&qid=" + subsetId;
+        final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
         log.trace("mapped url: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), IdentifierDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, IdentifierDto[].class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find identifiers for database with id {} and subset with id {}: {}", databaseId, subsetId, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find identifiers", e);
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to find identifiers: body is null");
-            throw new NotAllowedException("Failed to find identifiers: body is null");
-        }
-        return List.of(response.getBody());
-    }
-
-    @Override
-    public List<IdentifierDto> getIdentifiers(Long databaseId) throws RemoteUnavailableException,
-            NotAllowedException {
-        final ResponseEntity<IdentifierDto[]> response;
-        final String url = "/api/identifier?dbid=" + databaseId;
-        log.trace("mapped url: {}", url);
-        try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), IdentifierDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Failed to find identifiers for database with id {}: {}", databaseId, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find identifiers", e);
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to find identifiers: body is null");
-            throw new NotAllowedException("Failed to find identifiers: body is null");
-        }
-        return List.of(response.getBody());
-    }
-
-    @Override
-    public UserDto getUser(UUID userId) throws RemoteUnavailableException, NotAllowedException, UserNotFoundException {
-        final ResponseEntity<UserDto> response;
-        final String url = "/api/user/" + userId;
-        log.trace("mapped url: {}", url);
-        try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null), UserDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Failed to find user with id {}: {}", userId, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find user", e);
+            throw new RemoteUnavailableException("Failed to find identifiers: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
-            throw new UserNotFoundException("Failed to find user: not found", e);
+            log.error("Failed to find identifiers for database with id {} and subset with id {}: foreign user: {}", databaseId, subsetId, e.getMessage());
+            throw new DatabaseNotFoundException("Failed to find identifiers: foreign user: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find identifiers for database with id {} and subset with id {}: service responded unsuccessful: {}", databaseId, subsetId, response.getStatusCode());
+            throw new ServiceException("Failed to find identifiers for database: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to find identifiers: body is null");
-            throw new NotAllowedException("Failed to find identifiers: body is null");
+            throw new ServiceException("Failed to find identifiers: body is null");
         }
-        return response.getBody();
+        return List.of(response.getBody());
+    }
+
+    @Override
+    public void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, ServiceException,
+            RemoteUnavailableException {
+        final ResponseEntity<Void> response;
+        final String url = "/api/database/" + databaseId + "/table/" + tableId;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.PUT, HttpEntity.EMPTY, Void.class);
+        } catch (ResourceAccessException | HttpServerErrorException e) {
+            log.error("Failed to update table statistic for table with id {}: {}", tableId, e.getMessage());
+            throw new RemoteUnavailableException("Failed to update table statistic: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to update table statistic for table with id {}: foreign user: {}", tableId, e.getMessage());
+            throw new TableNotFoundException("Failed to update table statistic: foreign user: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+            log.error("Failed to update table statistic for table with id {}: service responded unsuccessful: {}", tableId, response.getStatusCode());
+            throw new ServiceException("Failed to update table statistic for database: service responded unsuccessful: " + response.getStatusCode());
+        }
     }
 
 }

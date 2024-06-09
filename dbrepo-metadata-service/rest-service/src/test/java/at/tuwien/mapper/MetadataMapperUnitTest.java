@@ -152,7 +152,7 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void databaseToDatabaseDto_succeeds() {
+    public void customDatabaseToDatabaseDto_succeeds() {
 
         /* test */
         final DatabaseDto response = metadataMapper.customDatabaseToDatabaseDto(DATABASE_1);
@@ -289,6 +289,11 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         final ForeignKeyReferenceDto table1fkr = table1fk.getReferences().get(0);
         assertEquals(1L, table1fkr.getId());
         assertEquals(TABLE_2_COLUMNS_DTO.get(2).getId(), table1fkr.getColumn().getId());
+        assertEquals(TABLE_2_COLUMNS_DTO.get(2).getTable().getId(), table1fkr.getColumn().getTableId());
+        assertEquals(TABLE_2_COLUMNS_DTO.get(2).getDatabaseId(), table1fkr.getColumn().getDatabaseId());
+        assertEquals(TABLE_1_COLUMNS_DTO.get(0).getDatabaseId(), table1fkr.getReferencedColumn().getId());
+        assertEquals(TABLE_1_COLUMNS_DTO.get(0).getDatabaseId(), table1fkr.getReferencedColumn().getTableId());
+        assertEquals(TABLE_1_COLUMNS_DTO.get(0).getDatabaseId(), table1fkr.getReferencedColumn().getDatabaseId());
         assertEquals(1, table1.getConstraints().getPrimaryKey().size());
         final PrimaryKeyDto table1pk = new ArrayList<>(table1.getConstraints().getPrimaryKey()).get(0);
         assertEquals(2L, table1pk.getId());

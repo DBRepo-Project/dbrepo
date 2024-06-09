@@ -1,7 +1,10 @@
 package at.tuwien.service;
 
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -14,12 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -43,6 +50,12 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
     @Autowired
     private ViewService viewService;
 
+    @MockBean
+    private DataServiceGateway dataServiceGateway;
+
+    @MockBean
+    private SearchServiceGateway searchServiceGateway;
+
     @BeforeEach
     public void beforeEach() {
         genesis();
@@ -63,6 +76,21 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());
         assertEquals(VIEW_1_COLUMNS.size(), response.getColumns().size());
+    }
+
+    @Test
+    public void delete_succeeds() throws SearchServiceException, ServiceException, ServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceConnectionException, ViewNotFoundException {
+
+        /* mock */
+        doNothing()
+                .when(dataServiceGateway)
+                .deleteView(DATABASE_1_ID, VIEW_1_ID);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        viewService.delete(VIEW_1);
     }
 
 }
