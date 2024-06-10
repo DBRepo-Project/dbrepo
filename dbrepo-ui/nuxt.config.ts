@@ -127,7 +127,7 @@ export default defineNuxtConfig({
     storage: 'localStorage'
   },
   i18n: {
-    lazy: true,
+    lazy: false,
     langDir: 'locales',
     strategy: 'no_prefix',
     defaultLocale: 'de',

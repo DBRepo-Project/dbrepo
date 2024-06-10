@@ -60,7 +60,7 @@
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
         <commons-io.version>2.15.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
@@ -266,16 +266,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>at/tuwien/mapper/**/*</exclude>
-                        <exclude>at/tuwien/exception/**/*</exclude>
-                        <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>at/tuwien/auth/**/*</exclude>
-                        <exclude>at/tuwien/handlers/**/*</exclude>
-                        <exclude>**/DbrepoDataServiceApplication.class</exclude>
-                    </excludes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>

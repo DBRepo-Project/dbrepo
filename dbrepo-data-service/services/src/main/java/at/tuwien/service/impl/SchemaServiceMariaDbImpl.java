@@ -100,6 +100,7 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                 }
             }
             table.setTdbid(database.getId());
+            database.getCreator().getAttributes().setMariadbPassword(null);
             table.setCreator(database.getCreator());
             table.setCreatedBy(database.getCreator().getId());
             final TableDto tmpTable = table;

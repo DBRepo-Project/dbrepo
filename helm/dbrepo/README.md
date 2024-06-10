@@ -145,6 +145,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                          | Description                                           | Value                           |
 | ----------------------------- | ----------------------------------------------------- | ------------------------------- |
 | `analyseservice.enabled`      | Enable the Broker Service.                            | `true`                          |
+| `analyseservice.endpoint`     | The url of the endpoint.                              | `http://analyse-service`        |
 | `analyseservice.s3.endpoint`  | The S3-capable endpoint the microservice connects to. | `http://storageservice-s3:9000` |
 | `analyseservice.replicaCount` | The number of replicas.                               | `2`                             |
 
@@ -153,6 +154,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                                       | Description                                                           | Value                           |
 | ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------- |
 | `metadataservice.enabled`                  | Enable the Metadata Service.                                          | `true`                          |
+| `metadataservice.endpoint`                 | The Metadata Service endpoint.                                        | `http://metadata-service`       |
 | `metadataservice.admin.email`              | The OAI-PMH exposed admin e-mail.                                     | `noreply@example.com`           |
 | `metadataservice.deletedRecord`            | The OAI-PMH exposed delete policy.                                    | `permanent`                     |
 | `metadataservice.repositoryName`           | The OAI-PMH exposed repository name.                                  | `Database Repository`           |

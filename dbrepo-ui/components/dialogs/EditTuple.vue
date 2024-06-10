@@ -280,12 +280,14 @@ export default {
       this.loading = true
       tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })
         .then(() => {
-          this.$toast.success(this.$t('success.data.update'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.data.update'))
           this.$emit('close', { success: true })
           this.loading = false
         })
         .catch(({message}) => {
-          this.$toast.error(message)
+          const toast = useToastInstance()
+          toast.error(message)
           this.loading = false
         })
         .finally(() => {
@@ -308,12 +310,14 @@ export default {
       this.loading = true
       tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple })
         .then(() => {
-          this.$toast.success(this.$t('success.data.add'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.data.add'))
           this.$emit('close', { success: true })
           this.loading = false
         })
         .catch(({message}) => {
-            this.$toast.error(message)
+          const toast = useToastInstance()
+          toast.error(message)
           this.loading = false
         })
         .finally(() => {
@@ -321,7 +325,8 @@ export default {
         })
     },
     onUpload ({column, s3key}) {
-      this.$toast.success(this.$t('success.upload.blob'))
+      const toast = useToastInstance()
+      toast.success(this.$t('success.upload.blob'))
       this.tuple[column.internal_name] = s3key
     }
   }

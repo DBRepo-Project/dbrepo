@@ -30,6 +30,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.dataService}")
     private String dataEndpoint;
 
+    @Value("${dbrepo.endpoints.analyseService}")
+    private String analyseEndpoint;
+
     @Value("${dbrepo.endpoints.searchService}")
     private String searchEndpoint;
 
@@ -54,6 +57,7 @@ public class GatewayConfig {
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
+        log.debug("add basic authentication for broker service: username={}, password=(hidden)", brokerUsername);
         restTemplate.getInterceptors()
                 .addAll(List.of(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword),
                         clientHttpRequestInterceptor()));
@@ -64,7 +68,18 @@ public class GatewayConfig {
     public RestTemplate dataServiceRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataEndpoint));
-        log.debug("add basic authentication for internal data service: username={}, password=(hidden)", adminUsername);
+        log.debug("add basic authentication for data service: username={}, password=(hidden)", adminUsername);
+        restTemplate.getInterceptors()
+                .addAll(List.of(new BasicAuthenticationInterceptor(adminUsername, adminPassword),
+                        clientHttpRequestInterceptor()));
+        return restTemplate;
+    }
+
+    @Bean("analyseServiceRestTemplate")
+    public RestTemplate analyseServiceRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(analyseEndpoint));
+        log.debug("add basic authentication for analyse service: username={}, password=(hidden)", adminUsername);
         restTemplate.getInterceptors()
                 .addAll(List.of(new BasicAuthenticationInterceptor(adminUsername, adminPassword),
                         clientHttpRequestInterceptor()));
@@ -75,7 +90,7 @@ public class GatewayConfig {
     public RestTemplate searchServiceRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(searchEndpoint));
-        log.debug("add basic authentication for internal search service: username={}, password=(hidden)", adminUsername);
+        log.debug("add basic authentication for search service: username={}, password=(hidden)", adminUsername);
         restTemplate.getInterceptors()
                 .addAll(List.of(new BasicAuthenticationInterceptor(adminUsername, adminPassword),
                         clientHttpRequestInterceptor()));

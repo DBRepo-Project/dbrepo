@@ -27,13 +27,7 @@ parameters:
     name: "body"
     required: true
     schema:
-      type: "object"
-      properties:
-        search_term:
-          type: "string"
-          example: "air quality"
-        field_value_pairs:
-          type: "object"
+      $ref: '#/components/schemas/SearchRequestDto'
 responses:
   200:
     description: OK, contains the elements formatted as an array of JSON arrays

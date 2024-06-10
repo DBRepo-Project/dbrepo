@@ -11,7 +11,6 @@ import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.RabbitConfig;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MariaDbMapper;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SchemaService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -29,10 +28,12 @@ import java.sql.SQLException;
 public class DatabaseServiceMariaDbImpl extends HibernateConnector implements DatabaseService {
 
     private final RabbitConfig rabbitConfig;
+    private final MariaDbMapper mariaDbMapper;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(RabbitConfig rabbitConfig) {
+    public DatabaseServiceMariaDbImpl(RabbitConfig rabbitConfig, MariaDbMapper mariaDbMapper) {
         this.rabbitConfig = rabbitConfig;
+        this.mariaDbMapper = mariaDbMapper;
     }
 
     @Override
@@ -42,7 +43,7 @@ public class DatabaseServiceMariaDbImpl extends HibernateConnector implements Da
         final Connection connection = dataSource.getConnection();
         try {
             /* create database if not exists */
-            connection.prepareStatement("CREATE DATABASE IF NOT EXISTS `" + data.getInternalName() + "`;")
+            connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
                     .execute();
             connection.commit();
         } catch (SQLException e) {
@@ -76,7 +77,7 @@ public class DatabaseServiceMariaDbImpl extends HibernateConnector implements Da
         final Connection connection = dataSource.getConnection();
         try {
             /* update user password */
-            connection.prepareStatement("SET PASSWORD FOR `" + data.getUsername() + "`@`%` = '" + data.getPassword() + "';")
+            connection.prepareStatement(mariaDbMapper.databaseSetPasswordQuery(data.getUsername(), data.getPassword()))
                     .execute();
             connection.commit();
         } catch (SQLException e) {

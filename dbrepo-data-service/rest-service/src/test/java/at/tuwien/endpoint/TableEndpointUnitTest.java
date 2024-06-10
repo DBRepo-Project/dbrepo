@@ -7,7 +7,6 @@ import at.tuwien.api.database.table.*;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.service.AnalyseService;
 import at.tuwien.service.TableService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -45,9 +44,6 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private TableService tableService;
 
     @MockBean
-    private AnalyseService analyseService;
-
-    @MockBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @BeforeEach
@@ -59,7 +55,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_succeeds() throws DatabaseUnavailableException, TableMalformedException,
             DatabaseNotFoundException, TableExistsException, RemoteUnavailableException, SQLException,
-            TableNotFoundException, QueryMalformedException {
+            TableNotFoundException, QueryMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -84,7 +80,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException {
+    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -100,7 +97,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void delete_succeeds() throws RemoteUnavailableException, DatabaseUnavailableException,
-            TableNotFoundException, QueryMalformedException, SQLException {
+            TableNotFoundException, QueryMalformedException, SQLException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
@@ -126,7 +123,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void delete_tableNotFound_fails() throws RemoteUnavailableException, TableNotFoundException {
+    public void delete_tableNotFound_fails() throws RemoteUnavailableException, TableNotFoundException,
+            ServiceException {
 
         /* mock */
         doThrow(TableNotFoundException.class)
@@ -142,7 +140,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void getData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, TableMalformedException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException {
+            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
@@ -166,7 +164,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getData_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void getData_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(TableNotFoundException.class)
@@ -182,7 +181,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void createTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
-            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException, SQLException {
+            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
+            SQLException, StorageUnavailableException, StorageNotFoundException, ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -198,14 +198,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .createTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
@@ -221,13 +219,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void createTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void createTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -242,14 +241,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void createTuple_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -265,14 +264,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void createTuple_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException {
+            NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
+            StorageUnavailableException, StorageNotFoundException, ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -287,13 +287,13 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void createTuple_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -309,14 +309,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void createTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException {
+            NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
+            StorageUnavailableException, StorageNotFoundException, ServiceException {
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 7L);
@@ -331,13 +332,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.createTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        tableEndpoint.insertRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
-            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException, SQLException {
+            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
+            SQLException, ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -356,14 +358,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .updateTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -382,13 +382,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void updateTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void updateTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -406,14 +407,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -432,7 +433,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -440,7 +441,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_writeOwnAccess_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            SQLException {
+            SQLException, ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -459,21 +460,19 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .updateTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -492,7 +491,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -500,7 +499,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void updateTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            SQLException {
+            SQLException, ServiceException {
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -519,21 +518,20 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .updateTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.updateTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.updateRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
-            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException, SQLException {
+            TableMalformedException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
+            SQLException, ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -548,14 +546,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .deleteTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -570,13 +566,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table-data"})
-    public void deleteTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void deleteTuple_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -590,14 +587,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -612,7 +609,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -620,7 +617,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, TableMalformedException, SQLException, QueryMalformedException,
-            DatabaseUnavailableException {
+            DatabaseUnavailableException, ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -635,21 +632,19 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .deleteTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -664,7 +659,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -672,7 +667,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table-data"})
     public void deleteTuple_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            SQLException {
+            SQLException, ServiceException {
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put(COLUMN_8_1_INTERNAL_NAME, 6L);
@@ -687,36 +682,35 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .deleteTuple(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.deleteTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.deleteRawTuple(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     @WithAnonymousUser
     public void getHistory_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
-            RemoteUnavailableException, SQLException, NotAllowedException {
+            RemoteUnavailableException, SQLException, NotAllowedException, ServiceException, PaginationException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.history(TABLE_8_PRIVILEGED_DTO))
+        when(tableService.history(TABLE_8_PRIVILEGED_DTO, null))
                 .thenReturn(List.of());
 
         /* test */
-        final ResponseEntity<List<TableHistoryDto>> response = tableEndpoint.getHistory(DATABASE_3_ID, TABLE_8_ID, null);
+        final ResponseEntity<List<TableHistoryDto>> response = tableEndpoint.getHistory(DATABASE_3_ID, TABLE_8_ID, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     @WithAnonymousUser
-    public void getHistory_privateNoRole_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void getHistory_privateNoRole_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
@@ -724,14 +718,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, null);
+            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, null, null);
         });
     }
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void getHistory_privateNoAccess_fails() throws NotAllowedException, RemoteUnavailableException,
-            TableNotFoundException {
+            TableNotFoundException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
@@ -742,13 +736,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, USER_4_PRINCIPAL);
+            tableEndpoint.getHistory(DATABASE_1_ID, TABLE_1_ID, null, USER_4_PRINCIPAL);
         });
     }
 
     @Test
     @WithAnonymousUser
-    public void getHistory_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void getHistory_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(TableNotFoundException.class)
@@ -757,7 +752,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.getHistory(DATABASE_3_ID, TABLE_8_ID, null);
+            tableEndpoint.getHistory(DATABASE_3_ID, TABLE_8_ID, null, null);
         });
     }
 
@@ -765,7 +760,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void exportData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, NotAllowedException,
             StorageUnavailableException, QueryMalformedException, SidecarExportException, RemoteUnavailableException,
-            StorageNotFoundException, SQLException {
+            StorageNotFoundException, SQLException, ServiceException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -786,7 +781,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void exportData_privateNoAccess_fails() throws TableNotFoundException, NotAllowedException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
@@ -806,7 +801,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importData_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
             SidecarImportException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            StorageNotFoundException, SQLException {
+            StorageNotFoundException, SQLException, ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -821,14 +816,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(tableService)
                 .importDataset(TABLE_8_PRIVILEGED_DTO, request);
-        when(analyseService.analyseTable(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_STATISTIC_DTO);
         doNothing()
                 .when(metadataServiceGateway)
-                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID, TABLE_8_STATISTIC_DTO);
+                .updateTableStatistics(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        final ResponseEntity<Void> response = tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        final ResponseEntity<Void> response = tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
@@ -843,13 +836,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_4_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void importData_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException {
+    public void importData_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
+            ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -863,14 +857,14 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importData_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -885,7 +879,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -893,7 +887,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importData_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException {
+            StorageNotFoundException, ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -907,13 +901,13 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importData_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -928,7 +922,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -936,7 +930,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importData_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException {
+            StorageNotFoundException, ServiceException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .skipLines(1L)
                 .lineTermination("\\n")
@@ -950,7 +944,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
-        tableEndpoint.importData(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
+        tableEndpoint.importDataset(DATABASE_3_ID, TABLE_8_ID, request, USER_1_PRINCIPAL);
     }
 
 }

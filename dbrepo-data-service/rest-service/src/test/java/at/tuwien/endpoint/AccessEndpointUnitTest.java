@@ -41,12 +41,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException {
+            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_4_ID))
+        when(metadataServiceGateway.getPrivilegedUserById(USER_4_ID))
                 .thenReturn(USER_4_PRIVILEGED_DTO);
 
         /* test */
@@ -56,12 +56,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_alreadyAccess_fails() throws UserNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
 
         /* test */
@@ -72,7 +72,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException {
+    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -88,18 +89,18 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_userNotFound_fails() throws UserNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(metadataServiceGateway)
-                .getUserById(USER_1_ID);
+                .getPrivilegedUserById(USER_4_ID);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            accessEndpoint.create(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+            accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
         });
     }
 
@@ -116,12 +117,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void update_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseMalformedException {
+            NotAllowedException, QueryMalformedException, DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
 
         /* test */
@@ -140,7 +141,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void update_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException {
+    public void update_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -156,7 +158,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void update_userNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException {
+            UserNotFoundException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -174,12 +176,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void revoke_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException {
+            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
+        when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
 
         /* test */
@@ -198,7 +200,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void revoke_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException {
+    public void revoke_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -214,7 +217,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void revoke_userNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException {
+            UserNotFoundException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))

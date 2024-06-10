@@ -117,12 +117,12 @@ public class ColumnDto {
     private UnitDto unit;
 
     @Size(max = 2048)
-    @Schema(example = "Formatted as YYYY-MM-dd")
+    @Schema(example = "Column comment")
     private String description;
 
     @ToString.Exclude
     @JsonIgnore
-    private transient TableDto table;
+    private TableDto table;
 
     @ToString.Exclude
     @JsonIgnore

@@ -51,7 +51,7 @@ logging:
 dbrepo:
   repository-name: "${REPOSITORY_NAME:Database Repository}"
   base-url: "${BASE_URL:http://localhost}"
-  admin-email: "${ADMIN_MAIL:noreply@example.com}"
+  admin-email: "${ADMIN_EMAIL:noreply@example.com}"
   deleted-record: "${DELETED_RECORD:persistent}"
   granularity: "${GRANULARITY:YYYY-MM-DDThh:mm:ssZ}"
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
@@ -66,11 +66,12 @@ dbrepo:
     username: "${ADMIN_USERNAME:admin}"
     password: "${ADMIN_PASSWORD:admin}"
   endpoints:
-    searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
+    searchService: "${SEARCH_SERVICE_ENDPOINT:http://gateway-service}"
+    analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://gateway-service}"
     dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
     brokerService: "${BROKER_SERVICE_ENDPOINT:http://gateway-service/admin/broker}"
-    authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
-    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://gateway-service/api/auth}"
+    storageService: "${S3_ENDPOINT:http://gateway-service/api/storage}"
   pid:
     base: "${PID_BASE:http://localhost/pid/}"
   jwt:

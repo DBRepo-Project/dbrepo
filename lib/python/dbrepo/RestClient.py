@@ -48,7 +48,7 @@ class RestClient:
 
     def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
                  force_auth: bool = False, stream: bool = False) -> requests.Response:
-        if force_auth and (self.username is None or self.password is None):
+        if force_auth and (self.username is None and self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
         url = f'{self.endpoint}{url}'
         logging.debug(f'method: {method}')
@@ -60,15 +60,20 @@ class RestClient:
         logging.debug(f'secure: {self.secure}')
         if headers is not None:
             logging.debug(f'headers: {headers}')
+        else:
+            headers = dict()
+            logging.debug(f'no headers set')
         if payload is not None:
-            logging.debug(f'payload: {payload}')
-            payload = payload.model_dump_json()
-        if self.username is not None and self.password is not None:
-            logging.debug(f'username: {self.username}, password: (hidden)')
-            return requests.request(method=method, url=url, auth=(self.username, self.password), verify=self.secure,
-                                    json=payload, headers=headers, params=params, stream=stream)
-        return requests.request(method=method, url=url, verify=self.secure, json=payload, headers=headers,
-                                params=params, stream=stream)
+            payload = payload.model_dump()
+        auth = None
+        if self.username is None and self.password is not None:
+            headers["Authorization"] = f"Bearer {self.password}"
+            logging.debug(f'configured for oidc/bearer auth')
+        elif self.username is not None and self.password is not None:
+            auth = (self.username, self.password)
+            logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
+        return requests.request(method=method, url=url, auth=auth, verify=self.secure,
+                                json=payload, headers=headers, params=params, stream=stream)
 
     def upload(self, file_path: str) -> str:
         """
@@ -86,6 +91,31 @@ class RestClient:
             raise UploadError(f'Failed to upload the file to {self.endpoint}')
         return filename
 
+    def get_jwt_auth(self, username: str = None, password: str = None) -> JwtAuth:
+        """
+        Obtains a JWT auth object from the Auth Service containing e.g. the access token and refresh token.
+
+        :param username: The username used to authenticate with the Auth Service. Optional. Default: username from the `RestClient` constructor.
+        :param password: The password used to authenticate with the Auth Service. Optional. Default: password from the `RestClient` constructor.
+
+        :returns: JWT auth object from the Auth Service, if successful.
+
+        :raises ForbiddenError: If something went wrong with the authentication.
+        :raises ResponseCodeError: If something went wrong with the authentication.
+        """
+        if username is None:
+            username = self.username
+        if password is None:
+            password = self.password
+        url = f'{self.endpoint}/api/user/token'
+        response = requests.post(url=url, json=dict({"username": username, "password": password}))
+        if response.status_code == 202:
+            body = response.json()
+            return JwtAuth.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to get JWT auth')
+        raise ResponseCodeError(f'Failed to get JWT auth: response code: {response.status_code} is not 202 (ACCEPTED)')
+
     def whoami(self) -> str | None:
         """
         Print the username.
@@ -98,7 +128,7 @@ class RestClient:
         logging.info(f"No username set!")
         return None
 
-    def get_users(self) -> List[User]:
+    def get_users(self) -> List[UserBrief]:
         """
         Get all users.
 
@@ -110,7 +140,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[User]).validate_python(body)
+            return TypeAdapter(List[UserBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find users: response code: {response.status_code} is not 200 (OK)')
 
     def get_user(self, user_id: str) -> User:
@@ -165,12 +195,14 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to create user: response code: {response.status_code} is not 201 (CREATED)')
 
-    def update_user(self, user_id: str, firstname: str = None, lastname: str = None, affiliation: str = None,
-                    orcid: str = None) -> User:
+    def update_user(self, user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None,
+                    affiliation: str = None, orcid: str = None) -> User:
         """
         Updates a user with given user id.
 
         :param user_id: The user id of the user that should be updated.
+        :param theme: The user theme. One of "light", "dark", "light-contrast", "dark-contrast".
+        :param language: The user language localization. One of "en", "de".
         :param firstname: The updated given name. Optional.
         :param lastname: The updated family name. Optional.
         :param affiliation: The updated affiliation identifier. Optional.
@@ -184,8 +216,8 @@ class RestClient:
         """
         url = f'/api/user/{user_id}'
         response = self._wrapper(method="put", url=url, force_auth=True,
-                                 payload=UpdateUser(firstname=firstname, lastname=lastname, affiliation=affiliation,
-                                                    orcid=orcid))
+                                 payload=UpdateUser(theme=theme, language=language, firstname=firstname,
+                                                    lastname=lastname, affiliation=affiliation, orcid=orcid))
         if response.status_code == 202:
             body = response.json()
             return User.model_validate(body)
@@ -199,35 +231,6 @@ class RestClient:
             raise ForbiddenError(f'Failed to update user: foreign user')
         raise ResponseCodeError(
             f'Failed to update user: response code: {response.status_code} is not 202 (ACCEPTED)')
-
-    def update_user_theme(self, user_id: str, theme: str) -> User:
-        """
-        Updates the theme of a user with given user id.
-
-        :param user_id: The user id of the user that should be updated.
-        :param theme: The updated user theme name.
-
-        :returns: The user, if successful.
-
-        :raises ResponseCodeError: If something went wrong with the update.
-        :raises ForbiddenError: If the action is not allowed.
-        :raises NotExistsError: If theuser does not exist.
-        """
-        url = f'/api/user/{user_id}/theme'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserTheme(theme=theme))
-        if response.status_code == 202:
-            body = response.json()
-            return User.model_validate(body)
-        if response.status_code == 400:
-            raise ResponseCodeError(f'Failed to update user theme: invalid values')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update user password: not allowed')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to update user theme: user not found')
-        if response.status_code == 405:
-            raise ResponseCodeError(f'Failed to update user theme: foreign user')
-        raise ResponseCodeError(
-            f'Failed to update user theme: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def update_user_password(self, user_id: str, password: str) -> User:
         """
@@ -436,7 +439,7 @@ class RestClient:
         :raises NameExistsError: If a table with this name already exists.
         :raises ForbiddenError: If the action is not allowed.
         :raises MalformedError: If the payload is rejected by the service.
-        :raises NotExistsError: If thecontainer does not exist.
+        :raises NotExistsError: If the container does not exist.
         """
         url = f'/api/database/{database_id}/table'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -456,7 +459,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to create table: response code: {response.status_code} is not 201 (CREATED)')
 
-    def get_tables(self, database_id: int) -> List[Table]:
+    def get_tables(self, database_id: int) -> List[TableBrief]:
         """
         Get all tables.
 
@@ -470,7 +473,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Table]).validate_python(body)
+            return TypeAdapter(List[TableBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find tables: response code: {response.status_code} is not 200 (OK)')
 
     def get_table(self, database_id: int, table_id: int) -> Table:
@@ -755,7 +758,7 @@ class RestClient:
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateData(data=data))
-        if response.status_code == 202:
+        if response.status_code == 201:
             return
         if response.status_code == 400 or response.status_code == 410:
             raise MalformedError(f'Failed to insert table data: service rejected malformed payload')
@@ -764,12 +767,12 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to insert table data: not found')
         raise ResponseCodeError(
-            f'Failed to insert table data: response code: {response.status_code} is not 202 (ACCEPTED)')
+            f'Failed to insert table data: response code: {response.status_code} is not 201 (CREATED)')
 
     def import_table_data(self, database_id: int, table_id: int, separator: str, file_path: str,
-                          quote: str = None, skip_lines: int = None, false_encoding: str = None,
+                          quote: str = None, skip_lines: int = 0, false_encoding: str = None,
                           true_encoding: str = None, null_encoding: str = None,
-                          line_encoding: str = None) -> None:
+                          line_encoding: str = "\r\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id.
 
@@ -778,10 +781,10 @@ class RestClient:
         :param separator: The csv column separator.
         :param file_path: The path of the file that is imported on the storage service.
         :param quote: The column data quotation character. Optional.
-        :param skip_lines: The number of lines to skip. Optional.
+        :param skip_lines: The number of lines to skip. Optional. Default: 0.
         :param false_encoding: The encoding of boolean false. Optional.
         :param true_encoding: The encoding of boolean true. Optional.
-        :param null_encoding: The encoding of null. Optional. Default: empty string "".
+        :param null_encoding: The encoding of null. Optional.
         :param line_encoding: The encoding of the line termination. Optional. Default: CR (Windows).
 
         :raises ResponseCodeError: If something went wrong with the insert.
@@ -789,7 +792,7 @@ class RestClient:
         :raises NotExistsError: If the table does not exist.
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB data could not be imported).
         """
-        client = UploadClient(endpoint=self.endpoint)
+        client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
         filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -829,7 +832,7 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         """
         if upload:
-            client = UploadClient(endpoint=self.endpoint)
+            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
             filename = client.upload(file_path=file_path)
         else:
             filename = file_path
@@ -867,7 +870,7 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         """
         if upload:
-            client = UploadClient(endpoint=self.endpoint)
+            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
             filename = client.upload(file_path=file_path)
         else:
             filename = file_path

@@ -7,7 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
@@ -23,17 +23,17 @@ import java.util.Optional;
 @Service
 public class AccessServiceImpl implements AccessService {
 
-    private final DatabaseMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public AccessServiceImpl(DatabaseMapper databaseMapper, DatabaseService databaseService,
+    public AccessServiceImpl(MetadataMapper metadataMapper, DatabaseService databaseService,
                              DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
                              SearchServiceGateway searchServiceGateway) {
-        this.databaseMapper = databaseMapper;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
@@ -73,7 +73,7 @@ public class AccessServiceImpl implements AccessService {
                         .hdbid(database.getId())
                         .database(database)
                         .huserid(user.getId())
-                        .type(databaseMapper.accessTypeDtoToAccessType(access))
+                        .type(metadataMapper.accessTypeDtoToAccessType(access))
                         .build());
         database = databaseRepository.save(database);
         /* create in search service */
@@ -94,7 +94,7 @@ public class AccessServiceImpl implements AccessService {
                 .database(database)
                 .huserid(user.getId())
                 .user(user)
-                .type(databaseMapper.accessTypeDtoToAccessType(access))
+                .type(metadataMapper.accessTypeDtoToAccessType(access))
                 .build();
         final int idx = database.getAccesses().indexOf(entity);
         if (idx == -1) {

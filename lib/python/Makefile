@@ -1,10 +1,7 @@
-all:
+all: build install
 
 clean:
 	rm -rf ./python/dist/* ./docs/build/* ./dist/*
-
-install:
-	pipenv install
 
 docs: clean
 	sphinx-apidoc -o ./docs/source ./dbrepo
@@ -16,8 +13,14 @@ check:
 build: clean
 	python3 -m build --sdist .
 	python3 -m build --wheel .
+
+install:
 	cp ./dist/dbrepo-* ../../dbrepo-analyse-service/lib/
+	(cd ../../dbrepo-analyse-service && pipenv lock)
 	cp ./dist/dbrepo-* ../../dbrepo-search-service/lib/
+	(cd ../../dbrepo-search-service && pipenv lock)
+	cp ./dist/dbrepo-* ../../../dpm2024/lib/
+	(cd ../../../dpm2024 && pipenv lock)
 
 deploy: build
 	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*

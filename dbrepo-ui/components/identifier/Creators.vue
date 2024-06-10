@@ -69,13 +69,16 @@ export default {
         this.creators.push(creator)
         return
       }
+      this.creators.push(creator)
+      if (!(personOrOrg.affiliation || personOrOrg.affiliation_identifier || personOrOrg.affiliation_identifier_scheme)) {
+        return
+      }
       this.affiliations.push({
         name: personOrOrg.affiliation,
         name_identifier: personOrOrg.affiliation_identifier,
         name_identifier_scheme: personOrOrg.affiliation_identifier_scheme
       })
       creator.affiliation_index = this.getIndex(creator) + 1
-      this.creators.push(creator)
     })
   },
   methods: {

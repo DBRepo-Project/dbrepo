@@ -1,5 +1,6 @@
 package at.tuwien.api.database.table.constraints.foreign;
 
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,19 +25,16 @@ public class ForeignKeyDto {
     private String name;
 
     @NotNull
-    private ColumnDto column;
-
-    @NotNull
     private List<ForeignKeyReferenceDto> references;
 
     @NotNull
     @ToString.Exclude
-    private TableDto table;
+    private TableBriefDto table;
 
     @NotNull
     @ToString.Exclude
     @JsonProperty("referenced_table")
-    private TableDto referencedTable;
+    private TableBriefDto referencedTable;
 
     @JsonProperty("on_update")
     private ReferenceTypeDto onUpdate;

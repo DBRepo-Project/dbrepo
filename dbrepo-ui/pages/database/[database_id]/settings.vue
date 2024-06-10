@@ -418,7 +418,8 @@ export default {
       const databaseService = useDatabaseService()
       databaseService.updateVisibility(this.$route.params.database_id, this.modifyVisibility)
         .then((database) => {
-          this.$toast.success('Successfully updated the database visibility')
+          const toast = useToastInstance()
+          toast.success('success.database.visibility')
           this.cacheStore.setDatabase(database)
         })
         .catch(() => {
@@ -434,7 +435,8 @@ export default {
       uploadService.create(this.fileModel[0])
         .then((s3key) => {
           console.debug('uploaded image', s3key)
-          this.$toast.success(this.$t('success.database.upload'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.database.upload'))
           this.modifyImage.key = s3key
           this.loadingUpload = false
         })
@@ -448,12 +450,14 @@ export default {
       databaseService.updateImage(this.$route.params.database_id, this.modifyImage)
         .then(() => {
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.database.image.update'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.database.image.update'))
           this.modifyImage.key = null
           this.loadingImage = false
         })
         .catch(() => {
-          this.$toast.error('Failed to modify image')
+          const toast = useToastInstance()
+          toast.error('Failed to modify image')
           this.loadingImage = false
         })
         .finally(() => {
@@ -466,11 +470,13 @@ export default {
       databaseService.updateImage(this.$route.params.database_id, { key: null })
         .then(() => {
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.database.image.remove'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.database.image.remove'))
           this.loadingDeleteImage = false
         })
-        .catch(() => {
-          this.$toast.error('Failed to delete image')
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingDeleteImage = false
         })
         .finally(() => {
@@ -482,7 +488,8 @@ export default {
       const databaseService = useDatabaseService()
       databaseService.updateOwner(this.$route.params.database_id, this.modifyOwner.id)
         .then(() => {
-          this.$toast.success(this.$t('success.database.transfer'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.database.transfer'))
           location.reload()
         })
         .catch(() => {
@@ -497,20 +504,24 @@ export default {
       const databaseService = useDatabaseService()
       databaseService.refreshTablesMetadata(this.$route.params.database_id)
         .then(() => {
-          this.$toast.success(this.$t('success.schema.tables'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.schema.tables'))
           databaseService.refreshViewsMetadata(this.$route.params.database_id)
             .then(() => {
-              this.$toast.success(this.$t('success.schema.views'))
+              const toast = useToastInstance()
+              toast.success(this.$t('success.schema.views'))
               this.cacheStore.reloadDatabase()
               this.loadingSchema = false
             })
             .catch(({code}) => {
-              this.$toast.error(this.$t(code))
+              const toast = useToastInstance()
+              toast.error(this.$t(code))
               this.loadingSchema = false
             })
         })
         .catch(({code}) => {
-          this.$toast.error(this.$t(code))
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingSchema = false
         })
     },

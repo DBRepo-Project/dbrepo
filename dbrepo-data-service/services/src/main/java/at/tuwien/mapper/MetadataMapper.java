@@ -12,6 +12,8 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.user.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -42,5 +44,7 @@ public interface MetadataMapper {
     PrivilegedViewDto viewDtoToPrivilegedViewDto(ViewDto data);
 
     ContainerDto privilegedContainerDtoToContainerDto(PrivilegedContainerDto data);
+
+    PrivilegedUserDto userDtoToPrivilegedUserDto(UserDto data);
 
 }

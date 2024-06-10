@@ -113,7 +113,8 @@ export default {
           this.loadingContainers = false
         })
         .catch(({code}) => {
-          this.$toast.error(this.$t(code))
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingContainers = false
         })
     },
@@ -127,7 +128,8 @@ export default {
           this.loading = false
         })
         .catch(({code}) => {
-          this.$toast.error(this.$t(code))
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loading = false
         })
     },

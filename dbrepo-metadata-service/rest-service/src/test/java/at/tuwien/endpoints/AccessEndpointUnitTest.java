@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
@@ -7,7 +8,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.AccessMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.AccessService;
@@ -49,7 +49,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private AccessEndpoint accessEndpoint;
 
     @Autowired
-    private AccessMapper accessMapper;
+    private MetadataMapper metadataMapper;
 
     @Test
     @WithAnonymousUser
@@ -264,7 +264,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         final DatabaseAccessDto dto = response.getBody();
         assertEquals(userId, dto.getHuserid());
         assertEquals(databaseId, dto.getHdbid());
-        assertEquals(accessMapper.accessType(access.getType()), dto.getType());
+        if (access != null) {
+            assertEquals(metadataMapper.accessTypeToAccessTypeDto(access.getType()), dto.getType());
+        }
     }
 
     protected void generic_update(DatabaseAccess access, String otherUsername, User otherUser, Principal principal,

@@ -8,25 +8,17 @@ consumes:
 produces:
   - application/json
 parameters:
-  - in: query
+  - name: q
+    in: query
     required: true
     schema:
-      type: "string"
-      properties:
-        q:
-          type: "string"
-          example: "air quality"
+      type: string
 responses:
   200:
     description: OK, contains the elements formatted as an array of JSON arrays
     content:
       application/json:
         schema:
-          type: object
-          properties:
-            results:
-              type: array
-              items:
-                type: object
+          $ref: '#/components/schemas/SearchResultDto'
   415:
     description: Wrong accept type

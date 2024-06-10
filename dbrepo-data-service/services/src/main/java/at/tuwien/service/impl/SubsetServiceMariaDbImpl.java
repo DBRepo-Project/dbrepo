@@ -84,7 +84,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     public QueryResultDto execute(PrivilegedDatabaseDto database, String statement, Instant timestamp,
                                   UUID userId, Long page, Long size, SortTypeDto sortDirection, String sortColumn)
             throws QueryStoreInsertException, SQLException, QueryNotFoundException, TableMalformedException,
-            UserNotFoundException, NotAllowedException, RemoteUnavailableException {
+            UserNotFoundException, NotAllowedException, RemoteUnavailableException, ServiceException,
+            DatabaseNotFoundException {
         final Long queryId = storeQuery(database, statement, timestamp, userId);
         final QueryDto query = findById(database, queryId);
         return reExecute(database, query, page, size, sortDirection, sortColumn);
@@ -115,8 +116,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
 
     @Override
     public List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, NotAllowedException, RemoteUnavailableException {
-        final List<IdentifierDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId());
+            QueryNotFoundException, RemoteUnavailableException, ServiceException, DatabaseNotFoundException {
+        final List<IdentifierDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -148,7 +149,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     @Override
     public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException {
+            StorageUnavailableException, ServiceException, RemoteUnavailableException {
         final String filePath = s3Config.getS3FilePath() + "/" + filename;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -203,7 +204,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
 
     @Override
     public QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
-            NotAllowedException, RemoteUnavailableException, UserNotFoundException {
+            RemoteUnavailableException, UserNotFoundException, ServiceException, DatabaseNotFoundException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -215,7 +216,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             }
             final QueryDto query = mariaDbMapper.resultSetToQueryDto(resultSet);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
-            final UserDto creator = metadataServiceGateway.getUser(query.getCreatedBy());
+            final UserDto creator = metadataServiceGateway.getUserById(query.getCreatedBy());
             log.debug("retrieved creator from metadata service: creator.id={}, creator.username={}", creator.getId(), creator.getUsername());
             query.setCreator(creator);
             query.setDatabaseId(database.getId());

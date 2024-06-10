@@ -9,7 +9,6 @@ import pandas
 
 from numpy import dtype, max, min
 from flask import current_app
-from pandas._libs.tslibs.parsing import DateParseError
 
 from clients.s3_client import S3Client
 
@@ -65,7 +64,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
                     pandas.to_datetime(df[name], format='mixed')
                     r[name] = 'timestamp'
                     continue
-                except DateParseError:
+                except ValueError:
                     pass
                 max_size = max(df[name].astype(str).map(len))
                 if max_size <= 1:

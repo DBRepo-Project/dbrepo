@@ -54,7 +54,9 @@
         @click.stop="pick" />
     </v-toolbar>
     <TimeDrift />
-    <v-card tile>
+    <v-card
+      elevation="0"
+      tile>
       <v-card
         v-if="error"
         variant="flat">
@@ -86,7 +88,7 @@
       v-model="pickVersionDialog"
       max-width="640"
       @close="closeVersion">
-      <TimeTravel
+      <TableHistory
         ref="timeTravel"
         @close="pickVersion" />
     </v-dialog>
@@ -115,7 +117,7 @@
 </template>
 
 <script>
-import TimeTravel from '@/components/dialogs/TimeTravel.vue'
+import TableHistory from '@/components/table/TableHistory.vue'
 import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import {formatTimestampUTC, formatDateUTC, formatTimestamp} from '@/utils'
@@ -128,7 +130,7 @@ export default {
   components: {
     BlobDownload,
     EditTuple,
-    TimeTravel,
+    TableHistory,
     TableToolbar,
     TimeDrift
   },
@@ -326,12 +328,14 @@ export default {
         const tupleService = useTupleService()
         wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
           .catch(({message}) => {
-            this.$toast.error(message)
+            const toast = useToastInstance()
+            toast.error(message)
           }))
       }
       Promise.all(wait)
         .then(() => {
-          this.$toast.success(`Deleted ${this.selection.length} row(s)`)
+          const toast = useToastInstance()
+          toast.success(`Deleted ${this.selection.length} row(s)`)
           this.$emit('modified', { success: true, action: 'delete' })
           this.selection = []
           this.reload()
@@ -351,8 +355,9 @@ export default {
             document.body.appendChild(link)
             link.click()
           })
-          .catch((error) => {
-            this.$toast.error(this.$t(error.code))
+          .catch(({code}) => {
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
             this.downloadLoading = false
           })
           .finally(() => {
@@ -399,7 +404,7 @@ export default {
         return
       }
       try {
-        this.headers = [{ value: 'selection', title: '', sortable: false }]
+        this.headers = []
         this.table.columns.map((c) => {
           return {
             value: c.internal_name,
@@ -409,8 +414,9 @@ export default {
         }).forEach(header => this.headers.push(header))
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
-      } catch (error) {
-        this.$toast.error(this.$t(error.code))
+      } catch ({code}) {
+        const toast = useToastInstance()
+        toast.error(this.$t(code))
       }
       this.loading = false
     },
@@ -442,8 +448,9 @@ export default {
           })
           this.loadingData = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code) + ": " + message)
           this.error = true
           this.loadingData = false
         })
@@ -456,8 +463,9 @@ export default {
           this.total = count
           this.loadingCount = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code) + ": " + message)
           this.loadingCount = false
         })
     },

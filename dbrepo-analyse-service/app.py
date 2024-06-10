@@ -19,7 +19,6 @@ from botocore.exceptions import ClientError
 from clients.keycloak_client import KeycloakClient, User
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
-from determine_stats import determine_stats
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -58,7 +57,7 @@ basic_auth = HTTPBasicAuth()
 auth = MultiAuth(token_auth, basic_auth)
 
 metrics = PrometheusMetrics(app)
-metrics.info("app_info", "Application info", version="__APPVERSION__")
+metrics.info("app_info", "Application info", version="1.4.4")
 app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {
@@ -79,6 +78,64 @@ swagger_config = {
 template = {
     "openapi": "3.0.0",
     "components": {
+        "schemas": {
+            "DataTypesDto": {
+                "properties": {
+                    "columns": {
+                        "$ref": "#/components/schemas/SuggestedColumnDto"
+                    },
+                    "line_termination": {
+                        "example": "\r\n",
+                        "type": "string"
+                    },
+                    "separator": {
+                        "example": ",",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorDto": {
+                "properties": {
+                    "message": {
+                        "example": "Message",
+                        "type": "string"
+                    },
+                    "success": {
+                        "example": False,
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "KeysDto": {
+                "properties": {
+                    "keys": {
+                        "items": {
+                            "properties": {
+                                "column_name": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "keys"
+                ],
+                "type": "object"
+            },
+            "SuggestedColumnDto": {
+                "properties": {
+                    "column_name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -96,7 +153,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "__APPVERSION__",
+        "version": "1.4.4",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -180,7 +237,6 @@ def get_user_roles(user: User) -> List[str]:
 
 
 @app.route("/health", methods=["GET"], endpoint="analyse_health")
-@swag_from("as-yml/health.yml")
 def get_health():
     res = dumps({"status": "UP", "message": "Application is up and running"})
     return Response(res, mimetype="application/json"), 200
@@ -231,25 +287,3 @@ def analyse_keys():
     except OSError as e:
         logging.error(f"Failed to determine primary key: {e}")
         return ApiError(status='BAD_REQUEST', message=str(e), code='analyse.database.invalid'), 400
-
-
-@app.route("/api/analyse/database/<database_id>/table/<table_id>/statistics", methods=["GET"],
-           endpoint="analyse_analyse_table_stat")
-@auth.login_required(role=['admin', 'export-query-data', 'export-table-data'])
-@metrics.gauge(name='dbrepo_analyse_table_stat', description='Time needed to analyse table statistics')
-@swag_from("as-yml/analyse_table_stat.yml")
-def analyse_table_stat(database_id: int = None, table_id: int = None):
-    if database_id is None:
-        return ApiError(status='BAD_REQUEST', message="Missing path variable 'database_id'",
-                        code='analyse.database.invalid'), 400
-    if table_id is None:
-        return ApiError(status='BAD_REQUEST', message="Missing path variable 'table_id'",
-                        code='analyse.table.invalid'), 400
-
-    try:
-        table_stats = determine_stats(database_id=database_id, table_id=table_id)
-        logging.info(f"Analysed table statistics")
-        return table_stats.model_dump(), 202
-    except OSError:
-        return ApiError(status='NOT_FOUND', message='Database or table does not exist',
-                        code='analyse.database.missing'), 404

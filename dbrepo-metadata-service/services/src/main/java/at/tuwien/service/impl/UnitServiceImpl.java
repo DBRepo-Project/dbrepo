@@ -24,6 +24,12 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    @Transactional
+    public TableColumnUnit create(TableColumnUnit unit) {
+        return unitRepository.save(unit);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<TableColumnUnit> findAll() {
         return unitRepository.findAll();

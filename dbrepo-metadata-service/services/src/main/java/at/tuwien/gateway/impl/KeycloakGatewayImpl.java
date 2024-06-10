@@ -6,7 +6,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.mapper.UserMapper;
+import at.tuwien.mapper.MetadataMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -24,15 +24,15 @@ import java.util.UUID;
 @Service
 public class KeycloakGatewayImpl implements KeycloakGateway {
 
-    private final UserMapper userMapper;
     private final RestTemplate restTemplate;
     private final KeycloakConfig keycloakConfig;
+    private final MetadataMapper metadataMapper;
 
-    public KeycloakGatewayImpl(UserMapper userMapper, @Qualifier("keycloakRestTemplate") RestTemplate restTemplate,
-                               KeycloakConfig keycloakConfig) {
-        this.userMapper = userMapper;
+    public KeycloakGatewayImpl(@Qualifier("keycloakRestTemplate") RestTemplate restTemplate,
+                               KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
         this.keycloakConfig = keycloakConfig;
+        this.metadataMapper = metadataMapper;
     }
 
     public TokenDto obtainToken() throws ServiceConnectionException, ServiceException {
@@ -192,7 +192,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         /* obtain admin token */
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
-        final UpdateCredentialsDto payload = userMapper.passwordToUpdateCredentialsDto(data.getPassword());
+        final UpdateCredentialsDto payload = metadataMapper.passwordToUpdateCredentialsDto(data.getPassword());
         final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
         log.debug("update user credentials at url {}", url);
         final ResponseEntity<Void> response;
