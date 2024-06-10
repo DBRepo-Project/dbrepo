@@ -6,13 +6,13 @@ import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -237,6 +237,46 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
             database.getTables()
                     .add(tableEntity);
+        }
+        /* update referenced tables after they are known to the service */
+        for (ForeignKey foreignKey : database.getTables().stream().map(t -> t.getConstraints().getForeignKeys()).flatMap(List::stream).toList()) {
+            log.trace("lookup table {} in tables: {}", foreignKey.getReferencedTable().getInternalName(), database.getTables().stream().map(Table::getInternalName).toList());
+            final Optional<Table> optional = database.getTables()
+                    .stream()
+                    .filter(t -> t.getInternalName().equals(foreignKey.getReferencedTable().getInternalName()))
+                    .findFirst();
+            if (optional.isEmpty()) {
+                log.error("Failed to find referenced table: {}.{}", database.getInternalName(), foreignKey.getReferencedTable().getInternalName());
+                throw new IllegalArgumentException("Failed to find referenced table: " + database.getInternalName() + "." + foreignKey.getReferencedTable().getInternalName());
+            }
+            foreignKey.setReferencedTable(optional.get());
+            for (ForeignKeyReference reference : foreignKey.getReferences()) {
+                reference.setForeignKey(foreignKey);
+                final Optional<TableColumn> optional1 = database.getTables()
+                        .stream()
+                        .filter(t -> t.getInternalName().equals(foreignKey.getTable().getInternalName()))
+                        .map(Table::getColumns)
+                        .flatMap(List::stream)
+                        .filter(c -> c.getInternalName().equals(reference.getColumn().getInternalName()))
+                        .findFirst();
+                if (optional1.isEmpty()) {
+                    log.error("Failed to find foreign key column: {}.{}.{}", database.getInternalName(), foreignKey.getTable().getInternalName(), reference.getColumn().getInternalName());
+                    throw new IllegalArgumentException("Failed to find foreign key column: " + reference.getColumn().getInternalName());
+                }
+                reference.setColumn(optional1.get());
+                final Optional<TableColumn> optional2 = database.getTables()
+                        .stream()
+                        .filter(t -> t.getInternalName().equals(foreignKey.getReferencedTable().getInternalName()))
+                        .map(Table::getColumns)
+                        .flatMap(List::stream)
+                        .filter(c -> c.getInternalName().equals(reference.getReferencedColumn().getInternalName()))
+                        .findFirst();
+                if (optional2.isEmpty()) {
+                    log.error("Failed to find foreign key referenced column: {}", reference.getReferencedColumn().getInternalName());
+                    throw new IllegalArgumentException("Failed to find foreign key referenced column: " + reference.getReferencedColumn().getInternalName());
+                }
+                reference.setReferencedColumn(optional2.get());
+            }
         }
         /* update in metadata database */
         database = databaseRepository.save(database);
