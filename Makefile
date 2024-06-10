@@ -1,7 +1,7 @@
 .PHONY: all
 
-APP_VERSION ?= 1.4.3
-CHART_VERSION ?= 1.4.3
+APP_VERSION ?= 1.4.4
+CHART_VERSION ?= 1.4.4
 REPOSITORY_URL ?= docker.io/dbrepo
 
 .PHONY: all
