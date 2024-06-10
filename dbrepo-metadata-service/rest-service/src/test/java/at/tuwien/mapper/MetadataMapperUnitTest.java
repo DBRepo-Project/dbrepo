@@ -285,7 +285,9 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(ReferenceTypeDto.NO_ACTION, table1fk.getOnDelete());
         assertEquals(ReferenceTypeDto.NO_ACTION, table1fk.getOnUpdate());
         assertEquals(TABLE_1_ID, table1fk.getTable().getId());
+        assertEquals(DATABASE_1_ID, table1fk.getTable().getDatabaseId());
         assertEquals(TABLE_2_ID, table1fk.getReferencedTable().getId());
+        assertEquals(DATABASE_1_ID, table1fk.getReferencedTable().getDatabaseId());
         final ForeignKeyReferenceDto table1fkr = table1fk.getReferences().get(0);
         assertEquals(1L, table1fkr.getId());
         assertEquals(TABLE_2_COLUMNS_DTO.get(2).getId(), table1fkr.getColumn().getId());
