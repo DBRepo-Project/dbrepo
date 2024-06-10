@@ -24,6 +24,12 @@ public class ConceptServiceImpl implements ConceptService {
     }
 
     @Override
+    @Transactional
+    public TableColumnConcept create(TableColumnConcept concept) {
+        return conceptRepository.save(concept);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<TableColumnConcept> findAll() {
         return conceptRepository.findAll();

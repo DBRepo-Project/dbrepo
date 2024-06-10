@@ -52,7 +52,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, DatabaseUnavailableException {
+            SQLException, DatabaseUnavailableException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -68,7 +68,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
     public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException {
+            SQLException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -84,7 +84,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException {
+    public void create_databaseNotFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -100,7 +101,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void delete_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, DatabaseUnavailableException, ViewNotFoundException {
+            SQLException, DatabaseUnavailableException, ViewNotFoundException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -117,7 +118,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
     public void delete_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException {
+            SQLException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -134,7 +135,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void delete_databaseNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException {
+    public void delete_databaseNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+            ServiceException {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
@@ -151,7 +153,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_succeeds() throws RemoteUnavailableException, ViewNotFoundException, ViewMalformedException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
-            NotAllowedException {
+            NotAllowedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
@@ -181,7 +183,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_onlyHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, SQLException, DatabaseUnavailableException, QueryMalformedException,
-            PaginationException, NotAllowedException {
+            PaginationException, NotAllowedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
@@ -207,7 +209,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
-    public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException {
+    public void getData_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+            ServiceException {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
@@ -223,7 +226,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateNoAccess_fails() throws RemoteUnavailableException, ViewNotFoundException,
-             NotAllowedException {
+            NotAllowedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))

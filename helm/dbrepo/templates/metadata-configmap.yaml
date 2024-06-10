@@ -13,11 +13,10 @@ data:
     BEGIN;
     INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
       VALUES ('MariaDB Galera 11.1.3', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
-    INSERT INTO `mdb_banner_messages` (type, message)
-      VALUES ('INFO', 'You are currently working on our test environment. Any data upload to this system may be deleted.');
     COMMIT;
   01-setup-schema.sql: |
     BEGIN;
+
     CREATE TABLE IF NOT EXISTS `mdb_users`
     (
         id               character varying(36)  NOT NULL,
@@ -138,13 +137,13 @@ data:
 
     CREATE TABLE IF NOT EXISTS `mdb_tables`
     (
-        ID              bigint                 NOT NULL AUTO_INCREMENT,
-        tDBID           bigint                 NOT NULL,
-        internal_name   character varying(255) NOT NULL,
-        queue_name      character varying(255) NOT NULL,
-        routing_key     character varying(255),
-        tName           VARCHAR(50),
-        tDescription    TEXT,
+        ID              bigint                NOT NULL AUTO_INCREMENT,
+        tDBID           bigint                NOT NULL,
+        tName           VARCHAR(64)           NOT NULL,
+        internal_name   VARCHAR(64)           NOT NULL,
+        queue_name      VARCHAR(255)          NOT NULL,
+        routing_key     VARCHAR(255),
+        tDescription    VARCHAR(2048),
         num_rows        BIGINT,
         data_length     BIGINT,
         max_data_length BIGINT,
@@ -156,12 +155,13 @@ data:
         element_true    VARCHAR(50),
         element_false   VARCHAR(50),
         Version         TEXT,
-        created         timestamp              NOT NULL DEFAULT NOW(),
-        versioned       boolean                not null default true,
-        created_by      character varying(36)  NOT NULL,
-        owned_by        character varying(36)  NOT NULL,
+        created         timestamp             NOT NULL DEFAULT NOW(),
+        versioned       boolean               not null default true,
+        created_by      character varying(36) NOT NULL,
+        owned_by        character varying(36) NOT NULL,
         last_modified   timestamp,
         PRIMARY KEY (ID),
+        UNIQUE (tDBID, internal_name),
         FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
         FOREIGN KEY (created_by) REFERENCES mdb_users (id),
         FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
@@ -169,25 +169,26 @@ data:
 
     CREATE TABLE IF NOT EXISTS `mdb_columns`
     (
-        ID               BIGINT       NOT NULL AUTO_INCREMENT,
-        tID              BIGINT       NOT NULL,
+        ID               BIGINT      NOT NULL AUTO_INCREMENT,
+        tID              BIGINT      NOT NULL,
         dfID             BIGINT,
-        cName            VARCHAR(100),
-        internal_name    VARCHAR(100) NOT NULL,
+        cName            VARCHAR(64),
+        internal_name    VARCHAR(64) NOT NULL,
         Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-        length           BIGINT       NULL,
-        ordinal_position INTEGER      NOT NULL,
-        index_length     BIGINT       NULL,
+        length           BIGINT      NULL,
+        ordinal_position INTEGER     NOT NULL,
+        index_length     BIGINT      NULL,
+        description      VARCHAR(2048),
         size             BIGINT,
         d                BIGINT,
-        auto_generated   BOOLEAN               DEFAULT false,
-        is_null_allowed  BOOLEAN      NOT NULL DEFAULT true,
-        val_min          NUMERIC      NULL,
-        val_max          NUMERIC      NULL,
-        mean             NUMERIC      NULL,
-        median           NUMERIC      NULL,
-        std_dev          Numeric      NULL,
-        created          timestamp    NOT NULL DEFAULT NOW(),
+        auto_generated   BOOLEAN              DEFAULT false,
+        is_null_allowed  BOOLEAN     NOT NULL DEFAULT true,
+        val_min          NUMERIC     NULL,
+        val_max          NUMERIC     NULL,
+        mean             NUMERIC     NULL,
+        median           NUMERIC     NULL,
+        std_dev          Numeric     NULL,
+        created          timestamp   NOT NULL DEFAULT NOW(),
         last_modified    timestamp,
         FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
         PRIMARY KEY (ID)
@@ -344,8 +345,8 @@ data:
     (
         id            bigint                NOT NULL AUTO_INCREMENT,
         vdbid         bigint                NOT NULL,
-        vName         VARCHAR(255)          NOT NULL,
-        internal_name VARCHAR(255)          NOT NULL,
+        vName         VARCHAR(64)           NOT NULL,
+        internal_name VARCHAR(64)           NOT NULL,
         Query         TEXT                  NOT NULL,
         query_hash    VARCHAR(255)          NOT NULL,
         Public        BOOLEAN               NOT NULL,
@@ -387,14 +388,19 @@ data:
 
     CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     (
-        id               BIGINT NOT NULL AUTO_INCREMENT,
-        cid              BIGINT NOT NULL,
-        vid              BIGINT NOT NULL,
-        alias            VARCHAR(100),
-        ordinal_position INTEGER,
+        id               BIGINT      NOT NULL AUTO_INCREMENT,
+        view_id          BIGINT      NOT NULL,
+        dfID             BIGINT,
+        name             VARCHAR(64),
+        internal_name    VARCHAR(64) NOT NULL,
+        column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
+        ordinal_position INTEGER     NOT NULL,
+        size             BIGINT,
+        d                BIGINT,
+        auto_generated   BOOLEAN              DEFAULT false,
+        is_null_allowed  BOOLEAN     NOT NULL DEFAULT true,
         PRIMARY KEY (id),
-        FOREIGN KEY (vid) REFERENCES mdb_view (id),
-        FOREIGN KEY (cid) REFERENCES mdb_columns (ID)
+        FOREIGN KEY (view_id) REFERENCES mdb_view (id)
     ) WITH SYSTEM VERSIONING;
 
     CREATE TABLE IF NOT EXISTS `mdb_identifiers`
@@ -501,18 +507,6 @@ data:
         affiliation_identifier_scheme_uri text,
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
-    ) WITH SYSTEM VERSIONING;
-
-    CREATE TABLE IF NOT EXISTS `mdb_feed`
-    (
-        fDBID   bigint,
-        fID     bigint,
-        fUserId character varying(36) not null,
-        fDataID bigint REFERENCES mdb_data (ID),
-        created timestamp             NOT NULL DEFAULT NOW(),
-        PRIMARY KEY (fDBID, fID, fUserId, fDataID),
-        FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
-        FOREIGN KEY (fUserId) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
 
     CREATE TABLE IF NOT EXISTS `mdb_update`

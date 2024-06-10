@@ -4,7 +4,6 @@ import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -54,9 +53,9 @@ public class ViewEndpoint {
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('admin')")
     @Observed(name = "dbrepo_view_schema_list")
-    @Operation(summary = "Find view schemas")
+    @Operation(summary = "Find view schemas", hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found view schemas",
@@ -91,7 +90,8 @@ public class ViewEndpoint {
     })
     public ResponseEntity<List<ViewDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            ViewMalformedException, ViewNotFoundException, DatabaseMalformedException, ViewSchemaException {
+            ViewMalformedException, ViewNotFoundException, DatabaseMalformedException, ViewSchemaException,
+            ServiceException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -104,7 +104,8 @@ public class ViewEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Create view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Create view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Created view",
@@ -134,7 +135,7 @@ public class ViewEndpoint {
     })
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                           @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
-            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException {
+            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, ServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -148,7 +149,8 @@ public class ViewEndpoint {
 
     @DeleteMapping("/{viewId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Delete view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Delete view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted view"),
@@ -176,7 +178,7 @@ public class ViewEndpoint {
     public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("viewId") Long viewId)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            ViewMalformedException {
+            ViewMalformedException, ServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         try {
@@ -232,7 +234,8 @@ public class ViewEndpoint {
                                                   @NotNull HttpServletRequest request,
                                                   Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            QueryMalformedException, ViewMalformedException, PaginationException, NotAllowedException {
+            QueryMalformedException, ViewMalformedException, PaginationException, NotAllowedException,
+            ServiceException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
                 viewId, page, size, timestamp);
         endpointValidator.validateDataParams(page, size);

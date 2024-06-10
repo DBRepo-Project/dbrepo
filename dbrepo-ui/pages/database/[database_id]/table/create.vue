@@ -113,7 +113,7 @@
             <v-container v-if="table">
               <v-row
                 dense>
-                <v-col>
+                <v-col md="8">
                   <v-alert
                     border="start"
                     color="success"
@@ -260,8 +260,9 @@ export default {
           this.cacheStore.reloadDatabase()
           this.table = table
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loading = false
         })
         .finally(() => {

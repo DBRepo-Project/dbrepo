@@ -5,7 +5,7 @@ author: Martin Weise
 # Overview
 
 We developed a Python Library for communicating with DBRepo from e.g. Jupyter Notebooks. See
-the [Python Library](../usage-python) page for more details.
+the [Python Library](./usage-python) page for more details.
 
 We give usage examples of the most important use-cases we identified.
 
@@ -30,7 +30,7 @@ A user wants to create an account in DBRepo.
     button and provide a valid work e-mail address :material-numeric-1-circle-outline: and a username (in lowercase
     alphanumeric characters) :material-numeric-2-circle-outline:. Choose a secure password in field 
     :material-numeric-3-circle-outline: and repeat it in field :material-numeric-4-circle-outline:. Click "SUBMIT" and
-    the system creates a user account in Figure 1 with the [default roles](../system-services-authentication/#roles)
+    the system creates a user account in Figure 1 with the [default roles](./system-services-authentication/#roles)
     that your administrator has assigned.
 
     <figure markdown>
@@ -425,7 +425,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     Setup a new connection in the MySQL Workbench (c.f. Figure 14) by clicking the small 
     ":material-plus-circle-outline:" button :material-numeric-1-circle-outline: to open the dialog. In the opened dialog
     fill out the connection parameters (for local deployments the hostname is `127.0.0.1` and port `3307` for the
-    [Data Database](../system-databases-data/) :material-numeric-2-circle-outline:.
+    [Data Database](./system-databases-data/) :material-numeric-2-circle-outline:.
 
     The default credentials are username `root` and password `dbrepo`, type the password in 
     :material-numeric-3-circle-outline: and click the "OK" button. Then finish the setup of the new connection by
@@ -470,8 +470,8 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     gunzip < dump.sql.gz | mysql -H127.0.0.1 -p3307 -uUSERNAME -pYOURPASSWORD db_name
     ```
 
-    The [Metadata Service](../system-services-metadata) periodically (by default configuration every 60 seconds) checks
-    and adds missing tables and views to the [Metadata Database](../system-databases-metadata), the database dump
+    The [Metadata Service](./system-services-metadata) periodically (by default configuration every 60 seconds) checks
+    and adds missing tables and views to the [Metadata Database](./system-databases-metadata), the database dump
     will be visible afterwards. Currently, date formats for columns with time types (e.g. `DATE`, `TIMESTAMP`) are
     assumed to match the first date format found for the database image. This may need to be manually specified by the
     administrator.
@@ -479,7 +479,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     !!! example "Specifying a custom date format"
 
         In case the pre-defined date formats are not matching the found date format in the database dump, the system
-        administrator needs to add it manually in the [Metadata Database](../system-databases-metadata).
+        administrator needs to add it manually in the [Metadata Database](./system-databases-metadata).
 
         ```sql
         INSERT INTO `mdb_images_date` (`iid`, `database_format`, `unix_format`, `example`, `has_time`)
@@ -658,7 +658,7 @@ A user wants to create a subset and export it as csv file.
     ```
 
     Afterwards, you can see the subset in the UI with subset id `@subsetId` and persist it there. Only the administrator
-    can persist the subset in the [Data Database](../system-databases-data) through JDBC by setting the `persisted`
+    can persist the subset in the [Data Database](./system-databases-data) through JDBC by setting the `persisted`
     column to `true` in the `qs_queries` table.
 
 === "Python"
@@ -732,7 +732,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     <figcaption>Figure 21: Open the get persisent identifier form.</figcaption>
     </figure>
 
-    First, provide information on the dataset creator(s). Since the [Metadata Service](../system-services-metadata) 
+    First, provide information on the dataset creator(s). Since the [Metadata Service](./system-services-metadata) 
     automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
     name identifier :material-numeric-1-circle-outline:. The creator type :material-numeric-2-circle-outline:
     denotes either a natural person or organization. Optionally fill out the given 
@@ -779,7 +779,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     <figcaption>Figure 25: Related identifiers, license and language of the identifier.</figcaption>
     </figure>
 
-    Optionally add funding information, again the [Metadata Service](../system-services-metadata) 
+    Optionally add funding information, again the [Metadata Service](./system-services-metadata) 
     automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
     funder identifier :material-numeric-1-circle-outline: that attempts to get the funder
     name :material-numeric-2-circle-outline:. If you provide an award number :material-numeric-3-circle-outline: and/or
@@ -817,11 +817,11 @@ A user wants to assign a persistent identifier to a database owned by them.
 
     !!! warning
 
-        Creating a PID directly in the [Metadata Database](../system-databases-metadata) is not recommended! It bypasses
+        Creating a PID directly in the [Metadata Database](./system-databases-metadata) is not recommended! It bypasses
         validation and creation of external PIDs (e.g. DOI) and may lead to inconstistent data locally compared to
         external systems (e.g. DataCite Fabrica).
 
-    Create a local PID directly in the [Metadata Database](../system-databases-metadata) by filling the tables in this
+    Create a local PID directly in the [Metadata Database](./system-databases-metadata) by filling the tables in this
     order (they have foreign key dependencies).
 
     1. `mdb_identifiers` ... identifier core information
@@ -928,7 +928,7 @@ A user wants a public database to be private and only give specific users access
 === "JDBC"
 
     To change the visibility of a database as administrator with direct JDBC access to 
-    the [Metadata Database](../system-databases-metadata), change the visibility directly by executing the SQL-query
+    the [Metadata Database](./system-databases-metadata), change the visibility directly by executing the SQL-query
     in the `fda` schema:
 
     ```sql

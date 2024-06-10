@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -77,6 +78,34 @@ public class MariaDbConfig {
         log.debug("created init database {}", database.getInternalName());
     }
 
+    public static void grantReadAccess(PrivilegedDatabaseDto database, String username) {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            connection.prepareStatement("GRANT SELECT ON *.* TO `" + username + "`@`%`;")
+                    .executeUpdate();
+            connection.prepareStatement("FLUSH PRIVILEGES;")
+                    .executeUpdate();
+        } catch (SQLException e) {
+            log.error("could not grant read access", e);
+        }
+        log.debug("granted read access to user {} in database {}", username, database.getInternalName());
+    }
+
+    public static void grantWriteAccess(PrivilegedDatabaseDto database, String username) {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            connection.prepareStatement("GRANT SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE ON *.* TO `" + username + "`@`%`;")
+                    .executeUpdate();
+            connection.prepareStatement("FLUSH PRIVILEGES;")
+                    .executeUpdate();
+        } catch (SQLException e) {
+            log.error("could not grant read access", e);
+        }
+        log.debug("granted read access to user {} in database {}", username, database.getInternalName());
+    }
+
     public static void dropAllDatabases(PrivilegedContainerDto container) {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
@@ -136,31 +165,43 @@ public class MariaDbConfig {
         }
     }
 
-    public static String getPrivileges(String hostname, Integer port, String username, String password)
-            throws Exception {
-        return getPrivileges(hostname, port, null, username, password);
-    }
-
-    public static String getPrivileges(String hostname, Integer port, String database, String username, String password)
-            throws Exception {
-        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + (database != null ? "/" + database : "");
+    public static List<String> getPrivileges(PrivilegedDatabaseDto database, String username) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final String query = "SHOW GRANTS FOR `" + username + "`;";
             log.trace("prepare statement '{}'", query);
             final PreparedStatement statement = connection.prepareStatement(query);
             final ResultSet set = statement.executeQuery();
             statement.close();
             if (set.next()) {
-                return set.getString(1);
+                final Matcher matcher = Pattern.compile("GRANT (.*) ON.*").matcher(set.getString(1));
+                if (matcher.find()) {
+                    final List<String> privileges = Arrays.asList(matcher.group(1).split(","));;
+                    log.trace("found privileges: {}", privileges);
+                    return privileges;
+                }
             }
         }
-        throw new Exception("Failed to get privileges");
+        throw new SQLException("Failed to get privileges");
     }
 
-    public static void mockQuery(String hostname, String query, String username, String password)
+    public static void dropTable(PrivilegedDatabaseDto database, String table) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final String query = "DROP TABLE `" + table + "`;";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            statement.executeUpdate();
+            statement.close();
+        }
+        log.debug("dropped table {}", table);
+    }
+
+    public static void mockQuery(String hostname, Integer port, String database, String query, String username, String password)
             throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + hostname;
+        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + "/" + database;
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
             final PreparedStatement statement = connection.prepareStatement(query);

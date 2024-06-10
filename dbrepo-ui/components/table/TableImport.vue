@@ -401,7 +401,8 @@ export default {
       const tableService = useTableService()
       tableService.importCsv(this.$route.params.database_id, this.tableId, this.tableImport)
         .then(() => {
-          this.$toast.success(this.$t('success.import.dataset'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.import.dataset'))
           this.cacheStore.reloadDatabase()
           tableService.getCount(this.$route.params.database_id, this.tableId, null)
             .then((rowCount) => {
@@ -410,9 +411,9 @@ export default {
           this.step = this.stepStart + 2
           this.loading = false
         })
-        .catch((error) => {
-          console.error('Failed to import csv', error)
-          this.$toast.error(this.$t('error.import.dataset'))
+        .catch(() => {
+          const toast = useToastInstance()
+          toast.error(this.$t('error.import.dataset'))
           this.loading = false
         })
         .finally(() => {
@@ -425,11 +426,13 @@ export default {
       const uploadService = useUploadService()
       return uploadService.create(this.previousFile)
         .then((s3key) => {
-          this.$toast.success(this.$t('success.upload.dataset'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.upload.dataset'))
           this.analyse(s3key)
         })
         .catch(() => {
-          this.$toast.error(this.$t('error.upload.dataset'))
+          const toast = useToastInstance()
+          toast.error(this.$t('error.upload.dataset'))
           this.loading = false
         })
     },
@@ -462,12 +465,14 @@ export default {
           this.suggestedAnalyseLineTerminator = line_termination
           this.tableImport.location = filename
           this.step = this.stepStart + 2
-          this.$toast.success(this.$t('success.analyse.dataset'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
           this.loading = false
         })
         .catch(({code}) => {
-          this.$toast.error(this.$t(code))
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loading = false
         })
     }

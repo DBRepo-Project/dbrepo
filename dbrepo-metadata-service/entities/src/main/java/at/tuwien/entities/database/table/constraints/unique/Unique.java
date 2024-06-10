@@ -25,8 +25,8 @@ public class Unique {
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "constraints-unique-sequence")
     @GenericGenerator(name = "constraints-unique-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
-    private Long uid;
+    @Column(name = "uid", updatable = false, nullable = false)
+    private Long id;
 
     @Column(updatable = false, nullable = false)
     private String name;

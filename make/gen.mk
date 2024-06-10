@@ -10,6 +10,12 @@ gen-swagger-doc-fe: build-images ## Generate Swagger documentation and fetch.
 	bash .docs/.swagger/swagger-generate.sh
 	bash .docs/.swagger/swagger-site.sh
 	docker compose down
+	openapi-merge-cli --config .docs/.swagger/openapi-merge.json
+
+.PHONY: gen-helm-doc
+gen-helm-doc: build-helm ## Generate Helm documentation and schema
+	helm schema -input ./helm/dbrepo/values.yaml
+	readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 .PHONY: gen-dbrepo-doc
 gen-docs-doc: ## Generate DBRepo documentation.

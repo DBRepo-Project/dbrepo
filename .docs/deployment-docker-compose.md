@@ -53,7 +53,7 @@ technologies. The conceptualized microservices operate the basic database operat
 
 ### Notes
 
-Please note that we only save the state of the databases as well as the [Broker Service](../system-services-broker)
+Please note that we only save the state of the databases as well as the [Broker Service](./system-services-broker)
 since RabbitMQ maintains state inside the container.
 
 ## Deployment
@@ -147,8 +147,8 @@ Please be warned that the default configuration is not intended for public deplo
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
-Next, create a [user account](../usage-overview/#create-user-account) and 
-then [create a database](../usage-overview/#create-database) to [import a dataset](../usage-overview/#import-dataset).
+Next, create a [user account](./usage-overview/#create-user-account) and 
+then [create a database](./usage-overview/#create-database) to [import a dataset](./usage-overview/#import-dataset).
 
 ## Security
 
@@ -193,4 +193,4 @@ then [create a database](../usage-overview/#create-database) to [import a datase
 
 !!! info "Alternative Deployments"
 
-    Alternatively, you can also deploy DBRepo with [Helm](../deployment-helm/) in your virtual machine instead.
+    Alternatively, you can also deploy DBRepo with [Helm](./deployment-helm/) in your virtual machine instead.

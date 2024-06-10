@@ -62,11 +62,12 @@ dbrepo:
     username: admin
     password: admin
   endpoints:
-    searchService: http://localhost:4000
+    searchService: http://localhost
+    analyseService: http://localhost
     dataService: http://localhost:9093
     brokerService: http://localhost/admin/broker
-    authService: http://localhost:8080
-    storageService: http://storage-service:9000
+    authService: http://localhost/api/auth
+    storageService: http://localhost/api/storage
   pid:
     base: http://localhost/pid/
   jwt:

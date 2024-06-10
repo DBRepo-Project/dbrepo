@@ -8,7 +8,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.ViewMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
@@ -42,17 +42,17 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/database/{databaseId}/view")
 public class ViewEndpoint {
 
-    private final ViewMapper viewMapper;
     private final UserService userService;
     private final ViewService viewService;
+    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, DatabaseService databaseService,
-                        ViewMapper viewMapper, UserService userService) {
-        this.viewMapper = viewMapper;
+    public ViewEndpoint(UserService userService, ViewService viewService, MetadataMapper metadataMapper, 
+                        DatabaseService databaseService) {
         this.userService = userService;
         this.viewService = viewService;
+        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
     }
 
@@ -81,7 +81,7 @@ public class ViewEndpoint {
         log.trace("find all views for database {}", database);
         final List<ViewBriefDto> views = viewService.findAll(database, user)
                 .stream()
-                .map(viewMapper::viewToViewBriefDto)
+                .map(metadataMapper::viewToViewBriefDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(views);
     }
@@ -153,7 +153,7 @@ public class ViewEndpoint {
         log.trace("create view for database {}", database);
         final View view;
         view = viewService.create(database, user, data);
-        final ViewBriefDto dto = viewMapper.viewToViewBriefDto(view);
+        final ViewBriefDto dto = metadataMapper.viewToViewBriefDto(view);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
@@ -201,7 +201,7 @@ public class ViewEndpoint {
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(viewMapper.viewToViewDto(view));
+                .body(metadataMapper.viewToViewDto(view));
     }
 
     @DeleteMapping("/{viewId}")

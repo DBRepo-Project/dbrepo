@@ -38,13 +38,4 @@ responses:
     content:
       application/json:
         schema:
-          type: object
-          properties:
-            results:
-              type: array
-              items:
-                type: object
-            type:
-              type: string
-              enum: [ database, table, view, column, user, identifier, concept, unit ]
-              description: "Same as the requested type"
+          $ref: '#/components/schemas/IndexDto'

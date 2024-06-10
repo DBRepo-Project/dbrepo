@@ -69,6 +69,7 @@ export const useTableService = (): any => {
 
   async function getData(databaseId: number, tableId: number, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
+    console.debug('====>', mapFilter(timestamp, page, size))
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size), timeout: 30_000 })
@@ -191,7 +192,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
-      axios.get<TableColumnEntityDto[]>(`/api/semantic/database/${databaseId}/table/${tableId}/column/${columnId}`, {timeout: 10000})
+      axios.get<TableColumnEntityDto[]>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`, {timeout: 10000})
         .then((response) => {
           console.info('Suggested semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
           resolve(response.data)
@@ -248,10 +249,10 @@ export const useTableService = (): any => {
   }
 
   function mapFilter(timestamp: Date | null, page: number | null, size: number | null) {
-    if (!timestamp) {
+    if (timestamp === null) {
       return {page, size}
     }
-    if (!page || !size) {
+    if (page === null || size === null) {
       return {timestamp}
     }
     return {timestamp, page, size}

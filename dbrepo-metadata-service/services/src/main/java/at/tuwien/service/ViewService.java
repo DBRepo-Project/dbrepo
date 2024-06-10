@@ -33,7 +33,8 @@ public interface ViewService {
      *
      * @param view The view.
      */
-    void delete(View view) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    void delete(View view) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+            ViewNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Creates a view in the container with given id and database with id with the given query.

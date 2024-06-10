@@ -62,8 +62,7 @@ swagger_config = {
         {
             "endpoint": "api-search",
             "route": "/api-search.json",
-            "rule_filter": lambda rule: rule.endpoint.startswith('actuator') or rule.endpoint.startswith(
-                'search') or rule.endpoint.startswith('database'),
+            "rule_filter": lambda rule: rule.endpoint.startswith('search'),
             "model_filter": lambda tag: True,  # all in
         }
     ],
@@ -75,6 +74,79 @@ swagger_config = {
 template = {
     "openapi": "3.0.0",
     "components": {
+        "schemas": {
+            "IndexDto": {
+                "required": ["results", "type"],
+                "properties": {
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "Same as the requested type",
+                        "enum": ["database", "table", "view", "column", "user", "identifier", "concept", "unit"]
+                    }
+                }
+            },
+            "IndexFieldsDto": {
+                "required": ["results"],
+                "type": "object",
+                "properties": {
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/IndexFieldDto"
+                        }
+                    }
+                }
+            },
+            "IndexFieldDto": {
+                "required": ["attr_name", "attr_friendly_name", "type"],
+                "type": "object",
+                "properties": {
+                    "attr_name": {
+                        "type": "string",
+                        "example": "name"
+                    },
+                    "attr_friendly_name": {
+                        "type": "string",
+                        "example": "Name"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "string",
+                        "description": "OpenSearch data types."
+                    }
+                }
+            },
+            "SearchResultDto": {
+                "required": ["results"],
+                "type": "object",
+                "properties": {
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "SearchRequestDto": {
+                "required": ["search_term", "field_value_pairs"],
+                "type": "object",
+                "properties": {
+                    "search_term": {
+                        "type": "string"
+                    },
+                    "field_value_pairs": {
+                        "type": "object"
+                    }
+                }
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -92,7 +164,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "__APPVERSION__",
+        "version": "1.4.4",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -104,7 +176,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__APPVERSION__/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/"
     },
     "servers": [
         {
@@ -211,7 +283,6 @@ def general_filter(index, results):
 
 
 @app.route("/health", methods=["GET"], endpoint="actuator_health")
-@swag_from("os-yml/health.yml")
 def health():
     return dict({"status": "UP"}), 200
 
@@ -356,12 +427,11 @@ def post_general_search(type):
     return dict({'results': response, 'type': type}), 200
 
 
-@app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="database_put_database")
+@app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="search_put_database")
 @metrics.gauge(name='dbrepo_search_update_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['admin'])
-@swag_from("os-yml/update_database.yml")
-def update_database(database_id: int):
+def update_database(database_id: int) -> Database | ApiError:
     logging.debug(f"updating database with id: {database_id}")
     try:
         payload: Database = Database.model_validate(request.json)
@@ -385,7 +455,6 @@ def update_database(database_id: int):
 @metrics.gauge(name='dbrepo_search_delete_database',
                description='Time needed to delete a database in the search database')
 @auth.login_required(role=['admin'])
-@swag_from("os-yml/delete_database.yml")
 def delete_database(database_id: int):
     try:
         OpenSearchClient().delete_database(database_id)

@@ -4,7 +4,7 @@ from dataclasses import field
 from enum import Enum
 import datetime
 from typing import List, Optional, Any, Annotated
-from pydantic import BaseModel, ConfigDict, PlainSerializer
+from pydantic import BaseModel, ConfigDict, PlainSerializer, Field
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -17,6 +17,18 @@ class ImageDate(BaseModel):
     unix_format: str
     has_time: bool
     created_at: Timestamp
+
+
+class JwtAuth(BaseModel):
+    access_token: str
+    refresh_token: str
+    id_token: str
+    expires_in: int
+    refresh_expires_in: int
+    not_before_policy: int = Field(alias='not-before-policy')
+    scope: str
+    session_state: str
+    token_type: str
 
 
 class Image(BaseModel):
@@ -51,6 +63,8 @@ class CreateUser(BaseModel):
 
 
 class UpdateUser(BaseModel):
+    theme: str
+    language: str
     firstname: Optional[str] = None
     lastname: Optional[str] = None
     affiliation: Optional[str] = None
@@ -60,11 +74,11 @@ class UpdateUser(BaseModel):
 class UserBrief(BaseModel):
     id: str
     username: str
-    name: str
-    orcid: str
-    qualified_name: str
-    given_name: str
-    family_name: str
+    name: Optional[str] = None
+    orcid: Optional[str] = None
+    qualified_name: Optional[str] = None
+    given_name: Optional[str] = None
+    family_name: Optional[str] = None
 
 
 class Container(BaseModel):
@@ -103,12 +117,12 @@ class ColumnBrief(BaseModel):
 
 class TableBrief(BaseModel):
     id: int
+    database_id: int
     name: str
-    description: str
-    owner: UserBrief
-    columns: List[ColumnBrief]
+    description: Optional[str]
     internal_name: str
     is_versioned: bool
+    owner: UserBrief
 
 
 class UserAttributes(BaseModel):
@@ -133,16 +147,6 @@ class UpdateUserTheme(BaseModel):
 
 class UpdateUserPassword(BaseModel):
     password: str
-
-
-class UserBrief(BaseModel):
-    id: str
-    username: str
-    name: Optional[str] = None
-    orcid: Optional[str] = None
-    qualified_name: Optional[str] = None
-    given_name: Optional[str] = None
-    family_name: Optional[str] = None
 
 
 class AccessType(str, Enum):
@@ -499,8 +503,9 @@ class CreateTable(BaseModel):
 class CreateTableColumn(BaseModel):
     name: str
     type: ColumnType
-    primary_key: bool
     null_allowed: bool
+    concept_uri: Optional[str] = None
+    unit_uri: Optional[str] = None
     index_length: Optional[int] = None
     size: Optional[int] = None
     d: Optional[int] = None
@@ -512,6 +517,7 @@ class CreateTableColumn(BaseModel):
 class CreateTableConstraints(BaseModel):
     uniques: List[List[str]] = field(default_factory=list)
     checks: List[str] = field(default_factory=list)
+    primary_key: List[str] = field(default_factory=list)
     foreign_keys: List[CreateForeignKey] = field(default_factory=list)
 
 
@@ -946,7 +952,12 @@ class Table(BaseModel):
 class TableMinimal(BaseModel):
     id: int
     database_id: int
-    name: str
+
+
+class ColumnMinimal(BaseModel):
+    id: int
+    table_id: int
+    database_id: int
 
 
 class Database(BaseModel):
@@ -971,30 +982,59 @@ class Database(BaseModel):
 
 
 class Unique(BaseModel):
-    uid: int
+    id: int
     table: TableMinimal
-    columns: List[Column]
+    columns: List[ColumnMinimal]
+
+
+class ForeignKeyReference(BaseModel):
+    id: int
+    foreign_key: ForeignKeyMinimal
+    column: ColumnMinimal
+    referenced_column: ColumnMinimal
+
+
+class ReferenceType(str, Enum):
+    """
+    Enumeration of reference types.
+    """
+    RESTRICT = "restrict"
+    CASCADE = "cascade"
+    SET_NULL = "set_null"
+    NO_ACTION = "no_action"
+    SET_DEFAULT = "set_default"
+
+
+class ForeignKeyMinimal(BaseModel):
+    id: int
 
 
 class ForeignKey(BaseModel):
+    id: int
     name: str
-    columns: List[Column]
+    references: List[ForeignKeyReference]
+    table: TableMinimal
     referenced_table: TableMinimal
-    referenced_columns: List[Column]
-    on_update: Optional[str] = None
-    on_delete: Optional[str] = None
+    on_update: Optional[ReferenceType] = None
+    on_delete: Optional[ReferenceType] = None
 
 
 class CreateForeignKey(BaseModel):
-    columns: List[Column]
-    referenced_table: Table
-    referenced_columns: List[Column]
-    on_update: Optional[str] = None
-    on_delete: Optional[str] = None
+    columns: List[str]
+    referenced_table: str
+    referenced_columns: List[str]
+    on_update: Optional[ReferenceType] = None
+    on_delete: Optional[ReferenceType] = None
+
+
+class PrimaryKey(BaseModel):
+    id: int
+    table: TableMinimal
+    column: ColumnMinimal
 
 
 class Constraints(BaseModel):
     uniques: List[Unique]
     foreign_keys: List[ForeignKey]
     checks: List[str]
-    primary_key: List[str]
+    primary_key: List[PrimaryKey]

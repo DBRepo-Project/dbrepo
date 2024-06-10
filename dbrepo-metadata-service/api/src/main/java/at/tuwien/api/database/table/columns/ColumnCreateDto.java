@@ -46,6 +46,12 @@ public class ColumnCreateDto {
     @Schema(example = "true")
     private Boolean nullAllowed;
 
+    @JsonProperty("concept_uri")
+    private String conceptUri;
+
+    @JsonProperty("unit_uri")
+    private String unitUri;
+
     @Schema(description = "date format id")
     private Long dfid;
 

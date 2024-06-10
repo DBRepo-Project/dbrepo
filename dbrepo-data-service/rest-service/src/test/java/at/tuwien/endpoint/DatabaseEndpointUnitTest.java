@@ -58,7 +58,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
-            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException {
+            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException, ServiceException {
 
         /* test */
         databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
@@ -67,7 +67,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
     public void create_noRole_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            SQLException, QueryStoreCreateException, DatabaseMalformedException {
+            SQLException, QueryStoreCreateException, DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -89,7 +89,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void create_containerNotFound_fails() throws RemoteUnavailableException, ContainerNotFoundException {
+    public void create_containerNotFound_fails() throws RemoteUnavailableException, ContainerNotFoundException,
+            ServiceException {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
@@ -105,7 +106,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void create_queryStore_fails() throws RemoteUnavailableException, ContainerNotFoundException, SQLException,
-            DatabaseMalformedException, QueryStoreCreateException {
+            DatabaseMalformedException, QueryStoreCreateException, ServiceException {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
@@ -126,7 +127,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void update_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
-            DatabaseMalformedException, DatabaseNotFoundException {
+            DatabaseMalformedException, DatabaseNotFoundException, ServiceException {
 
         /* test */
         databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
@@ -134,7 +135,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
-    public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException {
+    public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -148,7 +149,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void update_databaseNotFound_fails() throws RemoteUnavailableException, DatabaseNotFoundException {
+    public void update_databaseNotFound_fails() throws RemoteUnavailableException, DatabaseNotFoundException,
+            ServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -164,7 +166,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void update_password_fails() throws RemoteUnavailableException, DatabaseNotFoundException, SQLException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))

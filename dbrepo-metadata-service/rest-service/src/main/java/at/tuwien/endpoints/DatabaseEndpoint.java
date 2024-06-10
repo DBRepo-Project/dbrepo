@@ -8,7 +8,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,13 +45,13 @@ public class DatabaseEndpoint {
     private final RabbitConfig rabbitConfig;
     private final AccessService accessService;
     private final BrokerService brokerService;
-    private final DatabaseMapper databaseMapper;
+    private final MetadataMapper databaseMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, RabbitConfig rabbitConfig, AccessService accessService,
-                            BrokerService brokerService, DatabaseMapper databaseMapper,
+                            BrokerService brokerService, MetadataMapper databaseMapper,
                             StorageService storageService, DatabaseService databaseService) {
         this.userService = userService;
         this.rabbitConfig = rabbitConfig;
@@ -146,7 +146,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint create database, data.name={}", data.getName());
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(data, user);
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
@@ -198,7 +198,7 @@ public class DatabaseEndpoint {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.updateTableMetadata(database));
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.updateTableMetadata(database));
         return ResponseEntity.ok(dto);
     }
 
@@ -244,7 +244,7 @@ public class DatabaseEndpoint {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.updateViewMetadata(database));
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.updateViewMetadata(database));
         return ResponseEntity.ok(dto);
     }
 
@@ -290,7 +290,7 @@ public class DatabaseEndpoint {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.modifyVisibility(database, data));
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyVisibility(database, data));
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -340,7 +340,7 @@ public class DatabaseEndpoint {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.modifyOwner(database, newOwner));
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyOwner(database, newOwner));
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -399,7 +399,7 @@ public class DatabaseEndpoint {
         if (data.getKey() != null) {
             image = storageService.getBytes(data.getKey());
         }
-        dto = databaseMapper.databaseToDatabaseDto(databaseService.modifyImage(database, image));
+        dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyImage(database, image));
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -435,7 +435,7 @@ public class DatabaseEndpoint {
             ServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
         if (database.getOwner().equals(principal)) {
             log.debug("current logged-in user is also the owner: additionally load access list");
             /* only owner sees the access rights */

@@ -8,7 +8,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.mapper.UserMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AuthenticationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +20,19 @@ import java.util.UUID;
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final UserMapper userMapper;
+    private final MetadataMapper metadataMapper;
     private final KeycloakGateway keycloakGateway;
 
     @Autowired
-    public AuthenticationServiceImpl(UserMapper userMapper, KeycloakGateway keycloakGateway) {
-        this.userMapper = userMapper;
+    public AuthenticationServiceImpl(MetadataMapper metadataMapper, KeycloakGateway keycloakGateway) {
+        this.metadataMapper = metadataMapper;
         this.keycloakGateway = keycloakGateway;
     }
 
     @Override
     public void create(SignupRequestDto data) throws UserExistsException, ServiceException, ServiceConnectionException,
             EmailExistsException {
-        keycloakGateway.createUser(userMapper.signupRequestDtoToUserCreateDto(data));
+        keycloakGateway.createUser(metadataMapper.signupRequestDtoToUserCreateDto(data));
     }
 
     @Override

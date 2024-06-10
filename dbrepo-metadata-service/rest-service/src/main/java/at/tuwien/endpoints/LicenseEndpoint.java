@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.mapper.LicenseMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.LicenseService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,13 +29,13 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/license")
 public class LicenseEndpoint {
 
-    private final LicenseMapper licenseMapper;
     private final LicenseService licenseService;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public LicenseEndpoint(LicenseMapper licenseMapper, LicenseService licenseService) {
-        this.licenseMapper = licenseMapper;
+    public LicenseEndpoint(LicenseService licenseService, MetadataMapper metadataMapper) {
         this.licenseService = licenseService;
+        this.metadataMapper = metadataMapper;
     }
 
     @GetMapping
@@ -53,7 +53,7 @@ public class LicenseEndpoint {
         log.debug("endpoint list licenses");
         final List<LicenseDto> licenses = licenseService.findAll()
                 .stream()
-                .map(licenseMapper::licenseToLicenseDto)
+                .map(metadataMapper::licenseToLicenseDto)
                 .collect(Collectors.toList());
         log.trace("list licenses resulted in licenses {}", licenses);
         return ResponseEntity.status(HttpStatus.OK)

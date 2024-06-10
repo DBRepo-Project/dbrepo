@@ -1,10 +1,10 @@
 <template>
-  <div
-    v-if="view">
+  <div>
     <ViewToolbar />
     <v-window
       v-model="tab">
-      <v-window-item>
+      <v-window-item
+        v-if="view">
         <v-card variant="flat">
           <Summary
             v-if="hasIdentifier"
@@ -25,6 +25,10 @@
             <v-list
               v-if="view"
               dense>
+              <v-list-item
+                :title="$t('pages.view.name.title')">
+                {{ view.internal_name }}
+              </v-list-item>
               <v-list-item
                 :title="$t('pages.view.query.title')">
                 <pre>{{ view.query }}</pre>

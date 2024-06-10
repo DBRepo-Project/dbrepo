@@ -7,10 +7,9 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.OntologyMapper;
+import at.tuwien.mapper.SparqlMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
-import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Log4j2
@@ -32,11 +30,11 @@ public class EntityServiceImpl implements EntityService {
 
     private final Dataset dataset;
     private final JenaConfig jenaConfig;
-    private final OntologyMapper ontologyMapper;
+    private final SparqlMapper ontologyMapper;
     private final OntologyService ontologyService;
 
     @Autowired
-    public EntityServiceImpl(Dataset dataset, JenaConfig jenaConfig, OntologyMapper ontologyMapper,
+    public EntityServiceImpl(Dataset dataset, JenaConfig jenaConfig, SparqlMapper ontologyMapper,
                              OntologyService ontologyService) {
         this.dataset = dataset;
         this.jenaConfig = jenaConfig;

@@ -6,7 +6,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ContainerAlreadyExistsException;
 import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.mapper.ContainerMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.ImageRepository;
 import at.tuwien.service.ContainerService;
@@ -24,14 +24,14 @@ import java.util.Optional;
 @Service
 public class ContainerServiceImpl implements ContainerService {
 
-    private final ContainerMapper containerMapper;
+    private final MetadataMapper metadataMapper;
     private final ImageRepository imageRepository;
     private final ContainerRepository containerRepository;
 
     @Autowired
-    public ContainerServiceImpl(ContainerMapper containerMapper, ImageRepository imageRepository,
+    public ContainerServiceImpl(MetadataMapper metadataMapper, ImageRepository imageRepository,
                                 ContainerRepository containerRepository) {
-        this.containerMapper = containerMapper;
+        this.metadataMapper = metadataMapper;
         this.imageRepository = imageRepository;
         this.containerRepository = containerRepository;
     }
@@ -40,9 +40,9 @@ public class ContainerServiceImpl implements ContainerService {
     @Transactional
     public Container create(ContainerCreateDto data) throws ImageNotFoundException,
             ContainerAlreadyExistsException {
+        final String containerName = "dbrepo-userdb-" + metadataMapper.nameToInternalName(data.getName());
         /* check */
-        final Optional<Container> optional = containerRepository.findByInternalName(
-                containerMapper.containerToInternalContainerName(data.getName()));
+        final Optional<Container> optional = containerRepository.findByInternalName(containerName);
         if (optional.isPresent()) {
             log.error("Failed to create container with name {}: exists in metadata database", data.getName());
             throw new ContainerAlreadyExistsException("Failed to create container: exists in metadata database");
@@ -56,7 +56,7 @@ public class ContainerServiceImpl implements ContainerService {
         Container container = Container.builder()
                 .image(optional2.get())
                 .name(data.getName())
-                .internalName(containerMapper.containerToInternalContainerName(data.getName()))
+                .internalName(containerName)
                 .host(data.getHost())
                 .port(data.getPort())
                 .privilegedUsername(data.getPrivilegedUsername())

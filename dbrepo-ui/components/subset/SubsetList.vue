@@ -1,6 +1,11 @@
 <template>
   <div>
     <v-card
+      v-if="!loadingSubsets && queries.length === 0"
+      variant="flat"
+      rounded="0"
+      :text="$t('pages.database.subpages.subsets.empty')" />
+    <v-card
       variant="flat"
       rounded="0">
       <v-list-item
@@ -8,10 +13,6 @@
         lines="two">
         <Loading />
       </v-list-item>
-      <v-list-item
-        v-if="!loadingSubsets && queries.length === 0"
-        lines="two"
-        :title="$t('pages.database.subpages.subsets.empty')" />
       <div
         v-for="(item, i) in queries"
         :key="`q-${i}`">
@@ -79,8 +80,9 @@ export default {
         .then((queries) => {
           this.queries = queries
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingSubsets = false
         })
         .finally(() => {

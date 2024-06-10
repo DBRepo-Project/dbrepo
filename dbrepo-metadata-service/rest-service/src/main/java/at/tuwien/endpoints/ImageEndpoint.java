@@ -9,7 +9,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.mapper.ImageMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,13 +40,13 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/image")
 public class ImageEndpoint {
 
+    private final MetadataMapper metadataMapper;
     private final ImageServiceImpl imageService;
-    private final ImageMapper imageMapper;
 
     @Autowired
-    public ImageEndpoint(ImageServiceImpl imageService, ImageMapper imageMapper) {
+    public ImageEndpoint(ImageServiceImpl imageService, MetadataMapper metadataMapper) {
         this.imageService = imageService;
-        this.imageMapper = imageMapper;
+        this.metadataMapper = metadataMapper;
     }
 
     @GetMapping
@@ -65,7 +65,7 @@ public class ImageEndpoint {
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
-                        .map(imageMapper::containerImageToImageBriefDto)
+                        .map(metadataMapper::containerImageToImageBriefDto)
                         .collect(Collectors.toList()));
     }
 
@@ -100,7 +100,7 @@ public class ImageEndpoint {
             throw new ImageInvalidException("Failed to create image, default port is null");
         }
         final ContainerImage image = imageService.create(data, principal);
-        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
         log.trace("create image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -125,7 +125,7 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
         log.debug("endpoint find image, id={}", imageId);
         final ContainerImage image = imageService.find(imageId);
-        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
         log.trace("find image resulted in image {}", dto);
         return ResponseEntity.ok()
                 .body(dto);
@@ -154,7 +154,7 @@ public class ImageEndpoint {
         log.debug("endpoint update image, id={}, changeDto={}", imageId, changeDto);
         ContainerImage image = imageService.find(imageId);
         image = imageService.update(image, changeDto);
-        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
         log.trace("update image resulted in image {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

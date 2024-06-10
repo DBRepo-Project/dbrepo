@@ -170,7 +170,6 @@ def get_user_roles(user: User) -> List[str]:
 
 
 @app.route("/health", methods=["GET"], endpoint="actuator_health")
-@swag_from("ds-yml/health.yml")
 def health():
     logging.debug("endpoint health, body=%s", request)
     res = dumps({"status": "UP", "message": "Application is up and running"})

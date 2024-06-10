@@ -173,12 +173,13 @@ datadb:
   service:
     extraPorts:
       - name: "sidecar"
-        port: 80
+        port: 8080
         targetPort: 8080
         protocol: TCP
   sidecars:
     - name: sidecar
       image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
+      imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
         runAsGroup: 0
@@ -430,6 +431,7 @@ brokerservice:
 
 ## @param analyseservice.enabled Enable the Broker Service.
 ## @skip analyseservice.image
+## @param analyseservice.endpoint The url of the endpoint.
 ## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
 ## @param analyseservice.replicaCount The number of replicas.
 ##
@@ -439,6 +441,7 @@ analyseservice:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.4
     pullPolicy: Always
     debug: false
+  endpoint: http://analyse-service
   s3:
     endpoint: http://storageservice-s3:9000
   replicaCount: 2
@@ -447,6 +450,7 @@ analyseservice:
 
 ## @param metadataservice.enabled Enable the Metadata Service.
 ## @skip metadataservice.image
+## @param metadataservice.endpoint The Metadata Service endpoint.
 ## @param metadataservice.admin.email The OAI-PMH exposed admin e-mail.
 ## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
 ## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
@@ -469,6 +473,7 @@ metadataservice:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.4
     pullPolicy: Always
     debug: false
+  endpoint: http://metadata-service
   admin:
     email: noreply@example.com
   deletedRecord: permanent

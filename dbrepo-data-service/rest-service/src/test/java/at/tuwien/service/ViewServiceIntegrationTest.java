@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static at.tuwien.service.SchemaServiceIntegrationTest.assertViewColumn;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,7 +59,21 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
     public void create_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+        final ViewDto response = viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+        assertEquals(VIEW_1_NAME, response.getName());
+        assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
+        assertEquals(VIEW_1_QUERY, response.getQuery());
+        assertNotNull(response.getQueryHash());
+        assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
+        final List<ViewColumnDto> columns = response.getColumns();
+        assertEquals(VIEW_1_COLUMNS.size(), columns.size());
+        ViewColumnDto ref = VIEW_1_COLUMNS_DTO.get(0);
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(0), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+        ref = VIEW_1_COLUMNS_DTO.get(1);
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(1), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+        ref = VIEW_1_COLUMNS_DTO.get(2);
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(2), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+
     }
 
     @Test

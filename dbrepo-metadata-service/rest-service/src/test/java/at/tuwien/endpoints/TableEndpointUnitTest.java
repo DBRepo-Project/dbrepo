@@ -897,7 +897,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                                                       Principal principal, User user, DatabaseAccess access)
             throws MalformedException, NotAllowedException, ServiceException, ServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
-            TableExistsException, SearchServiceException, SearchServiceConnectionException {
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
 
         /* mock */
         if (principal != null) {

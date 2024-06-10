@@ -8,7 +8,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.ViewMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
@@ -26,15 +26,15 @@ import java.util.Optional;
 @Service
 public class ViewServiceImpl implements ViewService {
 
-    private final ViewMapper viewMapper;
+    private final MetadataMapper metadataMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, DataServiceGateway dataServiceGateway,
+    public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
                            DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
-        this.viewMapper = viewMapper;
+        this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
@@ -91,7 +91,7 @@ public class ViewServiceImpl implements ViewService {
                 .vdbid(database.getId())
                 .database(database)
                 .name(data.getName())
-                .internalName(viewMapper.nameToInternalName(data.getName()))
+                .internalName(metadataMapper.nameToInternalName(data.getName()))
                 .createdBy(creator.getId())
                 .creator(creator)
                 .identifiers(new LinkedList<>())
@@ -105,7 +105,13 @@ public class ViewServiceImpl implements ViewService {
                 .build();
         /* create in data service */
         data.setName(view.getInternalName());
-        final ViewDto dto = dataServiceGateway.createView(database.getId(), data);
+        final ViewDto rawView = dataServiceGateway.createView(database.getId(), data);
+        view.setColumns(rawView.getColumns()
+                .stream()
+                .map(metadataMapper::viewColumnDtoToViewColumn)
+                .toList());
+        view.getColumns()
+                .forEach(column -> column.setView(view));
         database.getViews()
                 .add(view);
         database = databaseRepository.save(database);

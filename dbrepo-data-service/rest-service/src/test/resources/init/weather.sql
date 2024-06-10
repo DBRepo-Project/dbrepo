@@ -13,12 +13,27 @@ CREATE TABLE weather_aus
 (
     id       BIGINT           NOT NULL PRIMARY KEY,
     `date`   DATE             NOT NULL,
-    location VARCHAR(255)     NULL,
+    location VARCHAR(255)     NULL COMMENT 'Closest city',
     mintemp  DOUBLE PRECISION NULL,
     rainfall DOUBLE PRECISION NULL,
-    FOREIGN KEY (location) REFERENCES weather_location (location),
+    FOREIGN KEY (location) REFERENCES weather_location (location) ON DELETE SET NULL,
     UNIQUE (`date`),
     CHECK (`mintemp` > 0)
+) WITH SYSTEM VERSIONING COMMENT 'Weather in Australia';
+
+CREATE TABLE complex_primary_key
+(
+    id       BIGINT NOT NULL,
+    other_id BIGINT NOT NULL,
+    PRIMARY KEY (id, other_id)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE complex_foreign_keys
+(
+    id         BIGINT NOT NULL PRIMARY KEY,
+    weather_id BIGINT NOT NULL,
+    other_id   BIGINT   NOT NULL,
+    FOREIGN KEY (weather_id, other_id) REFERENCES complex_primary_key (id, `other_id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE sensor

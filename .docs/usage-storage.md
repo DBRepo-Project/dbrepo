@@ -53,7 +53,7 @@ $ aws --endpoint-url http://localhost:9000 \
 
 ## Other
 
-Alternatively, you can use the middleware of the [User Interface](../system-other-ui/) to upload files.
+Alternatively, you can use the middleware of the [User Interface](./system-other-ui/) to upload files.
 
 Alternatively, you can use a S3-compatible client:
 

@@ -4,7 +4,8 @@ import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.OntologyNotFoundException;
-import at.tuwien.mapper.OntologyMapper;
+import at.tuwien.mapper.MetadataMapper;
+import at.tuwien.mapper.SparqlMapper;
 import at.tuwien.repository.OntologyRepository;
 import at.tuwien.service.OntologyService;
 import lombok.extern.log4j.Log4j2;
@@ -21,12 +22,15 @@ import java.util.Optional;
 @Service
 public class OntologyServiceImpl implements OntologyService {
 
-    private final OntologyMapper ontologyMapper;
+    private final SparqlMapper sparqlMapper;
+    private final MetadataMapper metadataMapper;
     private final OntologyRepository ontologyRepository;
 
     @Autowired
-    public OntologyServiceImpl(OntologyMapper ontologyMapper, OntologyRepository ontologyRepository) {
-        this.ontologyMapper = ontologyMapper;
+    public OntologyServiceImpl(SparqlMapper ontologyMapper, MetadataMapper metadataMapper,
+                               OntologyRepository ontologyRepository) {
+        this.sparqlMapper = ontologyMapper;
+        this.metadataMapper = metadataMapper;
         this.ontologyRepository = ontologyRepository;
     }
 
@@ -71,7 +75,7 @@ public class OntologyServiceImpl implements OntologyService {
     @Override
     public Ontology create(OntologyCreateDto data, Principal principal) {
         /* delete in metadata database */
-        final Ontology entity = ontologyMapper.ontologyCreateDtoToOntology(data);
+        final Ontology entity = metadataMapper.ontologyCreateDtoToOntology(data);
         final Ontology ontology = ontologyRepository.save(entity);
         log.info("Created ontology with id {} ", ontology.getId());
         return ontology;

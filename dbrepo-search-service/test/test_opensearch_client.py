@@ -2,7 +2,8 @@ import datetime
 import unittest
 
 import opensearchpy
-from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Table, Column, ColumnType, Constraints
+from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Table, Column, ColumnType, Constraints, \
+    PrimaryKey, TableMinimal, ColumnMinimal
 from app import app
 
 from clients.opensearch_client import OpenSearchClient
@@ -56,7 +57,11 @@ class OpenSearchClientTest(unittest.TestCase):
                                 routing_key="dbrepo.test_tuw1.test_table",
                                 is_public=True,
                                 database_id=req.id,
-                                constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=["id"]),
+                                constraints=Constraints(uniques=[], foreign_keys=[], checks=[],
+                                                        primary_key=[PrimaryKey(id=1,
+                                                                                table=TableMinimal(id=1, database_id=1),
+                                                                                column=ColumnMinimal(id=1, table_id=1,
+                                                                                                     database_id=1))]),
                                 is_versioned=True,
                                 created_by="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                                 creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",

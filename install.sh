@@ -58,7 +58,7 @@ fi
 # environment
 echo "[🚀] Gathering environment ..."
 mkdir -p ./dist
-curl -sSL -o ./docker-compose.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/docker-compose.prod.yml"
+curl -sSL -o ./docker-compose.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/docker-compose.yml"
 curl -sSL -o ./dist/2_setup-data.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/2_setup-data.sql"
 curl -sSL -o ./dist/rabbitmq.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/rabbitmq.conf"
 curl -sSL -o ./dist/enabled_plugins "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/enabled_plugins"

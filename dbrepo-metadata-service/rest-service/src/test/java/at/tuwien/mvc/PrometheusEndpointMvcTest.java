@@ -538,7 +538,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.updateStatistic(DATABASE_1_ID, TABLE_1_ID, TableStatisticDto.builder().build());
+            tableEndpoint.updateStatistic(DATABASE_1_ID, TABLE_1_ID);
         } catch (Exception e) {
             /* ignore */
         }
