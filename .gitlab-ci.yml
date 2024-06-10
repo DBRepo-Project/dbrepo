@@ -598,6 +598,8 @@ release-chart:
   except:
     refs:
       - release-latest
+  needs:
+    - build-helm
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
     - "apk add sed helm curl"
