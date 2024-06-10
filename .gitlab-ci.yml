@@ -605,7 +605,6 @@ release-chart:
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release
