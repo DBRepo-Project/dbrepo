@@ -76,6 +76,10 @@ public class ViewColumnDto {
 
     private UnitDto unit;
 
+    @Size(max = 2048)
+    @Schema(example = "Column comment")
+    private String description;
+
     @NotNull
     @JsonProperty("is_public")
     @Schema(example = "true")

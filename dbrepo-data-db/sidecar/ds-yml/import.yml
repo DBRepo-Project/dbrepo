@@ -11,8 +11,8 @@ parameters:
     description: Name of the object file to import from the Storage Service
     required: true
 security:
-- bearerAuth: []
-- basicAuth: []
+  - bearerAuth: [ ]
+  - basicAuth: [ ]
 responses:
   202:
     description: Imported the .csv

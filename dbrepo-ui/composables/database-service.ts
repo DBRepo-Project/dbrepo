@@ -60,7 +60,7 @@ export const useDatabaseService = (): any => {
           resolve(count);
         })
         .catch((error) => {
-          console.error('Failed to find databases', error);
+          console.error('Failed to find databases count', error);
           reject(axiosErrorToApiError(error));
         });
     });
@@ -72,7 +72,7 @@ export const useDatabaseService = (): any => {
     return new Promise<Date>((resolve, reject) => {
       axios.head<Date>('/api/database')
         .then((response) => {
-          const date: Date = Date(response.headers['Date'])
+          const date: Date = new Date(response.headers['Date'])
           console.info(`Found ${date} server time`);
           resolve(date);
         })
@@ -85,7 +85,7 @@ export const useDatabaseService = (): any => {
 
   async function findOne(id: number): Promise<DatabaseDto | null> {
     const axios = useAxiosInstance();
-    console.debug('find databases with id', id);
+    console.debug('find database with id', id);
     return new Promise((resolve, reject) => {
       axios.get<DatabaseDto>(`/api/database/${id}`)
         .then((response) => {
@@ -93,7 +93,7 @@ export const useDatabaseService = (): any => {
           resolve(response.data);
         })
         .catch((error) => {
-          console.error('Failed to find databases', error);
+          console.error('Failed to find database', error);
           reject(axiosErrorToApiError(error));
         });
     });

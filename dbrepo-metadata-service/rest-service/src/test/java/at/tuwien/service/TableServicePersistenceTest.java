@@ -37,7 +37,6 @@ import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
-@Disabled("CI/CD")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class TableServicePersistenceTest extends AbstractUnitTest {
@@ -79,7 +78,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
     @Test
     @Transactional
     public void create_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
-            UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException {
+            UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")
                 .description("A wonderful table")

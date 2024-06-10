@@ -219,7 +219,8 @@ export default {
       userService.update(this.user.id, payload)
         .then((user) => {
           console.info('Updated user information')
-          this.$toast.success(this.$t('success.user.info'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.user.info'))
           this.userStore.setUser(user)
           /* language */
           this.userStore.setLocale(this.model.language)
@@ -286,7 +287,8 @@ export default {
     },
     copy () {
       navigator.clipboard.writeText(this.model.id)
-      this.$toast.success(this.$t('success.clipboard.user'))
+      const toast = useToastInstance()
+      toast.success(this.$t('success.clipboard.user'))
     }
   }
 }

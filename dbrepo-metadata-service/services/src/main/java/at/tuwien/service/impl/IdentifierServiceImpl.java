@@ -14,7 +14,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.*;
@@ -39,21 +38,18 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final MetadataConfig metadataConfig;
     private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
-    private final IdentifierMapper identifierMapper;
     private final DataServiceGateway dataServiceGateway;
     private final IdentifierRepository identifierRepository;
     private final SearchServiceGateway searchServiceGateway;
 
 
     public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine, MetadataMapper metadataMapper,
-                                 IdentifierMapper identifierMapper, MetadataConfig metadataConfig,
-                                 DataServiceGateway dataServiceGateway, IdentifierRepository identifierRepository,
-                                 SearchServiceGateway searchServiceGateway) {
+                                 MetadataConfig metadataConfig, DataServiceGateway dataServiceGateway,
+                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway) {
         this.viewService = viewService;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
-        this.identifierMapper = identifierMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.identifierRepository = identifierRepository;
         this.searchServiceGateway = searchServiceGateway;
@@ -117,7 +113,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (type != null) {
             log.trace("filter by type: {}", type);
             stream = stream.filter(i -> Objects.nonNull(i.getType()))
-                    .filter(i -> i.getType().equals(identifierMapper.identifierTypeDtoToIdentifierType(type)));
+                    .filter(i -> i.getType().equals(metadataMapper.identifierTypeDtoToIdentifierType(type)));
         }
         if (databaseId != null) {
             log.trace("filter by database id: {}", databaseId);
@@ -171,20 +167,20 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.setQueryId(data.getQueryId());
         identifier.setViewId(data.getViewId());
         identifier.setDoi(data.getDoi());
-        identifier.setLanguage(identifierMapper.languageTypeDtoToLanguageType(data.getLanguage()));
+        identifier.setLanguage(metadataMapper.languageTypeDtoToLanguageType(data.getLanguage()));
         identifier.setLicenses(new LinkedList<>(data.getLicenses()
                 .stream()
-                .map(identifierMapper::licenseDtoToLicense)
+                .map(metadataMapper::licenseDtoToLicense)
                 .toList()));
         identifier.setPublicationDay(data.getPublicationDay());
         identifier.setPublicationMonth(data.getPublicationMonth());
         identifier.setPublicationYear(data.getPublicationYear());
-        identifier.setType(identifierMapper.identifierTypeDtoToIdentifierType(data.getType()));
+        identifier.setType(metadataMapper.identifierTypeDtoToIdentifierType(data.getType()));
         /* create in metadata database */
         if (data.getCreators() != null) {
             identifier.setCreators(new LinkedList<>(data.getCreators()
                     .stream()
-                    .map(identifierMapper::creatorCreateDtoToCreator)
+                    .map(metadataMapper::creatorCreateDtoToCreator)
                     .peek(c -> c.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} creator(s)", identifier.getCreators().size());
@@ -192,7 +188,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getRelatedIdentifiers() != null) {
             identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
                     .stream()
-                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
+                    .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
                     .peek(r -> r.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} related identifier(s)", identifier.getRelatedIdentifiers().size());
@@ -200,7 +196,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getTitles() != null) {
             identifier.setTitles(new LinkedList<>(data.getTitles()
                     .stream()
-                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
+                    .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
                     .peek(t -> t.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} title(s)", identifier.getTitles().size());
@@ -208,7 +204,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getDescriptions() != null) {
             identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
                     .stream()
-                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
+                    .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
                     .peek(d -> d.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} description(s)", identifier.getDescriptions().size());
@@ -216,7 +212,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getFunders() != null) {
             identifier.setFunders(new LinkedList<>(data.getFunders()
                     .stream()
-                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
+                    .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
                     .peek(d -> d.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} funder(s)", identifier.getFunders().size());
@@ -229,7 +225,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier create(Database database, User user, IdentifierCreateDto data) throws SearchServiceException,
             ServiceException, QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
-        final Identifier identifier = identifierMapper.identifierCreateDtoToIdentifier(data);
+        final Identifier identifier = metadataMapper.identifierCreateDtoToIdentifier(data);
         identifier.setDatabase(database);
         identifier.setCreatedBy(user.getId());
         identifier.setCreator(user);
@@ -238,7 +234,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getCreators() != null) {
             identifier.setCreators(new LinkedList<>(data.getCreators()
                     .stream()
-                    .map(identifierMapper::creatorCreateDtoToCreator)
+                    .map(metadataMapper::creatorCreateDtoToCreator)
                     .peek(c -> c.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} creator(s)", identifier.getCreators().size());
@@ -246,7 +242,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getRelatedIdentifiers() != null) {
             identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
                     .stream()
-                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
+                    .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
                     .peek(r -> r.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} related identifier(s)", identifier.getRelatedIdentifiers().size());
@@ -255,7 +251,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setTitles(null);
             identifier.setTitles(new LinkedList<>(data.getTitles()
                     .stream()
-                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
+                    .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
                     .peek(t -> t.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} title(s)", identifier.getTitles().size());
@@ -263,7 +259,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getDescriptions() != null) {
             identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
                     .stream()
-                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
+                    .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
                     .peek(d -> d.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} description(s)", identifier.getDescriptions().size());
@@ -271,7 +267,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getFunders() != null) {
             identifier.setFunders(new LinkedList<>(data.getFunders()
                     .stream()
-                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
+                    .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
                     .peek(d -> d.setIdentifier(identifier))
                     .toList()));
             log.debug("set {} funder(s)", identifier.getFunders().size());

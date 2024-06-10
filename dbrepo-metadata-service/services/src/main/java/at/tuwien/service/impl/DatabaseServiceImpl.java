@@ -18,9 +18,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.TableMapper;
-import at.tuwien.mapper.ViewMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;
@@ -35,21 +33,17 @@ import java.util.*;
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
-    private final ViewMapper viewMapper;
-    private final TableMapper tableMapper;
-    private final DatabaseMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public DatabaseServiceImpl(ViewMapper viewMapper, TableMapper tableMapper, DatabaseMapper databaseMapper,
-                               ContainerService containerService, DatabaseRepository databaseRepository,
-                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
-        this.viewMapper = viewMapper;
-        this.tableMapper = tableMapper;
-        this.databaseMapper = databaseMapper;
+    public DatabaseServiceImpl(MetadataMapper metadataMapper, ContainerService containerService,
+                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
+                               SearchServiceGateway searchServiceGateway) {
+        this.metadataMapper = metadataMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
@@ -96,7 +90,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         Database database = Database.builder()
                 .isPublic(data.getIsPublic())
                 .name(data.getName())
-                .internalName(databaseMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
+                .internalName(metadataMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
                 .cid(data.getCid())
                 .container(container)
                 .ownedBy(user.getId())
@@ -206,7 +200,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 continue;
             }
             log.debug("fetched unknown table from data service: {}.{}", database.getInternalName(), table.getInternalName());
-            final Table tableEntity = tableMapper.tableDtoToTable(table);
+            final Table tableEntity = metadataMapper.tableDtoToTable(table);
             tableEntity.setDatabase(database);
             tableEntity.getColumns()
                     .forEach(column -> {
@@ -229,7 +223,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                         fk.setTable(tableEntity);
                     });
             /* map primary key constraint */
-            for (PrimaryKeyDto key : table.getConstraints().getPrimaryKey()) {
+            for (PrimaryKey key : tableEntity.getConstraints().getPrimaryKey()) {
                 final Optional<TableColumn> optional = tableEntity.getColumns()
                         .stream()
                         .filter(c -> c.getInternalName().equals(key.getColumn().getInternalName()))
@@ -238,12 +232,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                     log.error("Failed to find primary key column {} in table {}.{}", key.getColumn().getInternalName(), database.getInternalName(), table.getInternalName());
                     throw new MalformedException("Failed to find primary key column: " + key.getColumn().getInternalName());
                 }
-                tableEntity.getConstraints()
-                        .getPrimaryKey()
-                        .add(PrimaryKey.builder()
-                                .table(tableEntity)
-                                .column(optional.get())
-                                .build());
+                key.setTable(tableEntity);
+                key.setColumn(optional.get());
             }
             database.getTables()
                     .add(tableEntity);
@@ -267,7 +257,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 continue;
             }
             log.debug("fetched unknown view from data service: {}.{}", database.getInternalName(), view.getInternalName());
-            final View viewEntity = viewMapper.viewDtoToView(view);
+            final View viewEntity = metadataMapper.viewDtoToView(view);
             viewEntity.setDatabase(database);
             for (ViewColumn column : viewEntity.getColumns()) {
                 column.setView(viewEntity);

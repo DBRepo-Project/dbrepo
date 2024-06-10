@@ -5,7 +5,7 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.mapper.ImageMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.ImageRepository;
 import at.tuwien.service.ImageService;
 import jakarta.validation.ConstraintViolationException;
@@ -23,13 +23,13 @@ import java.util.Optional;
 @Service
 public class ImageServiceImpl implements ImageService {
 
-    private final ImageMapper imageMapper;
+    private final MetadataMapper metadataMapper;
     private final ImageRepository imageRepository;
 
     @Autowired
-    public ImageServiceImpl(ImageRepository imageRepository, ImageMapper imageMapper) {
+    public ImageServiceImpl(ImageRepository imageRepository, MetadataMapper metadataMapper) {
         this.imageRepository = imageRepository;
-        this.imageMapper = imageMapper;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException {
-        final ContainerImage image = imageMapper.createImageDtoToContainerImage(createDto);
+        final ContainerImage image = metadataMapper.createImageDtoToContainerImage(createDto);
         if (imageRepository.findByNameAndVersion(createDto.getName(), createDto.getVersion()).isPresent()) {
             log.error("Failed to create image {}:{}: exists in the metadata database",
                     createDto.getName(), createDto.getVersion());

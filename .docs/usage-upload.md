@@ -11,7 +11,7 @@ We recommend using a TUS-compatible client:
 * [tus-js-client](https://github.com/tus/tus-js-client) (JavaScript/Node.js)
 * [tusd](https://github.com/tus/tusd) (Go)
 
-Upload a file to the `dbrepo-upload` bucket in the [Storage Service](../system-services-storage/) using the Node.js
+Upload a file to the `dbrepo-upload` bucket in the [Storage Service](./system-services-storage/) using the Node.js
 middleware.
 
 === "Terminal"

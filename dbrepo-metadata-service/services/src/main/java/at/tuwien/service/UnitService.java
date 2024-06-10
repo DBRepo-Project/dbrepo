@@ -2,10 +2,13 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.exception.UnitNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface UnitService {
+
+    TableColumnUnit create(TableColumnUnit unit);
 
     /**
      * Finds all table column units in the metadata database.

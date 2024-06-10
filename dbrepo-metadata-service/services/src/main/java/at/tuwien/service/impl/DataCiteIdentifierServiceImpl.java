@@ -15,8 +15,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DataCiteMapper;
-import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     private final RestTemplate restTemplate;
     private final DataCiteConfig dataCiteConfig;
-    private final DataCiteMapper dataCiteMapper;
+    private final MetadataMapper metadataMapper;
     private final EndpointConfig endpointConfig;
     private final IdentifierService identifierService;
     private final IdentifierRepository identifierRepository;
@@ -51,12 +50,12 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     };
 
     public DataCiteIdentifierServiceImpl(@Qualifier("dataCiteRestTemplate") RestTemplate restTemplate,
-                                         DataCiteConfig dataCiteConfig, DataCiteMapper dataCiteMapper,
+                                         DataCiteConfig dataCiteConfig, MetadataMapper metadataMapper,
                                          EndpointConfig endpointConfig, IdentifierServiceImpl identifierService,
                                          IdentifierRepository identifierRepository) {
         this.restTemplate = restTemplate;
         this.dataCiteConfig = dataCiteConfig;
-        this.dataCiteMapper = dataCiteMapper;
+        this.metadataMapper = metadataMapper;
         this.endpointConfig = endpointConfig;
         this.identifierService = identifierService;
         this.identifierRepository = identifierRepository;
@@ -130,7 +129,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                 DataCiteBody.<DataCiteCreateDoi>builder()
                         .data(DataCiteData.<DataCiteCreateDoi>builder()
                                 .type("dois")
-                                .attributes(dataCiteMapper.identifierToDataCiteCreateDoi(identifier,
+                                .attributes(metadataMapper.identifierToDataCiteCreateDoi(identifier,
                                         endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
                                         dataCiteConfig.getPrefix(), event))
                                 .build())

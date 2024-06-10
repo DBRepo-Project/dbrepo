@@ -1,7 +1,7 @@
 FROM python:3.11-alpine
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apk add bash curl
+RUN apk add --no-cache curl bash jq
 
 WORKDIR /home/alpine
 

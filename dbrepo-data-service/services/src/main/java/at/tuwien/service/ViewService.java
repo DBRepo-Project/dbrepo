@@ -58,5 +58,5 @@ public interface ViewService {
 
     ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException;
+            StorageUnavailableException, ServiceException, RemoteUnavailableException;
 }

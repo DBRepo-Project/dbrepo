@@ -18,7 +18,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ImportCsvDto {
 
-    @NotBlank(message = "location is required")
+    @NotBlank
     @Schema(example = "file.csv")
     private String location;
 

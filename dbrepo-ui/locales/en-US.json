@@ -88,12 +88,12 @@
           },
           "publication-year": {
             "label": "Publication Year",
-            "hint": "Required."
+            "hint": "Required"
           },
           "titles": {
             "title": {
               "label": "Title",
-              "hint": "Required."
+              "hint": "Required"
             },
             "type": {
               "label": "Type",
@@ -103,7 +103,7 @@
               "label": "Language",
               "hint": ""
             },
-            "subtitle": "A name or title by which a resource is known. May be the title of a dataset.",
+            "subtitle": "A name or title by which a resource is known. May be the title of a dataset",
             "remove": {
               "text": "Remove"
             },
@@ -116,15 +116,15 @@
             "subtitle": "Do you already have a DOI for this dataset?",
             "label": "Provide your existing DOI here",
             "hint": "A DOI allows your upload to be easily and unambiguously cited. Example: 10.1234/foo.bar",
-            "mint": "A PID will be minted after saving."
+            "mint": "A PID will be minted after saving"
           },
           "doi": {
-            "mint": "A DOI will be created after saving."
+            "mint": "A DOI will be created after saving"
           },
           "descriptions": {
             "description": {
               "label": "Description",
-              "hint": "Required."
+              "hint": "Required"
             },
             "type": {
               "label": "Type",
@@ -134,7 +134,7 @@
               "label": "Language",
               "hint": ""
             },
-            "subtitle": "All additional information. May be used for technical information or detailed information associated with a dataset.",
+            "subtitle": "All additional information. May be used for technical information or detailed information associated with a dataset",
             "remove": {
               "text": "Remove"
             },
@@ -144,16 +144,16 @@
           },
           "publisher": {
             "title": "Publication Information",
-            "subtitle": "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This property will be used to formulate the citation, so consider the prominence of the role.",
+            "subtitle": "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This property will be used to formulate the citation, so consider the prominence of the role",
             "label": "Publisher",
-            "hint": "Required."
+            "hint": "Required"
           },
           "related-identifiers": {
             "title": "Related Identifier",
-            "subtitle": "Identifiers of related resources. These must be globally unique identifiers.",
+            "subtitle": "Identifiers of related resources. These must be globally unique identifiers",
             "identifier": {
               "label": "Identifier",
-              "hint": "Required."
+              "hint": "Required"
             },
             "type": {
               "label": "Type",
@@ -172,14 +172,14 @@
           },
           "licenses": {
             "title": "License",
-            "subtitle": "Identifiers of related resources. These must be globally unique identifiers.",
+            "subtitle": "Identifiers of related resources. These must be globally unique identifiers",
             "license": {
               "label": "License"
             }
           },
           "language": {
             "title": "Language",
-            "subtitle": "The primary language of the dataset.",
+            "subtitle": "The primary language of the dataset",
             "language": {
               "label": "Language",
               "hint": ""
@@ -187,14 +187,14 @@
           },
           "funders": {
             "title": "Funding Reference",
-            "subtitle": "Information about financial support (funding) for the dataset being registered.",
+            "subtitle": "Information about financial support (funding) for the dataset being registered",
             "identifier": {
               "label": "Funder Identifier",
               "hint": "Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
             },
             "name": {
               "label": "Funder Name",
-              "hint": "Required."
+              "hint": "Required"
             },
             "award-number": {
               "label": "Award Number",
@@ -212,7 +212,7 @@
             }
           },
           "creators": {
-            "subtitle": "The main researchers involved in producing the data, in priority order.",
+            "subtitle": "The main researchers involved in producing the data, in priority order",
             "identifier": {
               "label": "Name Identifier",
               "hint": "Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
@@ -239,7 +239,7 @@
             },
             "name": {
               "label": "Name",
-              "hint": "Required."
+              "hint": "Required"
             },
             "affiliation-identifier": {
               "label": "Affiliation Identifier",
@@ -253,7 +253,7 @@
           },
           "summary": {
             "title": "Summary",
-            "subtitle": "Details of the identifier that will be created to identify this record.",
+            "subtitle": "Details of the identifier that will be created to identify this record",
             "record": "The identifier describes",
             "publisher": "Publisher",
             "license": "License",
@@ -287,8 +287,8 @@
         "secure": "secure",
         "insecure": "insecure",
         "permissions": {
-          "write": "You can write to this table.",
-          "read": "You can read all contents of this table."
+          "write": "You can write to this table",
+          "read": "You can read all contents of this table"
         }
       },
       "protocol": {
@@ -322,32 +322,32 @@
           },
           "dataset": {
             "title": "Dataset Structure",
-            "warn": "The dataset schema does not match the target table schema. You can still force the import but it is not recommended."
+            "warn": "The dataset schema does not match the target table schema. You can still force the import but it is not recommended"
           },
           "name": {
             "label": "Name",
-            "hint": "Required. Maximum length is 64 characters."
+            "hint": "Required. Maximum length is 64 characters"
           },
           "generated": {
             "label": "Preview Table Name",
-            "hint": "Readonly."
+            "hint": "Readonly"
           },
           "description": {
             "label": "Description",
-            "hint": "Optional. Short and concise description of the data."
+            "hint": "Optional. Short and concise description of the data"
           },
           "separator": {
             "label": "Column Separator",
-            "hint": "Optional. Character that separates the columns.",
+            "hint": "Optional. Character that separates the columns",
             "warn": {
               "prefix": "We analysed your .csv/.tsv dataset and found that the separator you provided",
               "middle": "is not correct, the separator",
-              "suffix": "is more likely to be correct. It is advised to change the separator above."
+              "suffix": "is more likely to be correct. It is advised to change the separator above"
             }
           },
           "skip": {
             "label": "Skip Rows",
-            "hint": "Optional. Number of rows to skip, e.g. when the first one contains header and no data."
+            "hint": "Optional. Number of rows to skip, e.g. when the first one contains header and no data"
           },
           "quote": {
             "label": "Quote Encoding",
@@ -355,11 +355,11 @@
           },
           "terminator": {
             "label": "Line Termination Encoding",
-            "hint": "Optional. Character that terminates the newlines.",
+            "hint": "Optional. Character that terminates the newlines",
             "warn": {
               "prefix": "We analysed your .csv/.tsv dataset and found that the line termination encoding you provided",
               "middle": "is not correct, the line termination encoding",
-              "suffix": "is more likely to be correct. It is advised to change the line termination encoding above."
+              "suffix": "is more likely to be correct. It is advised to change the line termination encoding above"
             }
           },
           "null": {
@@ -368,16 +368,16 @@
           },
           "true": {
             "label": "True Encoding",
-            "hint": "Optional. Character sequence that represents boolean true, e.g. 1, true, yes."
+            "hint": "Optional. Character sequence that represents boolean true, e.g. 1, true, yes"
           },
           "false": {
             "label": "False Encoding",
-            "hint": "Optional. Character sequence that represents boolean false, e.g. 0, false, no."
+            "hint": "Optional. Character sequence that represents boolean false, e.g. 0, false, no"
           },
           "file": {
             "title": "Dataset Upload",
             "label": "Dataset File",
-            "hint": "Required. Needs to be in .csv/.tsv file format."
+            "hint": "Required. Needs to be in .csv/.tsv file format"
           },
           "preview": {
             "title": "Preview"
@@ -385,7 +385,7 @@
           "summary": {
             "title": "Summary",
             "prefix": "Imported",
-            "suffix": "rows from dataset."
+            "suffix": "rows from dataset"
           },
           "analyse": {
             "text": "Upload & Analyse"
@@ -398,7 +398,7 @@
           },
           "name": {
             "label": "Table Name",
-            "hint": "Required."
+            "hint": "Required"
           },
           "description": {
             "label": "Table Description",
@@ -406,22 +406,23 @@
           },
           "summary": {
             "prefix": "Created table with name",
-            "suffix": "and imported dataset successfully."
+            "suffix": "and imported dataset successfully"
           }
         },
         "drop": {
           "title": "Drop table",
           "warning": {
             "prefix": "This action cannot be undone! Type the table name",
-            "suffix": "below if you really want to drop it with all stored data."
+            "suffix": "below if you really want to drop it with all stored data"
           },
           "name": {
             "label": "Table Name",
-            "hint": "Required."
+            "hint": "Required"
           }
         },
         "schema": {
           "title": "System Versioned",
+          "subtitle": "Table Constraints",
           "bullet": "●",
           "assign": "Assign",
           "remove": {
@@ -453,14 +454,14 @@
           },
           "name": {
             "label": "Name",
-            "hint": "Required."
+            "hint": "Required"
           },
           "add": {
             "text": "Add Column"
           },
           "type": {
             "label": "Type",
-            "hint": "Required."
+            "hint": "Required"
           },
           "size": {
             "label": "Size"
@@ -496,23 +497,23 @@
           },
           "summary": {
             "title": "Summary",
-            "text": "Successfully created table with internal name:"
+            "text": "Successfully created table with internal name"
           }
         },
         "semantics": {
-          "title": "Assign semantic instance for table column:",
-          "subtitle": "Semantic instances help machines to get the proper context of your dataset.",
+          "title": "Assign semantic instance for table column",
+          "subtitle": "Semantic instances help machines to get the proper context of your dataset",
           "recommended": "Recommended semantic instances",
           "bullet": "●",
-          "info": "The following ontologies automatically will query the fields rdfs:label and store it for this column. You can still use other URIs that are not matching these ontologies, the URI will be displayed instead.",
+          "info": "The following ontologies automatically will query the fields rdfs:label and store it for this column. You can still use other URIs that are not matching these ontologies, the URI will be displayed instead",
           "uri": {
             "label": "Semantic Instance URI",
-            "hint": "This URI can be automatically resolved."
+            "hint": "This URI can be automatically resolved"
           }
         },
         "versioning": {
           "title": "History",
-          "subtitle": "Select a timestamp to view the data for this specific time of day.",
+          "subtitle": "Select a timestamp to view the data for this specific time of day",
           "chart": {
             "title": "Data Events",
             "ylabel": "# Events",
@@ -527,22 +528,22 @@
         },
         "data": {
           "auto": {
-            "hint": "Value is automatically generated by a sequence."
+            "hint": "Value is automatically generated by a sequence"
           },
           "primary-key": {
-            "hint": "Value is a primary key."
+            "hint": "Value is a primary key"
           },
           "format": {
-            "hint": "Value must be in format:"
+            "hint": "Value must be in format"
           },
           "required": {
             "hint": "Required. "
           },
           "float": {
-            "max": "max.",
-            "min": "min.",
-            "before": "digit(s) before the dot.",
-            "after": "digit(s) after the dot."
+            "max": "max",
+            "min": "min",
+            "before": "digit(s) before the dot",
+            "after": "digit(s) after the dot"
           }
         }
       }
@@ -582,7 +583,7 @@
       "subpages": {
         "access": {
           "title": "Database Access",
-          "subtitle": "Overview on users with their access to the database.",
+          "subtitle": "Overview on users with their access to the database",
           "read": "You can read all contents",
           "write-own": "You can write own tables and read all contents",
           "write-all": "You can write own tables and read all contents",
@@ -602,7 +603,7 @@
         },
         "create": {
           "title": "Create Database",
-          "subtitle": "Choose an expressive database name and select a database engine.",
+          "subtitle": "Choose an expressive database name and select a database engine",
           "name": {
             "label": "Name",
             "hint": "Required. The internal database name will be lowercase alphanumeric, others will be replaced with _",
@@ -610,7 +611,7 @@
           },
           "engine": {
             "label": "Engine",
-            "hint": "Required."
+            "hint": "Required"
           },
           "submit": {
             "text": "Create"
@@ -636,7 +637,7 @@
         },
         "settings": {
           "title": "Settings",
-          "subtitle": "The image will be displayed in a box with maximum dimensions 200x200 pixels.",
+          "subtitle": "The image will be displayed in a box with maximum dimensions 200x200 pixels",
           "image": {
             "label": "Teaser Image",
             "hint": "max. 1MB file size"
@@ -649,26 +650,26 @@
           },
           "scheme": {
             "title": "Schema",
-            "subtitle": "Update the metadata on the database schema to display system-versioned tables and views in the UI.",
+            "subtitle": "Update the metadata on the database schema to display system-versioned tables and views in the UI",
             "submit": {
               "text": "Refresh"
             }
           },
           "ownership": {
             "title": "Ownership",
-            "subtitle": "User who has ownership over this database.",
+            "subtitle": "User who has ownership over this database",
             "label": "Database Owner",
-            "hint": "Required.",
+            "hint": "Required",
             "submit": {
               "text": "Transfer"
             }
           },
           "visibility": {
             "title": "Visibility",
-            "subtitle": "Private databases hide the data while metadata is still visible. Public databases are fully transparent.",
+            "subtitle": "Private databases hide the data while metadata is still visible. Public databases are fully transparent",
             "visibility": {
               "label": "Database Visibility",
-              "hint": "Required."
+              "hint": "Required"
             },
             "submit": {
               "text": "Modify"
@@ -681,19 +682,19 @@
       "name": "Signup",
       "email": {
         "label": "E-Mail Address",
-        "hint": "Required."
+        "hint": "Required"
       },
       "username": {
         "label": "Username",
-        "hint": "Required."
+        "hint": "Required"
       },
       "password": {
         "label": "Password",
-        "hint": "Required."
+        "hint": "Required"
       },
       "confirm": {
         "label": "Confirm Password",
-        "hint": "Required."
+        "hint": "Required"
       },
       "submit": {
         "label": "Submit"
@@ -703,11 +704,11 @@
       "name": "Login",
       "username": {
         "label": "Username",
-        "hint": "Required."
+        "hint": "Required"
       },
       "password": {
         "label": "Password",
-        "hint": "Required."
+        "hint": "Required"
       },
       "submit": {
         "label": "Submit"
@@ -720,7 +721,7 @@
       "subpages": {
         "info": {
           "title": "Information",
-          "subtitle": "General user metadata.",
+          "subtitle": "General user metadata",
           "id": {
             "label": "ID"
           },
@@ -754,7 +755,7 @@
         },
         "theme": {
           "title": "Theme",
-          "subtitle": "Update the user theme when logged in.",
+          "subtitle": "Update the user theme when logged in",
           "label": "Theme",
           "dark": "Dark",
           "dark-contrast": "Dark - High Contrast",
@@ -770,14 +771,14 @@
       "subpages": {
         "authentication": {
           "title": "User Password",
-          "subtitle": "Update the user password used for basic authentication with all interfaces.",
+          "subtitle": "Update the user password used for basic authentication with all interfaces",
           "password": {
             "label": "Password",
-            "hint": "Required."
+            "hint": "Required"
           },
           "confirm": {
             "label": "Confirm Password",
-            "hint": "Required."
+            "hint": "Required"
           },
           "submit": {
             "text": "Update"
@@ -786,7 +787,7 @@
         "developer": {
           "token": {
             "title": "Token Information",
-            "subtitle": "View your token secrets for debugging purposes.",
+            "subtitle": "View your token secrets for debugging purposes",
             "expiry": "Expires",
             "access": {
               "label": "Access Token"
@@ -805,11 +806,11 @@
               "title": "Maintenance Message",
               "type": {
                 "label": "Type",
-                "hint": "Required."
+                "hint": "Required"
               },
               "message": {
                 "label": "Message",
-                "hint": "Required."
+                "hint": "Required"
               },
               "start": {
                 "label": "Start Timestamp"
@@ -840,8 +841,11 @@
         "info": "Info",
         "data": "Data"
       },
+      "name": {
+        "title": "Name"
+      },
       "query": {
-        "title": "Query"
+        "title": "Statement"
       },
       "creator": {
         "title": "Creator"
@@ -857,20 +861,20 @@
           "title": "Create View",
           "name": {
             "label": "Name",
-            "hint": "Required."
+            "hint": "Required"
           },
           "table": {
             "label": "Data Table",
-            "hint": "Required."
+            "hint": "Required"
           },
           "columns": {
             "label": "Data Columns",
-            "hint": "Required."
+            "hint": "Required"
           },
           "visibility": {
             "label": "Data Visibility",
-            "warn": "Only people with at least read access can view the data.",
-            "hint": "Required. When private, the view metadata will still be public but the data will only be visible to people with at least read access to this database."
+            "warn": "Only people with at least read access can view the data",
+            "hint": "Required. When private, the view metadata will still be public but the data will only be visible to people with at least read access to this database"
           }
         }
       }
@@ -887,7 +891,7 @@
         "title": "Query"
       },
       "query-hash": {
-        "prefix": "sha256:",
+        "prefix": "sha256",
         "title": "Query Hash"
       },
       "executed": {
@@ -906,14 +910,14 @@
       "subpages": {
         "create": {
           "title": "Create Subset",
-          "generated": "The following query will be executed (readonly):",
-          "subtitle": "The following query will be executed:",
+          "generated": "The following query will be executed (readonly)",
+          "subtitle": "The following query will be executed",
           "simple": {
             "text": "Simple"
           },
           "expert": {
             "text": "Expert",
-            "warn": "It is not recommended to use comments, aggregation functions and the following operations:"
+            "warn": "It is not recommended to use comments, aggregation functions and the following operations"
           },
           "name": {
             "label": ""
@@ -922,15 +926,15 @@
             "text": "Add Filter",
             "column": {
               "label": "Column",
-              "hint": "Required."
+              "hint": "Required"
             },
             "operator": {
               "label": "Operator",
-              "hint": "Required."
+              "hint": "Required"
             },
             "value": {
               "label": "Value",
-              "hint": "Required."
+              "hint": "Required"
             },
             "remove": {
               "text": "Remove"
@@ -973,7 +977,7 @@
         "hint": ""
       },
       "publication-range": {
-        "hint": "Specify your custom publication year range."
+        "hint": "Specify your custom publication year range"
       },
       "start-year": {
         "label": "Start Year",
@@ -984,7 +988,7 @@
         "hint": ""
       },
       "concept-unit": {
-        "hint": "If you select a CONCEPT and UNIT, you can search across columns regardless of their unit of measurement."
+        "hint": "If you select a CONCEPT and UNIT, you can search across columns regardless of their unit of measurement"
       },
       "concept": {
         "label": "Concept",
@@ -1027,213 +1031,220 @@
   },
   "error": {
     "access": {
-      "missing": "Failed to find access in metadata database."
+      "missing": "Failed to find access in metadata database"
     },
     "axios": {
-      "connection": "Failed to establish connection.",
-      "timeout": "Connection timed out."
+      "connection": "Failed to establish connection",
+      "timeout": "Connection timed out"
     },
     "concept": {
-      "missing": "Failed to find concept in metadata database."
+      "missing": "Failed to find concept in metadata database"
     },
     "container": {
-      "exists": "Container already exists in metadata database.",
-      "missing": "Failed to find container in metadata database."
+      "exists": "Container already exists in metadata database",
+      "missing": "Failed to find container in metadata database"
     },
     "data": {
-      "invalid": "Failed to communicate with data service.",
-      "connection": "Failed to establish connection to data service.",
-      "value": "Failed to set column value:",
-      "drift": "Your browser clock is not synchronized with UTC and seems to be off by:"
+      "invalid": "Failed to communicate with data service",
+      "connection": "Failed to establish connection to data service",
+      "value": "Failed to set column value",
+      "drift": "Your browser clock is not synchronized with UTC and seems to be off by"
     },
     "database": {
-      "connection": "Failed to establis connection to the database.",
-      "invalid": "Failed to perform action in database.",
+      "connection": "Failed to establis connection to the database",
+      "invalid": "Failed to perform action in database",
       "querystore": "Failed to insert query into query store",
-      "missing": "Failed to find database in metadata database.",
-      "create":  "Failed to establish connection with metadata service."
+      "missing": "Failed to find database in metadata database",
+      "create":  "Failed to establish connection with metadata service"
     },
     "doi": {
-      "missing": "Failed to find DOI in metadata database."
+      "missing": "Failed to find DOI in metadata database"
     },
     "exchange": {
-      "missing": "Failed to find exchange in broker service."
+      "missing": "Failed to find exchange in broker service"
     },
     "semantic": {
-      "filter": "Failed to filter semantic entity in metadata service.",
-      "missing": "Failed to find semantic entity in metadata service."
+      "filter": "Failed to filter semantic entity in metadata service",
+      "missing": "Failed to find semantic entity in metadata service"
     },
     "storage": {
-      "missing": "Failed to find dataset in storage service.",
-      "invalid": "Failed to establish connection with storage service."
+      "missing": "Failed to find dataset in storage service",
+      "invalid": "Failed to establish connection with storage service"
     },
     "identifier": {
-      "format": "Failed to transform identifier into the requested format in metadata service.",
-      "missing": "Failed to find identifier in metadata database.",
-      "unsupported": "Failed to find metadata from unsupported metadata provider.",
+      "format": "Failed to transform identifier into the requested format in metadata service",
+      "missing": "Failed to find identifier in metadata database",
+      "unsupported": "Failed to find metadata from unsupported metadata provider",
       "form": "Please provide all required values in the form"
     },
     "image": {
-      "exists": "Image already exists in metadata database.",
-      "missing": "Failed to find image in metadata database.",
-      "invalid": "Image metadata is malformed."
+      "exists": "Image already exists in metadata database",
+      "missing": "Failed to find image in metadata database",
+      "invalid": "Image metadata is malformed"
     },
     "license": {
-      "missing": "Failed to find license in metadata database."
+      "missing": "Failed to find license in metadata database"
     },
     "request": {
-      "invalid": "Request payload was rejected by the metadata service.",
-      "forbidden": "Request is forbidden, roles or authentication missing.",
-      "pagination": "Request contains invalid pagination information.",
-      "sort": "Request contains invalid sort information."
+      "invalid": "Request payload was rejected by the metadata service",
+      "forbidden": "Request is forbidden, roles or authentication missing",
+      "pagination": "Request contains invalid pagination information",
+      "sort": "Request contains invalid sort information"
     },
     "message": {
-      "missing": "Failed to find message in metadata database."
+      "missing": "Failed to find message in metadata database"
     },
     "ontology": {
-      "missing": "Failed to find ontology in metadata database."
+      "missing": "Failed to find ontology in metadata database"
     },
     "orcid": {
-      "missing": "Failed to find ORCID in metadata provider."
+      "missing": "Failed to find ORCID in metadata provider"
     },
     "query": {
-      "missing": "Failed to find query in data service.",
-      "invalid": "Query is invalid (e.g. contains forbidden keywords).",
-      "type.exists": "Failed to build query: no such column type:",
-      "type.build": "Failed to build query: currently no query build support for column type:",
-      "column.exists": "Failed to build query: data columns are missing column with name:"
+      "missing": "Failed to find query in data service",
+      "invalid": "Query is invalid",
+      "type.exists": "Failed to build query: no such column type",
+      "type.build": "Failed to build query: currently no query build support for column type",
+      "column.exists": "Failed to build query: data columns are missing column with name"
     },
     "store": {
-      "invalid": "Failed to create query store in the database.",
-      "clean": "Failed to sweep query store in the database.",
-      "insert": "Failed to insert query into database query store.",
-      "persist": "Failed to persist query in the database query store."
+      "invalid": "Failed to create query store in the database",
+      "clean": "Failed to sweep query store in the database",
+      "insert": "Failed to insert query into database query store",
+      "persist": "Failed to persist query in the database query store"
     },
     "metadata": {
-      "privileged": "Failed to fetch privileged metadata in the data service.",
-      "connection": "Failed to establish connection to the metadata service.",
-      "invalid": "Failed to obtain authentication metadata in the data service."
+      "privileged": "Failed to fetch privileged metadata in the data service",
+      "connection": "Failed to establish connection to the metadata service",
+      "invalid": "Failed to obtain authentication metadata in the data service"
     },
     "sidecar": {
-      "export": "Failed to export dataset to the database sidecar.",
-      "import": "Failed to import dataset from the database sidecar."
+      "export": "Failed to export dataset to the database sidecar",
+      "import": "Failed to import dataset from the database sidecar"
     },
     "queue": {
-      "missing": "Failed to find queue in broker service."
+      "missing": "Failed to find queue in broker service"
     },
     "ror": {
-      "missing": "Failed to find ROR in metadata provider."
+      "missing": "Failed to find ROR in metadata provider"
     },
     "import": {
-      "dataset": "Failed to import dataset."
+      "dataset": "Failed to import dataset"
     },
     "upload": {
-      "dataset": "Failed to upload dataset."
+      "dataset": "Failed to upload dataset"
     },
     "schema": {
-      "id": "Column \"id\" must be a primary key.",
-      "view": "Failed to map view schema.",
-      "table": "Failed to map table schema."
+      "id": "Column \"id\" must be a primary key",
+      "view": "Failed to map view schema",
+      "table": "Failed to map table schema"
     },
     "user": {
-      "exists": "User with username exists in auth database.",
-      "missing": "Failed to find user in auth database.",
-      "credentials": "Invalid username/password combination.",
-      "email-exists": "Account with this e-mail exists already.",
-      "setup": "Please change your password."
+      "exists": "User with username exists in auth database",
+      "missing": "Failed to find user in auth database",
+      "credentials": "Invalid username/password combination",
+      "email-exists": "Account with this e-mail exists already",
+      "setup": "Please change your password"
     },
     "search": {
-      "connection": "Failed to establish connection to the search service.",
-      "invalid": "Malformed search request."
+      "connection": "Failed to establish connection to the search service",
+      "invalid": "Malformed search request"
     },
     "semantics": {
-      "timeout": "Failed to suggest semantics: request timed out.",
-      "uri": "Semantic URI is malformed."
+      "timeout": "Failed to suggest semantics: request timed out",
+      "uri": "Semantic URI is malformed"
     },
     "subset": {
-      "format": "Failed to map subset into requested format."
+      "format": "Failed to map subset into requested format"
     },
     "pagination": {
-      "malformed": "Invalid pagination request."
+      "malformed": "Invalid pagination request"
     },
     "table": {
-      "missing": "Failed to find table in metadata database.",
-      "exists": "Table with this name exists already.",
-      "invalid": "Failed to parse columns in the data service.",
-      "malformed": "Failed to insert entry:",
-      "create": "Failed to create table:",
-      "connection": "Failed to load table data because database is not reachable."
+      "missing": "Failed to find table in metadata database",
+      "exists": "Table with this name exists already",
+      "invalid": "Failed to parse columns in the data service",
+      "malformed": "Failed to insert entry",
+      "create": "Failed to create table",
+      "connection": "Failed to load table data because database is not reachable"
     },
     "unit": {
-      "missing": "Failed to find semantic unit in metadata database."
+      "missing": "Failed to find semantic unit in metadata database"
     },
     "view": {
-      "create": "Failed to create view:",
-      "missing": "Failed to find view in metadata database.",
-      "invalid": "Failed to map view query to columns in data service."
+      "create": "Failed to create view",
+      "missing": "Failed to find view in metadata database",
+      "invalid": "Failed to map view query to columns in data service"
     }
   },
   "success": {
-    "signup": "Successfully created account.",
+    "signup": "Successfully created account",
     "clipboard": {
-      "user": "Successfully copied user id."
+      "user": "Successfully copied user id"
     },
     "query": {
       "build": "Failed to build query: column not found",
       "fatal": "Query with this schema is not buildable through the UI at the moment"
     },
     "import": {
-      "dataset": "Successfully imported dataset."
+      "dataset": "Successfully imported dataset"
     },
     "upload": {
-      "dataset": "Successfully uploaded dataset.",
-      "blob": "Successfully uploaded file."
+      "dataset": "Successfully uploaded dataset",
+      "blob": "Successfully uploaded file"
     },
     "analyse": {
-      "dataset": "Successfully analysed dataset."
+      "dataset": "Successfully analysed dataset"
     },
     "access": {
-      "created": "Successfully provisioned access.",
-      "modified": "Successfully modified access.",
-      "revoked": "Successfully revoked access."
+      "created": "Successfully provisioned access",
+      "modified": "Successfully modified access",
+      "revoked": "Successfully revoked access"
     },
     "data": {
-      "add": "Successfully added data entry.",
-      "update": "Successfully updated data entry."
+      "add": "Successfully added data entry",
+      "update": "Successfully updated data entry"
     },
     "table": {
-      "created": "Successfully created table.",
-      "semantics": "Successfully assigned semantic instance."
+      "created": "Successfully created table",
+      "semantics": "Successfully assigned semantic instance"
+    },
+    "schema": {
+      "tables": "Successfully refreshed database tables metadata",
+      "views": "Successfully refreshed database views metadata"
     },
     "schema": {
       "tables": "Successfully refreshed database tables metadata.",
       "views": "Successfully refreshed database views metadata."
     },
     "database": {
-      "upload": "Successfully uploaded database image.",
-      "transfer": "Successfully transferred the database owner.",
+      "upload": "Successfully uploaded database image",
+      "transfer": "Successfully transferred the database owner",
+      "visibility": "Successfully updated the database visibility",
       "image": {
-        "update": "Successfully updated database image.",
-        "remove": "Successfully removed database image."
+        "update": "Successfully updated database image",
+        "remove": "Successfully removed database image"
       }
     },
     "pid": {
-      "saved": "Successfully saved identifier.",
-      "created": "Successfully created identifier.",
-      "published": "Successfully published identifier.",
-      "updated": "Successfully updated identifier.",
-      "deleted": "Successfully deleted identifier."
+      "saved": "Successfully saved identifier",
+      "created": "Successfully created identifier",
+      "published": "Successfully published identifier",
+      "updated": "Successfully updated identifier",
+      "deleted": "Successfully deleted identifier"
     },
     "user": {
-      "info": "Successfully updated user information.",
-      "theme": "Successfully updated user theme."
+      "info": "Successfully updated user information",
+      "theme": "Successfully updated user theme",
+      "password": "Successfully updated user password",
+      "login": "Successfully logged in"
     },
     "view": {
-      "create": "Successfully created view.",
-      "delete": "Successfully deleted view."
+      "create": "Successfully created view",
+      "delete": "Successfully deleted view"
     },
     "subset": {
-      "create": "Successfully created subset."
+      "create": "Successfully created subset"
     }
   },
   "toolbars": {
@@ -1245,7 +1256,7 @@
     "semantic": {
       "register": {
         "title": "Register Ontology",
-        "subtitle": "Register a new ontology endpoint."
+        "subtitle": "Register a new ontology endpoint"
       },
       "ontologies": {
         "title": "Ontologies",
@@ -1263,6 +1274,7 @@
       "public": "Public",
       "private": "Private",
       "current": "Current Data",
+      "history": "Historic Data",
       "create": {
         "text": "Database"
       },
@@ -1326,7 +1338,7 @@
     },
     "search": {
       "fuzzy": {
-        "placeholder": "Search ..."
+        "placeholder": "Search .."
       },
       "result": "Result",
       "results": "Results"
@@ -1368,7 +1380,7 @@
         "tuple": "Entry",
         "download": "Download",
         "version": "History",
-        "subtitle": "Provide data to be directly inserted into the dataset."
+        "subtitle": "Provide data to be directly inserted into the dataset"
       }
     }
   },
@@ -1383,7 +1395,7 @@
     "month": "Invalid month",
     "schema": {
       "id": "Column needs to be declared as primary key",
-      "primary-key": "We create a column named id with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior."
+      "primary-key": "We create a column named id with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior"
     },
     "uri": {
       "pattern": "Invalid URI",

@@ -33,7 +33,6 @@ public class TableBriefDto {
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 
@@ -49,9 +48,4 @@ public class TableBriefDto {
 
     @NotNull
     private UserBriefDto owner;
-
-    @ToString.Exclude
-    @JsonIgnore
-    @NotNull
-    private List<ColumnBriefDto> columns;
 }

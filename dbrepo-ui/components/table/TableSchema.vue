@@ -1,15 +1,19 @@
 <template>
   <div>
-    <v-alert
-      v-if="needsSequence"
-      class="mb-6"
-      border="start"
-      :text="$t('validation.schema.primary-key')"
-      color="info" />
     <v-form
       ref="form"
       v-model="valid"
       :disabled="disabled">
+      <v-row>
+        <v-col md="8">
+          <v-alert
+            v-if="needsSequence"
+            class="mb-6"
+            border="start"
+            :text="$t('validation.schema.primary-key')"
+            color="info" />
+        </v-col>
+      </v-row>
       <v-row
         v-for="(c, idx) in columns"
         :key="`r-${idx}`"

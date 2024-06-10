@@ -114,7 +114,8 @@ export default {
       const userService = useUserService()
       userService.updatePassword(this.user.id, this.password)
         .then(() => {
-          this.$toast.success('Successfully changed the password')
+          const toast = useToastInstance()
+          toast.success('success.user.password')
           this.loadingUpdate = false
         })
         .catch(() => {

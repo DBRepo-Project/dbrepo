@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
 import java.util.List;
 
 @Data
@@ -23,8 +24,8 @@ public class ForeignKey {
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "foreign-key-sequence")
     @GenericGenerator(name = "foreign-key-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
-    private Long fkid;
+    @Column(name = "fkid", updatable = false, nullable = false)
+    private Long id;
 
     @Column(updatable = false, nullable = false)
     private String name;

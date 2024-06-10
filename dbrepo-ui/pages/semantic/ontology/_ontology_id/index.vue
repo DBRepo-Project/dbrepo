@@ -182,7 +182,8 @@ export default {
         .then(() => {
           this.loadOntology()
           // this.$store.dispatch('reloadOntologies')
-          this.$toast.success('Successfully update ontology!')
+          const toast = useToastInstance()
+          toast.success('Successfully update ontology!')
         })
         .catch(() => {
           this.loading = false

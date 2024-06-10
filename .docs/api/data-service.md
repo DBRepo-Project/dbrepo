@@ -14,7 +14,7 @@ author: Martin Weise
         - Readiness: `http://<hostname>:9093/actuator/health/readiness`
         - Liveness: `http://<hostname>:9093/actuator/health/liveness`
     * Prometheus: `http://<hostname>:9093/actuator/prometheus`
-    * Swagger UI: `http://<hostname>:9093/swagger-ui/index.html` <a href="../swagger/data" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Swagger UI: `http://<hostname>:9093/swagger-ui/index.html` <a href="./swagger/data" target="_blank">:fontawesome-solid-square-up-right: view online</a>
 
 ## Overview
 
@@ -27,7 +27,7 @@ Data Service up.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

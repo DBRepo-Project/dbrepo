@@ -14,14 +14,14 @@ hide:
     Semantic Digital Repository for Relational Databases. *International Journal of Digital Curation*, 17(1), 11. 
     DOI: [10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)<br />
 
-    [[BibTeX](../papers/weise2022dbrepo.bib)] &nbsp; [[RIS](../papers/weise2022dbrepo.ris)] &nbsp; [[RDF](../papers/weise2022dbrepo.rdf)] &nbsp; [[EndNote](../papers/weise2022dbrepo.xml)]
+    [[BibTeX](./papers/weise2022dbrepo.bib)] &nbsp; [[RIS](./papers/weise2022dbrepo.ris)] &nbsp; [[RDF](./papers/weise2022dbrepo.rdf)] &nbsp; [[EndNote](./papers/weise2022dbrepo.xml)]
 
 ## Logos
 
 DBRepo logo in various formats:
 
-* PNG: [bigger](../images/logo/logo.png) ([smaller](../images/logo/favicon.png))
-* SVG: [bigger](../images/logo/logo.svg) ([smaller](../images/logo/favicon.svg))
+* PNG: [bigger](./images/logo/logo.png) ([smaller](./images/logo/favicon.png))
+* SVG: [bigger](./images/logo/logo.svg) ([smaller](./images/logo/favicon.svg))
 
 
 ## Refereed

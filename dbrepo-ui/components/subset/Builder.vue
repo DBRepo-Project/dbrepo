@@ -503,12 +503,14 @@ export default {
       const queryService = useQueryService()
       queryService.execute(this.$route.params.database_id, { statement: this.sql }, this.timestamp, 0, 1)
         .then(async (subset) => {
-          this.$toast.success(this.$t('success.subset.create'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.subset.create'))
           await this.$router.push(`/database/${this.$route.params.database_id}/subset/${subset.id}/data`)
           this.loadingQuery = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.message))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingQuery = false
         })
     },
@@ -520,12 +522,14 @@ export default {
         .then(async (view) => {
           this.resultId = view.id
           this.cacheStore.reloadDatabase()
-          this.$toast.success(this.$t('success.view.create'))
+          const toast = useToastInstance()
+          toast.success(this.$t('success.view.create'))
           await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
           this.loadingQuery = false
         })
-        .catch((error) => {
-          this.$toast.error(this.$t(error.code))
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
           this.loadingQuery = false
         })
     },
@@ -536,7 +540,8 @@ export default {
       const queryService = useQueryService()
       const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.clauses)
       if (error) {
-        this.$toast.error(this.$t('error.query.' + reason) + ' ' + column)
+        const toast = useToastInstance()
+        toast.error(this.$t('error.query.' + reason) + ' ' + column)
         return
       }
       this.query.raw = raw

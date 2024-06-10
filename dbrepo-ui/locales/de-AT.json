@@ -88,12 +88,12 @@
           },
           "publication-year": {
             "label": "Erscheinungsjahr",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "titles": {
             "title": {
               "label": "Titel",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "type": {
               "label": "Typ",
@@ -116,15 +116,15 @@
             "subtitle": "Haben Sie bereits einen DOI für diesen Datensatz?",
             "label": "Geben Sie hier Ihren bestehenden DOI an",
             "hint": "Ein DOI ermöglicht die einfache und eindeutige Zitierung Ihres Uploads. ",
-            "mint": "Nach dem Speichern wird ein PID erstellt."
+            "mint": "Nach dem Speichern wird ein PID erstellt"
           },
           "doi": {
-            "mint": "Nach dem Speichern wird ein DOI erstellt."
+            "mint": "Nach dem Speichern wird ein DOI erstellt"
           },
           "descriptions": {
             "description": {
               "label": "Beschreibung",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "type": {
               "label": "Typ",
@@ -146,14 +146,14 @@
             "title": "Veröffentlichungsinformationen",
             "subtitle": "Der Name der Entität, die die Ressource hält, archiviert, veröffentlicht, druckt, verteilt, freigibt, herausgibt oder produziert. ",
             "label": "Herausgeber",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "related-identifiers": {
             "title": "Verwandter Bezeichner",
             "subtitle": "Bezeichner verwandter Ressourcen. ",
             "identifier": {
               "label": "Kennung",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "type": {
               "label": "Typ",
@@ -179,7 +179,7 @@
           },
           "language": {
             "title": "Sprache",
-            "subtitle": "Die primäre Sprache des Datensatzes.",
+            "subtitle": "Die primäre Sprache des Datensatzes",
             "language": {
               "label": "Sprache",
               "hint": ""
@@ -187,14 +187,14 @@
           },
           "funders": {
             "title": "Finanzierungsreferenz",
-            "subtitle": "Informationen zur finanziellen Unterstützung (Finanzierung) für den zu registrierenden Datensatz.",
+            "subtitle": "Informationen zur finanziellen Unterstützung (Finanzierung) für den zu registrierenden Datensatz",
             "identifier": {
               "label": "Kennung des Geldgebers",
-              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
             },
             "name": {
               "label": "Name des Geldgebers",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "award-number": {
               "label": "Auszeichnungsnummer",
@@ -212,10 +212,10 @@
             }
           },
           "creators": {
-            "subtitle": "Die wichtigsten Forscher, die an der Erstellung der Daten beteiligt waren, in der Reihenfolge ihrer Priorität.",
+            "subtitle": "Die wichtigsten Forscher, die an der Erstellung der Daten beteiligt waren, in der Reihenfolge ihrer Priorität",
             "identifier": {
               "label": "Namensbezeichner",
-              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
             },
             "insert": {
               "text": "Füge mich ein"
@@ -239,11 +239,11 @@
             },
             "name": {
               "label": "Name",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "affiliation-identifier": {
               "label": "Zugehörigkeitskennung",
-              "hint": "Verwenden Sie eine Zugehörigkeitskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+              "hint": "Verwenden Sie eine Zugehörigkeitskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
             },
             "affiliation": {
               "label": "Zugehörigkeitsname",
@@ -253,7 +253,7 @@
           },
           "summary": {
             "title": "Zusammenfassung",
-            "subtitle": "Details zur Kennung, die zur Identifizierung dieses Datensatzes erstellt wird.",
+            "subtitle": "Details zur Kennung, die zur Identifizierung dieses Datensatzes erstellt wird",
             "record": "Der Bezeichner beschreibt",
             "publisher": "Herausgeber",
             "license": "Lizenz",
@@ -287,8 +287,8 @@
         "secure": "sicher",
         "insecure": "unsicher",
         "permissions": {
-          "write": "Sie können in diese Tabelle schreiben.",
-          "read": "Sie können den gesamten Inhalt dieser Tabelle lesen."
+          "write": "Sie können in diese Tabelle schreiben",
+          "read": "Sie können den gesamten Inhalt dieser Tabelle lesen"
         }
       },
       "protocol": {
@@ -330,7 +330,7 @@
           },
           "generated": {
             "label": "Vorschau des Tabellennamens",
-            "hint": "Schreibgeschützt."
+            "hint": "Schreibgeschützt"
           },
           "description": {
             "label": "Beschreibung",
@@ -385,7 +385,7 @@
           "summary": {
             "title": "Zusammenfassung",
             "prefix": "Importiert",
-            "suffix": "Zeilen aus dem Datensatz."
+            "suffix": "Zeilen aus dem Datensatz"
           },
           "analyse": {
             "text": "Hochladen und analysieren"
@@ -398,7 +398,7 @@
           },
           "name": {
             "label": "Tabellenname",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "description": {
             "label": "Tabellenbeschreibung",
@@ -406,22 +406,23 @@
           },
           "summary": {
             "prefix": "Tabelle mit Namen erstellt",
-            "suffix": "und importierter Datensatz erfolgreich."
+            "suffix": "und importierter Datensatz erfolgreich"
           }
         },
         "drop": {
           "title": "Tabelle Löschen",
           "warning": {
             "prefix": "Diese Aktion kann nicht rückgängig gemacht werden! ",
-            "suffix": "unten, wenn Sie es wirklich mit allen gespeicherten Daten löschen möchten."
+            "suffix": "unten, wenn Sie es wirklich mit allen gespeicherten Daten löschen möchten"
           },
           "name": {
             "label": "Tabellenname",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           }
         },
         "schema": {
           "title": "System Versioniert",
+          "subtitle": "Tabellenbeschränkungen",
           "bullet": "●",
           "assign": "Zuordnen",
           "remove": {
@@ -453,14 +454,14 @@
           },
           "name": {
             "label": "Name",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "add": {
             "text": "Spalte hinzufügen"
           },
           "type": {
             "label": "Typ",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "size": {
             "label": "Größe"
@@ -496,23 +497,23 @@
           },
           "summary": {
             "title": "Zusammenfassung",
-            "text": "Tabelle mit internem Namen erfolgreich erstellt:"
+            "text": "Tabelle mit internem Namen erfolgreich erstellt"
           }
         },
         "semantics": {
-          "title": "Semantische Instanz für Tabellenspalte zuweisen:",
-          "subtitle": "Semantische Instanzen helfen Maschinen dabei, den richtigen Kontext Ihres Datensatzes zu ermitteln.",
+          "title": "Semantische Instanz für Tabellenspalte zuweisen",
+          "subtitle": "Semantische Instanzen helfen Maschinen dabei, den richtigen Kontext Ihres Datensatzes zu ermitteln",
           "recommended": "Empfohlene semantische Instanzen",
           "bullet": "●",
           "info": "Die folgenden Ontologien fragen automatisch die Felder rdfs:label ab und speichern sie für diese Spalte. ",
           "uri": {
             "label": "Semantischer Instanz-URI",
-            "hint": "Dieser URI kann automatisch aufgelöst werden."
+            "hint": "Dieser URI kann automatisch aufgelöst werden"
           }
         },
         "versioning": {
           "title": "Geschichte",
-          "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen.",
+          "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen",
           "chart": {
             "title": "Datenereignisse",
             "ylabel": "# Veranstaltungen",
@@ -527,22 +528,22 @@
         },
         "data": {
           "auto": {
-            "hint": "Der Wert wird automatisch durch eine Sequenz generiert."
+            "hint": "Der Wert wird automatisch durch eine Sequenz generiert"
           },
           "primary-key": {
-            "hint": "Der Wert ist ein Primärschlüssel."
+            "hint": "Der Wert ist ein Primärschlüssel"
           },
           "format": {
-            "hint": "Der Wert muss folgendes Format haben:"
+            "hint": "Der Wert muss folgendes Format haben"
           },
           "required": {
             "hint": "Erforderlich. "
           },
           "float": {
-            "max": "max.",
-            "min": "Mindest.",
-            "before": "Ziffer(n) vor dem Punkt.",
-            "after": "Ziffer(n) nach dem Punkt."
+            "max": "max",
+            "min": "Mindest",
+            "before": "Ziffer(n) vor dem Punkt",
+            "after": "Ziffer(n) nach dem Punkt"
           }
         }
       }
@@ -582,7 +583,7 @@
       "subpages": {
         "access": {
           "title": "Datenbankzugriff",
-          "subtitle": "Übersicht über Benutzer mit ihrem Zugriff auf die Datenbank.",
+          "subtitle": "Übersicht über Benutzer mit ihrem Zugriff auf die Datenbank",
           "read": "Sie können alle Inhalte lesen",
           "write-own": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
           "write-all": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
@@ -602,7 +603,7 @@
         },
         "create": {
           "title": "Datenbank erstellen",
-          "subtitle": "Wählen Sie einen aussagekräftigen Datenbanknamen und eine Datenbank-Engine.",
+          "subtitle": "Wählen Sie einen aussagekräftigen Datenbanknamen und eine Datenbank-Engine",
           "name": {
             "label": "Name",
             "hint": "Erforderlich. ",
@@ -610,7 +611,7 @@
           },
           "engine": {
             "label": "Motor",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "submit": {
             "text": "Erstellen"
@@ -636,7 +637,7 @@
         },
         "settings": {
           "title": "Einstellungen",
-          "subtitle": "Das Bild wird in einem Feld mit den maximalen Abmessungen 200x200 Pixel angezeigt.",
+          "subtitle": "Das Bild wird in einem Feld mit den maximalen Abmessungen 200x200 Pixel angezeigt",
           "image": {
             "label": "Teaser-Bild",
             "hint": "max. "
@@ -649,16 +650,16 @@
           },
           "scheme": {
             "title": "Schema",
-            "subtitle": "Aktualisiert die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen.",
+            "subtitle": "Aktualisiert die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen",
             "submit": {
               "text": "Aktualisieren"
             }
           },
           "ownership": {
             "title": "Eigentum",
-            "subtitle": "Benutzer, der Eigentümer dieser Datenbank ist.",
+            "subtitle": "Benutzer, der Eigentümer dieser Datenbank ist",
             "label": "Datenbankbesitzer",
-            "hint": "Erforderlich.",
+            "hint": "Erforderlich",
             "submit": {
               "text": "Überweisen"
             }
@@ -668,7 +669,7 @@
             "subtitle": "Private Datenbanken verbergen die Daten, während Metadaten weiterhin sichtbar sind. ",
             "visibility": {
               "label": "Datenbanksichtbarkeit",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "submit": {
               "text": "Ändern"
@@ -681,19 +682,19 @@
       "name": "Melden Sie sich an",
       "email": {
         "label": "E-Mail-Adresse",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "username": {
         "label": "Nutzername",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "password": {
         "label": "Passwort",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "confirm": {
         "label": "Bestätige das Passwort",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "submit": {
         "label": "Einreichen"
@@ -703,11 +704,11 @@
       "name": "Anmeldung",
       "username": {
         "label": "Nutzername",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "password": {
         "label": "Passwort",
-        "hint": "Erforderlich."
+        "hint": "Erforderlich"
       },
       "submit": {
         "label": "Einreichen"
@@ -720,7 +721,7 @@
       "subpages": {
         "info": {
           "title": "Information",
-          "subtitle": "Allgemeine Benutzermetadaten.",
+          "subtitle": "Allgemeine Benutzermetadaten",
           "id": {
             "label": "ID"
           },
@@ -754,7 +755,7 @@
         },
         "theme": {
           "title": "Theme",
-          "subtitle": "Aktualisieren Sie das Benutzerdesign, wenn Sie angemeldet sind.",
+          "subtitle": "Aktualisieren Sie das Benutzerdesign, wenn Sie angemeldet sind",
           "label": "Thema",
           "dark": "Dunkel",
           "dark-contrast": "Dunkel – hoher Kontrast",
@@ -770,14 +771,14 @@
       "subpages": {
         "authentication": {
           "title": "Benutzer-Passwort",
-          "subtitle": "Aktualisieren Sie das Benutzerkennwort, das für die Basisauthentifizierung bei allen Schnittstellen verwendet wird.",
+          "subtitle": "Aktualisieren Sie das Benutzerkennwort, das für die Basisauthentifizierung bei allen Schnittstellen verwendet wird",
           "password": {
             "label": "Passwort",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "confirm": {
             "label": "Bestätige das Passwort",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "submit": {
             "text": "Aktualisieren"
@@ -786,7 +787,7 @@
         "developer": {
           "token": {
             "title": "Token-Informationen",
-            "subtitle": "Sehen Sie sich Ihre Token-Geheimnisse zu Debugging-Zwecken an.",
+            "subtitle": "Sehen Sie sich Ihre Token-Geheimnisse zu Debugging-Zwecken an",
             "expiry": "Läuft ab",
             "access": {
               "label": "Zugangstoken"
@@ -805,11 +806,11 @@
               "title": "Wartungsmeldung",
               "type": {
                 "label": "Typ",
-                "hint": "Erforderlich."
+                "hint": "Erforderlich"
               },
               "message": {
                 "label": "Nachricht",
-                "hint": "Erforderlich."
+                "hint": "Erforderlich"
               },
               "start": {
                 "label": "Zeitstempel starten"
@@ -840,6 +841,9 @@
         "info": "Info",
         "data": "Daten"
       },
+      "name": {
+        "title": "Name"
+      },
       "query": {
         "title": "Abfrage"
       },
@@ -857,19 +861,19 @@
           "title": "Ansicht erstellen",
           "name": {
             "label": "Name",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "table": {
             "label": "Datentabelle",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "columns": {
             "label": "Datenspalten",
-            "hint": "Erforderlich."
+            "hint": "Erforderlich"
           },
           "visibility": {
             "label": "Datensichtbarkeit",
-            "warn": "Nur Personen mit mindestens Leserechten können die Daten einsehen.",
+            "warn": "Nur Personen mit mindestens Leserechten können die Daten einsehen",
             "hint": "Erforderlich. "
           }
         }
@@ -887,7 +891,7 @@
         "title": "Abfrage"
       },
       "query-hash": {
-        "prefix": "sha256:",
+        "prefix": "sha256",
         "title": "Abfrage-Hash"
       },
       "executed": {
@@ -906,14 +910,14 @@
       "subpages": {
         "create": {
           "title": "Teilmenge erstellen",
-          "generated": "Die folgende Abfrage wird ausgeführt (schreibgeschützt):",
-          "subtitle": "Die folgende Abfrage wird ausgeführt:",
+          "generated": "Die folgende Abfrage wird ausgeführt (schreibgeschützt)",
+          "subtitle": "Die folgende Abfrage wird ausgeführt",
           "simple": {
             "text": "Einfach"
           },
           "expert": {
             "text": "Experte",
-            "warn": "Von der Verwendung von Kommentaren, Aggregationsfunktionen und den folgenden Vorgängen wird abgeraten:"
+            "warn": "Von der Verwendung von Kommentaren, Aggregationsfunktionen und den folgenden Vorgängen wird abgeraten"
           },
           "name": {
             "label": ""
@@ -922,15 +926,15 @@
             "text": "Filter hinzufügen",
             "column": {
               "label": "Spalte",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "operator": {
               "label": "Operator",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "value": {
               "label": "Wert",
-              "hint": "Erforderlich."
+              "hint": "Erforderlich"
             },
             "remove": {
               "text": "Entfernen"
@@ -973,7 +977,7 @@
         "hint": ""
       },
       "publication-range": {
-        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahrbereich an."
+        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahrbereich an"
       },
       "start-year": {
         "label": "Startjahr",
@@ -984,7 +988,7 @@
         "hint": ""
       },
       "concept-unit": {
-        "hint": "Wenn Sie ein KONZEPT und eine EINHEIT auswählen, können Sie unabhängig von der Maßeinheit spaltenübergreifend suchen."
+        "hint": "Wenn Sie ein KONZEPT und eine EINHEIT auswählen, können Sie unabhängig von der Maßeinheit spaltenübergreifend suchen"
       },
       "concept": {
         "label": "Konzept",
@@ -1027,213 +1031,220 @@
   },
   "error": {
     "access": {
-      "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden."
+      "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden"
     },
     "axios": {
-      "connection": "Es konnte keine Verbindung hergestellt werden.",
-      "timeout": "Zeitüberschreitung der Verbindung."
+      "connection": "Es konnte keine Verbindung hergestellt werden",
+      "timeout": "Zeitüberschreitung der Verbindung"
     },
     "concept": {
-      "missing": "Das Konzept konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "Das Konzept konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "container": {
-      "exists": "Der Container ist bereits in der Metadatendatenbank vorhanden.",
-      "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden."
+      "exists": "Der Container ist bereits in der Metadatendatenbank vorhanden",
+      "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "data": {
-      "invalid": "Die Kommunikation mit dem Datendienst ist fehlgeschlagen.",
-      "connection": "Es konnte keine Verbindung zum Datendienst hergestellt werden.",
-      "value": "Spaltenwert konnte nicht festgelegt werden:",
-      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um Folgendes eingestellt zu sein:"
+      "invalid": "Die Kommunikation mit dem Datendienst ist fehlgeschlagen",
+      "connection": "Es konnte keine Verbindung zum Datendienst hergestellt werden",
+      "value": "Spaltenwert konnte nicht festgelegt werden",
+      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um Folgendes eingestellt zu sein"
     },
     "database": {
-      "connection": "Es konnte keine Verbindung zur Datenbank hergestellt werden.",
-      "invalid": "Aktion in der Datenbank konnte nicht ausgeführt werden.",
+      "connection": "Es konnte keine Verbindung zur Datenbank hergestellt werden",
+      "invalid": "Aktion in der Datenbank konnte nicht ausgeführt werden",
       "querystore": "Die Abfrage konnte nicht in den Abfragespeicher eingefügt werden",
-      "missing": "Die Datenbank konnte nicht in der Metadatendatenbank gefunden werden.",
-      "create":  "Es konnte keine Verbindung zum Metadatendienst hergestellt werden."
+      "missing": "Die Datenbank konnte nicht in der Metadatendatenbank gefunden werden",
+      "create":  "Es konnte keine Verbindung zum Metadatendienst hergestellt werden"
     },
     "doi": {
-      "missing": "DOI konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "DOI konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "exchange": {
-      "missing": "Im Broker-Service konnte keine Börse gefunden werden."
+      "missing": "Im Broker-Service konnte keine Börse gefunden werden"
     },
     "semantic": {
-      "filter": "Die semantische Entität konnte im Metadatendienst nicht gefiltert werden.",
-      "missing": "Die semantische Entität konnte im Metadatendienst nicht gefunden werden."
+      "filter": "Die semantische Entität konnte im Metadatendienst nicht gefiltert werden",
+      "missing": "Die semantische Entität konnte im Metadatendienst nicht gefunden werden"
     },
     "storage": {
-      "missing": "Datensatz im Speicherdienst konnte nicht gefunden werden.",
-      "invalid": "Es konnte keine Verbindung zum Speicherdienst hergestellt werden."
+      "missing": "Datensatz im Speicherdienst konnte nicht gefunden werden",
+      "invalid": "Es konnte keine Verbindung zum Speicherdienst hergestellt werden"
     },
     "identifier": {
-      "format": "Die Kennung konnte im Metadatendienst nicht in das angeforderte Format umgewandelt werden.",
-      "missing": "Die Kennung konnte in der Metadatendatenbank nicht gefunden werden.",
-      "unsupported": "Es konnten keine Metadaten von einem nicht unterstützten Metadatenanbieter gefunden werden.",
+      "format": "Die Kennung konnte im Metadatendienst nicht in das angeforderte Format umgewandelt werden",
+      "missing": "Die Kennung konnte in der Metadatendatenbank nicht gefunden werden",
+      "unsupported": "Es konnten keine Metadaten von einem nicht unterstützten Metadatenanbieter gefunden werden",
       "form": "Bitte geben Sie im Formular alle erforderlichen Werte ein"
     },
     "image": {
-      "exists": "Das Bild ist bereits in der Metadatendatenbank vorhanden.",
-      "missing": "Das Bild konnte nicht in der Metadatendatenbank gefunden werden.",
-      "invalid": "Bildmetadaten sind fehlerhaft."
+      "exists": "Das Bild ist bereits in der Metadatendatenbank vorhanden",
+      "missing": "Das Bild konnte nicht in der Metadatendatenbank gefunden werden",
+      "invalid": "Bildmetadaten sind fehlerhaft"
     },
     "license": {
-      "missing": "Die Lizenz konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "Die Lizenz konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "request": {
-      "invalid": "Die Anforderungsnutzlast wurde vom Metadatendienst abgelehnt.",
-      "forbidden": "Anfrage ist unzulässig, Rollen oder Authentifizierung fehlen.",
-      "pagination": "Die Anfrage enthält ungültige Paginierungsinformationen.",
-      "sort": "Die Anfrage enthält ungültige Sortierinformationen."
+      "invalid": "Die Anforderungsnutzlast wurde vom Metadatendienst abgelehnt",
+      "forbidden": "Anfrage ist unzulässig, Rollen oder Authentifizierung fehlen",
+      "pagination": "Die Anfrage enthält ungültige Paginierungsinformationen",
+      "sort": "Die Anfrage enthält ungültige Sortierinformationen"
     },
     "message": {
-      "missing": "Die Nachricht konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "Die Nachricht konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "ontology": {
-      "missing": "Die Ontologie konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "Die Ontologie konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "orcid": {
-      "missing": "ORCID konnte im Metadatenanbieter nicht gefunden werden."
+      "missing": "ORCID konnte im Metadatenanbieter nicht gefunden werden"
     },
     "query": {
-      "missing": "Die Abfrage konnte im Datendienst nicht gefunden werden.",
-      "invalid": "Die Abfrage ist ungültig (enthält beispielsweise verbotene Schlüsselwörter).",
-      "type.exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp:",
-      "type.build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp:",
-      "column.exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen:"
+      "missing": "Die Abfrage konnte im Datendienst nicht gefunden werden",
+      "invalid": "Die Abfrage ist ungültig",
+      "type.exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp",
+      "type.build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp",
+      "column.exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen"
     },
     "store": {
-      "invalid": "Der Abfragespeicher in der Datenbank konnte nicht erstellt werden.",
-      "clean": "Der Abfragespeicher in der Datenbank konnte nicht durchsucht werden.",
-      "insert": "Die Abfrage konnte nicht in den Abfragespeicher der Datenbank eingefügt werden.",
-      "persist": "Die Abfrage konnte nicht im Abfragespeicher der Datenbank gespeichert werden."
+      "invalid": "Der Abfragespeicher in der Datenbank konnte nicht erstellt werden",
+      "clean": "Der Abfragespeicher in der Datenbank konnte nicht durchsucht werden",
+      "insert": "Die Abfrage konnte nicht in den Abfragespeicher der Datenbank eingefügt werden",
+      "persist": "Die Abfrage konnte nicht im Abfragespeicher der Datenbank gespeichert werden"
     },
     "metadata": {
-      "privileged": "Das Abrufen privilegierter Metadaten im Datendienst ist fehlgeschlagen.",
-      "connection": "Es konnte keine Verbindung zum Metadatendienst hergestellt werden.",
-      "invalid": "Es konnten keine Authentifizierungsmetadaten im Datendienst abgerufen werden."
+      "privileged": "Das Abrufen privilegierter Metadaten im Datendienst ist fehlgeschlagen",
+      "connection": "Es konnte keine Verbindung zum Metadatendienst hergestellt werden",
+      "invalid": "Es konnten keine Authentifizierungsmetadaten im Datendienst abgerufen werden"
     },
     "sidecar": {
-      "export": "Der Datensatz konnte nicht in den Datenbank-Sidecar exportiert werden.",
-      "import": "Der Datensatz konnte nicht aus dem Datenbank-Sidecar importiert werden."
+      "export": "Der Datensatz konnte nicht in den Datenbank-Sidecar exportiert werden",
+      "import": "Der Datensatz konnte nicht aus dem Datenbank-Sidecar importiert werden"
     },
     "queue": {
-      "missing": "Die Warteschlange im Broker-Dienst konnte nicht gefunden werden."
+      "missing": "Die Warteschlange im Broker-Dienst konnte nicht gefunden werden"
     },
     "ror": {
-      "missing": "ROR konnte im Metadatenanbieter nicht gefunden werden."
+      "missing": "ROR konnte im Metadatenanbieter nicht gefunden werden"
     },
     "import": {
-      "dataset": "Der Datensatz konnte nicht importiert werden."
+      "dataset": "Der Datensatz konnte nicht importiert werden"
     },
     "upload": {
-      "dataset": "Der Datensatz konnte nicht hochgeladen werden."
+      "dataset": "Der Datensatz konnte nicht hochgeladen werden"
     },
     "schema": {
-      "id": "Die Spalte „id“ muss ein Primärschlüssel sein.",
-      "view": "Ansichtsschema konnte nicht zugeordnet werden.",
-      "table": "Tabellenschema konnte nicht zugeordnet werden."
+      "id": "Die Spalte „id“ muss ein Primärschlüssel sein",
+      "view": "Ansichtsschema konnte nicht zugeordnet werden",
+      "table": "Tabellenschema konnte nicht zugeordnet werden"
     },
     "user": {
-      "exists": "Benutzer mit Benutzername ist in der Authentifizierungsdatenbank vorhanden.",
-      "missing": "Benutzer konnte in der Authentifizierungsdatenbank nicht gefunden werden.",
-      "credentials": "Ungültige Benutzername und Passwort Kombination.",
-      "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits.",
-      "setup": "Bitte ändern Sie Ihr Passwort."
+      "exists": "Benutzer mit Benutzername ist in der Authentifizierungsdatenbank vorhanden",
+      "missing": "Benutzer konnte in der Authentifizierungsdatenbank nicht gefunden werden",
+      "credentials": "Ungültige Benutzername und Passwort Kombination",
+      "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits",
+      "setup": "Bitte ändern Sie Ihr Passwort"
     },
     "search": {
-      "connection": "Es konnte keine Verbindung zum Suchdienst hergestellt werden.",
-      "invalid": "Ungültige Suchanfrage."
+      "connection": "Es konnte keine Verbindung zum Suchdienst hergestellt werden",
+      "invalid": "Ungültige Suchanfrage"
     },
     "semantics": {
-      "timeout": "Semantikvorschlag fehlgeschlagen: Zeitüberschreitung bei der Anfrage.",
-      "uri": "Der semantische URI ist fehlerhaft."
+      "timeout": "Semantikvorschlag fehlgeschlagen: Zeitüberschreitung bei der Anfrage",
+      "uri": "Der semantische URI ist fehlerhaft"
     },
     "subset": {
-      "format": "Die Teilmenge konnte nicht dem angeforderten Format zugeordnet werden."
+      "format": "Die Teilmenge konnte nicht dem angeforderten Format zugeordnet werden"
     },
     "pagination": {
-      "malformed": "Ungültige Paginierungsanforderung."
+      "malformed": "Ungültige Paginierungsanforderung"
     },
     "table": {
-      "missing": "Die Tabelle konnte in der Metadatendatenbank nicht gefunden werden.",
-      "exists": "Die Tabelle mit diesem Namen existiert bereits.",
-      "invalid": "Die Spalten im Datendienst konnten nicht analysiert werden.",
-      "malformed": "Eintrag konnte nicht eingefügt werden:",
-      "create": "Tabelle konnte nicht erstellt werden:",
-      "connection": "Das Laden der Tabellendaten ist fehlgeschlagen, da die Datenbank nicht erreichbar ist."
+      "missing": "Die Tabelle konnte in der Metadatendatenbank nicht gefunden werden",
+      "exists": "Die Tabelle mit diesem Namen existiert bereits",
+      "invalid": "Die Spalten im Datendienst konnten nicht analysiert werden",
+      "malformed": "Eintrag konnte nicht eingefügt werden",
+      "create": "Tabelle konnte nicht erstellt werden",
+      "connection": "Das Laden der Tabellendaten ist fehlgeschlagen, da die Datenbank nicht erreichbar ist"
     },
     "unit": {
-      "missing": "Die semantische Einheit konnte in der Metadatendatenbank nicht gefunden werden."
+      "missing": "Die semantische Einheit konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "view": {
-      "create": "Ansicht konnte nicht erstellt werden:",
-      "missing": "Die Ansicht konnte in der Metadatendatenbank nicht gefunden werden.",
-      "invalid": "Die Ansichtsabfrage konnte den Spalten im Datendienst nicht zugeordnet werden."
+      "create": "Ansicht konnte nicht erstellt werden",
+      "missing": "Die Ansicht konnte in der Metadatendatenbank nicht gefunden werden",
+      "invalid": "Die Ansichtsabfrage konnte den Spalten im Datendienst nicht zugeordnet werden"
     }
   },
   "success": {
-    "signup": "Konto erfolgreich erstellt.",
+    "signup": "Konto erfolgreich erstellt",
     "clipboard": {
-      "user": "Benutzer-ID erfolgreich kopiert."
+      "user": "Benutzer-ID erfolgreich kopiert"
     },
     "query": {
       "build": "Abfrage konnte nicht erstellt werden: Spalte nicht gefunden",
       "fatal": "Abfragen mit diesem Schema können derzeit nicht über die Benutzeroberfläche erstellt werden"
     },
     "import": {
-      "dataset": "Datensatz erfolgreich importiert."
+      "dataset": "Datensatz erfolgreich importiert"
     },
     "upload": {
-      "dataset": "Datensatz erfolgreich hochgeladen.",
-      "blob": "Datei erfolgreich hochgeladen."
+      "dataset": "Datensatz erfolgreich hochgeladen",
+      "blob": "Datei erfolgreich hochgeladen"
     },
     "analyse": {
-      "dataset": "Datensatz erfolgreich analysiert."
+      "dataset": "Datensatz erfolgreich analysiert"
     },
     "access": {
-      "created": "Zugriff erfolgreich bereitgestellt.",
-      "modified": "Zugriff erfolgreich geändert.",
-      "revoked": "Zugriff erfolgreich widerrufen."
+      "created": "Zugriff erfolgreich bereitgestellt",
+      "modified": "Zugriff erfolgreich geändert",
+      "revoked": "Zugriff erfolgreich widerrufen"
     },
     "data": {
-      "add": "Dateneingabe erfolgreich hinzugefügt.",
-      "update": "Dateneingabe erfolgreich aktualisiert."
+      "add": "Dateneingabe erfolgreich hinzugefügt",
+      "update": "Dateneingabe erfolgreich aktualisiert"
     },
     "table": {
-      "created": "Tabelle erfolgreich erstellt.",
-      "semantics": "Semantische Instanz erfolgreich zugewiesen."
+      "created": "Tabelle erfolgreich erstellt",
+      "semantics": "Semantische Instanz erfolgreich zugewiesen"
+    },
+    "schema": {
+      "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert",
+      "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert"
     },
     "schema": {
       "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert.",
       "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert."
     },
     "database": {
-      "upload": "Datenbankbild erfolgreich hochgeladen.",
-      "transfer": "Der Datenbankeigentümer wurde erfolgreich übertragen.",
+      "upload": "Datenbankbild erfolgreich hochgeladen",
+      "transfer": "Der Datenbankeigentümer wurde erfolgreich übertragen",
+      "visibility": "Die Datenbanksichtbarkeit wurde erfolgreich aktualisiert",
       "image": {
-        "update": "Datenbankbild erfolgreich aktualisiert.",
-        "remove": "Datenbankbild erfolgreich entfernt."
+        "update": "Datenbankbild erfolgreich aktualisiert",
+        "remove": "Datenbankbild erfolgreich entfernt"
       }
     },
     "pid": {
-      "saved": "Kennung erfolgreich gespeichert.",
-      "created": "Kennung erfolgreich erstellt.",
-      "published": "Identifikator erfolgreich veröffentlicht.",
-      "updated": "Kennung erfolgreich aktualisiert.",
-      "deleted": "Kennung erfolgreich gelöscht."
+      "saved": "Kennung erfolgreich gespeichert",
+      "created": "Kennung erfolgreich erstellt",
+      "published": "Identifikator erfolgreich veröffentlicht",
+      "updated": "Kennung erfolgreich aktualisiert",
+      "deleted": "Kennung erfolgreich gelöscht"
     },
     "user": {
-      "info": "Benutzerinformationen erfolgreich aktualisiert.",
-      "theme": "Benutzerthema erfolgreich aktualisiert."
+      "info": "Benutzerinformationen erfolgreich aktualisiert",
+      "theme": "Benutzerthema erfolgreich aktualisiert",
+      "password": "Benutzerkennwort erfolgreich aktualisiert",
+      "login": "Erfolgreich angemeldet"
     },
     "view": {
-      "create": "Ansicht erfolgreich erstellt.",
-      "delete": "Ansicht erfolgreich gelöscht."
+      "create": "Ansicht erfolgreich erstellt",
+      "delete": "Ansicht erfolgreich gelöscht"
     },
     "subset": {
-      "create": "Teilmenge erfolgreich erstellt."
+      "create": "Teilmenge erfolgreich erstellt"
     }
   },
   "toolbars": {
@@ -1245,7 +1256,7 @@
     "semantic": {
       "register": {
         "title": "Registrieren Sie die Ontologie",
-        "subtitle": "Registrieren Sie einen neuen Ontologie-Endpunkt."
+        "subtitle": "Registrieren Sie einen neuen Ontologie-Endpunkt"
       },
       "ontologies": {
         "title": "Ontologien",
@@ -1263,6 +1274,7 @@
       "public": "Öffentlich",
       "private": "Privat",
       "current": "Aktuelle Daten",
+      "history": "Historische Daten",
       "create": {
         "text": "Datenbank"
       },
@@ -1326,7 +1338,7 @@
     },
     "search": {
       "fuzzy": {
-        "placeholder": "Suchen ..."
+        "placeholder": "Suchen .."
       },
       "result": "Ergebnis",
       "results": "Ergebnisse"
@@ -1368,7 +1380,7 @@
         "tuple": "Eintrag",
         "download": "Herunterladen",
         "version": "Geschichte",
-        "subtitle": "Stellen Sie Daten bereit, die direkt in den Datensatz eingefügt werden sollen."
+        "subtitle": "Stellen Sie Daten bereit, die direkt in den Datensatz eingefügt werden sollen"
       }
     }
   },
@@ -1383,7 +1395,7 @@
     "month": "Ungültiger Monat",
     "schema": {
       "id": "Die Spalte muss als Primärschlüssel deklariert werden",
-      "primary-key": "Wir erstellen eine Spalte mit dem Namen „id“ mit einer automatisch ansteigenden Sequenz, die bei 1 beginnt. Bitte geben Sie eine Spalte mit Primärschlüssel an, wenn Sie dieses Verhalten nicht wünschen."
+      "primary-key": "Wir erstellen eine Spalte mit dem Namen „id“ mit einer automatisch ansteigenden Sequenz, die bei 1 beginnt. Bitte geben Sie eine Spalte mit Primärschlüssel an, wenn Sie dieses Verhalten nicht wünschen"
     },
     "uri": {
       "pattern": "Ungültiger URI",

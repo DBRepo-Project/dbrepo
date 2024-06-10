@@ -44,7 +44,7 @@ public interface TableService {
      */
     Table createTable(Database database, TableCreateDto createDto, Principal principal)
             throws TableNotFoundException, ServiceException, ServiceConnectionException, UserNotFoundException,
-            DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException;
+            DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
 
     /**
      * Deletes a table from the database in the metadata database and data database.
@@ -58,8 +58,5 @@ public interface TableService {
 
     TableColumn findColumnById(Table table, Long columnId) throws MalformedException;
 
-    TableColumn findColumnByName(Table table, String name) throws MalformedException;
-
-    @Transactional
-    void updateStatistics(Table table, TableStatisticDto data) throws MalformedException, SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException;
+    void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException, ServiceException, ServiceConnectionException;
 }

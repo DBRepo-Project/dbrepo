@@ -9,6 +9,7 @@ import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
 
@@ -41,4 +42,6 @@ public interface DataServiceGateway {
     List<TableDto> getTableSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException;
 
     List<ViewDto> getViewSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException;
+
+    TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws ServiceConnectionException, ServiceException, TableNotFoundException;
 }

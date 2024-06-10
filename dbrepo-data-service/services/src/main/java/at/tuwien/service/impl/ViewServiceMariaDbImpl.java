@@ -16,12 +16,14 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.ViewService;
+import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -96,7 +98,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         final Connection connection = dataSource.getConnection();
         ViewDto view = ViewDto.builder()
                 .name(data.getName())
-                .internalName(data.getName())
+                .internalName(mariaDbMapper.nameToInternalName(data.getName()))
+                .query(data.getQuery())
+                .queryHash(Hashing.sha256()
+                        .hashString(data.getQuery(), StandardCharsets.UTF_8)
+                        .toString())
                 .isPublic(database.getIsPublic())
                 .creator(database.getOwner())
                 .createdBy(database.getOwner().getId())
@@ -108,12 +114,12 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                 .build();
         try {
             /* create view if not exists */
-            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(data.getName(), data.getQuery()))
+            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), data.getQuery()))
                     .execute();
             /* select view columns */
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
-            statement2.setString(2, data.getName());
+            statement2.setString(2, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             while (resultSet2.next()) {
                 view = mariaDbMapper.resultSetToTable(resultSet2, view, queryConfig);
@@ -205,8 +211,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
 
     @Override
     public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
-            throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException {
+            throws SQLException, QueryMalformedException, StorageNotFoundException,
+            StorageUnavailableException, ServiceException, RemoteUnavailableException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);

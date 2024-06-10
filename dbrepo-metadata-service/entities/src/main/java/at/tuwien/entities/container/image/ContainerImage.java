@@ -23,6 +23,9 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_images", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "version"}))
+@NamedQueries({
+        @NamedQuery(name = "ContainerImage.findAll", query = "select i from ContainerImage i order by i.id asc")
+})
 public class ContainerImage {
 
     @Id

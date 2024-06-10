@@ -45,42 +45,6 @@ responses:
       application/json:
         schema:
           $ref: '#/components/schemas/ErrorDto'
-components:
-  schemas:
-    KeysDto:
-      required:
-        - keys
-      type: object
-      properties:
-        keys:
-          type: array
-          items:
-            properties:
-              column_name:
-                type: integer
-                format: int64
-    DataTypesDto:
-      type: object
-      properties:
-        columns:
-          $ref: '#/components/schemas/SuggestedColumnDto'
-        line_termination:
-          type: string
-          example: "\r\n"
-        separator:
-          type: string
-          example: ","
-    SuggestedColumnDto:
-      type: object
-      properties:
-        column_name:
-          type: string
-    ErrorDto:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        message:
-          type: string
-          example: Message
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

@@ -57,48 +57,6 @@ responses:
       application/json:
         schema:
           $ref: '#/components/schemas/ErrorDto'
-components:
-  schemas:
-    DetermineDataTypesDto:
-      required:
-        - filename
-        - separator
-      type: object
-      properties:
-        enum:
-          type: boolean
-          example: false
-        enum_tol:
-          type: double
-          example: 0.01
-        filename:
-          type: string
-          example: s3-key-from-seaweedfs
-        separator:
-          type: string
-          example: ","
-    DataTypesDto:
-      type: object
-      properties:
-        columns:
-          $ref: '#/components/schemas/SuggestedColumnDto'
-        line_termination:
-          type: string
-          example: "\r\n"
-        separator:
-          type: string
-          example: ","
-    SuggestedColumnDto:
-      type: object
-      properties:
-        column_name:
-          type: string
-    ErrorDto:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: false
-        message:
-          type: string
-          example: Message
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

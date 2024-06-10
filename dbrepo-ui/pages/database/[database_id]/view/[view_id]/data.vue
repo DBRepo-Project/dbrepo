@@ -1,6 +1,7 @@
 <template>
-  <div v-if="view">
-    <ViewToolbar />
+  <div>
+    <ViewToolbar
+      v-if="view" />
     <v-toolbar
       color="secondary"
       :title="$t('toolbars.database.current')"
@@ -19,7 +20,6 @@
         id="query-results"
         ref="queryResults"
         type="view"
-        :view="view"
         class="mt-0 mb-0" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -76,15 +76,12 @@ export default {
     }
   },
   mounted () {
-    if (!this.view) {
-      return
-    }
     this.reload()
   },
   methods: {
     reload () {
-      this.$refs.queryResults.reExecute(this.view.id)
-      this.$refs.queryResults.reExecuteCount(this.view.id)
+      this.$refs.queryResults.reExecute(Number(this.$route.params.view_id))
+      this.$refs.queryResults.reExecuteCount(Number(this.$route.params.view_id))
     }
   }
 }
