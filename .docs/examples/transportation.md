@@ -2,10 +2,27 @@
 author: Martin Weise
 ---
 
+## tl;dr
+
+[:fontawesome-solid-database: &nbsp;Dataset](https://dbrepo1.ec.tuwien.ac.at/pid/14){ .md-button .md-button--primary target="_blank" }
+[:simple-grafana: &nbsp;Dashboard](https://dbrepo1.ec.tuwien.ac.at/admin/grafana/d/8meGcJD4k/wiener-linien){ .md-button .md-button--secondary target="_blank" }
+
 ## Description
 
-TBD
+The Subway Transportation Data-Dataset is a comprehensive and dynamic collection of data that captures the intricate 
+details of the city's public transportation system. This dataset encompasses a wide array of information, including bus 
+and tram schedules, subway routes, ticketing details, and real-time updates on vehicle locations.
 
 ## Solution
 
-TBD
+We wrote an algorithm that parses open data (available) information from Wiener Linien, Vienna's public transportation
+agency directly and feeds it, after some cleaning, into DBRepo on a 5-minute interval.
+
+![Subway Transportation Data Dashboard](images/screenshots/transportation-dashboard.png)
+
+## DBRepo Features
+
+- [x] Dynamic data (live data)
+- [x] System versioning
+- [x] Subset exploration
+- [x] External visualization of the database
