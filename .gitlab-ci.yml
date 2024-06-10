@@ -631,7 +631,9 @@ release-docs:
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
     - tar czf ./final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
+    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
+    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
+    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
 
 release-libs:
   stage: release
