@@ -1213,6 +1213,10 @@
       "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert",
       "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert"
     },
+    "schema": {
+      "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert.",
+      "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert."
+    },
     "database": {
       "upload": "Datenbankbild erfolgreich hochgeladen",
       "transfer": "Der Datenbankeigentümer wurde erfolgreich übertragen",

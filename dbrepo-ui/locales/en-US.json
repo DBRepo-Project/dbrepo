@@ -1213,6 +1213,10 @@
       "tables": "Successfully refreshed database tables metadata",
       "views": "Successfully refreshed database views metadata"
     },
+    "schema": {
+      "tables": "Successfully refreshed database tables metadata.",
+      "views": "Successfully refreshed database views metadata."
+    },
     "database": {
       "upload": "Successfully uploaded database image",
       "transfer": "Successfully transferred the database owner",

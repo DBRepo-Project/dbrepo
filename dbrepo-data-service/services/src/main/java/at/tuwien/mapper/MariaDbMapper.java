@@ -362,6 +362,12 @@ public interface MariaDbMapper {
                                 .append(ck)
                                 .append(")"));
             }
+            if (!data.getDescription().isBlank()) {
+                /* create table comments */
+                stringBuilder.append(" COMMENT \"")
+                        .append(data.getDescription())
+                        .append("\"");
+            }
         }
         stringBuilder.append(") WITH SYSTEM VERSIONING");
         if (data.getDescription() != null && !data.getDescription().isBlank()) {
