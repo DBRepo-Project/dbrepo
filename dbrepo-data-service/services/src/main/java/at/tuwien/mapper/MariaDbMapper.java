@@ -754,6 +754,22 @@ public interface MariaDbMapper {
                 .databaseId(table.getTdbid())
                 .description(resultSet.getString(11))
                 .build();
+        if (column.getColumnType().equals(ColumnTypeDto.ENUM)) {
+            column.setEnums(Arrays.stream(resultSet.getString(8)
+                            .substring(0, resultSet.getString(8).length() - 1)
+                            .replace("enum(", "")
+                            .split(","))
+                    .map(value -> value.replace("'", ""))
+                    .toList());
+        }
+        if (column.getColumnType().equals(ColumnTypeDto.SET)) {
+            column.setSets(Arrays.stream(resultSet.getString(8)
+                            .substring(0, resultSet.getString(8).length() - 1)
+                            .replace("set(", "")
+                            .split(","))
+                    .map(value -> value.replace("'", ""))
+                    .toList());
+        }
         /* constraints */
         if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
             table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()

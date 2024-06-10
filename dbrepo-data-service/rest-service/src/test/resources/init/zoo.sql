@@ -38,6 +38,15 @@ create table names
     unique key (firstname, lastname)
 ) with system versioning;
 
+CREATE SEQUENCE seq_experiments;
+
+create table experiments
+(
+    id   bigint              not null default nextval(seq_experiments),
+    mode enum ('ABC', 'DEF') not null,
+    seq  set ('1','2','3')
+) WITH SYSTEM VERSIONING;
+
 create table likes
 (
     name_id bigint not null,
