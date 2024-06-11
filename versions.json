@@ -1,8 +1,13 @@
 [
   {
+    "version": "1.4.4",
+    "title": "1.4.4",
+    "aliases": ["latest"]
+  },
+  {
     "version": "1.4.3",
     "title": "1.4.3",
-    "aliases": ["latest"]
+    "aliases": []
   },
   {
     "version": "1.4.2",

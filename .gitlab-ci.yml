@@ -4,7 +4,6 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  DOC_VERSIONS: "latest,1.4.3,1.4.2,1.4.1,1.4.0"
   APP_VERSION: "1.4.4"
   CHART_VERSION: "1.4.4"
 
@@ -601,10 +600,10 @@ release-chart:
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
     - "apk add sed helm curl"
+    - "helm package ./helm/dbrepo --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
 
 release-docs:
   stage: release
@@ -632,7 +631,9 @@ release-docs:
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
     - tar czf ./final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
+    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
+    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
+    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
 
 release-libs:
   stage: release

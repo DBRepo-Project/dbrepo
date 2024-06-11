@@ -25,3 +25,14 @@ Explore the available labels in order to proper categorize it and get the fastes
 
 If the contribution it's a bugfix, a little feature or documentation improvement that could be implemented in, lets say,
 a couple of days at maximum, one could go directly for a PR. It's fine.
+
+### Release checklist
+
+- [ ] Change variables `APP_VERSION` and `CHART_VERSION` in CI/CD file `.gitlab-ci.yml`
+- [ ] Change Helm chart variables in `helm/dbrepo/Chart.yaml` and update the chart README.md and values.schema.json for artifact hub with `make gen-helm-doc`
+- [ ] Change Python library version in `lib/python/setup.py` and `lib/python/pyproject.toml` for PyPI
+- [ ] Change the supported tags list in `.docs/docker/_header.md` for docker hub
+- [ ] Change the maven version in the metadata & data services:
+  - `mvn -f ./dbrepo-metadata-service/pom.xml versions:set -DnewVersion=VERSION`
+  - `mvn -f ./dbrepo-data-service/pom.xml versions:set -DnewVersion=VERSION`
+- [ ] Change the versions in `versions.json` for the generated website
