@@ -21,7 +21,7 @@ class QueryUnitTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=202)
+            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.execute_query(database_id=1, page=0, size=10,
