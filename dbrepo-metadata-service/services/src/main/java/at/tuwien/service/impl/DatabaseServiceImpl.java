@@ -278,6 +278,15 @@ public class DatabaseServiceImpl implements DatabaseService {
                 reference.setReferencedColumn(optional2.get());
             }
         }
+        database.getTables()
+                .stream()
+                .filter(t -> t.getConstraints().getForeignKeys().size() > 0)
+                .map(t -> t.getConstraints().getForeignKeys())
+                .flatMap(List::stream)
+                .filter(fk -> fk.getReferences().size() > 1)
+                .forEach(fk -> {
+                    log.debug("");
+                });
         /* update in metadata database */
         database = databaseRepository.save(database);
         /* save in search service */
