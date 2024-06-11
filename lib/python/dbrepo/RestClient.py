@@ -1138,7 +1138,7 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to delete database access: not found')
         raise ResponseCodeError(
-            f'Failed to delete database access: response code: {response.status_code} is not 202 (ACCEPTED)')
+            f'Failed to delete database access: response code: {response.status_code} is not 201 (CREATED)')
 
     def execute_query(self, database_id: int, query: str, page: int = 0, size: int = 10,
                       timestamp: datetime.datetime = datetime.datetime.now()) -> Result:
@@ -1167,7 +1167,7 @@ class RestClient:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=ExecuteQuery(statement=query, timestamp=timestamp))
-        if response.status_code == 202:
+        if response.status_code == 201:
             body = response.json()
             return Result.model_validate(body)
         if response.status_code == 400:

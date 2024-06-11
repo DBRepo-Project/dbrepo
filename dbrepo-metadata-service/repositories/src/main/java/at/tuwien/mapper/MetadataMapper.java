@@ -539,17 +539,21 @@ public interface MetadataMapper {
                     pk.getColumn().setTableId(data.getId());
                     pk.getColumn().setDatabaseId(data.getDatabase().getId());
                 });
-        for (ForeignKeyDto fk : table.getConstraints().getForeignKeys()) {
-            fk.getTable().setDatabaseId(table.getTdbid());
-            fk.getReferencedTable().setDatabaseId(table.getTdbid());
-            for (ForeignKeyReferenceDto ref : fk.getReferences()) {
-                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
-                ref.getColumn().setTableId(table.getId());
-                ref.getColumn().setDatabaseId(table.getTdbid());
-                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
-                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
-            }
-        }
+        table.getConstraints()
+                .getForeignKeys()
+                .forEach(fk -> {
+                    fk.getTable().setDatabaseId(table.getTdbid());
+                    fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                    fk.getReferences()
+                            .forEach(ref -> {
+                                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                                ref.getColumn().setTableId(table.getId());
+                                ref.getColumn().setDatabaseId(table.getTdbid());
+                                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
+                                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                                log.trace("mapped foreign key part ({}) reference ({})", ref.getColumn().getInternalName(), ref.getReferencedColumn().getInternalName());
+                            });
+                });
         table.getConstraints()
                 .getUniques()
                 .forEach(uk -> {
