@@ -590,7 +590,7 @@ public class TableEndpoint {
         }
         if (data.getLineTermination() == null) {
             log.debug("line termination not present, default to \\r\\n");
-            data.setLineTermination("\r\n");
+            data.setLineTermination("\\r\\n");
         }
         try {
             tableService.importDataset(table, data);
