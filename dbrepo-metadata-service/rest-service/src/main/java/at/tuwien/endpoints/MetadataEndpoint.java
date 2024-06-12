@@ -44,7 +44,7 @@ public class MetadataEndpoint {
             @ExampleObject(value = "ListMetadataFormats"),
     })
     @Observed(name = "dbrepo_oai_identify")
-    @Operation(summary = "Identify the repository")
+    @Operation(summary = "Identify repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List containers",
@@ -57,7 +57,7 @@ public class MetadataEndpoint {
 
     @GetMapping(params = "verb=Identify", produces = MediaType.TEXT_XML_VALUE)
     @Observed(name = "dbrepo_oai_identify")
-    @Operation(summary = "Identify the repository")
+    @Operation(summary = "Identify repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List containers",
@@ -72,7 +72,7 @@ public class MetadataEndpoint {
 
     @GetMapping(params = "verb=ListIdentifiers", produces = MediaType.TEXT_XML_VALUE)
     @Observed(name = "dbrepo_oai_identifiers_list")
-    @Operation(summary = "List the identifiers")
+    @Operation(summary = "List identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
         final String xml = metadataService.listIdentifiers(parameters);
@@ -82,7 +82,7 @@ public class MetadataEndpoint {
 
     @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)
     @Observed(name = "dbrepo_oai_record_get")
-    @Operation(summary = "Get the record")
+    @Operation(summary = "Get record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
         final List<String> supportedMetadataFormats = List.of("oai_dc", "oai_datacite");
@@ -117,7 +117,7 @@ public class MetadataEndpoint {
 
     @GetMapping(params = "verb=ListMetadataFormats", produces = MediaType.TEXT_XML_VALUE)
     @Observed(name = "dbrepo_oai_metadataformats_list")
-    @Operation(summary = "List the metadata formats")
+    @Operation(summary = "List metadata formats")
     public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
         final String xml = metadataService.listMetadataFormats();

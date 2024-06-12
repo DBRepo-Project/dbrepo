@@ -1,5 +1,7 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -15,9 +17,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -28,10 +31,10 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private AccessEndpoint accessEndpoint;
 
     @MockBean
-    private AccessService accessService;
+    private MetadataServiceGateway metadataServiceGateway;
 
     @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
+    private AccessService accessService;
 
     @BeforeEach
     public void beforeEach() {
@@ -40,7 +43,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
+    public void create_succeeds() throws UserNotFoundException, NotAllowedException, DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, ServiceException {
 
         /* mock */
@@ -117,7 +120,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
     public void update_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseMalformedException, ServiceException {
+            NotAllowedException, DatabaseUnavailableException, DatabaseMalformedException, ServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -175,14 +178,18 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void revoke_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, ServiceException {
+    public void revoke_succeeds() throws UserNotFoundException, NotAllowedException, DatabaseUnavailableException,
+            DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, ServiceException,
+            SQLException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
+        doNothing()
+                .when(accessService)
+                .delete(any(PrivilegedDatabaseDto.class), any(UserDto.class));
 
         /* test */
         accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);

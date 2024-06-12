@@ -12,6 +12,7 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,10 +66,13 @@ public class DatabaseEndpoint {
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_database_findall")
-    @Operation(summary = "List databases")
+    @Operation(summary = "List databases",
+            description = "Lists all databases in the metadata database. Requests with HTTP method **GET** return the list of databases, requests with HTTP method **HEAD** only the number in the `X-Count` header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List of databases",
+                    headers = {@Header(name = "X-Count", description = "Number of databases", schema = @Schema(implementation = Long.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
@@ -101,7 +105,9 @@ public class DatabaseEndpoint {
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('create-database')")
     @Observed(name = "dbrepo_database_create")
-    @Operation(summary = "Create database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create database",
+            description = "Creates a database in the container with id. Requires roles `create-database`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new database",
@@ -152,10 +158,12 @@ public class DatabaseEndpoint {
     }
 
     @PutMapping("/{databaseId}/metadata/table")
-    @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
+    @Transactional(rollbackFor = {Exception.class})
     @PreAuthorize("hasAuthority('find-database')")
     @Observed(name = "dbrepo_tables_refresh")
-    @Operation(summary = "Refresh database tables metadata", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database table schemas",
+            description = "Updates the database with id with generated metadata from tables that are not yet known to the database. Only the database owner can perform this operation. Requires role `find-database`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Refreshed database tables metadata",
@@ -206,7 +214,9 @@ public class DatabaseEndpoint {
     @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
     @PreAuthorize("hasAuthority('find-database')")
     @Observed(name = "dbrepo_views_refresh")
-    @Operation(summary = "Refresh database views metadata", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database view schemas",
+            description = "Updates the database with id with generated metadata from view that are not yet known to the database. Only the database owner can perform this operation. Requires role `find-database`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Refreshed database views metadata",
@@ -252,13 +262,20 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Observed(name = "dbrepo_database_visibility")
-    @Operation(summary = "Update database visibility", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database visibility",
+            description = "Updates the database with id on the visibility. Only the database owner can perform this operation. Requires role `modify-database-visibility`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Visibility modified successfully",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "The visibility payload is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Visibility modification is not permitted",
                     content = {@Content(
@@ -299,13 +316,20 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbrepo_database_transfer")
-    @Operation(summary = "Update database owner", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database owner",
+            description = "Updates the database with id on the owner. Only the database owner can perform this operation. Requires role `modify-database-owner`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Transfer of ownership was successful",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Owner payload is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user could not be found",
                     content = {@Content(
@@ -349,7 +373,9 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-image')")
     @Observed(name = "dbrepo_database_image")
-    @Operation(summary = "Update database image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database preview image",
+            description = "Updates the database with id on the preview image. Only the database owner can perform this operation. Requires role `modify-database-image`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modify of image was successful",
@@ -407,7 +433,9 @@ public class DatabaseEndpoint {
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_database_find")
-    @Operation(summary = "Find some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Find database",
+            description = "Finds a database with id.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Database found successfully",

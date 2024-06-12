@@ -239,7 +239,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(CONTAINER_1);
 
         /* test */
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(data);
+        final ResponseEntity<ContainerDto> response = containerEndpoint.create(data);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
     }

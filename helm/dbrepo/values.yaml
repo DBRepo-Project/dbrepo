@@ -336,6 +336,14 @@ uploadservice:
   image:
     repository: tusproject/tusd
     tag: v1.12
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
   containerArgs:
     - "--base-path=/api/upload/files/"
     - "-s3-endpoint=http://storageservice-s3:9000"

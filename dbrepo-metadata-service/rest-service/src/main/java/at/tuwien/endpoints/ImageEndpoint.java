@@ -52,13 +52,14 @@ public class ImageEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_image_findall")
-    @Operation(summary = "Find all images")
+    @Operation(summary = "List images",
+            description = "Lists all container images known to the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List images",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = ContainerImage.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ImageBriefDto.class)))}),
     })
     public ResponseEntity<List<ImageBriefDto>> findAll() {
         log.debug("endpoint find all images");
@@ -66,14 +67,16 @@ public class ImageEndpoint {
         return ResponseEntity.ok()
                 .body(containers.stream()
                         .map(metadataMapper::containerImageToImageBriefDto)
-                        .collect(Collectors.toList()));
+                        .toList());
     }
 
     @PostMapping
     @Transactional
     @Observed(name = "dbrepo_image_create")
     @PreAuthorize("hasAuthority('create-image')")
-    @Operation(summary = "Create image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create image",
+            description = "Creates a container image in the metadata database. Requires role `create-image`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created image",
@@ -109,7 +112,8 @@ public class ImageEndpoint {
     @GetMapping("/{imageId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_image_find")
-    @Operation(summary = "Find some image")
+    @Operation(summary = "Find image",
+            description = "Finds a container image in the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found image",
@@ -135,7 +139,9 @@ public class ImageEndpoint {
     @Transactional
     @Observed(name = "dbrepo_image_update")
     @PreAuthorize("hasAuthority('modify-image')")
-    @Operation(summary = "Update some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update image",
+            description = "Updates container image in the metadata database. Requires role `modify-image`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated image successfully",
@@ -164,7 +170,9 @@ public class ImageEndpoint {
     @Transactional
     @Observed(name = "dbrepo_image_delete")
     @PreAuthorize("hasAuthority('delete-image')")
-    @Operation(summary = "Delete some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete image",
+            description = "Deletes a container image in the metadata database. Requires role `delete-image`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted image successfully",
@@ -175,7 +183,7 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
         log.debug("endpoint delete image, id={}", imageId);
         final ContainerImage image = imageService.find(imageId);
         imageService.delete(image);

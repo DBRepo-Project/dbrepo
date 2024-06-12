@@ -56,11 +56,15 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbrepo_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
-    @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Give access",
+            description = "Give a user with given id access to some database with given id. Requires role `create-database-access`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Granting access succeeded",
-                    content = {@Content}),
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseAccessDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Granting access query or database connection is malformed",
                     content = {@Content(
@@ -76,11 +80,6 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Granting access not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
                     description = "Access could not be created due to connection error",
                     content = {@Content(
@@ -92,7 +91,7 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> create(@NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseAccessDto> create(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody UpdateDatabaseAccessDto data,
                                     @NotNull Principal principal) throws NotAllowedException, ServiceException,
@@ -122,11 +121,12 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbrepo_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
-    @Operation(summary = "Modify access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Modify access",
+            description = "Modifies access of a user with given id to database with given id. Requires role `update-database-access`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Modify access succeeded",
-                    content = {@Content}),
+                    description = "Modified access"),
             @ApiResponse(responseCode = "400",
                     description = "Modify access query or database connection is malformed",
                     content = {@Content(
@@ -153,7 +153,7 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> update(@NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> update(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody UpdateDatabaseAccessDto data,
                                     @NotNull Principal principal) throws NotAllowedException,
@@ -177,7 +177,9 @@ public class AccessEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_access_get")
     @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('admin')")
-    @Operation(summary = "Check access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Find/Check access",
+            description = "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `admin`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found database access",
@@ -220,11 +222,12 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbrepo_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
-    @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete access",
+            description = "Delete access of a user with id to a database with id. Requires role `delete-database-access`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Revoked access successfully",
-                    content = {@Content}),
+                    description = "Deleted access"),
             @ApiResponse(responseCode = "400",
                     description = "Modify access query or database connection is malformed",
                     content = {@Content(
@@ -251,7 +254,7 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @NotNull Principal principal) throws NotAllowedException, ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,

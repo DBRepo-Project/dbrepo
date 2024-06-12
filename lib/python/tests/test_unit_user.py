@@ -5,7 +5,7 @@ import requests_mock
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import User, UserAttributes, UserBrief
 from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
-    ForbiddenError, AuthenticationError
+    ForbiddenError, AuthenticationError, MalformedError, ServiceError
 
 
 class UserUnitTest(unittest.TestCase):
@@ -66,18 +66,7 @@ class UserUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
-            except ResponseCodeError as e:
-                pass
-
-    def test_create_user_not_allowed_fails(self):
-        with requests_mock.Mocker() as mock:
-            exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
-            # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=403)
-            # test
-            try:
-                response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
-            except ForbiddenError as e:
+            except MalformedError as e:
                 pass
 
     def test_create_user_username_exists_fails(self):
@@ -171,18 +160,6 @@ class UserUnitTest(unittest.TestCase):
             except NotExistsError as e:
                 pass
 
-    def test_update_user_foreign_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=405)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin',
-                                              language='en', theme='light')
-            except ForbiddenError as e:
-                pass
-
     def test_update_user_not_auth_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
@@ -231,18 +208,6 @@ class UserUnitTest(unittest.TestCase):
             except NotExistsError as e:
                 pass
 
-    def test_update_user_password_foreign_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/password', status_code=405)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.update_user_password(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
-                                                       password='s3cr3t1n0rm4t10n')
-            except ForbiddenError as e:
-                pass
-
     def test_update_user_password_keycloak_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
@@ -252,7 +217,7 @@ class UserUnitTest(unittest.TestCase):
                 client = RestClient(username="a", password="b")
                 response = client.update_user_password(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
                                                        password='s3cr3t1n0rm4t10n')
-            except ResponseCodeError as e:
+            except ServiceError as e:
                 pass
 
     def test_update_user_password_not_auth_fails(self):

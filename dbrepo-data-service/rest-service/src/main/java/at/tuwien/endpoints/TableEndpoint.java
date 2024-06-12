@@ -5,6 +5,7 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
@@ -17,6 +18,8 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -59,7 +62,8 @@ public class TableEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Create table", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Create table",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -105,7 +109,8 @@ public class TableEndpoint {
 
     @DeleteMapping("/{tableId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Delete table", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Delete table",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -147,15 +152,24 @@ public class TableEndpoint {
 
     @RequestMapping(value = "/{tableId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_table_data_list")
-    @Operation(summary = "Retrieve table data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Get table data",
+            description = "Gets data from a table with id. For a table in a private database, the user needs to have at least *READ* access to the associated database. Requests with HTTP method **GET** return the full dataset, requests with HTTP method **HEAD** only the number of tuples in the `X-Count` header.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Retrieved table data",
+                    description = "Get table data",
+                    headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = Long.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to get table data",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -174,26 +188,36 @@ public class TableEndpoint {
                                                   @NotBlank @PathVariable("tableId") Long tableId,
                                                   @RequestParam(required = false) Instant timestamp,
                                                   @RequestParam(required = false) Long page,
-                                                  @RequestParam(required = false) Long size)
+                                                  @RequestParam(required = false) Long size,
+                                                  Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, PaginationException, QueryMalformedException, ServiceException {
+            TableMalformedException, PaginationException, QueryMalformedException, ServiceException,
+            NotAllowedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
                 tableId, timestamp, page, size);
         endpointValidator.validateDataParams(page, size);
         /* parameters */
         if (page == null) {
-            log.debug("page not set: default to 0");
             page = 0L;
+            log.debug("page not set: default to {}", page);
         }
         if (size == null) {
-            log.debug("size not set: default to 10");
             size = 10L;
+            log.debug("size not set: default to {}", size);
         }
         if (timestamp == null) {
-            log.debug("timestamp not set: default to now");
             timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
         }
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
+        if (!table.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed find table data: authentication required");
+                throw new NotAllowedException("Failed to find table data: authentication required");
+            }
+            final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
+        }
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Access-Control-Expose-Headers", "X-Count");
         try {
@@ -211,8 +235,8 @@ public class TableEndpoint {
     @PostMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_create")
-    @Operation(summary = "Insert a raw data tuple",
-            description = "Inserts a raw data tuple into a table with at least WRITE_OWN access. Then update the table statistics.",
+    @Operation(summary = "Insert tuple",
+            description = "Inserts a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `insert-table-data`.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -263,8 +287,8 @@ public class TableEndpoint {
     @PutMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbrepo_table_data_update")
-    @Operation(summary = "Update a raw data tuple",
-            description = "Updates a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+    @Operation(summary = "Update tuple",
+            description = "Updates a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `insert-table-data`.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -315,8 +339,8 @@ public class TableEndpoint {
     @DeleteMapping("/{tableId}/data")
     @PreAuthorize("hasAuthority('delete-table-data')")
     @Observed(name = "dbrepo_table_data_delete")
-    @Operation(summary = "Delete table data",
-            description = "Deletes a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+    @Operation(summary = "Delete tuple",
+            description = "Deletes a data tuple into a table, then the table statistics are updated. The user needs to have at least *WRITE_OWN* access to the associated database. Requires role `delete-table-data`.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -366,17 +390,17 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}/history")
     @Observed(name = "dbrepo_table_data_history")
-    @Operation(summary = "Find table history",
-            description = "Lists the insert/delete operations performed. Authentication is only required for tables in private databases",
+    @Operation(summary = "Get history",
+            description = "Gets the insert/delete operations history performed. For tables in private databases, the user needs to have at least *READ* access to the associated database.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found table history",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = TableHistoryDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = TableHistoryDto.class)))}),
             @ApiResponse(responseCode = "400",
-                    description = "Invalid pagination request",
+                    description = "Invalid pagination size request, must be > 0",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -431,13 +455,14 @@ public class TableEndpoint {
     @GetMapping
     @PreAuthorize("hasAuthority('admin')")
     @Observed(name = "dbrepo_table_schema_list")
-    @Operation(summary = "Find table schemas", hidden = true)
+    @Operation(summary = "Find tables",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Got table schemas",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = TableDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = TableDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Schema data malformed",
                     content = {@Content(
@@ -479,7 +504,9 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}/export")
     @Observed(name = "dbrepo_table_data_export")
-    @Operation(summary = "Export table data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Get table data",
+            description = "Gets data from table with id as downloadable file. For tables in private databases, the user needs to have at least *READ* access to the associated database.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Exported table data",
@@ -515,6 +542,11 @@ public class TableEndpoint {
             NotAllowedException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, ServiceException {
         log.debug("endpoint find table history, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
+        /* parameters */
+        if (timestamp == null) {
+            timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
+        }
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         if (!table.getIsPublic()) {
             if (principal == null) {
@@ -522,11 +554,6 @@ public class TableEndpoint {
                 throw new NotAllowedException("Failed to export private table: principal is null");
             }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
-        }
-        /* parameters */
-        if (timestamp == null) {
-            log.debug("timestamp not set: default to now");
-            timestamp = Instant.now();
         }
         try {
             final HttpHeaders headers = new HttpHeaders();
@@ -546,8 +573,8 @@ public class TableEndpoint {
     @PostMapping("/{tableId}/data/import")
     @Observed(name = "dbrepo_table_data_import")
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Operation(summary = "Import data from a dataset",
-            description = "Deletes a raw data tuple in a table with at least WRITE_OWN access. Then update the table statistics.",
+    @Operation(summary = "Import dataset",
+            description = "Imports a dataset in a table. Then update the table statistics. The user needs to have at least *WRITE_OWN* access to the associated database when importing into a owned table. Otherwise *WRITE_ALL* access in needed. Requires role `insert-table-data`.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -585,12 +612,12 @@ public class TableEndpoint {
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
         if (data.getNullElement() == null) {
-            log.debug("null element not present, default to empty string");
             data.setNullElement("");
+            log.debug("null element not present, default to empty string");
         }
         if (data.getLineTermination() == null) {
-            log.debug("line termination not present, default to \\r\\n");
             data.setLineTermination("\\r\\n");
+            log.debug("line termination not present, default to {}", data.getLineTermination());
         }
         try {
             tableService.importDataset(table, data);
@@ -605,7 +632,8 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}/statistic")
     @Observed(name = "dbrepo_table_statistic")
-    @Operation(summary = "Generate table statistic")
+    @Operation(summary = "Get table statistic",
+            description = "Gets basic statistical properties (min, max, mean, median, std.dev) of numerical columns of a table with id.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Generated table statistic",
