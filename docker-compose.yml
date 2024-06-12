@@ -269,6 +269,7 @@ services:
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}

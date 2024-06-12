@@ -54,13 +54,14 @@ public class ContainerEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_container_findall")
-    @Operation(summary = "Find all containers")
+    @Operation(summary = "List containers",
+            description = "List all containers in the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List containers",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = ContainerBriefDto[].class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ContainerBriefDto.class)))}),
     })
     public ResponseEntity<List<ContainerBriefDto>> findAll(@RequestParam(required = false) Integer limit) {
         log.debug("endpoint find all containers, limit={}", limit);
@@ -77,13 +78,25 @@ public class ContainerEndpoint {
     @Transactional
     @Observed(name = "dbrepo_container_create")
     @PreAuthorize("hasAuthority('create-container')")
-    @Operation(summary = "Create container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create container",
+            description = "Creates a container in the metadata database. Requires role `create-container`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new container",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ContainerBriefDto.class))}),
+                            schema = @Schema(implementation = ContainerDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Container payload malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Create container not permitted, need authority `create-container`",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Container image or user could not be found",
                     content = {@Content(
@@ -95,11 +108,11 @@ public class ContainerEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateDto data)
+    public ResponseEntity<ContainerDto> create(@Valid @RequestBody ContainerCreateDto data)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
         log.debug("endpoint create container, data={}", data);
         final Container container = containerService.create(data);
-        final ContainerBriefDto dto = metadataMapper.containerToDatabaseContainerBriefDto(container);
+        final ContainerDto dto = metadataMapper.containerToContainerDto(container);
         log.trace("create container resulted in container {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -108,7 +121,8 @@ public class ContainerEndpoint {
     @GetMapping("/{containerId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_container_find")
-    @Operation(summary = "Find some container")
+    @Operation(summary = "Find container",
+            description = "Finds a container in the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found container",
@@ -147,17 +161,24 @@ public class ContainerEndpoint {
     @Transactional
     @Observed(name = "dbrepo_container_delete")
     @PreAuthorize("hasAuthority('delete-container')")
-    @Operation(summary = "Delete some container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete container",
+            description = "Deletes a container in the metadata database. Requires role `delete-container`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Deleted container successfully"),
+                    description = "Deleted container"),
+            @ApiResponse(responseCode = "403",
+                    description = "Create container not permitted, need authority `delete-container`",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Container not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("containerId") Long containerId) throws ContainerNotFoundException {
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") Long containerId) throws ContainerNotFoundException {
         log.debug("endpoint delete container, containerId={}", containerId);
         final Container container = containerService.find(containerId);
         containerService.remove(container);

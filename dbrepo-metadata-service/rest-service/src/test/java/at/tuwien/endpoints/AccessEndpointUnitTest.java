@@ -78,9 +78,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* mock */
-        doNothing()
-                .when(accessService)
-                .create(eq(DATABASE_1), eq(USER_2), any(AccessTypeDto.class));
+        when(accessService.create(eq(DATABASE_1), eq(USER_2), any(AccessTypeDto.class)))
+                .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
         generic_create(USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);

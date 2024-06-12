@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -14,6 +15,8 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -57,13 +60,15 @@ public class SubsetEndpoint {
 
     @GetMapping
     @Observed(name = "dbrepo_subset_list")
-    @Operation(summary = "Find subsets", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Find subsets",
+            description = "Finds subsets in the query store. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found subsets",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = QueryDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = QueryDto.class)))}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to find subsets",
                     content = {@Content(
@@ -85,8 +90,7 @@ public class SubsetEndpoint {
                                                Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, ServiceException {
-        log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}, principal.name={}", databaseId,
-                filterPersisted, principal != null ? principal.getName() : null);
+        log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
@@ -102,13 +106,15 @@ public class SubsetEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
-        log.info("Found {} subsets in data database", queries.size());
+        log.info("Found {} subset(s)", queries.size());
         return ResponseEntity.ok(queries);
     }
 
     @GetMapping("/{subsetId}")
     @Observed(name = "dbrepo_subset_find")
-    @Operation(summary = "Find subset", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Find subset",
+            description = "Finds a subset in the data database. Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found subset",
@@ -171,12 +177,12 @@ public class SubsetEndpoint {
         }
         /* parameters */
         if (timestamp == null) {
-            log.debug("timestamp not set: default to now");
             timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
         }
         if (accept == null) {
-            log.debug("accept header not set: default to application/json");
             accept = MediaType.APPLICATION_JSON_VALUE;
+            log.debug("accept header not set: default to {}", accept);
         }
         switch (accept) {
             case MediaType.APPLICATION_JSON_VALUE:
@@ -205,7 +211,9 @@ public class SubsetEndpoint {
     @PostMapping
     @Observed(name = "dbrepo_subset_create")
     @PreAuthorize("hasAuthority('execute-query')")
-    @Operation(summary = "Create subset", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Create subset",
+            description = "Creates a subset in the query store of the data database. Requires role `execute-query`",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created subset",
@@ -253,24 +261,24 @@ public class SubsetEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
             QueryNotSupportedException, NotAllowedException, UserNotFoundException, ServiceException {
-        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, size={}, timestamp={}",
-                databaseId, data.getStatement(), principal.getName(), page, size, timestamp);
+        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, " +
+                "size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size, timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateForbiddenStatements(data.getStatement());
         metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         /* parameters */
         if (page == null) {
-            log.debug("page not set: default to 0");
             page = 0L;
+            log.debug("page not set: default to {}", page);
         }
         if (size == null) {
-            log.debug("size not set: default to 10");
             size = 10L;
+            log.debug("size not set: default to {}", size);
         }
         if (timestamp == null) {
-            log.debug("timestamp not set: default to now");
             timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
@@ -282,22 +290,26 @@ public class SubsetEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }
-        log.info("Created subset with id {} in data database", queryResult.getId());
+        log.info("Created subset with id: {}", queryResult.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(queryResult);
     }
 
     @RequestMapping(value = "/{subsetId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_subset_data")
-    @Operation(summary = "Retrieved subset data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Get subset data",
+            description = "Gets data of subset with id. For private databases, the user needs at least *READ* access to the associated database. Requests with HTTP method **GET** return the subset dataset, requests with HTTP method **HEAD** only the number of rows in the subset dataset in the `X-Count` header",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved subset data",
+                    headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = Long.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
             @ApiResponse(responseCode = "400",
-                    description = "Malformed select query",
+                    description = "Invalid pagination",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -339,12 +351,12 @@ public class SubsetEndpoint {
         }
         /* parameters */
         if (page == null) {
-            log.debug("page not set: default to 0");
             page = 0L;
+            log.debug("page not set: default to {}", page);
         }
         if (size == null) {
-            log.debug("size not set: default to 10");
             size = 10L;
+            log.debug("size not set: default to {}", size);
         }
         try {
             final QueryDto query = subsetService.findById(database, subsetId);
@@ -372,7 +384,9 @@ public class SubsetEndpoint {
     @PutMapping("/{queryId}")
     @PreAuthorize("hasAuthority('persist-query')")
     @Observed(name = "dbrepo_subset_persist")
-    @Operation(summary = "Persist subset", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Persist subset",
+            description = "Persists a subset with id. Requires role `persist-query`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Persisted subset",

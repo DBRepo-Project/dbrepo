@@ -259,9 +259,9 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .create(any(SignupRequestDto.class));
 
         /* test */
-        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
+        final ResponseEntity<UserDto> response = userEndpoint.create(data);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        final UserBriefDto body = response.getBody();
+        final UserDto body = response.getBody();
         assertNotNull(body);
     }
 

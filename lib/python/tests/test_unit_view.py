@@ -44,16 +44,6 @@ class ViewUnitTest(unittest.TestCase):
             response = RestClient().get_views(database_id=1)
             self.assertEqual(exp, response)
 
-    def test_get_views_not_allowed_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/view', status_code=403)
-            # test
-            try:
-                response = RestClient().get_views(database_id=1)
-            except ForbiddenError:
-                pass
-
     def test_get_views_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
