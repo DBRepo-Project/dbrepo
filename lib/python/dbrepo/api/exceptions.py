@@ -61,6 +61,13 @@ class MetadataConsistencyError(Exception):
     pass
 
 
+class FormatNotAvailable(Exception):
+    """
+    The service cannot provide the result in the requested representation.
+    """
+    pass
+
+
 class ExternalSystemError(Exception):
     """
     The service could not communicate with the external system.
@@ -75,8 +82,29 @@ class AuthenticationError(Exception):
     pass
 
 
+class ServiceConnectionError(Exception):
+    """
+    The service failed to establish connection.
+    """
+    pass
+
+
+class ServiceError(Exception):
+    """
+    The service failed to perform the requested action.
+    """
+    pass
+
+
 class UploadError(Exception):
     """
     The upload was not successful.
+    """
+    pass
+
+
+class RequestError(Exception):
+    """
+    The request cannot be sent.
     """
     pass

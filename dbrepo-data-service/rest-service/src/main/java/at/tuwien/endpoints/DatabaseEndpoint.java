@@ -54,7 +54,8 @@ public class DatabaseEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Create database", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Create database",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -108,7 +109,8 @@ public class DatabaseEndpoint {
 
     @PutMapping("/{databaseId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Update user password in database", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Update user password",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",

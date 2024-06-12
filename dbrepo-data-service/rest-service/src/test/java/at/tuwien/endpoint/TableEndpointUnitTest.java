@@ -140,7 +140,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void getData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, TableMalformedException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException, ServiceException {
+            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException, ServiceException,
+            NotAllowedException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
@@ -151,7 +152,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_DATA_DTO);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null);
+        final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("X-Count"));
         assertEquals(1, response.getHeaders().get("X-Count").size());
@@ -174,7 +175,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null);
+            tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, null);
         });
     }
 

@@ -77,7 +77,9 @@ public class TableEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_findall")
-    @Operation(summary = "List all tables", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "List tables",
+            description = "Lists all tables known to the metadata database.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List tables",
@@ -114,13 +116,15 @@ public class TableEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
     @Observed(name = "dbrepo_semantic_table_analyse")
-    @Operation(summary = "Suggest table semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Suggest semantics",
+            description = "Suggests semantic concepts for a table. Requires role `table-semantic-analyse`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Suggested table semantics successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Failed to parse statistic in search service",
                     content = {@Content(
@@ -148,7 +152,6 @@ public class TableEndpoint {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
         final List<EntityDto> dtos = entityService.suggestByTable(table);
-        log.trace("analyse table semantics resulted in dtos {}", dtos);
         return ResponseEntity.ok()
                 .body(dtos);
     }
@@ -157,7 +160,9 @@ public class TableEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('update-table-statistic') or hasAuthority('admin')")
     @Observed(name = "dbrepo_statistic_table_update")
-    @Operation(summary = "Update table statistics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update statistics",
+            description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. Requires role `update-table-statistic`",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated table statistics successfully"),
@@ -197,7 +202,9 @@ public class TableEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
     @Observed(name = "dbrepo_semantics_column_save")
-    @Operation(summary = "Update a table column semantic mapping", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update semantics",
+            description = "Updates column semantics of a table column with id. Only the table owner with at least *READ* access to the associated database can update the column semantics (requires role `modify-table-column-semantics`) or foreign table columns if role `modify-foreign-table-column-semantics`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated column semantics successfully",
@@ -258,7 +265,9 @@ public class TableEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
     @Observed(name = "dbrepo_semantic_column_analyse")
-    @Operation(summary = "Suggest table column semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Suggest semantics",
+            description = "Suggests column semantics. Requires role `table-semantic-analyse`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Suggested table column semantics successfully",
@@ -289,16 +298,17 @@ public class TableEndpoint {
         final Table table = tableService.findById(databaseId, tableId);
         TableColumn column = tableService.findColumnById(table, columnId);
         final List<TableColumnEntityDto> dtos = entityService.suggestByColumn(column);
-        log.trace("analyse table semantics resulted in dtos {}", dtos);
         return ResponseEntity.ok()
                 .body(dtos);
     }
 
     @PostMapping
-    @Transactional(rollbackFor = {ServiceConnectionException.class, DatabaseNotFoundException.class, ServiceException.class})
+    @Transactional(rollbackFor = {Exception.class})
     @PreAuthorize("hasAuthority('create-table')")
     @Observed(name = "dbrepo_table_create")
-    @Operation(summary = "Create a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create table",
+            description = "Creates a table in the database with id. Requires role `create-table`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new table",
@@ -357,7 +367,7 @@ public class TableEndpoint {
         }
         final Table table = tableService.createTable(database, data, principal);
         final TableDto dto = metadataMapper.customTableToTableDto(table);
-        log.debug("create table resulted in table.id={}", dto.getId());
+        log.info("Created table with id {}", dto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
@@ -365,7 +375,9 @@ public class TableEndpoint {
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_find")
-    @Operation(summary = "Get information about table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Find table",
+            description = "Finds a table with id.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table successfully",
@@ -383,12 +395,12 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
-                    description = "Connection to search service failed",
+                    description = "Failed to establish connection with broker service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
-                    description = "Failed to save in search service",
+                    description = "Failed to obtain queue information from broker service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -418,7 +430,6 @@ public class TableEndpoint {
                 headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Sidecar-Host X-Sidecar-Port");
             }
         }
-        log.trace("find table resulted in table {}", dto);
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(dto);
@@ -428,11 +439,12 @@ public class TableEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
     @Observed(name = "dbrepo_table_delete")
-    @Operation(summary = "Delete a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete table",
+            description = "Deletes a table with id. Only the owner of a table can perform this action (requires role `delete-table`) or anyone can delete a table (requires role `delete-foreign-table`).",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Delete table successfully",
-                    content = {@Content}),
+                    description = "Delete table successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Delete table query resulted in an invalid query statement",
                     content = {@Content(
@@ -459,9 +471,9 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                    @NotNull @PathVariable("tableId") Long tableId,
-                                    @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @NotNull Principal principal) throws NotAllowedException,
             ServiceException, ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);

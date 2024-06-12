@@ -12,6 +12,7 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -55,7 +56,8 @@ public class ViewEndpoint {
     @GetMapping
     @PreAuthorize("hasAuthority('admin')")
     @Observed(name = "dbrepo_view_schema_list")
-    @Operation(summary = "Find view schemas", hidden = true)
+    @Operation(summary = "Find views",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found view schemas",
@@ -104,7 +106,8 @@ public class ViewEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Create view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
+    @Operation(summary = "Create view",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -149,7 +152,8 @@ public class ViewEndpoint {
 
     @DeleteMapping("/{viewId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Delete view", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
+    @Operation(summary = "Delete view",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -193,10 +197,14 @@ public class ViewEndpoint {
 
     @RequestMapping(value = "/{viewId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_view_data")
-    @Operation(summary = "Retrieve view data", security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @Operation(summary = "Get view data",
+            description = "Gets data from a view of a database. For private databases, the user needs at least *READ* access to the associated database. Requires role `view-database-view-data`.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved view data",
+                    headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = Long.class), required = true),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryResultDto.class))}),
@@ -241,16 +249,16 @@ public class ViewEndpoint {
         endpointValidator.validateDataParams(page, size);
         /* parameters */
         if (page == null) {
-            log.debug("page not set: default to 0");
             page = 0L;
+            log.debug("page not set: default to {}", page);
         }
         if (size == null) {
-            log.debug("size not set: default to 10");
             size = 10L;
+            log.debug("size not set: default to {}", size);
         }
         if (timestamp == null) {
-            log.debug("timestamp not set: default to now");
             timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
         }
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         if (!view.getIsPublic()) {

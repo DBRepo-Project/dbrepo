@@ -5,7 +5,6 @@ import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
@@ -40,9 +39,6 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private AccessService accessService;
-
-    @MockBean
-    private MetadataMapper metadataMapper;
 
     @MockBean
     private DatabaseService databaseService;

@@ -15,7 +15,7 @@ from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError
 
 class QueryUnitTest(unittest.TestCase):
 
-    def test_execute_query_succeeds(self):
+    def test_create_subset_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
                          headers=[{'id': 0, 'username': 1}],
@@ -24,77 +24,53 @@ class QueryUnitTest(unittest.TestCase):
             mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
-            response = client.execute_query(database_id=1, page=0, size=10,
+            response = client.create_subset(database_id=1, page=0, size=10,
                                             query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             self.assertEqual(exp, response)
 
-    def test_execute_query_malformed_fails(self):
+    def test_create_subset_malformed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.execute_query(database_id=1,
+                response = client.create_subset(database_id=1,
                                                 query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             except MalformedError:
                 pass
 
-    def test_execute_query_not_allowed_fails(self):
+    def test_create_subset_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.execute_query(database_id=1,
+                response = client.create_subset(database_id=1,
                                                 query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             except ForbiddenError:
                 pass
 
-    def test_execute_query_not_found_fails(self):
+    def test_create_subset_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.execute_query(database_id=1,
+                response = client.create_subset(database_id=1,
                                                 query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             except NotExistsError:
                 pass
 
-    def test_execute_query_not_valid_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.post('/api/database/1/subset', status_code=409)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                response = client.execute_query(database_id=1,
-                                                query="SELECT id, username FROM some_table WHERE id IN (1,2)")
-            except QueryStoreError:
-                pass
-
-    def test_execute_query_not_expected_fails(self):
+    def test_create_subset_not_auth_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=417)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.execute_query(database_id=1,
-                                                query="SELECT id, username FROM some_table WHERE id IN (1,2)")
-            except MetadataConsistencyError:
-                pass
-
-    def test_execute_query_not_auth_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.post('/api/database/1/subset', status_code=417)
-            # test
-            try:
-                response = RestClient().execute_query(database_id=1,
+                response = RestClient().create_subset(database_id=1,
                                                       query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             except AuthenticationError:
                 pass
@@ -119,7 +95,7 @@ class QueryUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/database/1/subset/6', json=exp.model_dump())
             # test
-            response = RestClient().get_query(database_id=1, query_id=6)
+            response = RestClient().get_subset(database_id=1, subset_id=6)
             self.assertEqual(exp, response)
 
     def test_find_query_not_allowed_fails(self):
@@ -128,7 +104,7 @@ class QueryUnitTest(unittest.TestCase):
             mock.get('/api/database/1/subset/6', status_code=403)
             # test
             try:
-                response = RestClient().get_query(database_id=1, query_id=6)
+                response = RestClient().get_subset(database_id=1, subset_id=6)
             except ForbiddenError:
                 pass
 
@@ -138,28 +114,8 @@ class QueryUnitTest(unittest.TestCase):
             mock.get('/api/database/1/subset/6', status_code=404)
             # test
             try:
-                response = RestClient().get_query(database_id=1, query_id=6)
+                response = RestClient().get_subset(database_id=1, subset_id=6)
             except NotExistsError:
-                pass
-
-    def test_find_query_not_valid_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset/6', status_code=501)
-            # test
-            try:
-                response = RestClient().get_query(database_id=1, query_id=6)
-            except QueryStoreError:
-                pass
-
-    def test_find_query_not_expected_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset/6', status_code=417)
-            # test
-            try:
-                response = RestClient().get_query(database_id=1, query_id=6)
-            except MetadataConsistencyError:
                 pass
 
     def test_get_queries_empty_succeeds(self):
@@ -214,27 +170,7 @@ class QueryUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_get_queries_not_valid_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset', status_code=501)
-            # test
-            try:
-                response = RestClient().get_queries(database_id=1)
-            except QueryStoreError:
-                pass
-
-    def test_get_queries_malformed_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset', status_code=423)
-            # test
-            try:
-                response = RestClient().get_queries(database_id=1)
-            except MalformedError:
-                pass
-
-    def test_get_query_data_succeeds(self):
+    def test_get_subset_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
                          headers=[{'id': 0, 'username': 1}],
@@ -242,10 +178,10 @@ class QueryUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/database/1/subset/6/data', json=exp.model_dump())
             # test
-            response = RestClient().get_query_data(database_id=1, query_id=6)
+            response = RestClient().get_subset_data(database_id=1, subset_id=6)
             self.assertEqual(exp, response)
 
-    def test_get_query_data_dataframe_succeeds(self):
+    def test_get_subset_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
             res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
                          headers=[{'id': 0, 'username': 1}],
@@ -254,97 +190,57 @@ class QueryUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/database/1/subset/6/data', json=res.model_dump())
             # test
-            response = RestClient().get_query_data(database_id=1, query_id=6, df=True)
+            response = RestClient().get_subset_data(database_id=1, subset_id=6, df=True)
             self.assertEqual(exp.shape, response.shape)
             self.assertTrue(DataFrame.equals(exp, response))
 
-    def test_get_query_data_not_allowed_fails(self):
+    def test_get_subset_data_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6/data', status_code=403)
             # test
             try:
-                response = RestClient().get_query_data(database_id=1, query_id=6)
+                response = RestClient().get_subset_data(database_id=1, subset_id=6)
             except ForbiddenError:
                 pass
 
-    def test_get_query_data_not_found_fails(self):
+    def test_get_subset_data_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6/data', status_code=404)
             # test
             try:
-                response = RestClient().get_query_data(database_id=1, query_id=6)
+                response = RestClient().get_subset_data(database_id=1, subset_id=6)
             except NotExistsError:
                 pass
 
-    def test_get_query_data_not_valid_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset/6/data', status_code=409)
-            # test
-            try:
-                response = RestClient().get_query_data(database_id=1, query_id=6)
-            except QueryStoreError:
-                pass
-
-    def test_get_query_data_not_consistent_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/subset/6/data', status_code=417)
-            # test
-            try:
-                response = RestClient().get_query_data(database_id=1, query_id=6)
-            except MetadataConsistencyError:
-                pass
-
-    def test_get_query_data_count_succeeds(self):
+    def test_get_subset_data_count_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = 2
             # mock
             mock.head('/api/database/1/subset/6/data', headers={'X-Count': str(exp)})
             # test
-            response = RestClient().get_query_data_count(database_id=1, query_id=6)
+            response = RestClient().get_subset_data_count(database_id=1, subset_id=6)
             self.assertEqual(exp, response)
 
-    def test_get_query_data_count_not_allowed_fails(self):
+    def test_get_subset_data_count_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/subset/6/data', status_code=403)
             # test
             try:
-                response = RestClient().get_query_data_count(database_id=1, query_id=6)
+                response = RestClient().get_subset_data_count(database_id=1, subset_id=6)
             except ForbiddenError:
                 pass
 
-    def test_get_query_data_count_not_found_fails(self):
+    def test_get_subset_data_count_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/subset/6/data', status_code=404)
             # test
             try:
-                response = RestClient().get_query_data_count(database_id=1, query_id=6)
+                response = RestClient().get_subset_data_count(database_id=1, subset_id=6)
             except NotExistsError:
-                pass
-
-    def test_get_query_data_count_not_valid_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.head('/api/database/1/subset/6/data', status_code=409)
-            # test
-            try:
-                response = RestClient().get_query_data_count(database_id=1, query_id=6)
-            except QueryStoreError:
-                pass
-
-    def test_get_query_data_count_not_consistent_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.head('/api/database/1/subset/6/data', status_code=417)
-            # test
-            try:
-                response = RestClient().get_query_data_count(database_id=1, query_id=6)
-            except MetadataConsistencyError:
                 pass
 
 
