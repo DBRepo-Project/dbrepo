@@ -45,7 +45,8 @@ public class MessageEndpoint {
 
     @GetMapping
     @Observed(name = "dbrepo_maintenance_findall")
-    @Operation(summary = "Find maintenance messages")
+    @Operation(summary = "List messages",
+            description = "Lists messages known to the metadata database. Messages can be filtered be filtered with the optional `active` parameter. If set to *true*, only active messages (that is, messages whose end time has not been reached) will be returned. Otherwise only inactive messages are returned. If not set, active and inactive messages are returned.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List messages",
@@ -53,10 +54,10 @@ public class MessageEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = BannerMessageDto.class)))}),
     })
-    public ResponseEntity<List<BannerMessageDto>> list(@RequestParam(required = false) String filter) {
-        log.debug("endpoint list active maintenance messages");
+    public ResponseEntity<List<BannerMessageDto>> list(@RequestParam(required = false) Boolean active) {
+        log.debug("endpoint list messages, active={}", active);
         List<BannerMessageDto> dtos;
-        if (filter.equals("active")) {
+        if (active != null && active) {
             dtos = bannerMessageService.getActive()
                     .stream()
                     .map(metadataMapper::bannerMessageToBannerMessageDto)
@@ -67,13 +68,14 @@ public class MessageEndpoint {
                     .map(metadataMapper::bannerMessageToBannerMessageDto)
                     .toList();
         }
-        log.trace("list maintenance messages results in dtos {}", dtos);
+        log.info("List messages resulted in {} message(s)", dtos.size());
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/message/{messageId}")
     @Observed(name = "dbrepo_maintenance_find")
-    @Operation(summary = "Find one maintenance message")
+    @Operation(summary = "Find message",
+            description = "Finds a message with id in the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Get messages",
@@ -88,16 +90,17 @@ public class MessageEndpoint {
     })
     public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") Long messageId)
             throws MessageNotFoundException {
-        log.debug("endpoint find one maintenance messages");
+        log.debug("endpoint find one maintenance message, messageId={}", messageId);
         final BannerMessageDto dto = metadataMapper.bannerMessageToBannerMessageDto(bannerMessageService.find(messageId));
-        log.trace("find one maintenance message results in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping
     @Observed(name = "dbrepo_maintenance_create")
-    @Operation(summary = "Create maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('create-maintenance-message')")
+    @Operation(summary = "Create message",
+            description = "Creates a message in the metadata database. Requires role `create-maintenance-message`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created message",
@@ -115,8 +118,10 @@ public class MessageEndpoint {
 
     @PutMapping("/{messageId}")
     @Observed(name = "dbrepo_maintenance_update")
-    @Operation(summary = "Update maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('update-maintenance-message')")
+    @Operation(summary = "Update message",
+            description = "Updates a message with id. Requires role `update-maintenance-message`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated message",
@@ -142,8 +147,10 @@ public class MessageEndpoint {
 
     @DeleteMapping("/{messageId}")
     @Observed(name = "dbrepo_maintenance_delete")
-    @Operation(summary = "Delete maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('delete-maintenance-message')")
+    @Operation(summary = "Delete message",
+            description = "Deletes a message with id. Requires role `delete-maintenance-message`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted message",
@@ -154,7 +161,8 @@ public class MessageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("messageId") Long messageId) throws MessageNotFoundException {
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("messageId") Long messageId)
+            throws MessageNotFoundException {
         log.debug("endpoint delete maintenance message, messageId={}", messageId);
         final BannerMessage message = bannerMessageService.find(messageId);
         bannerMessageService.delete(message);

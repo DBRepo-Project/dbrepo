@@ -39,7 +39,7 @@ public class OntologyEndpoint {
     private final OntologyService ontologyService;
 
     @Autowired
-    public OntologyEndpoint(EntityService entityService, MetadataMapper metadataMapper, 
+    public OntologyEndpoint(EntityService entityService, MetadataMapper metadataMapper,
                             OntologyService ontologyService) {
         this.entityService = entityService;
         this.metadataMapper = metadataMapper;
@@ -48,13 +48,14 @@ public class OntologyEndpoint {
 
     @GetMapping
     @Observed(name = "dbrepo_ontologies_findall")
-    @Operation(summary = "List all ontologies")
+    @Operation(summary = "List ontologies",
+            description = "Lists all ontologies known to the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "List all ontologies",
+                    description = "List ontologies",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = OntologyDto.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = OntologyBriefDto.class)))}),
     })
     public ResponseEntity<List<OntologyBriefDto>> findAll() {
         log.debug("endpoint find all ontologies");
@@ -62,13 +63,13 @@ public class OntologyEndpoint {
                 .stream()
                 .map(metadataMapper::ontologyToOntologyBriefDto)
                 .toList();
-        log.trace("create ontology resulted in dtos {}", dtos);
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{ontologyId}")
     @Observed(name = "dbrepo_ontologies_find")
-    @Operation(summary = "Find one ontology")
+    @Operation(summary = "Find ontology",
+            description = "Finds an ontology with id in the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find one ontology",
@@ -85,14 +86,15 @@ public class OntologyEndpoint {
             throws OntologyNotFoundException {
         log.debug("endpoint find all ontologies, ontologyId={}", ontologyId);
         final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.find(ontologyId));
-        log.trace("create ontology resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('create-ontology')")
     @Observed(name = "dbrepo_ontologies_create")
-    @Operation(summary = "Register a new ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create ontology",
+            description = "Creates an ontology in the metadata database. Requires role `create-ontology`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Registered ontology successfully",
@@ -104,7 +106,6 @@ public class OntologyEndpoint {
                                               @NotNull Principal principal) {
         log.debug("endpoint create ontology, data={}", data);
         final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
-        log.trace("create ontology resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
@@ -112,7 +113,9 @@ public class OntologyEndpoint {
     @PutMapping("/{ontologyId}")
     @PreAuthorize("hasAuthority('update-ontology')")
     @Observed(name = "dbrepo_ontologies_update")
-    @Operation(summary = "Update an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update ontology",
+            description = "Updates an ontology with id. Requires role `update-ontology`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated ontology successfully",
@@ -131,7 +134,6 @@ public class OntologyEndpoint {
         log.debug("endpoint update ontology, data={}", data);
         final Ontology ontology = ontologyService.find(ontologyId);
         final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.update(ontology, data));
-        log.trace("update ontology resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -139,7 +141,9 @@ public class OntologyEndpoint {
     @DeleteMapping("/{ontologyId}")
     @PreAuthorize("hasAuthority('delete-ontology')")
     @Observed(name = "dbrepo_ontologies_delete")
-    @Operation(summary = "Delete an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete ontology",
+            description = "Deletes an ontology with given id. Requires role `delete-ontology`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted ontology successfully",
@@ -151,7 +155,7 @@ public class OntologyEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("ontologyId") Long ontologyId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("ontologyId") Long ontologyId)
             throws OntologyNotFoundException {
         log.debug("endpoint delete ontology, ontologyId={}", ontologyId);
         final Ontology ontology = ontologyService.find(ontologyId);
@@ -163,7 +167,9 @@ public class OntologyEndpoint {
     @GetMapping("/{ontologyId}/entity")
     @PreAuthorize("hasAuthority('execute-semantic-query')")
     @Observed(name = "dbrepo_ontologies_entities_find")
-    @Operation(summary = "Find entities", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Find entities",
+            description = "Finds semantic entities by label or uri in an ontology with id. Requires role `execute-semantic-query`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found entities",

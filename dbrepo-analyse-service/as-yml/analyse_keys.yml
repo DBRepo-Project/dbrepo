@@ -1,8 +1,8 @@
 tags:
   - analyse-endpoint
-summary: "Determine primary keys"
+summary: "Determine keys"
 operationId: analyse_keys
-description: "This is a simple API which returns the primary keys + ranking of a (path) csv file"
+description: "Determines primary keys of a given dataset. Requires role `table-semantic-analyse`."
 consumes:
   - "application/json"
 produces:

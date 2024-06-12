@@ -36,10 +36,11 @@ public class ConceptEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_semantic_concepts_findall")
-    @Operation(summary = "List semantic concepts")
+    @Operation(summary = "List concepts",
+            description = "List all semantic concepts known to the metadata database")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Find all semantic concepts",
+                    description = "List concepts",
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = ConceptDto.class)))}),

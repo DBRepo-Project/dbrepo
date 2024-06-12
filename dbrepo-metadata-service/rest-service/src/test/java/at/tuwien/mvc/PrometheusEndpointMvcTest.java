@@ -352,7 +352,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            messageEndpoint.list("");
+            messageEndpoint.list(null);
         } catch (Exception e) {
             /* ignore */
         }

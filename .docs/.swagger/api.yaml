@@ -3,7 +3,15 @@ info:
   contact:
     email: andreas.rauber@tuwien.ac.at
     name: Prof. Andreas Rauber
-  description: The REST API
+  description: >
+    The merged REST API of DBRepo for users, developers and data stewards to be
+    accessed publicly. Have a look at
+
+    the [source
+    code](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+    for non-public endpoints
+
+    that are used between the services themselves.
   license:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -15,14 +23,16 @@ servers:
   - description: Local Instance
     url: 'http://localhost'
 externalDocs:
-  description: Sourcecode Documentation
+  description: Project Website
   url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/'
 paths:
   /api/analyse/datatypes:
     get:
       consumes:
         - application/json
-      description: This is a simple API which returns the datatypes of a (path) csv file
+      description: >-
+        Determines MySQL 8 datatypes of a given dataset. Requires role
+        `table-semantic-analyse`.
       operationId: analyse_datatypes
       parameters:
         - example: filename_s3_key
@@ -87,8 +97,8 @@ paths:
       consumes:
         - application/json
       description: >-
-        This is a simple API which returns the primary keys + ranking of a
-        (path) csv file
+        Determines primary keys of a given dataset. Requires role
+        `table-semantic-analyse`.
       operationId: analyse_keys
       parameters:
         - example: filename_s3_key
@@ -133,14 +143,18 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
-      summary: Determine primary keys
+      summary: Determine keys
       tags:
         - analyse-endpoint
   '/api/database/{databaseId}/view/{viewId}/data':
     get:
       tags:
         - view-endpoint
-      summary: Retrieve view data
+      summary: Get view data
+      description: >-
+        Gets data from a view of a database. For private databases, the user
+        needs at least *READ* access to the associated database. Requires role
+        `view-database-view-data`.
       operationId: getData
       parameters:
         - name: databaseId
@@ -176,6 +190,15 @@ paths:
       responses:
         '200':
           description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
@@ -216,7 +239,11 @@ paths:
     head:
       tags:
         - view-endpoint
-      summary: Retrieve view data
+      summary: Get view data
+      description: >-
+        Gets data from a view of a database. For private databases, the user
+        needs at least *READ* access to the associated database. Requires role
+        `view-database-view-data`.
       operationId: getData_1
       parameters:
         - name: databaseId
@@ -252,6 +279,15 @@ paths:
       responses:
         '200':
           description: Retrieved view data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
@@ -293,7 +329,13 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Retrieve table data
+      summary: Get table data
+      description: >-
+        Gets data from a table with id. For a table in a private database, the
+        user needs to have at least *READ* access to the associated database.
+        Requests with HTTP method **GET** return the full dataset, requests with
+        HTTP method **HEAD** only the number of tuples in the `X-Count` header.
+        Requires role `view-table-data`.
       operationId: getData_2
       parameters:
         - name: databaseId
@@ -328,13 +370,28 @@ paths:
             format: int64
       responses:
         '200':
-          description: Retrieved table data
+          description: Get table data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
         '400':
           description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -357,10 +414,11 @@ paths:
     put:
       tags:
         - table-endpoint
-      summary: Update a raw data tuple
+      summary: Update tuple
       description: >-
-        Updates a raw data tuple in a table with at least WRITE_OWN access. Then
-        update the table statistics.
+        Updates a data tuple into a table, then the table statistics are
+        updated. The user needs to have at least *WRITE_OWN* access to the
+        associated database. Requires role `insert-table-data`.
       operationId: updateRawTuple
       parameters:
         - name: databaseId
@@ -414,10 +472,11 @@ paths:
     post:
       tags:
         - table-endpoint
-      summary: Insert a raw data tuple
+      summary: Insert tuple
       description: >-
-        Inserts a raw data tuple into a table with at least WRITE_OWN access.
-        Then update the table statistics.
+        Inserts a data tuple into a table, then the table statistics are
+        updated. The user needs to have at least *WRITE_OWN* access to the
+        associated database. Requires role `insert-table-data`.
       operationId: insertRawTuple
       parameters:
         - name: databaseId
@@ -473,10 +532,11 @@ paths:
     delete:
       tags:
         - table-endpoint
-      summary: Delete table data
+      summary: Delete tuple
       description: >-
-        Deletes a raw data tuple in a table with at least WRITE_OWN access. Then
-        update the table statistics.
+        Deletes a data tuple into a table, then the table statistics are
+        updated. The user needs to have at least *WRITE_OWN* access to the
+        associated database. Requires role `delete-table-data`.
       operationId: deleteRawTuple
       parameters:
         - name: databaseId
@@ -530,7 +590,13 @@ paths:
     head:
       tags:
         - table-endpoint
-      summary: Retrieve table data
+      summary: Get table data
+      description: >-
+        Gets data from a table with id. For a table in a private database, the
+        user needs to have at least *READ* access to the associated database.
+        Requests with HTTP method **GET** return the full dataset, requests with
+        HTTP method **HEAD** only the number of tuples in the `X-Count` header.
+        Requires role `view-table-data`.
       operationId: getData_3
       parameters:
         - name: databaseId
@@ -565,13 +631,28 @@ paths:
             format: int64
       responses:
         '200':
-          description: Retrieved table data
+          description: Get table data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
         '400':
           description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -595,7 +676,13 @@ paths:
     get:
       tags:
         - subset-endpoint
-      summary: Retrieved subset data
+      summary: Get subset data
+      description: >-
+        Gets data of subset with id. For private databases, the user needs at
+        least *READ* access to the associated database. Requests with HTTP
+        method **GET** return the subset dataset, requests with HTTP method
+        **HEAD** only the number of rows in the subset dataset in the `X-Count`
+        header
       operationId: getData_4
       parameters:
         - name: databaseId
@@ -625,12 +712,21 @@ paths:
       responses:
         '200':
           description: Retrieved subset data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
         '400':
-          description: Malformed select query
+          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -661,7 +757,13 @@ paths:
     head:
       tags:
         - subset-endpoint
-      summary: Retrieved subset data
+      summary: Get subset data
+      description: >-
+        Gets data of subset with id. For private databases, the user needs at
+        least *READ* access to the associated database. Requests with HTTP
+        method **GET** return the subset dataset, requests with HTTP method
+        **HEAD** only the number of rows in the subset dataset in the `X-Count`
+        header
       operationId: getData_5
       parameters:
         - name: databaseId
@@ -691,12 +793,21 @@ paths:
       responses:
         '200':
           description: Retrieved subset data
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of rows
+              required: true
+              style: simple
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
         '400':
-          description: Malformed select query
+          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -729,6 +840,7 @@ paths:
       tags:
         - subset-endpoint
       summary: Persist subset
+      description: Persists a subset with id. Requires role `persist-query`.
       operationId: persist
       parameters:
         - name: databaseId
@@ -795,10 +907,12 @@ paths:
     post:
       tags:
         - table-endpoint
-      summary: Import data from a dataset
+      summary: Import dataset
       description: >-
-        Deletes a raw data tuple in a table with at least WRITE_OWN access. Then
-        update the table statistics.
+        Imports a dataset in a table. Then update the table statistics. The user
+        needs to have at least *WRITE_OWN* access to the associated database
+        when importing into a owned table. Otherwise *WRITE_ALL* access in
+        needed. Requires role `insert-table-data`.
       operationId: importDataset
       parameters:
         - name: databaseId
@@ -854,6 +968,10 @@ paths:
       tags:
         - subset-endpoint
       summary: Find subsets
+      description: >-
+        Finds subsets in the query store. The result can be optionally filtered
+        by setting `persisted`. When set to *true*, only persisted queries are
+        returned, otherwise only non-persisted queries are returned.
       operationId: list
       parameters:
         - name: databaseId
@@ -873,7 +991,9 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueryDto'
         '403':
           description: Not allowed to find subsets
           content:
@@ -901,6 +1021,9 @@ paths:
       tags:
         - subset-endpoint
       summary: Create subset
+      description: >-
+        Creates a subset in the query store of the data database. Requires role
+        `execute-query`
       operationId: create
       parameters:
         - name: databaseId
@@ -985,7 +1108,10 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Generate table statistic
+      summary: Get table statistic
+      description: >-
+        Gets basic statistical properties (min, max, mean, median, std.dev) of
+        numerical columns of a table with id.
       operationId: statistic
       parameters:
         - name: databaseId
@@ -1029,10 +1155,11 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Find table history
+      summary: Get history
       description: >-
-        Lists the insert/delete operations performed. Authentication is only
-        required for tables in private databases
+        Gets the insert/delete operations history performed. For tables in
+        private databases, the user needs to have at least *READ* access to the
+        associated database.
       operationId: getHistory
       parameters:
         - name: databaseId
@@ -1059,9 +1186,11 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableHistoryDto'
         '400':
-          description: Invalid pagination request
+          description: 'Invalid pagination size request, must be > 0'
           content:
             application/json:
               schema:
@@ -1091,7 +1220,11 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Export table data
+      summary: Get table data
+      description: >-
+        Gets data from table with id as downloadable file. For tables in private
+        databases, the user needs to have at least *READ* access to the
+        associated database.
       operationId: exportData
       parameters:
         - name: databaseId
@@ -1152,6 +1285,10 @@ paths:
       tags:
         - subset-endpoint
       summary: Find subset
+      description: >-
+        Finds a subset in the data database. Requests with HTTP header
+        `Accept=application/json` return the metadata, requests with HTTP header
+        `Accept=text/csv` return the data as downloadable file.
       operationId: findById
       parameters:
         - name: databaseId
@@ -1220,6 +1357,10 @@ paths:
       tags:
         - database-endpoint
       summary: List databases
+      description: >-
+        Lists all databases in the metadata database. Requests with HTTP method
+        **GET** return the list of databases, requests with HTTP method **HEAD**
+        only the number in the `X-Count` header.
       operationId: list1
       parameters:
         - name: internal_name
@@ -1230,6 +1371,15 @@ paths:
       responses:
         '200':
           description: List of databases
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of databases
+              required: true
+              style: simple
           content:
             application/json:
               schema:
@@ -1240,6 +1390,9 @@ paths:
       tags:
         - database-endpoint
       summary: Create database
+      description: >-
+        Creates a database in the container with id. Requires roles
+        `create-database`.
       operationId: create_5
       requestBody:
         content:
@@ -1299,6 +1452,10 @@ paths:
       tags:
         - database-endpoint
       summary: List databases
+      description: >-
+        Lists all databases in the metadata database. Requests with HTTP method
+        **GET** return the list of databases, requests with HTTP method **HEAD**
+        only the number in the `X-Count` header.
       operationId: list_1
       parameters:
         - name: internal_name
@@ -1309,6 +1466,15 @@ paths:
       responses:
         '200':
           description: List of databases
+          headers:
+            Access-Control-Expose-Headers:
+              description: Expose `X-Count` custom header
+              required: true
+              style: simple
+            X-Count:
+              description: Number of databases
+              required: true
+              style: simple
           content:
             application/json:
               schema:
@@ -1319,7 +1485,13 @@ paths:
     get:
       tags:
         - access-endpoint
-      summary: Check access to some database
+      summary: Find/Check access
+      description: >-
+        Finds or checks access of a user with given id to a database with given
+        id. Requests with HTTP method **GET** return the access object, requests
+        with HTTP method **HEAD** only the status. When the user has at least
+        *READ* access, the status 200 is returned, 403 otherwise. Requires role
+        `check-database-access` or `admin`.
       operationId: find
       parameters:
         - name: databaseId
@@ -1359,7 +1531,10 @@ paths:
     put:
       tags:
         - access-endpoint
-      summary: Modify access to some database
+      summary: Modify access
+      description: >-
+        Modifies access of a user with given id to database with given id.
+        Requires role `update-database-access`.
       operationId: update_4
       parameters:
         - name: databaseId
@@ -1382,7 +1557,7 @@ paths:
         required: true
       responses:
         '202':
-          description: Modify access succeeded
+          description: Modified access
         '400':
           description: Modify access query or database connection is malformed
           content:
@@ -1423,7 +1598,10 @@ paths:
     post:
       tags:
         - access-endpoint
-      summary: Give access to some database
+      summary: Give access
+      description: >-
+        Give a user with given id access to some database with given id.
+        Requires role `create-database-access`.
       operationId: create_8
       parameters:
         - name: databaseId
@@ -1447,6 +1625,10 @@ paths:
       responses:
         '202':
           description: Granting access succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseAccessDto'
         '400':
           description: Granting access query or database connection is malformed
           content:
@@ -1461,12 +1643,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Database or user not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Granting access not permitted
           content:
             application/json:
               schema:
@@ -1489,7 +1665,10 @@ paths:
     delete:
       tags:
         - access-endpoint
-      summary: Revoke access to some database
+      summary: Delete access
+      description: >-
+        Delete access of a user with id to a database with id. Requires role
+        `delete-database-access`.
       operationId: revoke
       parameters:
         - name: databaseId
@@ -1506,7 +1685,7 @@ paths:
             format: uuid
       responses:
         '202':
-          description: Revoked access successfully
+          description: Deleted access
         '400':
           description: Modify access query or database connection is malformed
           content:
@@ -1543,7 +1722,13 @@ paths:
     head:
       tags:
         - access-endpoint
-      summary: Check access to some database
+      summary: Find/Check access
+      description: >-
+        Finds or checks access of a user with given id to a database with given
+        id. Requests with HTTP method **GET** return the access object, requests
+        with HTTP method **HEAD** only the status. When the user has at least
+        *READ* access, the status 200 is returned, 403 otherwise. Requires role
+        `check-database-access` or `admin`.
       operationId: find_1
       parameters:
         - name: databaseId
@@ -1584,7 +1769,8 @@ paths:
     get:
       tags:
         - user-endpoint
-      summary: Get a user info
+      summary: Get user
+      description: Gets user with id from the metadata database. Requires authentication.
       operationId: find_2
       parameters:
         - name: userId
@@ -1618,7 +1804,8 @@ paths:
     put:
       tags:
         - user-endpoint
-      summary: Modify user information
+      summary: Update user
+      description: Updates user with id. Requires role `modify-user-information`.
       operationId: modify
       parameters:
         - name: userId
@@ -1665,7 +1852,8 @@ paths:
     put:
       tags:
         - user-endpoint
-      summary: Modify user password
+      summary: Update user password
+      description: Updates password of user with id. Requires authentication.
       operationId: password
       parameters:
         - name: userId
@@ -1683,10 +1871,12 @@ paths:
       responses:
         '202':
           description: Modified user password
+        '400':
+          description: Invalid password payload
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/ApiErrorDto'
         '403':
           description: Not allowed to change foreign user password
           content:
@@ -1718,7 +1908,8 @@ paths:
     put:
       tags:
         - user-endpoint
-      summary: Refresh user token
+      summary: Refresh token
+      description: Refreshes user token by refresh token.
       operationId: refreshToken
       requestBody:
         content:
@@ -1733,8 +1924,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenDto'
-        '403':
+        '400':
           description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not allowed
           content:
             application/json:
               schema:
@@ -1748,7 +1945,8 @@ paths:
     post:
       tags:
         - user-endpoint
-      summary: Obtain user token
+      summary: Create token
+      description: Creates a user token via the auth service.
       operationId: getToken
       requestBody:
         content:
@@ -1763,6 +1961,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenDto'
+        '400':
+          description: Invalid login request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '403':
           description: Not allowed to get token
           content:
@@ -1799,7 +2003,8 @@ paths:
     get:
       tags:
         - ontology-endpoint
-      summary: Find one ontology
+      summary: Find ontology
+      description: Finds an ontology with id in the metadata database.
       operationId: find_3
       parameters:
         - name: ontologyId
@@ -1824,7 +2029,8 @@ paths:
     put:
       tags:
         - ontology-endpoint
-      summary: Update an ontology
+      summary: Update ontology
+      description: Updates an ontology with id. Requires role `update-ontology`.
       operationId: update
       parameters:
         - name: ontologyId
@@ -1858,7 +2064,8 @@ paths:
     delete:
       tags:
         - ontology-endpoint
-      summary: Delete an ontology
+      summary: Delete ontology
+      description: Deletes an ontology with given id. Requires role `delete-ontology`.
       operationId: delete
       parameters:
         - name: ontologyId
@@ -1885,7 +2092,8 @@ paths:
     put:
       tags:
         - message-endpoint
-      summary: Update maintenance message
+      summary: Update message
+      description: Updates a message with id. Requires role `update-maintenance-message`.
       operationId: update_1
       parameters:
         - name: messageId
@@ -1919,7 +2127,8 @@ paths:
     delete:
       tags:
         - message-endpoint
-      summary: Delete maintenance message
+      summary: Delete message
+      description: Deletes a message with id. Requires role `delete-maintenance-message`.
       operationId: delete_1
       parameters:
         - name: messageId
@@ -1946,7 +2155,8 @@ paths:
     get:
       tags:
         - image-endpoint
-      summary: Find some image
+      summary: Find image
+      description: Finds a container image in the metadata database.
       operationId: findById1
       parameters:
         - name: imageId
@@ -1971,7 +2181,10 @@ paths:
     put:
       tags:
         - image-endpoint
-      summary: Update some image
+      summary: Update image
+      description: >-
+        Updates container image in the metadata database. Requires role
+        `modify-image`.
       operationId: update_2
       parameters:
         - name: imageId
@@ -2005,7 +2218,10 @@ paths:
     delete:
       tags:
         - image-endpoint
-      summary: Delete some image
+      summary: Delete image
+      description: >-
+        Deletes a container image in the metadata database. Requires role
+        `delete-image`.
       operationId: delete_2
       parameters:
         - name: imageId
@@ -2030,7 +2246,10 @@ paths:
     get:
       tags:
         - identifier-endpoint
-      summary: Find some identifier
+      summary: Find identifier
+      description: >-
+        Finds an identifier with id. The response format depends on the HTTP
+        `Accept` header set on the request.
       operationId: find_6
       parameters:
         - name: identifierId
@@ -2112,6 +2331,11 @@ paths:
       tags:
         - identifier-endpoint
       summary: Save identifier
+      description: >-
+        Saves an identifier with id as a draft identifier. Identifiers can only
+        be created for objects the user has at least *READ* access in the
+        associated database (requires role `create-identifier`) or for any
+        object in any database (requires role `create-foreign-identifier`).
       operationId: save
       parameters:
         - name: identifierId
@@ -2151,12 +2375,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Creating identifier not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         '502':
           description: Connection to search service failed
           content:
@@ -2175,7 +2393,8 @@ paths:
     delete:
       tags:
         - identifier-endpoint
-      summary: Delete some identifier
+      summary: Delete identifier
+      description: Deletes an identifier with id. Requires role `delete-identifier`.
       operationId: delete_3
       parameters:
         - name: identifierId
@@ -2187,10 +2406,6 @@ paths:
       responses:
         '202':
           description: Deleted identifier
-          content:
-            '*/*':
-              schema:
-                type: object
         '403':
           description: Deleting identifier not permitted
           content:
@@ -2223,6 +2438,9 @@ paths:
       tags:
         - identifier-endpoint
       summary: Publish identifier
+      description: >-
+        Publishes an identifier with id. A published identifier cannot be
+        changed anymore. Requires role `publish-identifier`.
       operationId: publish
       parameters:
         - name: identifierId
@@ -2256,12 +2474,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Creating identifier not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         '502':
           description: Connection to search service failed
           content:
@@ -2282,6 +2494,9 @@ paths:
       tags:
         - database-endpoint
       summary: Update database visibility
+      description: >-
+        Updates the database with id on the visibility. Only the database owner
+        can perform this operation. Requires role `modify-database-visibility`.
       operationId: visibility
       parameters:
         - name: databaseId
@@ -2303,6 +2518,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
+        '400':
+          description: The visibility payload is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '403':
           description: Visibility modification is not permitted
           content:
@@ -2334,7 +2555,8 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Get information about table
+      summary: Find table
+      description: Finds a table with id.
       operationId: findById_2
       parameters:
         - name: databaseId
@@ -2369,13 +2591,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         '502':
-          description: Connection to search service failed
+          description: Failed to establish connection with broker service
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         '503':
-          description: Failed to save in search service
+          description: Failed to obtain queue information from broker service
           content:
             application/json:
               schema:
@@ -2386,7 +2608,11 @@ paths:
     put:
       tags:
         - table-endpoint
-      summary: Update table statistics
+      summary: Update statistics
+      description: >-
+        Updates basic statistical properties (min, max, mean, median, std.dev)
+        for numerical columns in a table with id. Requires role
+        `update-table-statistic`
       operationId: updateStatistic
       parameters:
         - name: databaseId
@@ -2434,7 +2660,11 @@ paths:
     delete:
       tags:
         - table-endpoint
-      summary: Delete a table
+      summary: Delete table
+      description: >-
+        Deletes a table with id. Only the owner of a table can perform this
+        action (requires role `delete-table`) or anyone can delete a table
+        (requires role `delete-foreign-table`).
       operationId: delete_5
       parameters:
         - name: databaseId
@@ -2489,7 +2719,12 @@ paths:
     put:
       tags:
         - table-endpoint
-      summary: Update a table column semantic mapping
+      summary: Update semantics
+      description: >-
+        Updates column semantics of a table column with id. Only the table owner
+        with at least *READ* access to the associated database can update the
+        column semantics (requires role `modify-table-column-semantics`) or
+        foreign table columns if role `modify-foreign-table-column-semantics`.
       operationId: update_3
       parameters:
         - name: databaseId
@@ -2563,6 +2798,9 @@ paths:
       tags:
         - database-endpoint
       summary: Update database owner
+      description: >-
+        Updates the database with id on the owner. Only the database owner can
+        perform this operation. Requires role `modify-database-owner`.
       operationId: transfer
       parameters:
         - name: databaseId
@@ -2584,6 +2822,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
+        '400':
+          description: Owner payload is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '403':
           description: Transfer of ownership is not permitted
           content:
@@ -2615,7 +2859,11 @@ paths:
     put:
       tags:
         - database-endpoint
-      summary: Refresh database views metadata
+      summary: Update database view schemas
+      description: >-
+        Updates the database with id with generated metadata from view that are
+        not yet known to the database. Only the database owner can perform this
+        operation. Requires role `find-database`.
       operationId: refreshViewMetadata
       parameters:
         - name: databaseId
@@ -2662,7 +2910,11 @@ paths:
     put:
       tags:
         - database-endpoint
-      summary: Refresh database tables metadata
+      summary: Update database table schemas
+      description: >-
+        Updates the database with id with generated metadata from tables that
+        are not yet known to the database. Only the database owner can perform
+        this operation. Requires role `find-database`.
       operationId: refreshTableMetadata
       parameters:
         - name: databaseId
@@ -2715,7 +2967,10 @@ paths:
     put:
       tags:
         - database-endpoint
-      summary: Update database image
+      summary: Update database preview image
+      description: >-
+        Updates the database with id on the preview image. Only the database
+        owner can perform this operation. Requires role `modify-database-image`.
       operationId: modifyImage
       parameters:
         - name: databaseId
@@ -2774,7 +3029,8 @@ paths:
     get:
       tags:
         - user-endpoint
-      summary: Find all users
+      summary: List users
+      description: Lists users known to the metadata database.
       operationId: findAll
       responses:
         '200':
@@ -2789,6 +3045,9 @@ paths:
       tags:
         - user-endpoint
       summary: Create user
+      description: >-
+        Creates a user in the auth service and metadata database. Requires that
+        no credentials are sent in the request.
       operationId: create1
       requestBody:
         content:
@@ -2802,7 +3061,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBriefDto'
+                $ref: '#/components/schemas/UserDto'
         '400':
           description: Parameters are not well-formed (likely email)
           content:
@@ -2841,21 +3100,25 @@ paths:
     get:
       tags:
         - ontology-endpoint
-      summary: List all ontologies
+      summary: List ontologies
+      description: Lists all ontologies known to the metadata database.
       operationId: findAll_2
       responses:
         '200':
-          description: List all ontologies
+          description: List ontologies
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OntologyDto'
+                  $ref: '#/components/schemas/OntologyBriefDto'
     post:
       tags:
         - ontology-endpoint
-      summary: Register a new ontology
+      summary: Create ontology
+      description: >-
+        Creates an ontology in the metadata database. Requires role
+        `create-ontology`.
       operationId: create_1
       requestBody:
         content:
@@ -2877,14 +3140,20 @@ paths:
     get:
       tags:
         - message-endpoint
-      summary: Find maintenance messages
+      summary: List messages
+      description: >-
+        Lists messages known to the metadata database. Messages can be filtered
+        be filtered with the optional `active` parameter. If set to *true*, only
+        active messages (that is, messages whose end time has not been reached)
+        will be returned. Otherwise only inactive messages are returned. If not
+        set, active and inactive messages are returned.
       operationId: list_2
       parameters:
-        - name: filter
+        - name: active
           in: query
           required: false
           schema:
-            type: string
+            type: boolean
       responses:
         '200':
           description: List messages
@@ -2897,7 +3166,10 @@ paths:
     post:
       tags:
         - message-endpoint
-      summary: Create maintenance message
+      summary: Create message
+      description: >-
+        Creates a message in the metadata database. Requires role
+        `create-maintenance-message`.
       operationId: create_2
       requestBody:
         content:
@@ -2919,7 +3191,8 @@ paths:
     get:
       tags:
         - image-endpoint
-      summary: Find all images
+      summary: List images
+      description: Lists all container images known to the metadata database.
       operationId: findAll_3
       responses:
         '200':
@@ -2929,11 +3202,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ContainerImage'
+                  $ref: '#/components/schemas/ImageBriefDto'
     post:
       tags:
         - image-endpoint
       summary: Create image
+      description: >-
+        Creates a container image in the metadata database. Requires role
+        `create-image`.
       operationId: create_3
       requestBody:
         content:
@@ -2967,7 +3243,8 @@ paths:
     get:
       tags:
         - identifier-endpoint
-      summary: Find all identifiers
+      summary: List identifiers
+      description: Lists all identifiers known to the metadata database
       operationId: findAll_4
       parameters:
         - name: dbid
@@ -3005,10 +3282,14 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConceptDto'
             application/ld+json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: '#/components/schemas/LdDatasetDto'
         '406':
           description: 'Identifier could not be exported, the requested style is not known'
           content:
@@ -3018,7 +3299,12 @@ paths:
     post:
       tags:
         - identifier-endpoint
-      summary: Draft identifier
+      summary: Create identifier
+      description: >-
+        Create an identifier with id to create a draft identifier. Identifiers
+        can only be created for objects the user has at least *READ* access in
+        the associated database (requires role `create-identifier`) or for any
+        object in any database (requires role `create-foreign-identifier`).
       operationId: create_4
       requestBody:
         content:
@@ -3051,12 +3337,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Creating identifier not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         '502':
           description: Connection to search service failed
           content:
@@ -3076,7 +3356,8 @@ paths:
     get:
       tags:
         - view-endpoint
-      summary: Find all views
+      summary: List views
+      description: Lists views known to the metadata database.
       operationId: findAll_5
       parameters:
         - name: databaseId
@@ -3106,7 +3387,8 @@ paths:
     post:
       tags:
         - view-endpoint
-      summary: Create a view
+      summary: Create view
+      description: Creates a view. Requires role `create-database-view`.
       operationId: create_6
       parameters:
         - name: databaseId
@@ -3134,12 +3416,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        '401':
-          description: Credentials missing
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         '403':
           description: Credentials missing
           content:
@@ -3148,12 +3424,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Failed to find database/user in metadata database.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Create view is not permitted
           content:
             application/json:
               schema:
@@ -3183,7 +3453,8 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: List all tables
+      summary: List tables
+      description: Lists all tables known to the metadata database.
       operationId: list_4
       parameters:
         - name: databaseId
@@ -3219,7 +3490,8 @@ paths:
     post:
       tags:
         - table-endpoint
-      summary: Create a table
+      summary: Create table
+      description: Creates a table in the database with id. Requires role `create-table`.
       operationId: create_7
       parameters:
         - name: databaseId
@@ -3284,7 +3556,8 @@ paths:
     get:
       tags:
         - container-endpoint
-      summary: Find all containers
+      summary: List containers
+      description: List all containers in the metadata database.
       operationId: findAll_6
       parameters:
         - name: limit
@@ -3301,11 +3574,14 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: '#/components/schemas/ContainerBriefDto'
     post:
       tags:
         - container-endpoint
       summary: Create container
+      description: >-
+        Creates a container in the metadata database. Requires role
+        `create-container`.
       operationId: create_9
       requestBody:
         content:
@@ -3319,7 +3595,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContainerBriefDto'
+                $ref: '#/components/schemas/ContainerDto'
+        '400':
+          description: Container payload malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: 'Create container not permitted, need authority `create-container`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Container image or user could not be found
           content:
@@ -3339,7 +3627,8 @@ paths:
     get:
       tags:
         - unit-endpoint
-      summary: List semantic units
+      summary: List units
+      description: Lists units known to the metadata database.
       operationId: findAll_1
       responses:
         '200':
@@ -3355,6 +3644,9 @@ paths:
       tags:
         - ontology-endpoint
       summary: Find entities
+      description: >-
+        Finds semantic entities by label or uri in an ontology with id. Requires
+        role `execute-semantic-query`.
       operationId: find_4
       parameters:
         - name: ontologyId
@@ -3413,7 +3705,7 @@ paths:
     get:
       tags:
         - metadata-endpoint
-      summary: Get the record
+      summary: Get record
       operationId: identify_1_1_1_1
       parameters:
         - name: verb
@@ -3432,7 +3724,8 @@ paths:
     get:
       tags:
         - message-endpoint
-      summary: Find one maintenance message
+      summary: Find message
+      description: Finds a message with id in the metadata database.
       operationId: find_5
       parameters:
         - name: messageId
@@ -3458,7 +3751,8 @@ paths:
     get:
       tags:
         - license-endpoint
-      summary: Get all licenses
+      summary: List licenses
+      description: Lists licenses known to the metadata database.
       operationId: list_3
       responses:
         '200':
@@ -3468,12 +3762,15 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: '#/components/schemas/LicenseDto'
   /api/identifier/retrieve:
     get:
       tags:
         - identifier-endpoint
-      summary: Retrieve metadata from identifier
+      summary: Retrieve PID metadata
+      description: >-
+        Retrieves Persistent Identifier (PID) metadata from external endpoints.
+        Supported PIDs are: ORCID, ROR, DOI.
       operationId: retrieve
       parameters:
         - name: url
@@ -3498,7 +3795,8 @@ paths:
     get:
       tags:
         - database-endpoint
-      summary: Find some database
+      summary: Find database
+      description: Finds a database with id.
       operationId: findById_1
       parameters:
         - name: databaseId
@@ -3539,7 +3837,8 @@ paths:
     get:
       tags:
         - view-endpoint
-      summary: Find one view
+      summary: Get view
+      description: Gets a view with id in the metadata database.
       operationId: find_7
       parameters:
         - name: databaseId
@@ -3579,7 +3878,8 @@ paths:
     delete:
       tags:
         - view-endpoint
-      summary: Delete one view
+      summary: Delete view
+      description: Deletes a view with id. Requires role `delete-database-view`.
       operationId: delete_4
       parameters:
         - name: databaseId
@@ -3597,6 +3897,10 @@ paths:
       responses:
         '202':
           description: Delete view successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/View'
         '400':
           description: Delete view query is malformed
           content:
@@ -3611,12 +3915,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: 'Database, view or user could not be found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '405':
-          description: Delete view is not permitted
           content:
             application/json:
               schema:
@@ -3646,7 +3944,10 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Suggest table semantics
+      summary: Suggest semantics
+      description: >-
+        Suggests semantic concepts for a table. Requires role
+        `table-semantic-analyse`.
       operationId: analyseTable
       parameters:
         - name: databaseId
@@ -3669,7 +3970,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TableColumnEntityDto'
+                  $ref: '#/components/schemas/EntityDto'
         '400':
           description: Failed to parse statistic in search service
           content:
@@ -3701,7 +4002,8 @@ paths:
     get:
       tags:
         - table-endpoint
-      summary: Suggest table column semantics
+      summary: Suggest semantics
+      description: Suggests column semantics. Requires role `table-semantic-analyse`.
       operationId: analyseTableColumn
       parameters:
         - name: databaseId
@@ -3756,7 +4058,8 @@ paths:
     get:
       tags:
         - container-endpoint
-      summary: Find some container
+      summary: Find container
+      description: Finds a container in the metadata database.
       operationId: findById_3
       parameters:
         - name: containerId
@@ -3781,7 +4084,10 @@ paths:
     delete:
       tags:
         - container-endpoint
-      summary: Delete some container
+      summary: Delete container
+      description: >-
+        Deletes a container in the metadata database. Requires role
+        `delete-container`.
       operationId: delete_6
       parameters:
         - name: containerId
@@ -3792,11 +4098,13 @@ paths:
             format: int64
       responses:
         '202':
-          description: Deleted container successfully
+          description: Deleted container
+        '403':
+          description: 'Create container not permitted, need authority `delete-container`'
           content:
-            '*/*':
+            application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: Container not found
           content:
@@ -3810,11 +4118,12 @@ paths:
     get:
       tags:
         - concept-endpoint
-      summary: List semantic concepts
+      summary: List concepts
+      description: List all semantic concepts known to the metadata database
       operationId: findAll_7
       responses:
         '200':
-          description: Find all semantic concepts
+          description: List concepts
           content:
             application/json:
               schema:
@@ -4092,29 +4401,6 @@ components:
         column_name:
           type: string
       type: object
-    QueryResultDto:
-      required:
-        - headers
-        - id
-        - result
-      type: object
-      properties:
-        result:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: object
-        headers:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-        id:
-          type: integer
-          format: int64
     ApiErrorDto:
       required:
         - code
@@ -4201,6 +4487,29 @@ components:
         code:
           type: string
           example: error.service.code
+    QueryResultDto:
+      required:
+        - headers
+        - id
+        - result
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+        headers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+        id:
+          type: integer
+          format: int64
     TupleUpdateDto:
       required:
         - data
@@ -5323,6 +5632,23 @@ components:
         rows:
           type: integer
           format: int64
+    TableHistoryDto:
+      required:
+        - event
+        - timestamp
+        - total
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: '2021-03-12T15:26:21.000Z'
+        event:
+          type: string
+        total:
+          type: integer
+          format: int64
+          example: 1
     TupleDeleteDto:
       required:
         - keys
@@ -7950,58 +8276,33 @@ components:
         privileged_password:
           type: string
           description: Password of privileged user
-    ContainerBriefDto:
+    OntologyBriefDto:
       required:
-        - created
-        - hash
         - id
-        - image
-        - internal_name
-        - name
-        - running
+        - prefix
+        - rdf
+        - sparql
+        - uri
       type: object
       properties:
         id:
           type: integer
           format: int64
-        hash:
+        uri:
           type: string
-          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
-        name:
+          example: 'http://www.wikidata.org/'
+        prefix:
           type: string
-          example: Air Quality
-        image:
-          $ref: '#/components/schemas/ImageBriefDto'
-        running:
+          example: wd
+        sparql:
           type: boolean
           example: true
-        created:
+        rdf:
+          type: boolean
+          example: false
+        uri_pattern:
           type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        internal_name:
-          type: string
-          example: air-quality
-    ImageBriefDto:
-      required:
-        - id
-        - jdbc_method
-        - name
-        - version
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: mariadb
-        version:
-          type: string
-          example: '10.5'
-        jdbc_method:
-          type: string
-          example: mariadb
+          example: 'http://www.wikidata.org/entity/.*'
     EntityDto:
       required:
         - label
@@ -8030,14 +8331,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8071,6 +8372,149 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
+    ImageBriefDto:
+      required:
+        - id
+        - jdbc_method
+        - name
+        - version
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+          example: '10.5'
+        jdbc_method:
+          type: string
+          example: mariadb
+    LdCreatorDto:
+      required:
+        - '@type'
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+        sameAs:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        '@type':
+          type: string
+    LdDatasetDto:
+      required:
+        - '@context'
+        - '@type'
+        - citation
+        - creator
+        - description
+        - hasPart
+        - identifier
+        - name
+        - temporalCoverage
+        - url
+        - version
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        identifier:
+          type: array
+          items:
+            type: string
+        license:
+          type: string
+        creator:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdCreatorDto'
+        citation:
+          type: string
+        hasPart:
+          type: array
+          items:
+            $ref: '#/components/schemas/LdDatasetDto'
+        temporalCoverage:
+          type: string
+        version:
+          type: string
+          format: date-time
+        '@context':
+          type: string
+        '@type':
+          type: string
+    TableColumnEntityDto:
+      required:
+        - column_id
+        - database_id
+        - table_id
+        - uri
+      type: object
+      properties:
+        uri:
+          type: string
+          example: 'https://www.wikidata.org/entity/Q1686799'
+        label:
+          type: string
+          example: Apache Jena
+        description:
+          type: string
+          example: open source semantic web framework for Java
+        database_id:
+          type: integer
+          format: int64
+          example: 1
+        table_id:
+          type: integer
+          format: int64
+          example: 1
+        column_id:
+          type: integer
+          format: int64
+          example: 1
+    ContainerBriefDto:
+      required:
+        - created
+        - hash
+        - id
+        - image
+        - internal_name
+        - name
+        - running
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        hash:
+          type: string
+          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
+        name:
+          type: string
+          example: Air Quality
+        image:
+          $ref: '#/components/schemas/ImageBriefDto'
+        running:
+          type: boolean
+          example: true
+        created:
+          type: string
+          format: date-time
+          example: '2021-03-12T15:26:21.000Z'
+        internal_name:
+          type: string
+          example: air-quality
     Constraints:
       type: object
       properties:
@@ -9510,97 +9954,6 @@ components:
         d:
           type: integer
           format: int64
-    LdCreatorDto:
-      required:
-        - '@type'
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-        sameAs:
-          type: string
-        givenName:
-          type: string
-        familyName:
-          type: string
-        '@type':
-          type: string
-    LdDatasetDto:
-      required:
-        - '@context'
-        - '@type'
-        - citation
-        - creator
-        - description
-        - hasPart
-        - identifier
-        - name
-        - temporalCoverage
-        - url
-        - version
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        url:
-          type: string
-        identifier:
-          type: array
-          items:
-            type: string
-        license:
-          type: string
-        creator:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdCreatorDto'
-        citation:
-          type: string
-        hasPart:
-          type: array
-          items:
-            $ref: '#/components/schemas/LdDatasetDto'
-        temporalCoverage:
-          type: string
-        version:
-          type: string
-          format: date-time
-        '@context':
-          type: string
-        '@type':
-          type: string
-    TableColumnEntityDto:
-      required:
-        - column_id
-        - database_id
-        - table_id
-        - uri
-      type: object
-      properties:
-        uri:
-          type: string
-          example: 'https://www.wikidata.org/entity/Q1686799'
-        label:
-          type: string
-          example: Apache Jena
-        description:
-          type: string
-          example: open source semantic web framework for Java
-        database_id:
-          type: integer
-          format: int64
-          example: 1
-        table_id:
-          type: integer
-          format: int64
-          example: 1
-        column_id:
-          type: integer
-          format: int64
-          example: 1
     IndexDto:
       properties:
         results:

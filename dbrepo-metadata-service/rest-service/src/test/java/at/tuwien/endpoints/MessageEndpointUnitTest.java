@@ -27,13 +27,13 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
+public class MessageEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private BannerMessageService bannerMessageService;
 
     @Autowired
-    private MessageEndpoint maintenanceEndpoint;
+    private MessageEndpoint messageEndpoint;
 
     @Test
     @WithAnonymousUser
@@ -198,7 +198,7 @@ public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(BANNER_MESSAGE_1, BANNER_MESSAGE_2));
 
         /* test */
-        final ResponseEntity<List<BannerMessageDto>> response = maintenanceEndpoint.list("");
+        final ResponseEntity<List<BannerMessageDto>> response = messageEndpoint.list(null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -216,7 +216,7 @@ public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<BannerMessageDto> response = maintenanceEndpoint.find(messageId);
+        final ResponseEntity<BannerMessageDto> response = messageEndpoint.find(messageId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -228,7 +228,7 @@ public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(message);
 
         /* test */
-        final ResponseEntity<BannerMessageDto> response = maintenanceEndpoint.create(data);
+        final ResponseEntity<BannerMessageDto> response = messageEndpoint.create(data);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -243,7 +243,7 @@ public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(message);
 
         /* test */
-        final ResponseEntity<BannerMessageDto> response = maintenanceEndpoint.update(messageId, data);
+        final ResponseEntity<BannerMessageDto> response = messageEndpoint.update(messageId, data);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -264,7 +264,7 @@ public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
                 .delete(message);
 
         /* test */
-        final ResponseEntity<?> response = maintenanceEndpoint.delete(messageId);
+        final ResponseEntity<?> response = messageEndpoint.delete(messageId);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }

@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
@@ -22,6 +23,7 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -86,13 +88,16 @@ public class IdentifierEndpoint {
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json"})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_identifier_list")
-    @Operation(summary = "Find all identifiers")
+    @Operation(summary = "List identifiers",
+            description = "Lists all identifiers known to the metadata database")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found identifiers successfully",
                     content = {
-                            @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifierDto[].class)),
-                            @Content(mediaType = "application/ld+json", schema = @Schema(implementation = LdDatasetDto[].class))
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = ConceptDto.class))),
+                            @Content(mediaType = "application/ld+json",
+                                    array = @ArraySchema(schema = @Schema(implementation = LdDatasetDto.class)))
                     }),
             @ApiResponse(responseCode = "406",
                     description = "Identifier could not be exported, the requested style is not known",
@@ -104,7 +109,8 @@ public class IdentifierEndpoint {
                                      @Valid @RequestParam(value = "qid", required = false) Long qid,
                                      @Valid @RequestParam(value = "vid", required = false) Long vid,
                                      @Valid @RequestParam(value = "tid", required = false) Long tid,
-                                     @RequestHeader(HttpHeaders.ACCEPT) String accept) throws FormatNotAvailableException {
+                                     @RequestHeader(HttpHeaders.ACCEPT) String accept)
+            throws FormatNotAvailableException {
         log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, accept={}", dbid, qid, vid, tid, accept);
         final List<Identifier> identifiers = identifierService.findAll()
                 .stream()
@@ -141,7 +147,8 @@ public class IdentifierEndpoint {
             "text/bibliography; style=ieee", "text/bibliography; style=bibtex"})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_identifier_find")
-    @Operation(summary = "Find some identifier")
+    @Operation(summary = "Find identifier",
+            description = "Finds an identifier with id. The response format depends on the HTTP `Accept` header set on the request.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found identifier successfully",
@@ -265,7 +272,9 @@ public class IdentifierEndpoint {
     @Transactional
     @Observed(name = "dbrepo_identifier_delete")
     @PreAuthorize("hasAuthority('delete-identifier')")
-    @Operation(summary = "Delete some identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete identifier",
+            description = "Deletes an identifier with id. Requires role `delete-identifier`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted identifier"),
@@ -290,7 +299,7 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("identifierId") Long identifierId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("identifierId") Long identifierId)
             throws IdentifierNotFoundException, NotAllowedException, ServiceException, ServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint delete identifier, identifierId={}", identifierId);
@@ -300,7 +309,6 @@ public class IdentifierEndpoint {
             throw new NotAllowedException("Failed to delete identifier: already published");
         }
         identifierService.delete(identifier);
-        log.info("Deleted identifier with pid: {}", identifierId);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -309,7 +317,9 @@ public class IdentifierEndpoint {
     @Transactional
     @Observed(name = "dbrepo_identifier_publish")
     @PreAuthorize("hasAuthority('publish-identifier')")
-    @Operation(summary = "Publish identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Publish identifier",
+            description = "Publishes an identifier with id. A published identifier cannot be changed anymore. Requires role `publish-identifier`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Published identifier",
@@ -331,11 +341,6 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Creating identifier not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
                     content = {@Content(
@@ -351,7 +356,7 @@ public class IdentifierEndpoint {
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
             MalformedException, ServiceConnectionException, IdentifierNotFoundException {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
-        final Identifier identifier = identifierService.find(identifierId);
+        identifierService.find(identifierId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(metadataMapper.identifierToIdentifierDto(identifierService.publish(identifierId)));
     }
@@ -360,7 +365,9 @@ public class IdentifierEndpoint {
     @Transactional(rollbackFor = {Exception.class})
     @Observed(name = "dbrepo_identifier_save")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
-    @Operation(summary = "Save identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Save identifier",
+            description = "Saves an identifier with id as a draft identifier. Identifiers can only be created for objects the user has at least *READ* access in the associated database (requires role `create-identifier`) or for any object in any database (requires role `create-foreign-identifier`).",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Saved identifier",
@@ -379,11 +386,6 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database, table or view",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Creating identifier not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -485,7 +487,9 @@ public class IdentifierEndpoint {
     @Transactional(rollbackFor = {Exception.class})
     @Observed(name = "dbrepo_identifier_create")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
-    @Operation(summary = "Draft identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create identifier",
+            description = "Create an identifier with id to create a draft identifier. Identifiers can only be created for objects the user has at least *READ* access in the associated database (requires role `create-identifier`) or for any object in any database (requires role `create-foreign-identifier`).",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Drafted identifier",
@@ -504,11 +508,6 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database, table or view",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Creating identifier not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -532,10 +531,9 @@ public class IdentifierEndpoint {
         final Database database = databaseService.findById(data.getDatabaseId());
         final User user = userService.findByUsername(principal.getName());
         /* check access */
-        DatabaseAccess access = null;
         try {
-            access = accessService.find(database, user);
-            log.trace("found access: {}", access);
+            final DatabaseAccess access = accessService.find(database, user);
+            log.trace("found access: {}", access.getType());
         } catch (AccessNotFoundException e) {
             if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
                 log.error("Failed to create identifier: insufficient role");
@@ -549,7 +547,8 @@ public class IdentifierEndpoint {
 
     @GetMapping("/retrieve")
     @Observed(name = "dbrepo_identifier_retrieve")
-    @Operation(summary = "Retrieve metadata from identifier")
+    @Operation(summary = "Retrieve PID metadata",
+            description = "Retrieves Persistent Identifier (PID) metadata from external endpoints. Supported PIDs are: ORCID, ROR, DOI.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved metadata from identifier",

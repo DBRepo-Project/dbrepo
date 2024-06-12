@@ -2,7 +2,7 @@ tags:
   - analyse-endpoint
 summary: "Determine datatypes"
 operationId: analyse_datatypes
-description: "This is a simple API which returns the datatypes of a (path) csv file"
+description: "Determines MySQL 8 datatypes of a given dataset. Requires role `table-semantic-analyse`."
 consumes:
   - "application/json"
 produces:
