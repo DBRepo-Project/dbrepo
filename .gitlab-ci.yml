@@ -620,6 +620,7 @@ release-docs:
   script:
     - "make gen-lib-doc gen-docs-doc"
     - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
+    - "mkdir -p ./final/${APP_VERSION}/rest"
     - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
     - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
