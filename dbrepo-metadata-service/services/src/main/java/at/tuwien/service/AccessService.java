@@ -25,7 +25,7 @@ public interface AccessService {
      *
      * @param database The database.
      * @param user     The user.
-     * @return The database access.
+     * @return The database access, if successful.
      * @throws AccessNotFoundException The access was not found in the metadata database.
      */
     DatabaseAccess find(Database database, User user) throws AccessNotFoundException;
@@ -36,11 +36,12 @@ public interface AccessService {
      * @param database The database.
      * @param access   The access.
      * @param user     The user.
+     * @return The database access, if successful.
      * @throws ServiceException           The data service responded with unexpected behavior.
      * @throws ServiceConnectionException The connection with the data service could not be established.
      * @throws DatabaseNotFoundException  The database was not found in the metadata/search database.
      */
-    void create(Database database, User user, AccessTypeDto access) throws ServiceException, ServiceConnectionException,
+    DatabaseAccess create(Database database, User user, AccessTypeDto access) throws ServiceException, ServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**

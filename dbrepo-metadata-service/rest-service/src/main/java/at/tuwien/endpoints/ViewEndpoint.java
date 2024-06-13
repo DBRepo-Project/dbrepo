@@ -59,7 +59,9 @@ public class ViewEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_views_findall")
-    @Operation(summary = "Find all views", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "List views",
+            description = "Lists views known to the metadata database.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find views successfully",
@@ -90,7 +92,9 @@ public class ViewEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('create-database-view')")
     @Observed(name = "dbrepo_view_create")
-    @Operation(summary = "Create a view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Create view",
+            description = "Creates a view. Requires role `create-database-view`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Create view successfully",
@@ -102,11 +106,6 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "401",
-                    description = "Credentials missing",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Credentials missing",
                     content = {@Content(
@@ -114,11 +113,6 @@ public class ViewEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Failed to find database/user in metadata database.",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Create view is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -161,7 +155,9 @@ public class ViewEndpoint {
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_view_find")
-    @Operation(summary = "Find one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Get view",
+            description = "Gets a view with id in the metadata database.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find view successfully",
@@ -208,11 +204,12 @@ public class ViewEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-view')")
     @Observed(name = "dbrepo_view_delete")
-    @Operation(summary = "Delete one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Delete view",
+            description = "Deletes a view with id. Requires role `delete-database-view`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Delete view successfully",
-                    content = {@Content}),
+                    description = "Delete view successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Delete view query is malformed",
                     content = {@Content(
@@ -225,11 +222,6 @@ public class ViewEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, view or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Delete view is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -249,7 +241,7 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<View> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("viewId") Long viewId,
                                     @NotNull Principal principal) throws NotAllowedException, ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,

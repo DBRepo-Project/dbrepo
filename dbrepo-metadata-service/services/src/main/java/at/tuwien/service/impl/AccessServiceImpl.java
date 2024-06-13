@@ -62,23 +62,25 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public void create(Database database, User user, AccessTypeDto access) throws ServiceException,
+    public DatabaseAccess create(Database database, User user, AccessTypeDto type) throws ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* create in data database */
-        dataServiceGateway.createAccess(database.getId(), user.getId(), access);
+        dataServiceGateway.createAccess(database.getId(), user.getId(), type);
         /* create in metadata database */
+        final DatabaseAccess access = DatabaseAccess.builder()
+                .hdbid(database.getId())
+                .database(database)
+                .huserid(user.getId())
+                .type(metadataMapper.accessTypeDtoToAccessType(type))
+                .build();
         database.getAccesses()
-                .add(DatabaseAccess.builder()
-                        .hdbid(database.getId())
-                        .database(database)
-                        .huserid(user.getId())
-                        .type(metadataMapper.accessTypeDtoToAccessType(access))
-                        .build());
+                .add(access);
         database = databaseRepository.save(database);
         /* create in search service */
         searchServiceGateway.update(database);
         log.info("Created access to database with id {}", database.getId());
+        return access;
     }
 
     @Override

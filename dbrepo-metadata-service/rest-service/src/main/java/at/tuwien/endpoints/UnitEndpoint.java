@@ -36,7 +36,8 @@ public class UnitEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_semantic_units_findall")
-    @Operation(summary = "List semantic units")
+    @Operation(summary = "List units",
+            description = "Lists units known to the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find all semantic units",
@@ -50,7 +51,6 @@ public class UnitEndpoint {
                 .stream()
                 .map(metadataMapper::tableColumnUnitToUnitDto)
                 .toList();
-        log.trace("Find all units resulted in dtos {}", dtos);
         return ResponseEntity.ok()
                 .body(dtos);
     }

@@ -539,20 +539,21 @@ public interface MetadataMapper {
                     pk.getColumn().setTableId(data.getId());
                     pk.getColumn().setDatabaseId(data.getDatabase().getId());
                 });
-        for (ForeignKeyDto fk : table.getConstraints().getForeignKeys()) {
-            for (ForeignKeyReferenceDto ref : fk.getReferences()) {
-                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
-                ref.getColumn().setTableId(table.getId());
-                ref.getColumn().setDatabaseId(table.getTdbid());
-                final Optional<TableColumn> optional = data.getDatabase().getTables().stream().map(Table::getColumns).flatMap(List::stream).filter(c -> c.getId().equals(ref.getReferencedColumn().getId())).findFirst();
-                if (optional.isEmpty()) {
-                    log.error("Failed to find foreign key referenced column {}.{} in columns: {}", table.getInternalName(), ref.getReferencedColumn().getInternalName(), data.getDatabase().getTables().stream().map(Table::getColumns).flatMap(List::stream).toList());
-                    throw new IllegalArgumentException("Failed to find foreign key referenced column");
-                }
-                ref.getReferencedColumn().setTableId(optional.get().getTable().getId());
-                ref.getReferencedColumn().setDatabaseId(optional.get().getTable().getTdbid());
-            }
-        }
+        table.getConstraints()
+                .getForeignKeys()
+                .forEach(fk -> {
+                    fk.getTable().setDatabaseId(table.getTdbid());
+                    fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                    fk.getReferences()
+                            .forEach(ref -> {
+                                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                                ref.getColumn().setTableId(table.getId());
+                                ref.getColumn().setDatabaseId(table.getTdbid());
+                                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
+                                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                                log.trace("mapped foreign key part ({}) reference ({})", ref.getColumn().getInternalName(), ref.getReferencedColumn().getInternalName());
+                            });
+                });
         table.getConstraints()
                 .getUniques()
                 .forEach(uk -> {
@@ -594,7 +595,7 @@ public interface MetadataMapper {
     Unique uniqueDtoToUnique(UniqueDto data);
 
     @Mappings({
-            @Mapping(target = "ownedBy", source = "owner.id"),
+            @Mapping(target = "ownedBy", source = "owner.id")
     })
     Table tableDtoToTable(TableDto data);
 
@@ -828,8 +829,9 @@ public interface MetadataMapper {
         final Pattern WHITESPACE = Pattern.compile("[\\s]");
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
-        String slug = NONLATIN.matcher(normalized).replaceAll("");
-        final String name = slug.toLowerCase(Locale.ENGLISH);
+        String slug = NONLATIN.matcher(normalized).replaceAll("_");
+        final String name = slug.toLowerCase(Locale.ENGLISH)
+                .replaceAll("-", "_");
         log.debug("mapping name {} to internal name {}", data, name);
         return name;
     }

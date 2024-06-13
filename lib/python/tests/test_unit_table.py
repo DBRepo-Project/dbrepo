@@ -10,7 +10,7 @@ from pandas import DataFrame
 from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, Result, \
     Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
-    AuthenticationError
+    AuthenticationError, ExternalSystemError
 
 
 class TableUnitTest(unittest.TestCase):
@@ -294,16 +294,6 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_get_table_data_not_countable_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.get('/api/database/1/table/9/data', status_code=409)
-            # test
-            try:
-                response = RestClient().get_table_data(database_id=1, table_id=9)
-            except QueryStoreError:
-                pass
-
     def test_get_table_data_count_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = 2
@@ -350,7 +340,7 @@ class TableUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient().get_table_data_count(database_id=1, table_id=9)
-            except QueryStoreError:
+            except ExternalSystemError:
                 pass
 
     def test_create_table_data_succeeds(self):
@@ -396,29 +386,6 @@ class TableUnitTest(unittest.TestCase):
                 client.create_table_data(database_id=1, table_id=9,
                                          data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
             except NotExistsError:
-                pass
-
-    def test_create_table_data_not_lob_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.post('/api/database/1/table/9/data', status_code=410)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                client.create_table_data(database_id=1, table_id=9,
-                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
-            except MalformedError:
-                pass
-
-    def test_create_table_data_not_auth_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.post('/api/database/1/table/9/data', status_code=410)
-            # test
-            try:
-                RestClient().create_table_data(database_id=1, table_id=9,
-                                               data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
-            except AuthenticationError:
                 pass
 
     def test_update_table_data_succeeds(self):
@@ -468,31 +435,6 @@ class TableUnitTest(unittest.TestCase):
                                          data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
                                          keys={'id': 1})
             except NotExistsError:
-                pass
-
-    def test_update_table_data_not_lob_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('/api/database/1/table/9/data', status_code=410)
-            # test
-            try:
-                client = RestClient(username="a", password="b")
-                client.update_table_data(database_id=1, table_id=9,
-                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
-                                         keys={'id': 1})
-            except MalformedError:
-                pass
-
-    def test_update_table_data_not_auth_fails(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.put('/api/database/1/table/9/data', status_code=410)
-            # test
-            try:
-                RestClient().update_table_data(database_id=1, table_id=9,
-                                               data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
-                                               keys={'id': 1})
-            except AuthenticationError:
                 pass
 
     def test_delete_table_data_succeeds(self):
