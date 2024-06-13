@@ -581,8 +581,10 @@ release-images:
     refs:
       - /^release-.*/
   before_script:
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
   script:
@@ -598,7 +600,10 @@ release-chart:
     refs:
       - release-latest
   before_script:
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "apk add sed helm curl"
     - "helm package ./helm/dbrepo --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
