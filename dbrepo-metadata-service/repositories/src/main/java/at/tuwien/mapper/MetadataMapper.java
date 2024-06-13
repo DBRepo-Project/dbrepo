@@ -829,8 +829,9 @@ public interface MetadataMapper {
         final Pattern WHITESPACE = Pattern.compile("[\\s]");
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
-        String slug = NONLATIN.matcher(normalized).replaceAll("");
-        final String name = slug.toLowerCase(Locale.ENGLISH);
+        String slug = NONLATIN.matcher(normalized).replaceAll("_");
+        final String name = slug.toLowerCase(Locale.ENGLISH)
+                .replaceAll("-", "_");
         log.debug("mapping name {} to internal name {}", data, name);
         return name;
     }
