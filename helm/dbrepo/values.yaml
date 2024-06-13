@@ -178,7 +178,7 @@ datadb:
         protocol: TCP
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
+      image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
       imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
@@ -338,6 +338,8 @@ uploadservice:
     tag: v1.12
   securityContext:
     allowPrivilegeEscalation: false
+    runAsUser: 1000
+    runAsGroup: 1000
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
@@ -446,7 +448,7 @@ brokerservice:
 analyseservice:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.4
     pullPolicy: Always
     debug: false
   endpoint: http://analyse-service
@@ -478,7 +480,7 @@ analyseservice:
 metadataservice:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.4
     pullPolicy: Always
     debug: false
   endpoint: http://metadata-service
@@ -529,7 +531,7 @@ dataservice:
   enabled: true
   endpoint: http://data-service
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4
     pullPolicy: Always
     debug: false
   grant:
@@ -565,12 +567,12 @@ searchservice:
   enabled: true
   endpoint: http://search-service
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.4
     pullPolicy: Always
     debug: false
   init:
     image:
-      name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service-init:1.4.4
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.4
       pullPolicy: Always
   replicaCount: 2
 
@@ -617,7 +619,7 @@ storageservice:
       username: seaweedfsadmin
       password: seaweedfsadmin
   init:
-    image: s210.dl.hpc.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
     pullPolicy: Always
 
 ## @section User Interface
@@ -646,7 +648,7 @@ storageservice:
 ui:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
     pullPolicy: Always
     debug: false
   public:

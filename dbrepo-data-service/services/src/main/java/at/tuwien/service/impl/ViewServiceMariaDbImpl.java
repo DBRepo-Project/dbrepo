@@ -11,6 +11,7 @@ import at.tuwien.config.QueryConfig;
 import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
+import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SchemaService;
@@ -37,6 +38,7 @@ import java.util.List;
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
     private final S3Config s3Config;
+    private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
     private final MariaDbMapper mariaDbMapper;
     private final SchemaService schemaService;
@@ -45,11 +47,12 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(S3Config s3Config, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
-                                  SchemaService schemaService, StorageService storageService,
-                                  MetadataMapper metadataMapper,
+    public ViewServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, QueryConfig queryConfig,
+                                  MariaDbMapper mariaDbMapper, SchemaService schemaService,
+                                  StorageService storageService, MetadataMapper metadataMapper,
                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
         this.s3Config = s3Config;
+        this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
         this.mariaDbMapper = mariaDbMapper;
         this.schemaService = schemaService;
@@ -122,7 +125,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             statement2.setString(2, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             while (resultSet2.next()) {
-                view = mariaDbMapper.resultSetToTable(resultSet2, view, queryConfig);
+                view = dataMapper.resultSetToTable(resultSet2, view, queryConfig);
             }
             connection.commit();
         } catch (SQLException e) {
@@ -152,7 +155,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                             mariaDbMapper.selectDatasetRawQuery(view.getDatabase().getInternalName(),
                                     view.getInternalName(), mappedColumns, timestamp, size, page))
                     .executeQuery();
-            queryResult = mariaDbMapper.resultListToQueryResultDto(mappedColumns, resultSet);
+            queryResult = dataMapper.resultListToQueryResultDto(mappedColumns, resultSet);
             queryResult.setId(view.getId());
             connection.commit();
         } catch (SQLException e) {
