@@ -1,14 +1,9 @@
 ##@ Generate
 
-.PHONY: gen-swagger-doc
-gen-swagger-doc: ## Generate Swagger documentation.
-	bash .docs/.swagger/swagger-site.sh
-
 .PHONY: gen-swagger-doc-fe
-gen-swagger-doc-fe: build-images ## Generate Swagger documentation and fetch.
+gen-swagger-doc: build-images ## Generate Swagger documentation and fetch.
 	docker compose up -d
 	bash .docs/.swagger/swagger-generate.sh
-	bash .docs/.swagger/swagger-site.sh
 	docker compose down
 	openapi-merge-cli --config .docs/.swagger/openapi-merge.json
 

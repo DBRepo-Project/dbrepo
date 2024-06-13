@@ -11,10 +11,9 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/data-db-sidecar:__APPVERSION__`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
+    Image: [`dbrepo/data-db-sidecar:1.4.4`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
 
-    * Ports: 3305/tcp
-    * Swagger UI: `http://<hostname>:1080/swagger-ui/` <a href="../swagger/sidecar" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Ports: 8080/tcp
 
 ## Overview
 

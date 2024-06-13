@@ -20,8 +20,8 @@ hide:
 
 DBRepo logo in various formats:
 
-* PNG: [bigger](./images/logo/logo.png) ([smaller](./images/logo/favicon.png))
-* SVG: [bigger](./images/logo/logo.svg) ([smaller](./images/logo/favicon.svg))
+* PNG: [bigger](../images/logos/logo.png) ([smaller](../images/logos/favicon.png))
+* SVG: [bigger](../images/logos/logo.svg) ([smaller](../images/logos/favicon.svg))
 
 
 ## Refereed

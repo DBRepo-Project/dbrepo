@@ -6,7 +6,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:fontawesome-solid-cube: &nbsp;View Docs](../sphinx){ .md-button .md-button--primary }
+[:fontawesome-solid-cube: &nbsp;View Docs](../../python){ .md-button .md-button--primary }
 
 ## Installing
 
