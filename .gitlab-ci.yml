@@ -617,15 +617,12 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/bin/yq"
-    - "chmod +x /usr/bin/yq"
     - "apk add --update alpine-sdk bash sed wget openssh"
     - "pip install -r ./requirements.txt"
-    - "mkdir -p ./final/${APP_VERSION}/swagger"
+    - "mkdir -p ./final/${APP_VERSION}/rest"
   script:
     - "make gen-lib-doc gen-docs-doc"
     - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
-    - "mkdir -p ./final/${APP_VERSION}/rest"
     - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
     - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
@@ -639,7 +636,7 @@ release-docs:
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
+    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final"'
 
 release-libs:
   stage: release
