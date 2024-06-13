@@ -398,10 +398,10 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> nameToInternalName_parameters() {
         return Stream.of(
-                Arguments.arguments("dash_minus", "OE/NO-027", "oeno-027"),
-                Arguments.arguments("percent", "OE%NO-027", "oeno-027"),
-                Arguments.arguments("umlaut", "OE/NÖ-027", "oeno-027"),
-                Arguments.arguments("dot", "OE.NO-027", "oeno-027")
+                Arguments.arguments("dash_minus", "OE/NO-027", "oe_no_027"),
+                Arguments.arguments("percent", "OE%NO-027", "oe_no_027"),
+                Arguments.arguments("umlaut", "OE/NÖ-027", "oe_no__027"),
+                Arguments.arguments("dot", "OE.NO-027", "oe_no_027")
         );
     }
 
