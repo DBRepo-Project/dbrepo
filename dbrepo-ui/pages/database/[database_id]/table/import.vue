@@ -325,10 +325,9 @@ export default {
           this.table = table
           resolve(table)
         })
-        .catch((error) => {
-          console.error('Failed to create table', error)
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t(error.code))
+          toast.error(`${this.$t(code)}: ${message}`)
           this.loading = false
           reject(error)
         })
@@ -347,10 +346,10 @@ export default {
           toast.success(this.$t('success.import.dataset'))
           this.cacheStore.reloadDatabase()
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           console.error('Failed to import csv')
           const toast = useToastInstance()
-          toast.error(this.$t(code))
+          toast.error(`${this.$t(code)}: ${message}`)
           this.loading = false
         })
         .finally(() => {
