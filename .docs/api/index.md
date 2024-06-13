@@ -5,7 +5,7 @@ author: Martin Weise
 # Overview
 
 We developed a Python Library for communicating with DBRepo from e.g. Jupyter Notebooks. See
-the [Python Library](./usage-python) page for more details.
+the [Python Library](./open-api) page for more details.
 
 We give usage examples of the most important use-cases we identified.
 
@@ -34,7 +34,7 @@ A user wants to create an account in DBRepo.
     that your administrator has assigned.
 
     <figure markdown>
-    ![Create user account](images/screenshots/create-account-step-1.png){ .img-border }
+    ![Create user account](../images/screenshots/create-account-step-1.png){ .img-border }
     <figcaption>Figure 1: Create user account.</figcaption>
     </figure>
 
@@ -44,7 +44,7 @@ A user wants to create an account in DBRepo.
     authenticated with DBRepo in Figure 2.
 
     <figure markdown>
-    ![Create user account](images/screenshots/create-account-step-2.png){ .img-border }
+    ![Create user account](../images/screenshots/create-account-step-2.png){ .img-border }
     <figcaption>Figure 2: Login to the user account.</figcaption>
     </figure>
 
@@ -54,7 +54,7 @@ A user wants to create an account in DBRepo.
     identically in field :material-numeric-4-circle-outline:. 
 
     <figure markdown>
-    ![Change user account password](images/screenshots/create-account-step-3.png){ .img-border }
+    ![Change user account password](../images/screenshots/create-account-step-3.png){ .img-border }
     <figcaption>Figure 3: Change user account password.</figcaption>
     </figure>
 
@@ -134,7 +134,7 @@ A user wants to create a database in DBRepo.
     Login and press the ":material-plus: DATABASE" button on the top right :material-numeric-1-circle-outline: as seen in Figure 4.
 
     <figure markdown>
-    ![Open the create database dialog](images/screenshots/create-database-step-1.png){ .img-border }
+    ![Open the create database dialog](../images/screenshots/create-database-step-1.png){ .img-border }
     <figcaption>Figure 4: Open the create database dialog.</figcaption>
     </figure>
 
@@ -143,14 +143,14 @@ A user wants to create a database in DBRepo.
     finally create the database, press "Create" :material-numeric-3-circle-outline: as seen in Figure 5.
 
     <figure markdown>
-    ![Create database form](images/screenshots/create-database-step-2.png){ .img-border }
+    ![Create database form](../images/screenshots/create-database-step-2.png){ .img-border }
     <figcaption>Figure 5: Create database form.</figcaption>
     </figure>
 
     After a few seconds, you can see the created database in the "Recent Databases" list, as seen in Figure 6.
 
     <figure markdown>
-    ![View the created database](images/screenshots/create-database-step-3.png){ .img-border }
+    ![View the created database](../images/screenshots/create-database-step-3.png){ .img-border }
     <figcaption>Figure 6: View the created database.</figcaption>
     </figure>
 
@@ -213,7 +213,7 @@ access to. This is the default for self-created databases like above in [Create 
     Figure 7.
 
     <figure markdown>
-    ![Open the import CSV form](images/screenshots/import-dataset-step-1.png){ .img-border }
+    ![Open the import CSV form](../images/screenshots/import-dataset-step-1.png){ .img-border }
     <figcaption>Figure 7: Open the import CSV form.</figcaption>
     </figure>
 
@@ -221,7 +221,7 @@ access to. This is the default for self-created databases like above in [Create 
     as seen in Figure 8.
 
     <figure markdown>
-    ![Basic table information](images/screenshots/import-dataset-step-2.png){ .img-border }
+    ![Basic table information](../images/screenshots/import-dataset-step-2.png){ .img-border }
     <figcaption>Figure 8: Basic table information.</figcaption>
     </figure>
 
@@ -238,7 +238,7 @@ access to. This is the default for self-created databases like above in [Create 
     provide this information in :material-numeric-6-circle-outline:.
 
     <figure markdown>
-    ![Dataset metadata necessary for import](images/screenshots/import-dataset-step-3.png){ .img-border }
+    ![Dataset metadata necessary for import](../images/screenshots/import-dataset-step-3.png){ .img-border }
     <figcaption>Figure 9: Dataset metadata necessary for import.</figcaption>
     </figure>
 
@@ -246,7 +246,7 @@ access to. This is the default for self-created databases like above in [Create 
     dataset file onto the field in Figure 10.
 
     <figure markdown>
-    ![Dataset import file](images/screenshots/import-dataset-step-4.png){ .img-border }
+    ![Dataset import file](../images/screenshots/import-dataset-step-4.png){ .img-border }
     <figcaption>Figure 10: Dataset import file.</figcaption>
     </figure>
 
@@ -261,7 +261,7 @@ access to. This is the default for self-created databases like above in [Create 
     definitions by clicking the "ADD COLUMN" button in Figure 11.
 
     <figure markdown>
-    ![Confirm the table schema and provide missing information](images/screenshots/import-dataset-step-5.png){ .img-border }
+    ![Confirm the table schema and provide missing information](../images/screenshots/import-dataset-step-5.png){ .img-border }
     <figcaption>Figure 11: Confirm the table schema and provide missing information.</figcaption>
     </figure>
 
@@ -270,7 +270,7 @@ access to. This is the default for self-created databases like above in [Create 
     dataset as seen in Figure 12.
 
     <figure markdown>
-    ![Confirm the table schema and provide missing information](images/screenshots/import-dataset-step-6.png){ .img-border }
+    ![Confirm the table schema and provide missing information](../images/screenshots/import-dataset-step-6.png){ .img-border }
     <figcaption>Figure 12: Confirm the table schema and provide missing information.</figcaption>
     </figure>
 
@@ -284,7 +284,7 @@ access to. This is the default for self-created databases like above in [Create 
     13.
 
     <figure markdown>
-    ![Table data](images/screenshots/import-dataset-step-7.png){ .img-border }
+    ![Table data](../images/screenshots/import-dataset-step-7.png){ .img-border }
     <figcaption>Figure 13: Table data.</figcaption>
     </figure>
 
@@ -432,7 +432,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     clicking the "OK" button :material-numeric-4-circle-outline:.
 
     <figure markdown>
-    ![Setup New Connection in MySQL Workbench](images/screenshots/import-database-dump-step-1.png)
+    ![Setup New Connection in MySQL Workbench](../images/screenshots/import-database-dump-step-1.png)
     <figcaption>Figure 14: Setup New Connection in MySQL Workbench.</figcaption>
     </figure>
 
@@ -440,7 +440,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     :material-numeric-1-circle-outline: and basic connection and version information :material-numeric-2-circle-outline:.
 
     <figure markdown>
-    ![Server status of the Data Database in MySQL Workbench](images/screenshots/import-database-dump-step-2.png)
+    ![Server status of the Data Database in MySQL Workbench](../images/screenshots/import-database-dump-step-2.png)
     <figcaption>Figure 15: Server status of the Data Database in MySQL Workbench.</figcaption>
     </figure>
 
@@ -451,7 +451,7 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
     The import starts after clicking "Start Import" :material-numeric-5-circle-outline:.
 
     <figure markdown>
-    ![Data Import/Restore in MySQL Workbench](images/screenshots/import-database-dump-step-3.png)
+    ![Data Import/Restore in MySQL Workbench](../images/screenshots/import-database-dump-step-3.png)
     <figcaption>Figure 16: Data Import/Restore in MySQL Workbench.</figcaption>
     </figure>
 
@@ -510,7 +510,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     database via JDBC, you can obtain the connection string in the UI under the database info (c.f. Figure 14).
 
     <figure markdown>
-    ![JDBC connection information](images/screenshots/database-jdbc.png){ .img-border }
+    ![JDBC connection information](../images/screenshots/database-jdbc.png){ .img-border }
     <figcaption>Figure 14: JDBC connection information.</figcaption>
     </figure>
     
@@ -526,7 +526,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     database via AMQP, you can obtain the connection string in the UI under the table info (c.f. Figure 14).
 
     <figure markdown>
-    ![AMQP connection information](images/screenshots/table-amqp.png){ .img-border }
+    ![AMQP connection information](../images/screenshots/table-amqp.png){ .img-border }
     <figcaption>Figure 14: AMQP connection information.</figcaption>
     </figure>
 
@@ -550,7 +550,7 @@ A user wants to create a subset and export it as csv file.
     Figure 17.
 
     <figure markdown>
-    ![Open the create subset form](images/screenshots/export-subset-step-1.png){ .img-border }
+    ![Open the create subset form](../images/screenshots/export-subset-step-1.png){ .img-border }
     <figcaption>Figure 17: Open the create subset form.</figcaption>
     </figure>
 
@@ -562,7 +562,7 @@ A user wants to create a subset and export it as csv file.
     Once you are confident the query covers the desired result, click ":material-run: Create".
 
     <figure markdown>
-    ![Subset query building](images/screenshots/export-subset-step-2.png){ .img-border }
+    ![Subset query building](../images/screenshots/export-subset-step-2.png){ .img-border }
     <figcaption>Figure 18: Subset query building.</figcaption>
     </figure>
 
@@ -571,7 +571,7 @@ A user wants to create a subset and export it as csv file.
     View" on the top (c.f. Figure 19).
 
     <figure markdown>
-    ![Subset result set](images/screenshots/export-subset-step-3.png){ .img-border }
+    ![Subset result set](../images/screenshots/export-subset-step-3.png){ .img-border }
     <figcaption>Figure 19: Subset result set.</figcaption>
     </figure>
 
@@ -584,7 +584,7 @@ A user wants to create a subset and export it as csv file.
     a csv file by clicking the ":material-download: DATA .CSV" button :material-numeric-2-circle-outline:.
 
     <figure markdown>
-    ![Subset information](images/screenshots/export-subset-step-4.png){ .img-border }
+    ![Subset information](../images/screenshots/export-subset-step-4.png){ .img-border }
     <figcaption>Figure 20: Subset information.</figcaption>
     </figure>
 
@@ -648,7 +648,7 @@ A user wants to create a subset and export it as csv file.
     under the database info (c.f. Figure 20).
 
     <figure markdown>
-    ![JDBC connection information](images/screenshots/database-jdbc.png){ .img-border }
+    ![JDBC connection information](../images/screenshots/database-jdbc.png){ .img-border }
     <figcaption>Figure 20: JDBC connection information.</figcaption>
     </figure>
 
@@ -728,7 +728,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     the ":material-identifier: GET PID" button :material-numeric-1-circle-outline: as seen in Figure 21.
 
     <figure markdown>
-    ![Open the get persisent identifier form](images/screenshots/assign-database-pid-step-1.png){ .img-border }
+    ![Open the get persisent identifier form](../images/screenshots/assign-database-pid-step-1.png){ .img-border }
     <figcaption>Figure 21: Open the get persisent identifier form.</figcaption>
     </figure>
 
@@ -743,7 +743,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     :material-numeric-8-circle-outline:.
 
     <figure markdown>
-    ![Identifier creator fields](images/screenshots/assign-database-pid-step-2.png){ .img-border }
+    ![Identifier creator fields](../images/screenshots/assign-database-pid-step-2.png){ .img-border }
     <figcaption>Figure 22: Identifier creator fields.</figcaption>
     </figure>
 
@@ -753,7 +753,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     again :material-numeric-4-circle-outline: if they are not needed in Figure 23.
 
     <figure markdown>
-    ![JDBC connection information](images/screenshots/assign-database-pid-step-3.png){ .img-border }
+    ![JDBC connection information](../images/screenshots/assign-database-pid-step-3.png){ .img-border }
     <figcaption>Figure 23: Identifier title fields.</figcaption>
     </figure>
 
@@ -764,7 +764,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     publication month and publication day in Figure 24.
 
     <figure markdown>
-    ![Identifier description fields and publishing information](images/screenshots/assign-database-pid-step-4.png){ .img-border }
+    ![Identifier description fields and publishing information](../images/screenshots/assign-database-pid-step-4.png){ .img-border }
     <figcaption>Figure 24: Identifier description fields and publishing information.</figcaption>
     </figure>
 
@@ -775,7 +775,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     your data.
 
     <figure markdown>
-    ![Related identifiers, license and language of the identifier](images/screenshots/assign-database-pid-step-5.png){ .img-border }
+    ![Related identifiers, license and language of the identifier](../images/screenshots/assign-database-pid-step-5.png){ .img-border }
     <figcaption>Figure 25: Related identifiers, license and language of the identifier.</figcaption>
     </figure>
 
@@ -787,7 +787,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     language on the identifier summary page (c.f. Figure 26).
 
     <figure markdown>
-    ![Identifier funder information](images/screenshots/assign-database-pid-step-6.png){ .img-border }
+    ![Identifier funder information](../images/screenshots/assign-database-pid-step-6.png){ .img-border }
     <figcaption>Figure 26: Identifier funder information.</figcaption>
     </figure>
 
@@ -795,7 +795,7 @@ A user wants to assign a persistent identifier to a database owned by them.
     result is displayed in Figure 27.
 
     <figure markdown>
-    ![Identifier summary page](images/screenshots/assign-database-pid-step-7.png){ .img-border }
+    ![Identifier summary page](../images/screenshots/assign-database-pid-step-7.png){ .img-border }
     <figcaption>Figure 27: Identifier summary page.</figcaption>
     </figure>
 
@@ -884,7 +884,7 @@ A user wants a public database to be private and only give specific users access
     the dialog (c.f. Figure 28).
 
     <figure markdown>
-    ![Database settings for visibility and access](images/screenshots/private-database-access-step-1.png){ .img-border }
+    ![Database settings for visibility and access](../images/screenshots/private-database-access-step-1.png){ .img-border }
     <figcaption>Figure 28: Database settings for visibility and access.</figcaption>
     </figure>
 
@@ -893,7 +893,7 @@ A user wants a public database to be private and only give specific users access
     allowing users to view the private data (c.f. Figure 29).
 
     <figure markdown>
-    ![Database acccess dialog](images/screenshots/private-database-access-step-2.png){ .img-border }
+    ![Database acccess dialog](../images/screenshots/private-database-access-step-2.png){ .img-border }
     <figcaption>Figure 29: Database acccess dialog.</figcaption>
     </figure>
 
