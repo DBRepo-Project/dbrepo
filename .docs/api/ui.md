@@ -52,7 +52,7 @@ User Interface on development.
 
 ### Example
 
-See the [Usage Overview](../usage-overview/) page for detailed examples.
+See the [API Overview](..) page for detailed examples.
 
 ## Limitations
 

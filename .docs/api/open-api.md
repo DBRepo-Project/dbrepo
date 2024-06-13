@@ -6,7 +6,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:simple-swagger: &nbsp;View Swagger-UI](../../swagger/){ .md-button .md-button--primary tabindex=-1 }
+[:simple-swagger: &nbsp;View Swagger-UI](../../rest/){ .md-button .md-button--primary tabindex=-1 }
 
 ## Overview
 

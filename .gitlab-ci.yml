@@ -619,10 +619,10 @@ release-docs:
     - "mkdir -p ./final/${APP_VERSION}/swagger"
   script:
     - "make gen-lib-doc gen-docs-doc"
-    - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/sphinx" # sphinx
-    - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/swagger/api.yaml" # swagger
-    - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/swagger/index.html" # swagger
-    - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/swagger/custom.css" # swagger
+    - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
+    - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
+    - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
+    - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
