@@ -43,7 +43,8 @@ public class AccessEndpoint {
 
     @PostMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Give access",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -74,11 +75,11 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> create(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody UpdateDatabaseAccessDto data)
-            throws NotAllowedException, QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, DatabaseMalformedException, ServiceException {
+    public ResponseEntity<Void> create(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                       @NotBlank @PathVariable("userId") UUID userId,
+                                       @Valid @RequestBody UpdateDatabaseAccessDto data)
+            throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
+            RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, ServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         final PrivilegedUserDto user = metadataServiceGateway.getPrivilegedUserById(userId);
@@ -91,18 +92,19 @@ public class AccessEndpoint {
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {
-            throw new QueryMalformedException(e);
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
     }
 
     @PutMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Update access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Update access",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Update access succeeded",
-                    content = {@Content}),
+                    description = "Update access succeeded"),
             @ApiResponse(responseCode = "400",
                     description = "Update access query or database connection is malformed",
                     content = {@Content(
@@ -129,10 +131,10 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> update(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
+    public ResponseEntity<Void> update(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                       @NotBlank @PathVariable("userId") UUID userId,
+                                       @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
+            DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, ServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
@@ -147,13 +149,15 @@ public class AccessEndpoint {
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {
-            throw new QueryMalformedException(e);
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
     }
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAuthority('admin')")
-    @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "basicAuth")},
+    @Operation(summary = "Revoke access",
+            security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -184,9 +188,9 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId) throws NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
+    public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                       @NotBlank @PathVariable("userId") UUID userId) throws NotAllowedException,
+            DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, ServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
@@ -200,7 +204,8 @@ public class AccessEndpoint {
             return ResponseEntity.accepted()
                     .build();
         } catch (SQLException e) {
-            throw new QueryMalformedException(e);
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
     }
 

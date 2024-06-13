@@ -249,6 +249,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
     cid  BIGINT NOT NULL,
     rcid BIGINT NOT NULL,
     PRIMARY KEY (id),
+    UNIQUE (fkid, cid, rcid),
     FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
     FOREIGN KEY (cid) REFERENCES mdb_columns (id),
     FOREIGN KEY (rcid) REFERENCES mdb_columns (id)

@@ -29,7 +29,6 @@ import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
-import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.keycloak.CredentialDto;
 import at.tuwien.api.keycloak.CredentialTypeDto;
@@ -74,21 +73,15 @@ import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
 import at.tuwien.test.utils.ArrayUtils;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -592,6 +585,8 @@ public abstract class BaseTest {
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .name(USER_2_NAME)
+            .qualifiedName(USER_2_QUALIFIED_NAME)
+            .attributes(USER_2_ATTRIBUTES_DTO)
             .build();
 
     public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
@@ -1256,14 +1251,6 @@ public abstract class BaseTest {
     public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
     public final static UUID DATABASE_2_OWNER = USER_2_ID;
     public final static UUID DATABASE_2_CREATOR = USER_2_ID;
-
-    public final static PrivilegedDatabaseDto DATABASE_2_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
-            .id(DATABASE_2_ID)
-            .name(DATABASE_2_NAME)
-            .internalName(DATABASE_2_INTERNALNAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
-            .views(new LinkedList<>())
-            .build();
 
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_2_NAME)
@@ -7178,6 +7165,22 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
+    public final static PrivilegedDatabaseDto DATABASE_2_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+            .id(DATABASE_2_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .exchangeName(DATABASE_2_EXCHANGE)
+            .identifiers(List.of(IDENTIFIER_5_DTO))
+            .tables(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO))
+            .views(List.of(VIEW_4_DTO))
+            .created(DATABASE_2_CREATED)
+            .creator(USER_2_DTO)
+            .owner(USER_2_DTO)
+            .build();
+
     public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
             .id(DATABASE_2_ID)
             .created(DATABASE_2_CREATED)
@@ -7240,12 +7243,26 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
             .huserid(USER_3_ID)
             .user(USER_3)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_2_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_3_ID)
+            .user(USER_3_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
@@ -7555,8 +7572,8 @@ public abstract class BaseTest {
                             .referencedColumn(TABLE_1_COLUMNS.get(0))
                             .foreignKey(null) // set later
                             .build())))
-                    .table(TABLE_1)
-                    .referencedTable(TABLE_2)
+                    .table(TABLE_2)
+                    .referencedTable(TABLE_1)
                     .onUpdate(ReferenceType.NO_ACTION)
                     .build())))
             .uniques(new LinkedList<>(List.of(Unique.builder()

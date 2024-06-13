@@ -19,7 +19,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.mapper.SparqlMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;

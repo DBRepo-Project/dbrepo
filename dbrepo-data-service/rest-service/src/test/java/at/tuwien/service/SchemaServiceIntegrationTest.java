@@ -53,7 +53,9 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
         MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_DTO);
     }
 
     @Test
@@ -90,6 +92,46 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals("family_name", uniques.get(0).getColumns().get(1).getInternalName());
         final List<ForeignKeyDto> foreignKeys = constraints.getForeignKeys();
         assertEquals(0, foreignKeys.size());
+    }
+
+    @Test
+    public void inspectTableEnum_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+
+        /* test */
+        final TableDto response = schemaService.inspectTable(DATABASE_2_PRIVILEGED_DTO, "experiments");
+        assertEquals("experiments", response.getInternalName());
+        assertEquals("experiments", response.getName());
+        assertEquals(DATABASE_2_ID, response.getTdbid());
+        assertTrue(response.getIsVersioned());
+        assertEquals(DATABASE_2_PUBLIC, response.getIsPublic());
+        assertEquals(DATABASE_2_OWNER, response.getCreatedBy());
+        assertNotNull(response.getCreator());
+        assertEquals(DATABASE_2_OWNER, response.getCreator().getId());
+        assertEquals(USER_2_NAME, response.getCreator().getName());
+        assertEquals(USER_2_USERNAME, response.getCreator().getUsername());
+        assertEquals(USER_2_FIRSTNAME, response.getCreator().getFirstname());
+        assertEquals(USER_2_LASTNAME, response.getCreator().getLastname());
+        assertEquals(USER_2_QUALIFIED_NAME, response.getCreator().getQualifiedName());
+        assertNotNull(response.getCreator().getAttributes());
+        assertEquals(USER_2_AFFILIATION, response.getCreator().getAttributes().getAffiliation());
+        assertEquals(USER_2_THEME, response.getCreator().getAttributes().getTheme());
+        assertEquals(USER_2_LANGUAGE, response.getCreator().getAttributes().getLanguage());
+        assertEquals(USER_2_ORCID_URL, response.getCreator().getAttributes().getOrcid());
+        assertNull(response.getCreator().getAttributes().getMariadbPassword());
+        final List<IdentifierDto> identifiers = response.getIdentifiers();
+        assertNotNull(identifiers);
+        assertEquals(0, identifiers.size());
+        final List<ColumnDto> columns = response.getColumns();
+        assertNotNull(columns);
+        assertEquals(3, columns.size());
+        assertColumn(columns.get(0), null, null, DATABASE_2_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
+        assertColumn(columns.get(1), null, null, DATABASE_2_ID, "mode", "mode", ColumnTypeDto.ENUM, 3L, null, false, null, null);
+        assertEquals(2, columns.get(1).getEnums().size());
+        assertEquals(List.of("ABC", "DEF"), columns.get(1).getEnums());
+        assertColumn(columns.get(2), null, null, DATABASE_2_ID, "seq", "seq", ColumnTypeDto.SET, 5L, null, true, null, null);
+        assertEquals(3, columns.get(2).getSets().size());
+        assertEquals(List.of("1", "2", "3"), columns.get(2).getSets());
+        /* ignore rest (constraints) */
     }
 
     @Test
@@ -348,8 +390,8 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     protected static void assertColumn(ColumnDto column, Long id, Long tableId, Long databaseId, String name,
-                                           String internalName, ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
-                                           Long dfid, String description) {
+                                       String internalName, ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
+                                       Long dfid, String description) {
         log.trace("assert column: {}", internalName);
         assertNotNull(column);
         assertEquals(id, column.getId());

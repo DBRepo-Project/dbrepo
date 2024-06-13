@@ -56,6 +56,19 @@ class CreateDatabase(BaseModel):
     is_public: bool
 
 
+class CreateContainer(BaseModel):
+    name: str
+    host: str
+    image_id: int
+    sidecar_host: str
+    sidecar_port: int
+    privileged_username: str
+    privileged_password: str
+    ui_host: Optional[str] = None
+    ui_port: Optional[int] = None
+    port: Optional[int] = None
+
+
 class CreateUser(BaseModel):
     username: str
     email: str

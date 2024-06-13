@@ -13,13 +13,14 @@ from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
 from opensearchpy import TransportError, NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
-from logging.config import dictConfig
 
 from clients.keycloak_client import User, KeycloakClient
 from clients.opensearch_client import OpenSearchClient
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
+
+from logging.config import dictConfig
 
 # logging configuration
 dictConfig({
@@ -191,7 +192,7 @@ template = {
 }
 
 swagger = Swagger(app, config=swagger_config, template=template)
-app.config["GATEWAY_ENDPOINT"] = os.getenv("GATEWAY_ENDPOINT", "http://localhost")
+app.config["GATEWAY_SERVICE_ENDPOINT"] = os.getenv("GATEWAY_SERVICE_ENDPOINT", "http://localhost")
 app.config["JWT_ALGORITHM"] = "HS256"
 app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
                                                                       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'

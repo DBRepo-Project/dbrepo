@@ -13,6 +13,7 @@ spring:
         default_schema: fda
         jdbc:
           time_zone: UTC
+        format_sql: false
   application:
     name: metadata-service
   rabbitmq:
@@ -43,6 +44,7 @@ logging:
     root: warn
     at.tuwien.: trace
     org.springframework.security.web.FilterChainProxy: debug
+#    org.hibernate.resource.jdbc: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
   repository-name: Database Repository

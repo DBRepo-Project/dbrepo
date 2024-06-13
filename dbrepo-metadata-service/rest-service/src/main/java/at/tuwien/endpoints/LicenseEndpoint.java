@@ -41,21 +41,21 @@ public class LicenseEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_license_findall")
-    @Operation(summary = "Get all licenses")
+    @Operation(summary = "List licenses",
+            description = "Lists licenses known to the metadata database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List of licenses",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = LicenseDto[].class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = LicenseDto.class)))}),
     })
     public ResponseEntity<List<LicenseDto>> list() {
         log.debug("endpoint list licenses");
         final List<LicenseDto> licenses = licenseService.findAll()
                 .stream()
                 .map(metadataMapper::licenseToLicenseDto)
-                .collect(Collectors.toList());
-        log.trace("list licenses resulted in licenses {}", licenses);
+                .toList();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(licenses);
     }

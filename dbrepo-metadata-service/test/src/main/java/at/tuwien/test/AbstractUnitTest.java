@@ -72,9 +72,13 @@ public abstract class AbstractUnitTest extends BaseTest {
         /* DATABASE 2 */
         DATABASE_2.setSubsets(new LinkedList<>());
         DATABASE_2.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS, DATABASE_2_USER_3_READ_ACCESS)));
+        DATABASE_2_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO, DATABASE_2_USER_3_READ_ACCESS_DTO)));
         DATABASE_2.setTables(new LinkedList<>(List.of(TABLE_5, TABLE_6, TABLE_7)));
         DATABASE_2.setViews(new LinkedList<>(List.of(VIEW_4)));
         DATABASE_2.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_5)));
+        DATABASE_2_PRIVILEGED_DTO.setTables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)));
+        DATABASE_2_PRIVILEGED_DTO.setViews(new LinkedList<>(List.of(VIEW_4_DTO)));
+        DATABASE_2_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_5_DTO)));
         TABLE_5.setDatabase(DATABASE_2);
         TABLE_5.setColumns(new LinkedList<>(TABLE_5_COLUMNS));
         TABLE_5.setConstraints(TABLE_5_CONSTRAINTS);
