@@ -1543,8 +1543,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete database access: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10,
-                      timestamp: datetime.datetime = datetime.datetime.now()) -> Result:
+    def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10) -> Result:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
         result set can be paginated with setting page and size (both). Historic data can be queried by setting
@@ -1554,7 +1553,6 @@ class RestClient:
         :param query: The query statement.
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
-        :param timestamp: The query execution time. Optional. Default: now.
 
         :returns: The result set, if successful.
 
@@ -1569,8 +1567,7 @@ class RestClient:
         url = f'/api/database/{database_id}/subset'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
-        response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=ExecuteQuery(statement=query, timestamp=timestamp))
+        response = self._wrapper(method="post", url=url, force_auth=True, payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
             body = response.json()
             return Result.model_validate(body)
