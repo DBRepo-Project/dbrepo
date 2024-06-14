@@ -4,7 +4,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/mariadb-galera:11.2.2-debian-11-r0`](https://hub.docker.com/r/bitnami/mariadb-galera)
+    Image: [`docker.io/bitnami/mariadb:11.1.3-debian-11-r6`](https://hub.docker.com/r/bitnami/mariadb)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
@@ -23,11 +23,12 @@ services:
   dbrepo-metadata-db:
     ...
     volumes:
-      - /path/to/setup-some-data.sql:/docker-entrypoint-initdb.d/setup-some-data.sql
+      - /path/to/setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
+      - /path/to/setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ...
 ```
 
 !!! warning "Alphabetic Filename Sorting"
 
     Beware that the init script provided by Bitnami executes files in alphabetic order! For example: the file 
-    `setup-schema.sql` is executed **after** the file `setup-data.sql`!
+    `setup-schema.sql` is executed **after** the file `setup-data.sql`! Thefore a sorting prefix 1-9 is recommended!

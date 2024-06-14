@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`chrislusf/seaweedfs:3.59`](https://hub.docker.com/r/chrislusf/seaweedfs)
+    Image: [`docker.io/chrislusf/seaweedfs:3.59`](https://hub.docker.com/r/chrislusf/seaweedfs)
 
     * Ports: 9000/tcp
     * Prometheus: `http://<hostname>:9091/metrics`
@@ -36,7 +36,7 @@ The default configuration creates two buckets `dbrepo-upload`, `dbrepo-download`
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](../../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

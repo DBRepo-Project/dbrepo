@@ -9,7 +9,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-__APPVERSION__/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/install.sh | bash
 ```
 
 ## Requirements
@@ -34,7 +34,7 @@ the following settings.
 ### Software
 
 We only test the Docker Compose deployment with the 
-official [Docker engine](https://docs.docker.com/engine/install/debian/) installed on 
+official [Docker Engine](https://docs.docker.com/engine/install/debian/) installed on 
 a [Debian](https://www.debian.org/)-based operating system. Other software deployments (e.g. Docker Desktop on Windows)
 are *not* recommended and not tested.
 
@@ -53,7 +53,7 @@ technologies. The conceptualized microservices operate the basic database operat
 
 ### Notes
 
-Please note that we only save the state of the databases as well as the [Broker Service](./system-services-broker)
+Please note that we only save the state of the databases as well as the [Broker Service](../broker-service)
 since RabbitMQ maintains state inside the container.
 
 ## Deployment
@@ -147,50 +147,11 @@ Please be warned that the default configuration is not intended for public deplo
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
 
-Next, create a [user account](./usage-overview/#create-user-account) and 
-then [create a database](./usage-overview/#create-database) to [import a dataset](./usage-overview/#import-dataset).
-
-## Security
-
-!!! warning "Known security issues with the default configuration"
-
-    The system is auto-configured for a small, local, test deployment and is *not* secure! You need to make modifications
-    in various places to make it secure:
-
-    * **Authentication Service**:
-
-        a. You need to use your own instance or configure a secure instance using a (self-signed) certificate.
-           Additionally, when serving from a non-default Authentication Service, you need to put it into the 
-           `JWT_ISSUER` environment variable (`.env`).
-
-        b. You need to change the default admin user `fda` password in Realm
-           master > Users > fda > Credentials > Reset password.
-
-        c. You need to change the client secrets for the clients `dbrepo-client` and `broker-client`. Do this in Realm
-           dbrepo > Clients > dbrepo-client > Credentials > Client secret > Regenerate. Do the same for the
-           broker-client.
-
-        d. You need to regenerate the public key of the `RS256` algorithm which is shared with all services to verify 
-           the signature of JWT tokens. Add your securely generated private key in Realm 
-           dbrepo > Realm settings > Keys > Providers > Add provider > rsa.
-
-    * **Broker Service**: by default, this service is configured with an administrative user that has major privileges.
-      You need to change the password of the user *fda* in Admin > Update this user > Password. We found this
-      [simple guide](https://onlinehelp.coveo.com/en/ces/7.0/administrator/changing_the_rabbitmq_administrator_password.htm)
-      to be very useful.
-
-    * **Search Database**: by default, this service is configured to require authentication with an administrative user
-      that is allowed to write into the indizes. Following
-      this [simple guide](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/reset-password.html), this can be
-      achieved using the command line.
-
-    * **Gateway Service**: by default, no HTTPS is used that protects the services behind. You need to provide a trusted
-      SSL/TLS certificate in the configuration file or use your own proxy in front of the Gateway Service. See this
-      [simple guide](http://nginx.org/en/docs/http/configuring_https_servers.html) on how to install a SSL/TLS
-      certificate on NGINX.
+Next, create a [user account](../api/#create-user-account) and 
+then [create a database](../api/#create-database) to [import a dataset](../api/#import-dataset).
 
 ## Limitations
 
 !!! info "Alternative Deployments"
 
-    Alternatively, you can also deploy DBRepo with [Helm](./deployment-helm/) in your virtual machine instead.
+    Alternatively, you can also deploy DBRepo with [Kubernetes](../deployment-helm) in your virtual machine instead.

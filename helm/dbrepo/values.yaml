@@ -53,18 +53,15 @@ metadatadb:
   image:
     debug: false
   host: metadata-db
-  rootUser:
-    user: root
-    password: dbrepo
+  auth:
+    root: root
+    rootPassword: dbrepo
+    database: dbrepo
+    replicationUser: replication
+    replicationPassword: replication
   jdbcExtraArgs: ""
-  db:
-    name: fda
   metrics:
     enabled: false
-  galera:
-    mariabackup:
-      user: mariabackup
-      password: mariabackup
   initdbScriptsConfigMap: metadata-db-setup
   extraInitDbScripts: { }
   #    03-additional-data.sql: |
@@ -72,14 +69,8 @@ metadatadb:
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
-  service:
-    type: ClusterIP
-    annotations: { }
-    loadBalancerIP: ""
-    loadBalancerSourceRanges: [ ]
-  persistence:
-    enabled: false
-  replicaCount: 3
+  secondary:
+    replicaCount: 2
 
 ## @section Auth Service
 
@@ -161,70 +152,69 @@ datadb:
   image:
     debug: false
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-  rootUser:
-    user: root
-    password: dbrepo
+  auth:
+    rootPassword: dbrepo
+    replicationUser: replication
+    replicationPassword: replication
   metrics:
     enabled: true
-  galera:
-    mariabackup:
-      user: mariabackup
-      password: mariabackup
-  service:
-    extraPorts:
-      - name: "sidecar"
-        port: 8080
-        targetPort: 8080
-        protocol: TCP
-  sidecars:
-    - name: sidecar
-      image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
-      imagePullPolicy: Always
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 0
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
-        seccompProfile:
-          type: RuntimeDefault
-        capabilities:
-          drop:
-            - ALL
-      ports:
+  primary:
+    service:
+      extraPorts:
         - name: "sidecar"
-          containerPort: 8080
+          port: 8080
+          targetPort: 8080
           protocol: TCP
-      envFrom:
-        - secretRef:
-            name: data-service-secret
-      livenessProbe:
-        exec:
-          command:
-            - /bin/bash
-            - -ec
-            - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-        initialDelaySeconds: 120
-        periodSeconds: 30
-      readinessProbe:
-        exec:
-          command:
-            - /bin/bash
-            - -ec
-            - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-        initialDelaySeconds: 30
-        periodSeconds: 30
-      volumeMounts:
-        - name: s3
-          mountPath: /s3
-  extraVolumeMounts:
-    - name: s3
-      mountPath: /s3
-  extraVolumes:
-    - name: s3
-      emptyDir: { }
-  persistence:
-    enabled: false
-  replicaCount: 3
+    sidecars:
+      - name: sidecar
+        image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 0
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
+        ports:
+          - name: "sidecar"
+            containerPort: 8080
+            protocol: TCP
+        envFrom:
+          - secretRef:
+              name: data-service-secret
+        livenessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -ec
+              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -ec
+              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        volumeMounts:
+          - name: s3
+            mountPath: /s3
+    extraVolumeMounts:
+      - name: s3
+        mountPath: /s3
+    extraVolumes:
+      - name: s3
+        emptyDir: { }
+    persistence:
+      enabled: false
+  secondary:
+    replicaCount: 2
 
 ## @section Search Database
 
@@ -232,7 +222,6 @@ datadb:
 ## @skip searchdb.fullnameOverride
 ## @param searchdb.host The hostname for the microservices.
 ## @param searchdb.port The port for the microservices.
-## @skip searchdb.protocol
 ## @param searchdb.username The admin username.
 ## @param searchdb.password The admin user password.
 ## @skip searchdb.clusterName
@@ -249,77 +238,13 @@ datadb:
 searchdb:
   enabled: true
   fullnameOverride: search-db
+  servicenameOverride: search-db
   host: search-db
   port: 9200
-  protocol: http
-  username: admin
-  password: admin
-  clusterName: search-db
-  masterService: search-db
-  replicas: 3
-  sysctlInit:
-    enabled: true
-  persistence:
+  security:
     enabled: false
-  service:
-    type: ClusterIP
-    annotations: { }
-    loadBalancerSourceRanges: [ ]
-  extraEnvs:
-    - name: DISABLE_INSTALL_DEMO_CONFIG
-      value: "true"
-  extraVolumeMounts:
-    - name: node-cert
-      mountPath: /usr/share/opensearch/config/tls
-      readOnly: true
-  extraVolumes:
-    - name: node-cert
-      secret:
-        secretName: search-db-secret
-  config:
-    opensearch.yml: |
-      cluster.name: search-db
-      network.host: 0.0.0.0
-      plugins:
-        security:
-          ssl:
-            transport:
-              pemcert_filepath: tls/tls.crt
-              pemkey_filepath: tls/tls.key
-              pemtrustedcas_filepath: tls/ca.crt
-              enforce_hostname_verification: false
-            http:
-              #enabled: true # uncomment to force ssl connections
-              pemcert_filepath: tls/tls.crt
-              pemkey_filepath: tls/tls.key
-              pemtrustedcas_filepath: tls/ca.crt
-          allow_unsafe_democertificates: false
-          allow_default_init_securityindex: true
-          authcz:
-            admin_dn:
-              - CN=search-db
-          nodes_dn:
-            - CN=search-db
-          audit.type: internal_opensearch
-          enable_snapshot_restore_privilege: true
-          check_snapshot_restore_write_privileges: true
-          restapi:
-            roles_enabled: [ "all_access", "security_rest_api_access" ]
-          system_indices:
-            enabled: true
-            indices:
-              [
-                ".opendistro-alerting-config",
-                ".opendistro-alerting-alert*",
-                ".opendistro-anomaly-results*",
-                ".opendistro-anomaly-detector*",
-                ".opendistro-anomaly-checkpoints",
-                ".opendistro-anomaly-detection-state",
-                ".opendistro-reports-*",
-                ".opendistro-notifications-*",
-                ".opendistro-notebooks",
-                ".opendistro-asynchronous-search-response*",
-              ]
+    adminPassword: admin
+  clusterName: search-db
 
 ## @section Upload Service
 
@@ -435,7 +360,7 @@ brokerservice:
     type: ClusterIP
     managerPortEnabled: true
     # loadBalancerIP:
-  replicaCount: 2
+  replicaCount: 1
 
 ## @section Analyse Service
 

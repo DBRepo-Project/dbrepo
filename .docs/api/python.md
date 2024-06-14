@@ -8,6 +8,13 @@ author: Martin Weise
 
 [:fontawesome-solid-cube: &nbsp;View Docs](../../python){ .md-button .md-button--primary }
 
+## Overview
+
+The DBRepo Python library is using some of the most pupular and maintained Python packages for Data Scientists under the
+hood. For example: [`requests`](https://requests.readthedocs.io/) to interact with the HTTP API
+endpoints, [`pandas`](https://pandas.pydata.org/) for data operations and [`pydantic`](https://docs.pydantic.dev/) for
+information representation from/to the HTTP API.
+
 ## Installing
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.2

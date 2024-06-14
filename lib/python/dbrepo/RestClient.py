@@ -1567,7 +1567,8 @@ class RestClient:
         url = f'/api/database/{database_id}/subset'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
-        response = self._wrapper(method="post", url=url, force_auth=True, payload=ExecuteQuery(statement=query))
+        response = self._wrapper(method="post", url=url, force_auth=True, headers={"Accept": "application/json"},
+                                 payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
             body = response.json()
             return Result.model_validate(body)

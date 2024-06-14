@@ -2,6 +2,14 @@
 author: Martin Weise
 ---
 
+## tl;dr
+
+!!! debug "Debug Information"
+
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4`](https://hub.docker.com/r/dbrepo/ui)
+
+    * Ports: 3000/tcp
+
 The User Interface is configured in the `runtimeConfig` section of the `nuxt.config.ts` file during build time. For the
 runtime, you need to override those values through environment variables or by mounting a `.env` file. As a small
 example, you can configure the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as
@@ -27,7 +35,7 @@ if you use a Kubernetes deployment via ConfigMap and Volumes).
 ```yaml title="docker-compose.yml"
 services:
   dbrepo-ui:
-    image: docker.io/dbrepo/ui:__APPVERSION__
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
     volumes:
       - ./my_logo.png:/app/.output/public/my_logo.png
   ...
