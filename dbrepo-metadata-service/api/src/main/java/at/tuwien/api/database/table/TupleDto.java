@@ -16,7 +16,7 @@ import java.util.Map;
 @ToString
 public class TupleDto {
 
-    @NotNull(message = "data is required")
+    @NotNull
     private Map<String, Object> data;
 
 }

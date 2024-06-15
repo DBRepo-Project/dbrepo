@@ -14,10 +14,11 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/dbrepo/metadata-db:1.4.4
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dist/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
+      - ./dbrepo-metadata-db/setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
+      - ./dbrepo-metadata-db/setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
       - "3306:3306"
     environment:
@@ -35,7 +36,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:11.2.2-debian-11-r0
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -43,7 +44,6 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${USER_DB_BACKUP_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -56,7 +56,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/mariadb:11.2.2-debian-11-r0
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - auth-db-data:/bitnami/mariadb
     ports:
@@ -76,7 +76,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: docker.io/dbrepo/auth-service:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service:1.4.4
     healthcheck:
       test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
       interval: 10s
@@ -98,7 +98,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: docker.io/dbrepo/metadata-service:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.4
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -124,7 +124,7 @@ services:
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
-      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
       METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
@@ -134,13 +134,13 @@ services:
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://gateway-service}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
-      S3_ENDPOINT: "${S3_ENDPOINT:-http://gateway-service/api/storage}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
       S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
     healthcheck:
-      test: wget -qO- localhost:8080/actuator/health/readiness | grep -q "UP" || exit 1
+      test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -160,7 +160,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: docker.io/dbrepo/analyse-service:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.4
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
       ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
@@ -211,7 +211,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/dbrepo/search-db:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.4.4
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -235,7 +235,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: docker.io/dbrepo/search-service:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.4
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
       ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
@@ -243,6 +243,7 @@ services:
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
+      GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
@@ -253,7 +254,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-sidecar
     hostname: data-db-sidecar
-    image: docker.io/dbrepo/data-db-sidecar:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
     environment:
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
@@ -275,7 +276,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: docker.io/dbrepo/ui:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
     depends_on:
       dbrepo-search-service:
         condition: service_started
@@ -293,7 +294,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/nginx:1.25-alpine-slim
+    image: docker.io/nginx:1.27.0-alpine3.19-slim
     ports:
       - "80:80"
       - "443:443"
@@ -319,7 +320,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: docker.io/dbrepo/search-service-init:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.4
     environment:
       GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
@@ -354,7 +355,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: docker.io/dbrepo/storage-service-init:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
     environment:
       SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
     depends_on:
@@ -391,7 +392,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: docker.io/dbrepo/data-service:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -429,7 +430,7 @@ services:
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     healthcheck:
-      test: wget -qO- localhost:8080/actuator/health/readiness | grep -q "UP" || exit 1
+      test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
       interval: 10s
       timeout: 5s
       retries: 12

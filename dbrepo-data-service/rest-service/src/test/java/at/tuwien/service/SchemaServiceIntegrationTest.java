@@ -59,7 +59,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTable_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+    public void inspectTable_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db");
@@ -95,7 +95,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTableEnum_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+    public void inspectTableEnum_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_2_PRIVILEGED_DTO, "experiments");
@@ -135,7 +135,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTableFullConstraints_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+    public void inspectTableFullConstraints_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "weather_aus");
@@ -241,7 +241,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTable_multipleForeignKeyReferences_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+    public void inspectTable_multipleForeignKeyReferences_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "complex_foreign_keys");
@@ -294,7 +294,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTable_multiplePrimaryKey_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException {
+    public void inspectTable_multiplePrimaryKey_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "complex_primary_key");

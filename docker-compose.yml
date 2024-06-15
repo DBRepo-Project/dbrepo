@@ -14,13 +14,11 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo-metadata-db:latest
-    build:
-      context: ./dbrepo-metadata-db
-      network: host
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dbrepo-metadata-db/setup-data.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./dbrepo-metadata-db/setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
+      - ./dbrepo-metadata-db/setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
       - "3306:3306"
     environment:
@@ -38,7 +36,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:11.2.2-debian-11-r0
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -46,7 +44,6 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${USER_DB_BACKUP_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -59,7 +56,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/mariadb:11.2.2-debian-11-r0
+    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
       - auth-db-data:/bitnami/mariadb
     ports:
@@ -331,7 +328,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/nginx:1.25-alpine-slim
+    image: docker.io/nginx:1.27.0-alpine3.19-slim
     ports:
       - "80:80"
       - "443:443"

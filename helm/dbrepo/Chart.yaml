@@ -10,28 +10,28 @@ keywords:
   - dbrepo
 maintainers:
   - name: Martin Weise
-    email: martin.weise@tuwien.ac.at
+    email: martin.weise@tuwien.ac.a
 home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
 icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
 dependencies:
   - name: opensearch
     alias: searchdb
-    version: 2.15.0
-    repository: https://opensearch-project.github.io/helm-charts/
+    version: 1.2.2
+    repository: https://charts.bitnami.com/bitnami
     condition: searchdb.enabled
   - name: keycloak
     alias: authservice
     version: 17.3.3
     repository: https://charts.bitnami.com/bitnami
     condition: authservice.enabled
-  - name: mariadb-galera
+  - name: mariadb
     alias: datadb
-    version: 11.0.1
+    version: 14.1.4
     repository: https://charts.bitnami.com/bitnami
     condition: datadb.enabled
-  - name: mariadb-galera
+  - name: mariadb
     alias: metadatadb
-    version: 11.0.1
+    version: 14.1.4
     repository: https://charts.bitnami.com/bitnami
     condition: metadatadb.enabled
   - name: rabbitmq

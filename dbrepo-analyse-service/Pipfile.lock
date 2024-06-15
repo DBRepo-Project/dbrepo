@@ -167,19 +167,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:42b140fc850cf261ee4b1e8ef527fa071b1f1592a6d6a68d34b29f37cc46b4dd",
-                "sha256:56bec52d485d5670ce96d53ae7b2cd4ae4e8a705fb2298a21093cdd77d642331"
+                "sha256:7e8418b47dd43954a9088d504541bed8a42b6d06e712d02befba134c1c4d7c6d",
+                "sha256:7f676daef674fe74f34ce4063228eccc6e60c811f574720e31f230296c4bf29a"
             ],
             "index": "pypi",
-            "version": "==1.34.123"
+            "version": "==1.34.126"
         },
         "botocore": {
             "hashes": [
-                "sha256:8c34ada2a708c82e7174bff700611643db7ce2cb18f1130c35045c24310d299d",
-                "sha256:a8577f6574600c4d159b5cd103ee05744a443d77f7778304e17307940b369c4f"
+                "sha256:7a8ccb6a7c02456757a984a3a44331b6f51c94cb8b9b287cd045122fd177a4b0",
+                "sha256:7eff883c638fe30e0b036789df32d851e093d12544615a3b90062b42ac85bdbc"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.34.123"
+            "version": "==1.34.126"
         },
         "certifi": {
             "hashes": [
@@ -1050,11 +1050,11 @@
         },
         "pydantic": {
             "hashes": [
-                "sha256:c46c76a40bb1296728d7a8b99aa73dd70a48c3510111ff290034f860c99c419e",
-                "sha256:ea91b002777bf643bb20dd717c028ec43216b24a6001a280f83877fd2655d0b4"
+                "sha256:0c84efd9548d545f63ac0060c1e4d39bb9b14db8b3c0652338aecc07b5adec52",
+                "sha256:ee8538d41ccb9c0a9ad3e0e5f07bf15ed8015b481ced539a1759d8cc89ae90d0"
             ],
             "index": "pypi",
-            "version": "==2.7.3"
+            "version": "==2.7.4"
         },
         "pydantic-core": {
             "hashes": [

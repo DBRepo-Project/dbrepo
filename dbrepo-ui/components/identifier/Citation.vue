@@ -63,8 +63,11 @@ export default {
       identifierService.findOne(this.identifier.id, accept)
         .then((citation) => {
           this.citation = citation
+          this.loading = false
         })
-        .finally(() => {
+        .error(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(`${code}: ${message}`))
           this.loading = false
         })
     }

@@ -10,6 +10,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.user.PrivilegedUserDto;
@@ -33,9 +34,6 @@ public interface MetadataMapper {
 
     ViewColumnDto columnDtoToViewColumnDto(ColumnDto data);
 
-    /* keep */
-    TableBriefDto tableDtoToTableBriefDto(TableDto data);
-
     @Mappings({
             @Mapping(target = "database", expression = "java(PrivilegedDatabaseDto.builder().container(PrivilegedContainerDto.builder().image(new ImageDto()).build()).build())")
     })
@@ -46,5 +44,10 @@ public interface MetadataMapper {
     ContainerDto privilegedContainerDtoToContainerDto(PrivilegedContainerDto data);
 
     PrivilegedUserDto userDtoToPrivilegedUserDto(UserDto data);
+
+    @Mappings({
+            @Mapping(target = "databaseId", source = "tdbid")
+    })
+    TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
 }
