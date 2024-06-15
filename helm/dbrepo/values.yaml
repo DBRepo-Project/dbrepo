@@ -35,9 +35,6 @@ metadatadb:
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
-  image:
-    ## @param metadatadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   auth:
@@ -140,9 +137,9 @@ datadb:
   auth:
     ## @param datadb.auth.rootPassword The root user password.
     rootPassword: dbrepo
-    ## @param datadb.auth.replicationPassword The database replication user password
+    ## @param datadb.auth.replicationUser The database replication user password
     replicationUser: replication
-    ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
+    ## @param datadb.auth.replicationPassword The database replication user password
     replicationPassword: replication
   metrics:
     ## @skip datadb.metrics.enabled
@@ -210,6 +207,7 @@ datadb:
 ## @section Search Database
 
 searchdb:
+  ## @param searchdb.enabled Enable the Data Database.
   enabled: true.
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
@@ -347,156 +345,150 @@ brokerservice:
 
 ## @section Analyse Service
 
-## @param analyseservice.enabled Enable the Broker Service.
-## @skip analyseservice.image
-## @param analyseservice.endpoint The url of the endpoint.
-## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-## @param analyseservice.replicaCount The number of replicas.
-##
 analyseservice:
+  ## @param analyseservice.enabled Enable the Broker Service.
   enabled: true
   image:
+    ## @skip analyseservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.4
+    ## @skip analyseservice.image.pullPolicy
     pullPolicy: Always
+    ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @param analyseservice.endpoint The url of the endpoint.
   endpoint: http://analyse-service
   s3:
+    ## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
     endpoint: http://storageservice-s3:9000
+  ## @param analyseservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Metadata Service
 
-## @param metadataservice.enabled Enable the Metadata Service.
-## @skip metadataservice.image
-## @param metadataservice.endpoint The Metadata Service endpoint.
-## @param metadataservice.admin.email The OAI-PMH exposed admin e-mail.
-## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
-## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
-## @param metadataservice.granularity The OAI-PMH exposed record granularity.
-## @param metadataservice.datacite.enabled Enable the DataCite account for minting DOIs.
-## @param metadataservice.datacite.url The DataCite api endpoint url.
-## @param metadataservice.datacite.prefix The DataCite prefix.
-## @param metadataservice.datacite.username The DataCite api username.
-## @param metadataservice.datacite.password The DataCite api user password.
-## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
-## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-## @skip metadataservice.s3.bucket
-## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
-## @param metadataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
-## @param metadataservice.replicaCount The number of replicas.
-##
 metadataservice:
+  ## @param metadataservice.enabled Enable the Metadata Service.
   enabled: true
   image:
+    ## @skip metadataservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.4
+    ## @skip metadataservice.image.pullPolicy
     pullPolicy: Always
+    ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   admin:
+    ## @param metadataservice.admin.email The OAI-PMH exposed e-mail for contacting the metadata records responsible person.
     email: noreply@example.com
+  ## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
   deletedRecord: permanent
+  ## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
   repositoryName: Database Repository
+  ## @param metadataservice.granularity The OAI-PMH exposed record granularity.
   granularity: YYYY-MM-DDThh:mm:ssZ
   datacite:
+    ## @param metadataservice.datacite.enabled If set to true, the service mints DOIs instead of local PIDs.
     enabled: false
+    ## @param metadataservice.datacite.url The DataCite api endpoint url.
     url: https://api.datacite.org
+    ## @param metadataservice.datacite.prefix The DataCite prefix.
     prefix: ""
+    ## @param metadataservice.datacite.username The DataCite api username.
     username: ""
+    ## @param metadataservice.datacite.password The DataCite api user password.
     password: ""
   sparql:
+    ## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
     connectionTimeout: 10000
   s3:
+    ## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
     endpoint: http://storageservice-s3:9000
+    ## @skip metadataservice.s3.bucket
     bucket:
       import: dbrepo-upload
       export: dbrepo-download
     auth:
+      ## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
       username: seaweedfsadmin
+      ## @param metadataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
       password: seaweedfsadmin
+  ## @param metadataservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Data Service
 
-## @param dataservice.enabled Enable the Metadata Service.
-## @param dataservice.endpoint The endpoint for the microservices.
-## @skip dataservice.image
-## @param dataservice.grant.read The default database permissions for users with read access.
-## @param dataservice.grant.write The default database permissions for users with write access.
-## @param dataservice.default.date The default date format id for dates.
-## @param dataservice.default.time The default date format id for times.
-## @param dataservice.default.timestamp The default date format id for timestamps.
-## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-## @skip dataservice.s3.bucket
-## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
-## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
-## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
-## @param dataservice.consumerConcurrentMin The minimum broker service consumer number.
-## @param dataservice.consumerConcurrentMax The maximum broker service consumer number.
-## @param dataservice.requeueRejected Enable re-queueing of rejected messages to the broker service.
-## @param dataservice.replicaCount The number of replicas.
-##
 dataservice:
+  ## @param dataservice.enabled Enable the Metadata Service.
   enabled: true
+  ## @param dataservice.endpoint The endpoint for the microservices.
   endpoint: http://data-service
   image:
+    ## @skip dataservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4
+    ## @skip dataservice.image.pullPolicy
     pullPolicy: Always
+    ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
   grant:
+    ## @param dataservice.grant.read The default database permissions for users with read access.
     read: SELECT
+    ## @param dataservice.grant.write The default database permissions for users with write access.
     write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
   default:
+    ## @param dataservice.default.date The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).
     date: 3
+    ## @param dataservice.default.time The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).
     time: 4
+    ## @param dataservice.default.timestamp The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42).
     timestamp: 1
   s3:
+    ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
     endpoint: http://storageservice-s3:9000
+    ## @skip dataservice.s3.bucket
     bucket:
       import: dbrepo-upload
       export: dbrepo-download
     auth:
+      ## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
       username: seaweedfsadmin
+      ## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
       password: seaweedfsadmin
+    ## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
     filePath: /s3
-  consumerConcurrentMin: 1
-  consumerConcurrentMax: 5
-  requeueRejected: false
+  ## @param dataservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Search Service
 
-## @param searchservice.enabled Enable the Search Service.
-## @param searchservice.endpoint The endpoint for the microservices.
-## @skip searchservice.image
-## @skip searchservice.init
-## @param searchservice.replicaCount The number of replicas.
-##
 searchservice:
+  ## @param searchservice.enabled Enable the Search Service.
   enabled: true
+  ## @param searchservice.endpoint The endpoint for the microservices.
   endpoint: http://search-service
   image:
+    ## @skip searchservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.4
+    ## @skip searchservice.image.pullPolicy
     pullPolicy: Always
+    ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @skip searchservice.init
   init:
     image:
       name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.4
       pullPolicy: Always
+  ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Storage Service
 
-## @param storageservice.enabled Enable the Storage Service.
-## @skip storageservice.master
-## @skip storageservice.filer
-## @skip storageservice.volume
-## @skip storageservice.s3
-## @skip storageservice.init
-##
 storageservice:
+  ## @param storageservice.enabled Enable the Storage Service.
   enabled: true
+  ## @skip storageservice.master
   master:
     enabled: true
+  ## @skip storageservice.filer
   filer:
     enabled: true
     replicas: 1
@@ -509,9 +501,11 @@ storageservice:
       enableAuth: true
       skipAuthSecretCreation: true
       existingConfigSecret: seaweedfs-s3-secret
+  ## @skip storageservice.volume
   volume:
     enabled: true
     replicas: 1
+  ## @skip storageservice.s3
   s3:
     enabled: true
     replicas: 2
@@ -526,55 +520,51 @@ storageservice:
     auth:
       username: seaweedfsadmin
       password: seaweedfsadmin
+  ## @skip storageservice.init
   init:
     image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
     pullPolicy: Always
 
 ## @section User Interface
 
-## @param ui.enabled Enable the User Interface.
-## @skip ui.image
-## @param ui.public.api.client The endpoint for the client api.
-## @param ui.public.api.server The endpoint for the server api.
-## @param ui.public.title The user interface title.
-## @param ui.public.logo The user interface logo.
-## @param ui.public.icon The user interface icon.
-## @param ui.public.touch The user interface apple touch icon.
-## @param ui.public.broker.host The displayed broker hostname.
-## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
-## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
-## @param ui.public.broker.extra Extra metadata displayed.
-## @param ui.public.database.extra Extra metadata displayed.
-## @skip ui.public.links
-## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
-## @param ui.public.doi.enabled Enable the display that DOIs are minted.
-## @param ui.public.doi.endpoint The DOI proxy.
-## @param ui.replicaCount The number of replicas.
-## @skip ui.extraVolumes
-## @skip ui.extraVolumeMounts
-##
 ui:
+  ## @param ui.enabled Enable the User Interface.
   enabled: true
   image:
+    ## @skip ui.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
+    ## @skip ui.image.pullPolicy
     pullPolicy: Always
+    ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
   public:
     api:
+      ## @param ui.public.api.client The endpoint for the client api.
       client: ""
+      ## @param ui.public.api.server The endpoint for the server api.
       server: ""
+    ## @param ui.public.title The user interface title.
     title: "Database Repository"
+    ## @param ui.public.logo The user interface logo.
     logo: "/logo.svg"
+    ## @param ui.public.icon The user interface icon.
     icon: "/favicon.ico"
+    ## @param ui.public.touch The user interface apple touch icon.
     touch: "/apple-touch-icon.png"
     broker:
+      ## @param ui.public.broker.host The displayed broker hostname.
       host: example.com
       port:
+        ## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
         5671: true
+        ## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
         5672: false
+      ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:
+      ## @param ui.public.database.extra Extra metadata displayed.
       extra: "128.130.0.0/15"
+    ## @skip ui.public.links
     links:
       rabbitmq:
         text: RabbitMQ Admin
@@ -584,15 +574,21 @@ ui:
         href: /api/auth/
     pid:
       default:
+        ## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
         publisher: "Example University"
     doi:
+      ## @param ui.public.doi.enabled Enable the display that DOIs are minted.
       enabled: false
+      ## @param ui.public.doi.endpoint The DOI proxy.
       endpoint: https://doi.org
+  ## @param ui.replicaCount The number of replicas.
   replicaCount: 2
+  ## @skip ui.extraVolumes
   extraVolumes: [ ]
   #  - name: images-map
   #    configMap:
   #      name: ui-config
+  ## @skip ui.extraVolumeMounts
   extraVolumeMounts: [ ]
   #  - name: images-map
   #    mountPath: /static/logo.svg
@@ -600,32 +596,35 @@ ui:
 
 ## @section Ingress
 
-## @param ingress.enabled Enable the ingress.
-## @skip ingress.className
-## @skip ingress.tls
-## @skip ingress.annotations
-##
 ingress:
+  ## @param ingress.enabled Enable the ingress.
   enabled: false
+  ## @param ingress.className The ingress class name.
   className: nginx
   tls:
+    ## @param ingress.tls.enabled Enable the ingress.
     enabled: true
+    ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
     secretName: ingress-cert
   annotations:
+    ## @skip ingress.annotations.basic The ingress rules for proxying requests directly to services.
     basic: { }
     #      nginx.org/path-regex: "case_sensitive"
     #      nginx.ingress.kubernetes.io/use-regex: "true"
     #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    ## @skip ingress.annotations.rewriteApi The ingress rules for rewriting certain paths to /api/.
     rewriteApi:
       #      nginx.org/path-regex: "case_sensitive"
       #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/$1
+    ## @skip ingress.annotations.rewriteRoot The ingress rules for rewriting certain paths to /.
     rewriteRoot:
       #      nginx.org/path-regex: "case_sensitive"
       #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
+    ## @skip ingress.annotations.rewriteRootSecure The ingress rules for rewriting certain paths to / and force SSL/TLS encrypted traffic.
     rewriteRootSecure:
       #      nginx.org/path-regex: "case_sensitive"
       #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
@@ -633,6 +632,7 @@ ingress:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
+    ## @skip ingress.annotations.rewritePid The ingress rules for rewriting certain paths to /api/identifier/.
     rewritePid:
       #      nginx.org/path-regex: "case_sensitive"
       #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer

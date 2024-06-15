@@ -580,12 +580,6 @@
         },
         "dataservice": {
             "properties": {
-                "consumerConcurrentMax": {
-                    "type": "integer"
-                },
-                "consumerConcurrentMin": {
-                    "type": "integer"
-                },
                 "default": {
                     "properties": {
                         "date": {
@@ -633,9 +627,6 @@
                 },
                 "replicaCount": {
                     "type": "integer"
-                },
-                "requeueRejected": {
-                    "type": "boolean"
                 },
                 "s3": {
                     "properties": {
@@ -795,14 +786,6 @@
                 "host": {
                     "type": "string"
                 },
-                "image": {
-                    "properties": {
-                        "debug": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
                 "initdbScriptsConfigMap": {
                     "type": "string"
                 },
@@ -940,7 +923,7 @@
                     "type": "string"
                 },
                 "enabled": {
-                    "type": "boolean"
+                    "type": "string"
                 },
                 "fullnameOverride": {
                     "type": "string"

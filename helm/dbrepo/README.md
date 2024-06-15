@@ -64,18 +64,18 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Metadata Database
 
-| Name                             | Description                                                      | Value         |
-| -------------------------------- | ---------------------------------------------------------------- | ------------- |
-| `metadatadb.enabled`             | Enable the Metadata Database.                                    | `true`        |
-| `metadatadb.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.      | `false`       |
-| `metadatadb.host`                | The hostname for the microservices.                              | `metadata-db` |
-| `metadatadb.rootUser.user`       | The root username.                                               | `root`        |
-| `metadatadb.rootUser.password`   | The root user password.                                          | `dbrepo`      |
-| `metadatadb.jdbcExtraArgs`       | The extra arguments for JDBC connections in the microservices.   | `""`          |
-| `metadatadb.db.name`             | The database name.                                               | `fda`         |
-| `metadatadb.extraInitDbScripts`  | Additional init.db scripts that are executed on the first start. | `{}`          |
-| `metadatadb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.              | `false`       |
-| `metadatadb.replicaCount`        | The number of replicas, should be uneven (2n+1).                 | `3`           |
+| Name                                  | Description                                                      | Value         |
+| ------------------------------------- | ---------------------------------------------------------------- | ------------- |
+| `metadatadb.enabled`                  | Enable the Metadata Database.                                    | `true`        |
+| `metadatadb.host`                     | The hostname for the microservices.                              | `metadata-db` |
+| `metadatadb.auth.root`                | The root username.                                               | `root`        |
+| `metadatadb.auth.rootPassword`        | The root user password.                                          | `dbrepo`      |
+| `metadatadb.auth.database`            | The database name.                                               | `dbrepo`      |
+| `metadatadb.auth.replicationUser`     | The database replication username.                               | `replication` |
+| `metadatadb.auth.replicationPassword` | The database replication user password                           | `replication` |
+| `metadatadb.jdbcExtraArgs`            | The extra arguments for JDBC connections in the microservices.   | `""`          |
+| `metadatadb.extraInitDbScripts`       | Additional init.db scripts that are executed on the first start. | `{}`          |
+| `metadatadb.secondary.replicaCount`   | The number of replicas of the secondary database pods.           | `2`           |
 
 ### Auth Service
 
@@ -89,33 +89,28 @@ The command removes all the Kubernetes components associated with the chart and 
 | `authservice.jwt.pubkey`         | The JWT public key from the `dbrepo-client`.                 | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
 | `authservice.tls.enabled`        | Enable TLS/SSL communication. Required for HTTPS.            | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.tls.existingSecret` | The secret containing the `tls.crt`, `tls.key` and `ca.crt`. | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                             |
-| `authservice.tls.usePem`         | Use PEM certificates as input instead of PKS12/JKS stores.   | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.metrics.enabled`    | Enable the Prometheus metrics export sidecar container.      | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.client.id`          | The client id for the microservices.                         | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
 | `authservice.client.secret`      | The client secret for the microservices.                     | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
 
 ### Data Database
 
-| Name                         | Description                                                 | Value    |
-| ---------------------------- | ----------------------------------------------------------- | -------- |
-| `datadb.enabled`             | Enable the Data Database.                                   | `true`   |
-| `datadb.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`. | `false`  |
-| `datadb.rootUser.user`       | The root username.                                          | `root`   |
-| `datadb.rootUser.password`   | The root user password.                                     | `dbrepo` |
-| `datadb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.         | `false`  |
-| `datadb.replicaCount`        | The number of replicas, should be uneven (2n+1).            | `3`      |
+| Name                              | Description                                                 | Value         |
+| --------------------------------- | ----------------------------------------------------------- | ------------- |
+| `datadb.enabled`                  | Enable the Data Database.                                   | `true`        |
+| `datadb.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
+| `datadb.auth.rootPassword`        | The root user password.                                     | `dbrepo`      |
+| `datadb.auth.replicationUser`     | The database replication user password                      | `replication` |
+| `datadb.auth.replicationPassword` | The database replication user password                      | `replication` |
 
 ### Search Database
 
-| Name                           | Description                                         | Value       |
-| ------------------------------ | --------------------------------------------------- | ----------- |
-| `searchdb.enabled`             | Enable the Search Database.                         | `true`      |
-| `searchdb.host`                | The hostname for the microservices.                 | `search-db` |
-| `searchdb.port`                | The port for the microservices.                     | `9200`      |
-| `searchdb.username`            | The admin username.                                 | `admin`     |
-| `searchdb.password`            | The admin user password.                            | `admin`     |
-| `searchdb.replicas`            | The number of replicas.                             | `3`         |
-| `searchdb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner. | `false`     |
+| Name                   | Description                         | Value       |
+| ---------------------- | ----------------------------------- | ----------- |
+| `searchdb.enabled`     | Enable the Data Database.           | `true.`     |
+| `searchdb.host`        | The hostname for the microservices. | `search-db` |
+| `searchdb.port`        | The port for the microservices.     | `9200`      |
+| `searchdb.clusterName` | The cluster name.                   | `search-db` |
 
 ### Upload Service
 
@@ -126,77 +121,83 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Broker Service
 
-| Name                                | Description                                                                     | Value                         |
-| ----------------------------------- | ------------------------------------------------------------------------------- | ----------------------------- |
-| `brokerservice.enabled`             | Enable the Broker Service.                                                      | `true`                        |
-| `brokerservice.endpoint`            | The management api endpoint for the microservices.                              | `http://broker-service:15672` |
-| `brokerservice.host`                | The hostname for the microservices.                                             | `broker-service`              |
-| `brokerservice.port`                | The port for the microservices.                                                 | `5672`                        |
-| `brokerservice.virtualHost`         | The default virtual host name.                                                  | `dbrepo`                      |
-| `brokerservice.queueName`           | The default queue name.                                                         | `dbrepo`                      |
-| `brokerservice.exchangeName`        | The default exchange name.                                                      | `dbrepo`                      |
-| `brokerservice.routingKey`          | The default routing key binding from the default queue to the default exchange. | `dbrepo.#`                    |
-| `brokerservice.connectionTimeout`   | The connection timeout in ms.                                                   | `60000`                       |
-| `brokerservice.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.                             | `false`                       |
-| `brokerservice.replicaCount`        | The number of replicas.                                                         | `2`                           |
+| Name                                | Description                                                                                                                                                                                                                    | Value                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `brokerservice.enabled`             | Enable the Broker Service.                                                                                                                                                                                                     | `true`                                                                         |
+| `brokerservice.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.                                                                                                                                                                    | `true`                                                                         |
+| `brokerservice.endpoint`            | The management api endpoint for the microservices.                                                                                                                                                                             | `http://broker-service:15672`                                                  |
+| `brokerservice.host`                | The hostname for the microservices.                                                                                                                                                                                            | `broker-service`                                                               |
+| `brokerservice.port`                | The port for the microservices.                                                                                                                                                                                                | `5672`                                                                         |
+| `brokerservice.virtualHost`         | The default virtual host name.                                                                                                                                                                                                 | `dbrepo`                                                                       |
+| `brokerservice.queueName`           | The default queue name.                                                                                                                                                                                                        | `dbrepo`                                                                       |
+| `brokerservice.exchangeName`        | The default exchange name.                                                                                                                                                                                                     | `dbrepo`                                                                       |
+| `brokerservice.routingKey`          | The default routing key binding from the default queue to the default exchange.                                                                                                                                                | `dbrepo.#`                                                                     |
+| `brokerservice.connectionTimeout`   | The connection timeout in ms.                                                                                                                                                                                                  | `60000`                                                                        |
+| `brokerservice.auth.username`       | The initial administrator username.                                                                                                                                                                                            | `broker`                                                                       |
+| `brokerservice.auth.password`       | The initial administrator user password.                                                                                                                                                                                       | `broker`                                                                       |
+| `brokerservice.auth.passwordHash`   | The initial administrator user password has generated with [`generate-rabbitmq-pw.sh`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.4.4/helm/dbrepo/hack/generate-rabbitmq-pw.sh). | `1gwjNNTBPKLgyzbsUykfR0JIFC6nNqbNJaxzZ14uPT8JGcTZ`                             |
+| `brokerservice.extraPlugins`        | The list of plugins to be activated.                                                                                                                                                                                           | `rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl` |
+| `brokerservice.persistence.enabled` | If set to true, a PVC will be created.                                                                                                                                                                                         | `false`                                                                        |
+| `brokerservice.replicaCount`        | The number of replicas.                                                                                                                                                                                                        | `1`                                                                            |
 
 ### Analyse Service
 
-| Name                          | Description                                           | Value                           |
-| ----------------------------- | ----------------------------------------------------- | ------------------------------- |
-| `analyseservice.enabled`      | Enable the Broker Service.                            | `true`                          |
-| `analyseservice.endpoint`     | The url of the endpoint.                              | `http://analyse-service`        |
-| `analyseservice.s3.endpoint`  | The S3-capable endpoint the microservice connects to. | `http://storageservice-s3:9000` |
-| `analyseservice.replicaCount` | The number of replicas.                               | `2`                             |
+| Name                          | Description                                                 | Value                           |
+| ----------------------------- | ----------------------------------------------------------- | ------------------------------- |
+| `analyseservice.enabled`      | Enable the Broker Service.                                  | `true`                          |
+| `analyseservice.image.debug`  | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                         |
+| `analyseservice.endpoint`     | The url of the endpoint.                                    | `http://analyse-service`        |
+| `analyseservice.s3.endpoint`  | The S3-capable endpoint the microservice connects to.       | `http://storageservice-s3:9000` |
+| `analyseservice.replicaCount` | The number of replicas.                                     | `2`                             |
 
 ### Metadata Service
 
-| Name                                       | Description                                                           | Value                           |
-| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------- |
-| `metadataservice.enabled`                  | Enable the Metadata Service.                                          | `true`                          |
-| `metadataservice.endpoint`                 | The Metadata Service endpoint.                                        | `http://metadata-service`       |
-| `metadataservice.admin.email`              | The OAI-PMH exposed admin e-mail.                                     | `noreply@example.com`           |
-| `metadataservice.deletedRecord`            | The OAI-PMH exposed delete policy.                                    | `permanent`                     |
-| `metadataservice.repositoryName`           | The OAI-PMH exposed repository name.                                  | `Database Repository`           |
-| `metadataservice.granularity`              | The OAI-PMH exposed record granularity.                               | `YYYY-MM-DDThh:mm:ssZ`          |
-| `metadataservice.datacite.enabled`         | Enable the DataCite account for minting DOIs.                         | `false`                         |
-| `metadataservice.datacite.url`             | The DataCite api endpoint url.                                        | `https://api.datacite.org`      |
-| `metadataservice.datacite.prefix`          | The DataCite prefix.                                                  | `""`                            |
-| `metadataservice.datacite.username`        | The DataCite api username.                                            | `""`                            |
-| `metadataservice.datacite.password`        | The DataCite api user password.                                       | `""`                            |
-| `metadataservice.sparql.connectionTimeout` | The connection timeout for sparql queries fetching remote data in ms. | `10000`                         |
-| `metadataservice.s3.endpoint`              | The S3-capable endpoint the microservice connects to.                 | `http://storageservice-s3:9000` |
-| `metadataservice.s3.auth.username`         | The S3-capable endpoint username (or access key id).                  | `seaweedfsadmin`                |
-| `metadataservice.s3.auth.password`         | The S3-capable endpoint user password (or access key secret).         | `seaweedfsadmin`                |
-| `metadataservice.replicaCount`             | The number of replicas.                                               | `2`                             |
+| Name                                       | Description                                                                        | Value                           |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------- |
+| `metadataservice.enabled`                  | Enable the Metadata Service.                                                       | `true`                          |
+| `metadataservice.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`.                        | `false`                         |
+| `metadataservice.endpoint`                 | The Metadata Service endpoint.                                                     | `http://metadata-service`       |
+| `metadataservice.admin.email`              | The OAI-PMH exposed e-mail for contacting the metadata records responsible person. | `noreply@example.com`           |
+| `metadataservice.deletedRecord`            | The OAI-PMH exposed delete policy.                                                 | `permanent`                     |
+| `metadataservice.repositoryName`           | The OAI-PMH exposed repository name.                                               | `Database Repository`           |
+| `metadataservice.granularity`              | The OAI-PMH exposed record granularity.                                            | `YYYY-MM-DDThh:mm:ssZ`          |
+| `metadataservice.datacite.enabled`         | If set to true, the service mints DOIs instead of local PIDs.                      | `false`                         |
+| `metadataservice.datacite.url`             | The DataCite api endpoint url.                                                     | `https://api.datacite.org`      |
+| `metadataservice.datacite.prefix`          | The DataCite prefix.                                                               | `""`                            |
+| `metadataservice.datacite.username`        | The DataCite api username.                                                         | `""`                            |
+| `metadataservice.datacite.password`        | The DataCite api user password.                                                    | `""`                            |
+| `metadataservice.sparql.connectionTimeout` | The connection timeout for sparql queries fetching remote data in ms.              | `10000`                         |
+| `metadataservice.s3.endpoint`              | The S3-capable endpoint the microservice connects to.                              | `http://storageservice-s3:9000` |
+| `metadataservice.s3.auth.username`         | The S3-capable endpoint username (or access key id).                               | `seaweedfsadmin`                |
+| `metadataservice.s3.auth.password`         | The S3-capable endpoint user password (or access key secret).                      | `seaweedfsadmin`                |
+| `metadataservice.replicaCount`             | The number of replicas.                                                            | `2`                             |
 
 ### Data Service
 
-| Name                                | Description                                                              | Value                                                                                                                       |
-| ----------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `dataservice.enabled`               | Enable the Metadata Service.                                             | `true`                                                                                                                      |
-| `dataservice.endpoint`              | The endpoint for the microservices.                                      | `http://data-service`                                                                                                       |
-| `dataservice.grant.read`            | The default database permissions for users with read access.             | `SELECT`                                                                                                                    |
-| `dataservice.grant.write`           | The default database permissions for users with write access.            | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
-| `dataservice.default.date`          | The default date format id for dates.                                    | `3`                                                                                                                         |
-| `dataservice.default.time`          | The default date format id for times.                                    | `4`                                                                                                                         |
-| `dataservice.default.timestamp`     | The default date format id for timestamps.                               | `1`                                                                                                                         |
-| `dataservice.s3.endpoint`           | The S3-capable endpoint the microservice connects to.                    | `http://storageservice-s3:9000`                                                                                             |
-| `dataservice.s3.auth.username`      | The S3-capable endpoint username (or access key id).                     | `seaweedfsadmin`                                                                                                            |
-| `dataservice.s3.auth.password`      | The S3-capable endpoint user password (or access key secret).            | `seaweedfsadmin`                                                                                                            |
-| `dataservice.s3.filePath`           | The local location to download/upload files from/to S3-capable endpoint. | `/s3`                                                                                                                       |
-| `dataservice.consumerConcurrentMin` | The minimum broker service consumer number.                              | `1`                                                                                                                         |
-| `dataservice.consumerConcurrentMax` | The maximum broker service consumer number.                              | `5`                                                                                                                         |
-| `dataservice.requeueRejected`       | Enable re-queueing of rejected messages to the broker service.           | `false`                                                                                                                     |
-| `dataservice.replicaCount`          | The number of replicas.                                                  | `2`                                                                                                                         |
+| Name                            | Description                                                                                         | Value                                                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `dataservice.enabled`           | Enable the Metadata Service.                                                                        | `true`                                                                                                                      |
+| `dataservice.endpoint`          | The endpoint for the microservices.                                                                 | `http://data-service`                                                                                                       |
+| `dataservice.image.debug`       | Set the logging level to `trace`. Otherwise, set to `info`.                                         | `false`                                                                                                                     |
+| `dataservice.grant.read`        | The default database permissions for users with read access.                                        | `SELECT`                                                                                                                    |
+| `dataservice.grant.write`       | The default database permissions for users with write access.                                       | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
+| `dataservice.default.date`      | The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).                        | `3`                                                                                                                         |
+| `dataservice.default.time`      | The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).                            | `4`                                                                                                                         |
+| `dataservice.default.timestamp` | The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42). | `1`                                                                                                                         |
+| `dataservice.s3.endpoint`       | The S3-capable endpoint the microservice connects to.                                               | `http://storageservice-s3:9000`                                                                                             |
+| `dataservice.s3.auth.username`  | The S3-capable endpoint username (or access key id).                                                | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.auth.password`  | The S3-capable endpoint user password (or access key secret).                                       | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.filePath`       | The local location to download/upload files from/to S3-capable endpoint.                            | `/s3`                                                                                                                       |
+| `dataservice.replicaCount`      | The number of replicas.                                                                             | `2`                                                                                                                         |
 
 ### Search Service
 
-| Name                         | Description                         | Value                   |
-| ---------------------------- | ----------------------------------- | ----------------------- |
-| `searchservice.enabled`      | Enable the Search Service.          | `true`                  |
-| `searchservice.endpoint`     | The endpoint for the microservices. | `http://search-service` |
-| `searchservice.replicaCount` | The number of replicas.             | `2`                     |
+| Name                         | Description                                                 | Value                   |
+| ---------------------------- | ----------------------------------------------------------- | ----------------------- |
+| `searchservice.enabled`      | Enable the Search Service.                                  | `true`                  |
+| `searchservice.endpoint`     | The endpoint for the microservices.                         | `http://search-service` |
+| `searchservice.image.debug`  | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                 |
+| `searchservice.replicaCount` | The number of replicas.                                     | `2`                     |
 
 ### Storage Service
 
@@ -209,6 +210,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                              | Description                                                                  | Value                   |
 | --------------------------------- | ---------------------------------------------------------------------------- | ----------------------- |
 | `ui.enabled`                      | Enable the User Interface.                                                   | `true`                  |
+| `ui.image.debug`                  | Set the logging level to `trace`. Otherwise, set to `info`.                  | `false`                 |
 | `ui.public.api.client`            | The endpoint for the client api.                                             | `""`                    |
 | `ui.public.api.server`            | The endpoint for the server api.                                             | `""`                    |
 | `ui.public.title`                 | The user interface title.                                                    | `Database Repository`   |
@@ -227,6 +229,9 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Ingress
 
-| Name              | Description         | Value   |
-| ----------------- | ------------------- | ------- |
-| `ingress.enabled` | Enable the ingress. | `false` |
+| Name                     | Description                                                                                                     | Value          |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
+| `ingress.enabled`        | Enable the ingress.                                                                                             | `false`        |
+| `ingress.className`      | The ingress class name.                                                                                         | `nginx`        |
+| `ingress.tls.enabled`    | Enable the ingress.                                                                                             | `true`         |
+| `ingress.tls.secretName` | The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`. | `ingress-cert` |
