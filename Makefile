@@ -2,7 +2,7 @@
 
 APP_VERSION ?= 1.4.4
 CHART_VERSION ?= 1.4.4
-REPOSITORY_URL ?= docker.io/dbrepo
+REPOSITORY_URL ?= registry.datalab.tuwien.ac.at/dbrepo
 
 .PHONY: all
 all: help

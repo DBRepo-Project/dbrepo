@@ -14,6 +14,7 @@ import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SubsetService;
@@ -35,6 +36,7 @@ import java.util.UUID;
 public class SubsetServiceMariaDbImpl extends HibernateConnector implements SubsetService {
 
     private final S3Config s3Config;
+    private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
     private final StorageService storageService;
@@ -42,10 +44,12 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(S3Config s3Config, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
-                                    StorageService storageService, MetadataServiceGateway metadataServiceGateway,
+    public SubsetServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
+                                    MetadataMapper metadataMapper, StorageService storageService,
+                                    MetadataServiceGateway metadataServiceGateway,
                                     DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
         this.s3Config = s3Config;
+        this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
@@ -97,7 +101,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             SQLException {
         final List<ColumnDto> columns;
         try {
-            columns = mariaDbMapper.parseColumns(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database), query.getQuery());
+            columns = dataMapper.parseColumns(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database), query.getQuery());
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new TableMalformedException("Failed to map/parse columns: " + e.getMessage(), e);
@@ -129,7 +133,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             final ResultSet resultSet = statement.executeQuery();
             final List<QueryDto> queries = new LinkedList<>();
             while (resultSet.next()) {
-                final QueryDto query = mariaDbMapper.resultSetToQueryDto(resultSet);
+                final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
                 query.setIdentifiers(identifiers.stream()
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(query.getId()))
@@ -176,7 +180,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         try {
             final PreparedStatement preparedStatement = connection.prepareStatement(statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
-            return mariaDbMapper.resultListToQueryResultDto(columns, resultSet);
+            return dataMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
             throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
@@ -214,7 +218,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             if (!resultSet.next()) {
                 throw new QueryNotFoundException("Failed to find query");
             }
-            final QueryDto query = mariaDbMapper.resultSetToQueryDto(resultSet);
+            final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
             final UserDto creator = metadataServiceGateway.getUserById(query.getCreatedBy());
             log.debug("retrieved creator from metadata service: creator.id={}, creator.username={}", creator.getId(), creator.getUsername());

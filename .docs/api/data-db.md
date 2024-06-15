@@ -4,7 +4,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/mariadb-galera:11.2.2-debian-11-r0`](https://hub.docker.com/r/bitnami/mariadb-galera)
+    Image: [`docker.io/bitnami/mariadb:11.1.3-debian-11-r6`](https://hub.docker.com/r/bitnami/mariadb)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
@@ -17,20 +17,26 @@ author: Martin Weise
 
 ## Overview
 
-By default, only one Data Database is deployed. You can deploy multiple (different) Data Database instances and make
-them available in the repository as follows:
+The Data Database contains the research data. In the default configuration, only one database of this type is deployed.
+Any number of MariaDB ata databases can be integrated into DBRepo, even non-empty databases. The database needs to be
+registered in the Metadata Database to be visible in the [User Interface](../ui) and usable from e.g. the Python 
+Library.
 
-=== "Terminal"
+## Architecture
 
-    ```shell
-    curl \
-       -sSL \
-       http://<hostname>/api/container \
-       -X POST \
-       -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
-    ```
+### Sidecar
 
-### Settings
+We deploy a sidecar that handles the CSV-file upload/download operations between
+the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and
+the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
+natively.
+
+<figure markdown>
+![Sidecar architecture detailed](../images/architecture-data-db.svg)
+<figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
+</figure>
+
+## Data
 
 The procedures require the user-generated databases to have the same collation (because of comparison operations).
 Ensure that the Data Database has the character set `utf8mb4` and collation `utf8mb4_general_ci` in your `my.cfg`:
@@ -50,18 +56,6 @@ the [MariaDB Galera container image](https://hub.docker.com/r/bitnami/mariadb-ga
 mariadb-galera:
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
 ```
-
-### Sidecar
-
-We deploy a sidecar that handles the CSV-file upload/download operations between
-the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and
-the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
-natively.
-
-<figure markdown>
-![Sidecar architecture detailed](../images/architecture-data-db.svg)
-<figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
-</figure>
 
 ### Backup
 

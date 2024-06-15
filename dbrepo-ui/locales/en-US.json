@@ -35,6 +35,9 @@
   "pages": {
     "identifier": {
       "title": "Identifier",
+      "export": {
+        "text": "Metadata Export"
+      },
       "pid": {
         "title": "Persistent Identifier"
       },
@@ -1208,10 +1211,6 @@
     "table": {
       "created": "Successfully created table",
       "semantics": "Successfully assigned semantic instance"
-    },
-    "schema": {
-      "tables": "Successfully refreshed database tables metadata",
-      "views": "Successfully refreshed database views metadata"
     },
     "schema": {
       "tables": "Successfully refreshed database tables metadata.",
