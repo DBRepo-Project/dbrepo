@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/data-service:__APPVERSION__`](https://hub.docker.com/r/dbrepo/data-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4`](https://hub.docker.com/r/dbrepo/data-service)
 
     * Ports: 9093/tcp
     * Info: `http://<hostname>:9093/actuator/info`
@@ -27,7 +27,7 @@ Data Service up.
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
-    in [contact](./contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    in [contact](../../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
     experience!
 
 ## Security

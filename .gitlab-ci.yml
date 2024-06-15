@@ -121,10 +121,11 @@ build-helm:
     refs:
       - /^release-.*/
   before_script:
+    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - apk add sed helm curl
-    - helm package ./helm/dbrepo --destination ./build
+    - helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ./secring.gpg --destination ./build
 
 verify-install-script:
   image: docker.io/docker:24-dind
@@ -581,14 +582,16 @@ release-images:
     refs:
       - /^release-.*/
   before_script:
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
   script:
     - "make release-images"
 
-release-chart:
+release-helm:
   stage: release
   image: docker:24-dind
   only:
@@ -598,12 +601,16 @@ release-chart:
     refs:
       - release-latest
   before_script:
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
+    - "docker logout ${CI_REGISTRY_URL}"
+    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+    - "docker logout ${CI_REGISTRY2_URL}"
+    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "apk add sed helm curl"
-    - "helm package ./helm/dbrepo --destination ./build"
+    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
+    - helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ./secring.gpg --destination ./build
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
-    - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
+    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
 
 release-docs:
   stage: release
@@ -612,11 +619,9 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/bin/yq"
-    - "chmod +x /usr/bin/yq"
     - "apk add --update alpine-sdk bash sed wget openssh"
     - "pip install -r ./requirements.txt"
-    - "mkdir -p ./final/${APP_VERSION}/swagger"
+    - "mkdir -p ./final/${APP_VERSION}/rest"
   script:
     - "make gen-lib-doc gen-docs-doc"
     - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
@@ -633,7 +638,7 @@ release-docs:
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final'"
+    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final"'
 
 release-libs:
   stage: release

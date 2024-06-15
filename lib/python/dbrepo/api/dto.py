@@ -720,7 +720,6 @@ class Unit(BaseModel):
 
 class ExecuteQuery(BaseModel):
     statement: str
-    timestamp: Timestamp
 
 
 class TitleType(str, Enum):
