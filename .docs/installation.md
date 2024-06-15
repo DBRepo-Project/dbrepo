@@ -2,7 +2,9 @@
 author: Martin Weise
 ---
 
-# Docker Compose
+# Installation
+
+[![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat&cacheSeconds=3600)](https://hub.docker.com/u/dbrepo){ tabindex=-1 }
 
 ## TL;DR
 
@@ -11,6 +13,8 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 ```shell
 curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/install.sh | bash
 ```
+
+Or perform a [custom install](#custom-install).
 
 ## Requirements
 
@@ -26,7 +30,7 @@ the following settings.
 
 *Optional*: public IP-address if you want to secure the deployment with a (free) TLS-certificate from Let's Encrypt.
 
-!!! tip "Resource Consumption"
+!!! info "Resource Consumption"
 
     Note that most of the vCPU and RAM resources will be needed for starting the infrastructure, this is because of
     Docker. During operation and especially idle times, the deployment will use significantly less resources.
@@ -38,9 +42,11 @@ official [Docker Engine](https://docs.docker.com/engine/install/debian/) install
 a [Debian](https://www.debian.org/)-based operating system. Other software deployments (e.g. Docker Desktop on Windows)
 are *not* recommended and not tested.
 
-## Architecture
+## Custom Install
 
-### Overview
+TBD
+
+## Architecture
 
 The repository is designed as a service-based architecture to ensure scalability and the utilization of various
 technologies. The conceptualized microservices operate the basic database operations, data versioning as well as
@@ -51,8 +57,6 @@ technologies. The conceptualized microservices operate the basic database operat
 <figcaption>Architecture of the services deployed via Docker Compose</figcaption>
 </figure>
 
-### Notes
-
 Please note that we only save the state of the databases as well as the [Broker Service](../broker-service)
 since RabbitMQ maintains state inside the container.
 
@@ -60,43 +64,6 @@ since RabbitMQ maintains state inside the container.
 
 We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 and newer). This deployment creates the
 core infrastructure and a single Docker container for all user-generated databases.
-
-=== "Linux"
-
-    Download and install [Docker Engine](https://docs.docker.com/desktop/install/linux-install/) for your Linux
-    distribution. Although the installation might work, we *do not* recommend Docker Desktop.
-    
-    Ensure the Docker daemon is running at all times:
-
-        systemctl enable docker --now
-
-    Install DBRepo with the default configuration:
-
-        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
-
-=== "Windows"
-
-    Open `cmd.exe` as administrator and install WSL2 and the Debian subsystem:
-
-        wsl --install Debian
-
-    Open `optionalfeatures` by typing into the open terminal window or searching for it and enable "Windows Subsystem 
-    for Linux":
-
-    <figure markdown>
-    ![Data ingest](images/optionalfeatures.png){ .img-border }
-       <figcaption>Enable Subsystem for Linux in Windows Features</figcaption>
-    </figure>
-
-    Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) on the Windows host machine.
-    Open Docker Desktop and go to settings (:fontawesome-solid-gear:) > General > Tick "Use WSL2 based engine" if not
-    already ticked.
-
-    Open the Debian container by typing "Debian" into the search, you should see a terminal window.
-
-    Install DBRepo with the default configuration from the Debian container:
-
-        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 
 View the logs:
 

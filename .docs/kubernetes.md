@@ -21,7 +21,34 @@ helm upgrade --install dbrepo \
 ```
 
 This chart is also on [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo) with a full documentation
-about values, etc.
+about values, etc. Before installing, you need to change credentials, e.g. the Broker Service administrator user
+password:
+
+```yaml title="values.yaml"
+brokerservice:
+  ...
+  auth:
+    ...
+    username: broker
+    password: broker
+    passwordHash: 1gwjNNTBPKLgyzbsUykfR0JIFC6nNqbNJaxzZ14uPT8JGcTZ
+```
+
+The `brokerservice.auth.passwordHash` field is the RabbitMQ SHA512-hash of the `brokerservice.auth.password` field and
+can be obtained with
+the [`generate-rabbitmq-pw.sh`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.4.4/helm/dbrepo/hack/generate-rabbitmq-pw.sh)
+script:
+
+```console
+$ ./generate-rabbitmq-pw.sh my_password
+klPdmv4dgnRH64czHolIHAfXvc0G9hc24FQmPlI6eeI1NOf9
+```
+
+The script needs the package `xxd` for generation of the random salt. If you don't have `xxd` installed, install it:
+
+* Debian/Ubuntu: `apt install xxd`
+* Windows: `choco install xxd`
+* MacOS: `brew install coreutils`
 
 ## Prerequisites
 

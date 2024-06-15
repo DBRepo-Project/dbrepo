@@ -323,6 +323,7 @@ brokerservice:
       existingSecret: ingress-cert
     username: broker
     password: broker
+    passwordHash: 1gwjNNTBPKLgyzbsUykfR0JIFC6nNqbNJaxzZ14uPT8JGcTZ
   extraConfiguration: |-
     default_vhost = dbrepo
     default_user_tags.administrator = true

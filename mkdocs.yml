@@ -10,8 +10,8 @@ nav:
     - Welcome to DBRepo: index.md
     - Why use DBRepo: why.md
     - Help with DBRepo: help.md
-    - Installation: deployment-docker-compose.md
-    - Kubernetes: deployment-helm.md
+    - Installation: installation.md
+    - Kubernetes: kubernetes.md
     - Migration Guide: migration.md
     - contributing.md
   - Concepts:
