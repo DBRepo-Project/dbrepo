@@ -10,7 +10,7 @@ sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repositor
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
 ```
 
 ## Prerequisites
@@ -27,7 +27,7 @@ helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
