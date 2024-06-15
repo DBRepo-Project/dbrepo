@@ -21,11 +21,10 @@ public interface TableService {
      * @return List of tables, if successful.
      * @throws SQLException Failed to parse SQL query, contains invalid syntax.
      * @throws TableNotFoundException The table could not be inspected in the data database.
-     * @throws QueryMalformedException The inspection query is malformed.
      * @throws DatabaseMalformedException The database inspection was unsuccessful, likely due to a bug in the mapping.
      */
     List<TableDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, TableNotFoundException,
-            QueryMalformedException, DatabaseMalformedException;
+            DatabaseMalformedException;
 
     /**
      * Generate table statistic for a given table. Only numerical columns are calculated.
@@ -59,10 +58,9 @@ public interface TableService {
      * @throws TableNotFoundException The table could not be inspected in the data database.
      * @throws TableExistsException The table name already exists in the information_schema.
      * @throws TableNotFoundException The table could not be inspected in the data database.
-     * @throws QueryMalformedException The create/inspection query is malformed.
      */
     TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
-            TableMalformedException, TableExistsException, TableNotFoundException, QueryMalformedException;
+            TableMalformedException, TableExistsException, TableNotFoundException;
 
     /**
      * Drops a table in given table object.

@@ -54,7 +54,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
 
     @Override
     public List<TableDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, TableNotFoundException,
-            QueryMalformedException, DatabaseMalformedException {
+            DatabaseMalformedException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         final List<TableDto> tables = new LinkedList<>();
@@ -112,14 +112,13 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public TableDto find(PrivilegedDatabaseDto database, String tableName) throws TableNotFoundException, SQLException,
-            QueryMalformedException {
+    public TableDto find(PrivilegedDatabaseDto database, String tableName) throws TableNotFoundException, SQLException {
         return schemaService.inspectTable(database, tableName);
     }
 
     @Override
     public TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
-            TableMalformedException, TableExistsException, TableNotFoundException, QueryMalformedException {
+            TableMalformedException, TableExistsException, TableNotFoundException {
         final String tableName = mariaDbMapper.nameToInternalName(data.getName());
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
