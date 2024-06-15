@@ -22,47 +22,43 @@ clusterDomain: cluster.local
 
 ## @section Internal Admin User
 
-## @param admin.username The internal admin username.
-## @param admin.password The internal admin password.
-##
 admin:
+  ## @param admin.username The internal admin username.
   username: admin
+  ## @param admin.password The internal admin password.
   password: admin
 
 ## @section Metadata Database
 
-## @param metadatadb.enabled Enable the Metadata Database.
-## @skip metadatadb.fullnameOverride
-## @param metadatadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-## @param metadatadb.host The hostname for the microservices.
-## @param metadatadb.rootUser.user The root username.
-## @param metadatadb.rootUser.password The root user password.
-## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
-## @param metadatadb.db.name The database name.
-## @skip metadatadb.metrics.enabled The Prometheus settings.
-## @skip metadatadb.galera The Galera settings.
-## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
-## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
-## @skip metadatadb.service The initial database scripts.
-## @param metadatadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
-## @param metadatadb.replicaCount The number of replicas, should be uneven (2n+1).
-##
 metadatadb:
+  ## @param metadatadb.enabled Enable the Metadata Database.
   enabled: true
+  ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
   image:
+    ## @param metadatadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
   auth:
+    ## @param metadatadb.auth.root The root username.
     root: root
+    ## @param metadatadb.auth.rootPassword The root user password.
     rootPassword: dbrepo
+    ## @param metadatadb.auth.database The database name.
     database: dbrepo
+    ## @param metadatadb.auth.replicationUser The database replication username.
     replicationUser: replication
+    ## @param metadatadb.auth.replicationPassword The database replication user password
     replicationPassword: replication
+  ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
+    ## @skip metadatadb.metrics.enabled The Prometheus settings.
     enabled: false
+  ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
+  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
   extraInitDbScripts: { }
   #    03-additional-data.sql: |
   #      BEGIN;
@@ -70,94 +66,88 @@ metadatadb:
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
   secondary:
+    ## @param metadatadb.secondary.replicaCount The number of replicas of the secondary database pods.
     replicaCount: 2
 
 ## @section Auth Service
 
-## @param authservice.enabled Enable the Auth Service.
-## @skip authservice.fullnameOverride
-## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-## @param authservice.endpoint The hostname for the microservices.
-## @param authservice.auth.adminUser The admin username.
-## @param authservice.auth.adminPassword The admin user password.
-## @skip authservice.postgresql
-## @skip authservice.extraStartupArgs
-## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
-## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
-## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
-## @param authservice.tls.usePem Use PEM certificates as input instead of PKS12/JKS stores.
-## @param authservice.metrics.enabled Enable the Prometheus metrics export sidecar container.
-## @param authservice.client.id The client id for the microservices.
-## @param authservice.client.secret The client secret for the microservices.
-## @skip authservice.extraEnvVarsCM
-## @skip authservice.extraVolumes
-## @skip authservice.extraVolumeMounts
-## @skip authservice.replicaCount The number of replicas.
-##
 authservice:
+  ## @param authservice.enabled Enable the Auth Service.
   enabled: true
+  ## @skip authservice.fullnameOverride
   fullnameOverride: auth-service
   image:
+    ## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
   auth:
+    ## @param authservice.auth.adminUser The admin username.
     adminUser: fda
+    ## @param authservice.auth.adminPassword The admin user password.
     adminPassword: fda
+  ## @skip authservice.postgresql
   postgresql:
     enabled: true
     auth:
       postgresPassword: postgres
+  ## @skip authservice.extraStartupArgs
   extraStartupArgs: "--import-realm"
   jwt:
+    ## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
   tls:
+    ## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
     enabled: true
+    ## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
     existingSecret: ingress-cert
+    ## @skip authservice.tls.usePem
     usePem: true
   metrics:
+    ## @param authservice.metrics.enabled Enable the Prometheus metrics export sidecar container.
     enabled: false
   client:
+    ## @param authservice.client.id The client id for the microservices.
     id: dbrepo-client
+    ## @param authservice.client.secret The client secret for the microservices.
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  ## @skip authservice.extraEnvVarsCM
   extraEnvVarsCM: auth-service-config
+  ## @skip authservice.extraVolumes
   extraVolumes:
     - name: config-map
       configMap:
         name: auth-service-config
+  ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
     - name: config-map
       mountPath: /opt/bitnami/keycloak/data/import
+  ## @skip authservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Data Database
 
-## @param datadb.enabled Enable the Data Database.
-## @skip datadb.fullnameOverride
-## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-## @skip datadb.extraFlags
-## @param datadb.rootUser.user The root username.
-## @param datadb.rootUser.password The root user password.
-## @skip datadb.metrics.enabled The Prometheus settings.
-## @skip datadb.galera The Galera settings.
-## @skip datadb.service
-## @skip datadb.sidecars
-## @skip datadb.extraVolumeMounts
-## @skip datadb.extraVolumes
-## @param datadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
-## @param datadb.replicaCount The number of replicas, should be uneven (2n+1).
-##
 datadb:
+  ## @param datadb.enabled Enable the Data Database.
   enabled: true
+  ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
   image:
+    ## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## @skip datadb.extraFlags
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   auth:
+    ## @param datadb.auth.rootPassword The root user password.
     rootPassword: dbrepo
+    ## @param datadb.auth.replicationPassword The database replication user password
     replicationUser: replication
+    ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
     replicationPassword: replication
   metrics:
+    ## @skip datadb.metrics.enabled
     enabled: true
+  ## @skip datadb.primary
   primary:
     service:
       extraPorts:
@@ -213,54 +203,41 @@ datadb:
         emptyDir: { }
     persistence:
       enabled: false
+  ## @skip datadb.secondary
   secondary:
     replicaCount: 2
 
 ## @section Search Database
 
-## @param searchdb.enabled Enable the Search Database.
-## @skip searchdb.fullnameOverride
-## @param searchdb.host The hostname for the microservices.
-## @param searchdb.port The port for the microservices.
-## @param searchdb.username The admin username.
-## @param searchdb.password The admin user password.
-## @skip searchdb.clusterName
-## @skip searchdb.masterService
-## @param searchdb.replicas The number of replicas.
-## @skip searchdb.sysctlInit
-## @param searchdb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
-## @skip searchdb.service
-## @skip searchdb.extraEnvs
-## @skip searchdb.extraVolumeMounts
-## @skip searchdb.extraVolumes
-## @skip searchdb.config
-##
 searchdb:
-  enabled: true
+  enabled: true.
+  ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
+  ## @skip searchdb.servicenameOverride
   servicenameOverride: search-db
+  ## @param searchdb.host The hostname for the microservices.
   host: search-db
+  ## @param searchdb.port The port for the microservices.
   port: 9200
+  ## @skip searchdb.security
   security:
     enabled: false
     adminPassword: admin
+  ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
 
 ## @section Upload Service
 
-## @param uploadservice.enabled Enable the Upload Service.
-## @skip uploadservice.fullnameOverride
-## @skip uploadservice.image
-## @skip uploadservice.containerArgs
-## @skip uploadservice.envFrom
-## @param uploadservice.replicaCount The number of replicas.
-##
 uploadservice:
+  ## @param uploadservice.enabled Enable the Upload Service.
   enabled: true
+  ## @skip uploadservice.fullnameOverride
   fullnameOverride: upload-service
+  ## @skip uploadservice.image
   image:
     repository: tusproject/tusd
     tag: v1.12
+  ## @skip uploadservice.securityContext
   securityContext:
     allowPrivilegeEscalation: false
     runAsUser: 1000
@@ -271,59 +248,58 @@ uploadservice:
     capabilities:
       drop:
         - ALL
+  ## @skip uploadservice.containerArgs
   containerArgs:
     - "--base-path=/api/upload/files/"
     - "-s3-endpoint=http://storageservice-s3:9000"
     - "-s3-bucket=dbrepo-upload"
+  ## @skip uploadservice.envFrom
   envFrom:
     - secretRef:
         name: upload-service-secret
+  ## @param uploadservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Broker Service
 
-## @param brokerservice.enabled Enable the Broker Service.
-## @skip brokerservice.fullnameOverride
-## @skip brokerservice.image
-## @param brokerservice.endpoint The management api endpoint for the microservices.
-## @param brokerservice.host The hostname for the microservices.
-## @param brokerservice.port The port for the microservices.
-## @param brokerservice.virtualHost The default virtual host name.
-## @param brokerservice.queueName The default queue name.
-## @param brokerservice.exchangeName The default exchange name.
-## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
-## @param brokerservice.connectionTimeout The connection timeout in ms.
-## @skip brokerservice.auth
-## @skip brokerservice.extraConfiguration
-## @skip brokerservice.loadDefinition
-## @skip brokerservice.extraVolumes
-## @skip brokerservice.extraPlugins
-## @param brokerservice.persistence.enabled Enable persistent storage. Requires PV-provisioner.
-## @skip brokerservice.service
-## @param brokerservice.replicaCount The number of replicas.
-##
 brokerservice:
+  ## @param brokerservice.enabled Enable the Broker Service.
   enabled: true
+  ## @skip brokerservice.fullnameOverride
   fullnameOverride: broker-service
   image:
+    ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: true
+  ## @param brokerservice.endpoint The management api endpoint for the microservices.
   endpoint: http://broker-service:15672
+  ## @param brokerservice.host The hostname for the microservices.
   host: broker-service
+  ## @param brokerservice.port The port for the microservices.
   port: 5672
+  ## @param brokerservice.virtualHost The default virtual host name.
   virtualHost: dbrepo
+  ## @param brokerservice.queueName The default queue name.
   queueName: dbrepo
+  ## @param brokerservice.exchangeName The default exchange name.
   exchangeName: dbrepo
+  ## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
   routingKey: dbrepo.#
+  ## @param brokerservice.connectionTimeout The connection timeout in ms.
   connectionTimeout: 60000
   auth:
+    ## @skip brokerservice.auth.tls
     tls:
       enabled: false
       sslOptionsVerify: true
       failIfNoPeerCert: true
       existingSecret: ingress-cert
+    ## @param brokerservice.auth.username The initial administrator username.
     username: broker
+    ## @param brokerservice.auth.password The initial administrator user password.
     password: broker
+    ## @param brokerservice.auth.passwordHash The initial administrator user password has generated with [`generate-rabbitmq-pw.sh`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.4.4/helm/dbrepo/hack/generate-rabbitmq-pw.sh).
     passwordHash: 1gwjNNTBPKLgyzbsUykfR0JIFC6nNqbNJaxzZ14uPT8JGcTZ
+  ## @skip brokerservice.extraConfiguration
   extraConfiguration: |-
     default_vhost = dbrepo
     default_user_tags.administrator = true
@@ -347,20 +323,26 @@ brokerservice:
     management.oauth_client_secret = JEC2FexxrX4N65fLeDGukAl6R3Lc9y0u
     management.oauth_scopes = openid
     management.oauth_provider_url = https://example.com/api/auth/realms/dbrepo
+  ## @skip brokerservice.loadDefinition
   loadDefinition:
     enabled: true
     existingSecret: broker-service-secret
+  ## @skip brokerservice.extraVolumes
   extraVolumes:
     - name: secret-map
       secret:
         secretName: broker-service-secret
+  ## @param brokerservice.extraPlugins The list of plugins to be activated.
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
   persistence:
+    ## @param brokerservice.persistence.enabled If set to true, a PVC will be created.
     enabled: false
+  ## @skip brokerservice.service
   service:
     type: ClusterIP
     managerPortEnabled: true
     # loadBalancerIP:
+  ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
 
 ## @section Analyse Service
