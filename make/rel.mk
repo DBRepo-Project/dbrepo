@@ -4,7 +4,6 @@
 tag-images: build-images ## Tag the docker images.
 	docker tag dbrepo-analyse-service:latest "${REPOSITORY_URL}/analyse-service:${APP_VERSION}"
 	docker tag dbrepo-auth-service:latest "${REPOSITORY_URL}/auth-service:${APP_VERSION}"
-	docker tag dbrepo-metadata-db:latest "${REPOSITORY_URL}/metadata-db:${APP_VERSION}"
 	docker tag dbrepo-ui:latest "${REPOSITORY_URL}/ui:${APP_VERSION}"
 	docker tag dbrepo-data-service:latest "${REPOSITORY_URL}/data-service:${APP_VERSION}"
 	docker tag dbrepo-metadata-service:latest "${REPOSITORY_URL}/metadata-service:${APP_VERSION}"
@@ -18,7 +17,6 @@ tag-images: build-images ## Tag the docker images.
 release-images: tag-images ## Release the docker images.
 	docker push "${REPOSITORY_URL}/analyse-service:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/auth-service:${APP_VERSION}"
-	docker push "${REPOSITORY_URL}/metadata-db:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/ui:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/data-service:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/search-db:${APP_VERSION}"

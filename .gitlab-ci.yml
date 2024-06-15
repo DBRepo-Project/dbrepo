@@ -459,26 +459,6 @@ scan-data-db:
     reports:
       container_scanning: ./.trivy/trivy-data-db-report.json
 
-scan-metadata-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
-    - trivy image --insecure --exit-code 0 dbrepo-metadata-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-db:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-db-report.json
-
 scan-ui:
   image: bitnami/trivy:latest
   stage: scan
