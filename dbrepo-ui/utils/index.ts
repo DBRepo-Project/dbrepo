@@ -1056,10 +1056,12 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
       code: 'error.axios.timeout',
       message: error.message
     }
+    console.info('==> mapped axios error to', errorObj)
     return errorObj
   }
   if (error.response?.data) {
     const errorObj: ApiErrorDto = (error.response?.data as ApiErrorDto)
+    console.info('==> mapped axios error to', errorObj)
     return errorObj
   }
   const errorObj: ApiErrorDto = {
@@ -1067,6 +1069,7 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
     code: 'error.axios.connection',
     message: error.message
   }
+  console.info('==> mapped axios error to', errorObj)
   return errorObj
 }
 
