@@ -208,7 +208,7 @@ datadb:
 
 searchdb:
   ## @param searchdb.enabled Enable the Data Database.
-  enabled: true.
+  enabled: true
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
   ## @skip searchdb.servicenameOverride
