@@ -44,3 +44,9 @@ simple query to the `information_schema` that is maintained by the database engi
 - [x] Complex views
 - [x] System versioning
 - [x] Subset exploration
+
+## Acknowledgement
+
+This work was part of a cooperation with the [Institute of Water Quality and Resource Management](https://www.tuwien.at/cee/iwr).
+
+<img src="../../images/logos/iwr.png" width=100 />
