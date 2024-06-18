@@ -325,10 +325,13 @@ export default {
           this.table = table
           resolve(table)
         })
-        .catch(({code, message}) => {
-          const toast = useToastInstance()
-          toast.error(`${this.$t(code)}: ${message}`)
+        .catch((error) => {
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof error.code !== 'string' || typeof error.message !== 'string') {
+            reject(error)
+          }
+          toast.error(`${this.$t(error.code)}: ${error.message}`)
           reject(error)
         })
         .finally(() => {
@@ -347,10 +350,12 @@ export default {
           this.cacheStore.reloadDatabase()
         })
         .catch(({code, message}) => {
-          console.error('Failed to import csv')
-          const toast = useToastInstance()
-          toast.error(`${this.$t(code)}: ${message}`)
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string' || typeof message !== 'string') {
+            return
+          }
+          toast.error(`${this.$t(code)}: ${message}`)
         })
         .finally(() => {
           this.loading = false

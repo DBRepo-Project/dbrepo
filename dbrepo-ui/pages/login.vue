@@ -137,13 +137,19 @@ export default {
             })
             .catch(({code}) => {
               const toast = useToastInstance()
+              if (typeof code !== 'string') {
+                return
+              }
               toast.error(this.$t(code))
             })
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false

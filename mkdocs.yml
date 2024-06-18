@@ -35,6 +35,7 @@ nav:
     - Services:
       - Analyse Service: api/analyse-service.md
       - Auth Service: api/auth-service.md
+      - Broker Service: api/broker-service.md
       - Data Service: api/data-service.md
       - Gateway Service: api/gateway-service.md
       - Metadata Service: api/metadata-service.md
@@ -45,7 +46,9 @@ nav:
       - Customization: api/ui.md
   - Examples:
     - Hazardous Materials: examples/hazard.md
+    - Power in Industry 4.0: examples/power.md
     - Transportation Monitoring: examples/transportation.md
+    - XPS: examples/xps.md
   - publications.md
   - contact.md
 extra_css:

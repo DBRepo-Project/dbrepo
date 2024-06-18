@@ -123,9 +123,12 @@ export default {
           this.loading = false
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loading = false
@@ -139,9 +142,12 @@ export default {
           this.usernames = users.map(u => u.username)
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingUsers = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingUsers = false

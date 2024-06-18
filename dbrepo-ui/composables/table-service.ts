@@ -69,7 +69,6 @@ export const useTableService = (): any => {
 
   async function getData(databaseId: number, tableId: number, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
-    console.debug('====>', mapFilter(timestamp, page, size))
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size), timeout: 30_000 })
