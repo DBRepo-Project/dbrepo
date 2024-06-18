@@ -1048,6 +1048,15 @@ export function isActiveMessage(message: any) {
   return false
 }
 
+export function translate(t: any, code: string): string {
+  if (t === null) {
+    console.error('$t is null')
+    return ''
+  }
+  console.debug('$t argument', code)
+  return t(code)
+}
+
 export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
   if (error.code === 'ECONNABORTED') {
     /* timeout */
@@ -1056,12 +1065,10 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
       code: 'error.axios.timeout',
       message: error.message
     }
-    console.info('==> mapped axios error to', errorObj)
     return errorObj
   }
   if (error.response?.data) {
     const errorObj: ApiErrorDto = (error.response?.data as ApiErrorDto)
-    console.info('==> mapped axios error to', errorObj)
     return errorObj
   }
   const errorObj: ApiErrorDto = {
@@ -1069,7 +1076,6 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
     code: 'error.axios.connection',
     message: error.message
   }
-  console.info('==> mapped axios error to', errorObj)
   return errorObj
 }
 

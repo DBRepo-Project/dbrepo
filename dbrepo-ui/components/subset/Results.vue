@@ -95,9 +95,12 @@ export default {
             this.loadingExecute = false
           })
           .catch(({code}) => {
-            const toast = useToastInstance()
-            toast.error(this.$t(code))
             this.loadingExecute = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.loadingExecute = false
@@ -111,9 +114,12 @@ export default {
             this.loadingExecute = false
           })
           .catch(({code}) => {
-            const toast = useToastInstance()
-            toast.error(this.$t(code))
             this.loadingExecute = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.loadingExecute = false
@@ -133,9 +139,12 @@ export default {
             this.loadingCount = false
           })
           .catch(({code}) => {
-            const toast = useToastInstance()
-            toast.error(this.$t(code))
             this.loadingCount = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.loadingCount = false
@@ -148,9 +157,12 @@ export default {
             this.loadingCount = false
           })
           .catch(({code}) => {
-            const toast = useToastInstance()
-            toast.error(this.$t(code))
             this.loadingCount = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.loadingCount = false

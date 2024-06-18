@@ -125,6 +125,8 @@ authservice:
 ## @section Data Database
 
 datadb:
+  global:
+    storageClass: test
   ## @param datadb.enabled Enable the Data Database.
   enabled: true
   ## @skip datadb.fullnameOverride
@@ -199,7 +201,7 @@ datadb:
       - name: s3
         emptyDir: { }
     persistence:
-      enabled: false
+      enabled: true
   ## @skip datadb.secondary
   secondary:
     replicaCount: 2
