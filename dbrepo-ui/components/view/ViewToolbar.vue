@@ -129,6 +129,9 @@ export default {
         })
         .catch(({code, message}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string' || typeof message !== 'string') {
+            return
+          }
           toast.error(this.$t(code) + ": " + message)
         })
         .finally(() => {

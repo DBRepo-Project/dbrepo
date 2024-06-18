@@ -52,7 +52,7 @@ dbrepo:
   endpoints:
     metadataService: "${METADATA_SERVICE_ENDPOINT:http://gateway-service}"
     storageService: "${S3_ENDPOINT:http://gateway-service/api/storage}"
-    authService: "${AUTH_SERVICE_HOST:http://gateway-service/api/auth}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://gateway-service/api/auth}"
   s3:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"

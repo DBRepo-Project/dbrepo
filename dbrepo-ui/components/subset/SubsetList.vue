@@ -81,9 +81,12 @@ export default {
           this.queries = queries
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingSubsets = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingSubsets = false

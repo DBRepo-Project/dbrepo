@@ -475,9 +475,12 @@ export default {
           this.loadingDeleteImage = false
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingDeleteImage = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingDeleteImage = false
@@ -514,15 +517,21 @@ export default {
               this.loadingSchema = false
             })
             .catch(({code}) => {
-              const toast = useToastInstance()
-              toast.error(this.$t(code))
               this.loadingSchema = false
+              const toast = useToastInstance()
+              if (typeof code !== 'string') {
+                return
+              }
+              toast.error(this.$t(code))
             })
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingSchema = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
     },
     giveAccess () {
