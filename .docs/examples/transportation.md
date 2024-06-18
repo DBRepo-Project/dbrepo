@@ -18,7 +18,10 @@ and tram schedules, subway routes, ticketing details, and real-time updates on v
 We wrote an algorithm that parses open data (available) information from Wiener Linien, Vienna's public transportation
 agency directly and feeds it, after some cleaning, into DBRepo on a 5-minute interval.
 
-![Subway Transportation Data Dashboard](images/screenshots/transportation-dashboard.png)
+<figure markdown>
+![Subway Transportation Data Dashboard](../../images/screenshots/transportation-dashboard.png)
+<caption>Figure 1: Dashboard visualizing the live data of the current interruptions.</caption>
+</figure>
 
 ## DBRepo Features
 

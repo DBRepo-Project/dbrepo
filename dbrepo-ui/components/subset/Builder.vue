@@ -509,9 +509,12 @@ export default {
           this.loadingQuery = false
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingQuery = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
     },
     createView () {
@@ -528,9 +531,12 @@ export default {
           this.loadingQuery = false
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingQuery = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
     },
     buildQuery () {

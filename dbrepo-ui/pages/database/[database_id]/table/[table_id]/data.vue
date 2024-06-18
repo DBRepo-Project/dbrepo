@@ -356,9 +356,12 @@ export default {
             link.click()
           })
           .catch(({code}) => {
-            const toast = useToastInstance()
-            toast.error(this.$t(code))
             this.downloadLoading = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.downloadLoading = false
@@ -416,6 +419,9 @@ export default {
         console.debug('date columns are', this.dateColumns)
       } catch ({code}) {
         const toast = useToastInstance()
+        if (typeof code !== 'string') {
+          return
+        }
         toast.error(this.$t(code))
       }
       this.loading = false
@@ -449,10 +455,13 @@ export default {
           this.loadingData = false
         })
         .catch(({code, message}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code) + ": " + message)
           this.error = true
           this.loadingData = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string' || typeof message !== 'string') {
+            return
+          }
+          toast.error(this.$t(code) + ": " + message)
         })
     },
     loadCount () {
@@ -464,9 +473,12 @@ export default {
           this.loadingCount = false
         })
         .catch(({code, message}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code) + ": " + message)
           this.loadingCount = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string' || typeof message !== 'string') {
+            return
+          }
+          toast.error(this.$t(code) + ": " + message)
         })
     },
     isFileField (column) {

@@ -17,7 +17,7 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
 
 <figure markdown>
 ![Architecture of the UI microservice](../images/screenshots/ui-config-step-1.png){ .img-border }
-<figcaption>Figure 2: Architecture of the UI microservice</figcaption>
+<figcaption>Figure 1: Architecture of the UI microservice</figcaption>
 </figure>
 
 Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
@@ -48,7 +48,7 @@ User Interface on development.
 
 <figure id="fig3" markdown>
 ![Architecture of the UI microservice](../images/architecture-ui.svg)
-<figcaption>Figure 3: Architecture of the User Interface</figcaption>
+<figcaption>Figure 2: Architecture of the User Interface</figcaption>
 </figure>
 
 * Runtime: [Bun 1+](https://bun.sh/) (preferred), *alternatively* Node.js 18+
