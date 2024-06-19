@@ -86,21 +86,24 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(VIEW_2_ID, response.getId());
         assertNotNull(response.getHeaders());
         assertEquals(4, response.getHeaders().size());
-        assertEquals(List.of(Map.of("date", 0), Map.of("location", 1), Map.of("mintemp", 2), Map.of("location", 3)), response.getHeaders());
+        assertEquals(List.of(Map.of("date", 0), Map.of("loc", 1), Map.of("mintemp", 2), Map.of("rainfall", 3)), response.getHeaders());
         assertNotNull(response.getResult());
         assertEquals(3, response.getResult().size());
         /* row 0 */
         assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
-        assertEquals("Albury", response.getResult().get(0).get("location"));
+        assertEquals("Albury", response.getResult().get(0).get("loc"));
         assertEquals(13.4, response.getResult().get(0).get("mintemp"));
+        assertEquals(0.6, response.getResult().get(0).get("rainfall"));
         /* row 1 */
         assertEquals(Instant.ofEpochSecond(1228176000), response.getResult().get(1).get("date"));
-        assertEquals("Albury", response.getResult().get(1).get("location"));
+        assertEquals("Albury", response.getResult().get(1).get("loc"));
         assertEquals(7.4, response.getResult().get(1).get("mintemp"));
+        assertEquals(0.0, response.getResult().get(1).get("rainfall"));
         /* row 2 */
         assertEquals(Instant.ofEpochSecond(1228262400), response.getResult().get(2).get("date"));
-        assertEquals("Albury", response.getResult().get(2).get("location"));
+        assertEquals("Albury", response.getResult().get(2).get("loc"));
         assertEquals(12.9, response.getResult().get(2).get("mintemp"));
+        assertEquals(0.0, response.getResult().get(2).get("rainfall"));
     }
 
     @Test
