@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import time
 
 import requests
 from pydantic import TypeAdapter
@@ -1098,9 +1099,9 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def import_table_data(self, database_id: int, table_id: int, separator: str, file_path: str,
-                          quote: str = None, skip_lines: int = 0, false_encoding: str = None,
-                          true_encoding: str = None, null_encoding: str = None,
+    def import_table_data(self, database_id: int, table_id: int, separator: str,
+                          file_name_or_data_frame: str | DataFrame, quote: str = None, skip_lines: int = 0,
+                          false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
                           line_encoding: str = "\r\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id.
@@ -1108,7 +1109,7 @@ class RestClient:
         :param database_id: The database id.
         :param table_id: The table id.
         :param separator: The csv column separator.
-        :param file_path: The path of the file that is imported on the storage service.
+        :param file_name_or_data_frame: The path of the file that is imported on the storage service or pandas dataframe.
         :param quote: The column data quotation character. Optional.
         :param skip_lines: The number of lines to skip. Optional. Default: 0.
         :param false_encoding: The encoding of boolean false. Optional.
@@ -1123,6 +1124,12 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the insert.
         """
         client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
+        if type(file_name_or_data_frame) is DataFrame:
+            file_path: str = f"./tmp-{time.time()}"
+            df: DataFrame = file_name_or_data_frame
+            df.to_csv(path_or_buf=file_path, index=False, header=False)
+        else:
+            file_path: str = file_name_or_data_frame
         filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,

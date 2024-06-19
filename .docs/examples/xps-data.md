@@ -18,10 +18,11 @@ connecting material properties to compositions via XPS spectra becomes evident.
 
 We read XPS data from the VAMAS-encoded format and inserted it into a 
 [database schema](https://gitlab.tuwien.ac.at/fairdata/xps/-/blob/e17860399b1b109c72b01888766f37193dde5870/sql/create_schema.sql) 
-that captures the VAMAS-schema. It can then be read using the [Python Library](../../api/python).
+that captures the VAMAS-schema. It can then be read using the Python Library that executes a database query in SQL to 
+obtain only the experiment data (c.f. [subset page](https://dbrepo1.ec.tuwien.ac.at/database/27/subset/10/info)).
 
 <figure markdown>
-![Jupyter Notebook](../../images/screenshots/xps-chart.png){ .img-border }
+![Jupyter Notebook](../../images/screenshots/xps-notebook.png){ .img-border }
 <figcaption>Figure 1: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
 </figure>
 
