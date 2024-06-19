@@ -25,6 +25,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TableDto {
 
     @NotNull
@@ -32,6 +33,7 @@ public class TableDto {
 
     @NotNull
     @JsonProperty("database_id")
+    @EqualsAndHashCode.Include
     private Long tdbid;
 
     @NotBlank
@@ -41,6 +43,7 @@ public class TableDto {
     @NotBlank
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
+    @EqualsAndHashCode.Include
     private String internalName;
 
     @Schema

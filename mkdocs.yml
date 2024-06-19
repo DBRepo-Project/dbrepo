@@ -48,7 +48,7 @@ nav:
     - Hazardous Materials: examples/hazard.md
     - Power in Industry 4.0: examples/power.md
     - Transportation Monitoring: examples/transportation.md
-    - XPS: examples/xps.md
+    - XPS Data: examples/xps-data.md
   - publications.md
   - contact.md
 extra_css:

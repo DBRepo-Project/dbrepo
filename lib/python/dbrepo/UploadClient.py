@@ -4,6 +4,8 @@ import re
 import sys
 from tusclient import client
 
+logger = logging.getLogger("UploadClient")
+
 
 class UploadClient:
     """
@@ -33,5 +35,5 @@ class UploadClient:
         uploader.upload()
         m = re.search('\\/([a-f0-9]+)\\+', uploader.url)
         filename = m.group(0)[1:-1]
-        logging.debug(f'uploaded file {file_path} to storage service with key: {filename}')
+        logger.debug(f'uploaded file {file_path} to storage service with key: {filename}')
         return filename
