@@ -96,6 +96,35 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
+    public void execute_joinWithAlias_succeeds() throws QueryStoreInsertException, TableMalformedException, SQLException,
+            QueryNotFoundException, InterruptedException, UserNotFoundException, NotAllowedException,
+            RemoteUnavailableException, ServiceException, DatabaseNotFoundException {
+
+        /* pre-condition */
+        Thread.sleep(1000) /* wait for test container some more */;
+
+        /* mock */
+        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
+                .thenReturn(QUERY_1_CREATOR);
+
+        /* test */
+        final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_7_STATEMENT, Instant.now(), USER_1_ID, 0L, 10L, null, null);
+        assertNotNull(response);
+        assertNotNull(response.getId());
+        assertNotNull(response.getHeaders());
+        assertEquals(5, response.getHeaders().size());
+        assertEquals(List.of(Map.of("id", 0), Map.of("date", 1), Map.of("location", 2), Map.of("lat", 3), Map.of("lng", 4)), response.getHeaders());
+        assertNotNull(response.getResult());
+        assertEquals(1, response.getResult().size());
+        /* row 0 */
+        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
+        assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
+        assertEquals("Albury", response.getResult().get(0).get("location"));
+        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
+    }
+
+    @Test
     public void execute_oneResult_succeeds() throws QueryStoreInsertException, TableMalformedException, SQLException,
             QueryNotFoundException, InterruptedException, UserNotFoundException, NotAllowedException,
             RemoteUnavailableException, ServiceException, DatabaseNotFoundException {

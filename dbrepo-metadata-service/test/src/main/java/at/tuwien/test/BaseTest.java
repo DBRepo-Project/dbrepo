@@ -2602,6 +2602,8 @@ public abstract class BaseTest {
             .resultNumber(2L)
             .build();
 
+    public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
+
     public final static Long QUERY_4_ID = 4L;
     public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
     public final static String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";

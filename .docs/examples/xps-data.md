@@ -21,7 +21,7 @@ We read XPS data from the VAMAS-encoded format and inserted it into a
 that captures the VAMAS-schema. It can then be read using the [Python Library](../../api/python).
 
 <figure markdown>
-![Jupyter Notebook](../../images/screenshots/xps-jupyter.png){ .img-border }
+![Jupyter Notebook](../../images/screenshots/xps-chart.png){ .img-border }
 <figcaption>Figure 1: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
 </figure>
 
@@ -44,4 +44,4 @@ we can visualize the ordinate values directly in the Jupyter Notebook.
 
 This work was part of a cooperation with the [Institute of Applied Physics](http://www.iap.tuwien.ac.at/).
 
-<img src="../../images/logos/iap.jpeg" width=100 />
+<img src="../../images/logos/iap.png" width=100 />
