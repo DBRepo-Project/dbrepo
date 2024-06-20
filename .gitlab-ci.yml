@@ -125,7 +125,7 @@ build-helm:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
     - apk add sed helm curl
-    - helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ./secring.gpg --destination ./build
+    - helm package ./helm/dbrepo --destination ./build
 
 verify-install-script:
   image: docker.io/docker:24-dind

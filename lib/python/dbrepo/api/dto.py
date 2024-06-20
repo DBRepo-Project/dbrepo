@@ -993,6 +993,18 @@ class Database(BaseModel):
     exchange_type: Optional[str] = None
 
 
+class DatabaseBrief(BaseModel):
+    id: int
+    name: str
+    internal_name: str
+    description: Optional[str] = None
+    is_public: bool
+    identifiers: Optional[List[Identifier]] = field(default_factory=list)
+    contact: UserBrief
+    owner: UserBrief
+    created: Timestamp
+
+
 class Unique(BaseModel):
     id: int
     table: TableMinimal

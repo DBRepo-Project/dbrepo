@@ -15,7 +15,7 @@ maintenance, quality of products and ultimately process efficiency and -producti
 
 <figure markdown>
 ![](../../images/screenshots/power.png)
-<figcaption>Figure 1: aaaa from <a href="https://publik.tuwien.ac.at/files/PubDat_252294.pdf">Hacksteiner (2016)</a>.</figcaption>
+<figcaption>Figure 1: Total power usage of machine floor TU Pilotfabrik, image from <a href="https://publik.tuwien.ac.at/files/PubDat_252294.pdf">Hacksteiner (2016)</a>.</figcaption>
 </figure>
 
 ## Solution

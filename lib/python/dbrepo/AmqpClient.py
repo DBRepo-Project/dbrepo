@@ -7,6 +7,8 @@ import logging
 
 from dbrepo.api.dto import CreateData
 
+logger = logging.getLogger("AmqpClient")
+
 
 class AmqpClient:
     """
@@ -58,5 +60,5 @@ class AmqpClient:
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.basic_publish(exchange=exchange, routing_key=routing_key,
-                              body=json.dumps(dataclasses.asdict(CreateData(data=data))))
+                              body=CreateData(data=data).model_dump_json())
         connection.close()
