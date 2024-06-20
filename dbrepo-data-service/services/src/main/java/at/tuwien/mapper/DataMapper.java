@@ -29,6 +29,7 @@ import com.google.common.hash.Hashing;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
@@ -273,51 +274,63 @@ public interface DataMapper {
                 }
             }
         }
-        final List<ColumnDto> allColumns = Stream.of(database.getViews()
-                                .stream()
-                                .map(ViewDto::getColumns)
-                                .flatMap(List::stream)
-                                .map(this::viewColumnDtoToColumnDto),
-                        database.getTables()
-                                .stream()
-                                .map(TableDto::getColumns)
-                                .flatMap(List::stream))
-                .flatMap(i -> i)
+        final List<ColumnDto> allColumns = database.getTables()
+                .stream()
+                .map(TableDto::getColumns)
+                .flatMap(List::stream)
                 .toList();
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {
             final SelectExpressionItem item = (SelectExpressionItem) clause;
             final Column column = (Column) item.getExpression();
-            final Optional<net.sf.jsqlparser.schema.Table> optional = fromItems.stream()
-                    .map(t -> (net.sf.jsqlparser.schema.Table) t)
-                    .filter(t -> {
-                        if (column.getTable() == null) {
-                            /* column does not reference a specific table, so there is only one table */
-                            final String tableName = ((net.sf.jsqlparser.schema.Table) fromItems.get(0)).getName().replace("`", "");
-                            return tableMatches(t, tableName);
-                        }
-                        final String tableName = column.getTable().getName().replace("`", "");
-                        return tableMatches(t, tableName);
-                    })
-                    .findFirst();
-            if (optional.isEmpty()) {
-                log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
-                throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
-            }
             final String columnName = column.getColumnName().replace("`", "");
-            final String tableOrView = optional.get().getName().replace("`", "");
             final List<ColumnDto> filteredColumns = allColumns.stream()
                     .filter(c -> (c.getAlias() != null && c.getAlias().equals(columnName)) || c.getInternalName().equals(columnName))
                     .toList();
-            final Optional<ColumnDto> optionalColumn = filteredColumns.stream()
-                    .filter(c -> columnMatches(c, tableOrView))
-                    .findFirst();
-            if (optionalColumn.isEmpty()) {
-                log.error("Failed to find column with name {} of table/view {} in {}", columnName, tableOrView, filteredColumns.stream().map(c -> c.getTable().getInternalName() + "." + c.getInternalName()).toList());
-                throw new JSQLParserException("Failed to find column with name " + columnName + " of table/view " + tableOrView);
+            String tableOrView = null;
+            for (Table t : fromItems.stream().map(t -> (net.sf.jsqlparser.schema.Table) t).toList()) {
+                if (column.getTable() == null) {
+                    /* column does not reference a specific table, find out */
+                    final List<String> filteredTables = filteredColumns.stream()
+                            .map(c -> c.getTable().getInternalName())
+                            .filter(table -> fromItems.stream().map(f -> (Table) f).anyMatch(otherTable -> otherTable.getName().replace("`", "").equals(table)))
+                            .toList();
+                    if (filteredTables.size() != 1) {
+                        log.error("Failed to filter column {} to exactly one match: {}", columnName, filteredTables.stream().map(table -> table + "." + columnName).toList());
+                        throw new JSQLParserException("Failed to filter column " + columnName + " to exactly one match");
+                    }
+                    if (tableMatches(t, filteredTables.get(0))) {
+                        tableOrView = t.getName().replace("`", "");
+                        break;
+                    }
+                }
+                /* column references a specific table */
+                final String tableOrAlias = (t.getAlias() != null ? t.getAlias().getName() : column.getTable().getName())
+                        .replace("`", "");
+                if (tableMatches(t, tableOrAlias)) {
+                    tableOrView = t.getName().replace("`", "");
+                    break;
+                }
             }
-            final ColumnDto resultColumn = optionalColumn.get();
+            if (tableOrView == null) {
+                log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
+                throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
+            }
+            final String finalTableOrView = tableOrView;
+            final List<ColumnDto> selectColumns = filteredColumns.stream()
+                    .filter(c -> c.getTable().getInternalName().equals(finalTableOrView))
+                    .toList();
+            final ColumnDto resultColumn;
+            if (selectColumns.size() != 1) {
+                if (filteredColumns.size() != 1) {
+                    log.error("Failed to filter column {} to exactly one match: {}", columnName, selectColumns.stream().map(c -> c.getTable().getInternalName() + "." + c.getInternalName()).toList());
+                    throw new JSQLParserException("Failed to filter column " + columnName + " to exactly one match");
+                }
+                resultColumn = filteredColumns.get(0);
+            } else {
+                resultColumn = selectColumns.get(0);
+            }
             if (item.getAlias() != null) {
                 resultColumn.setAlias(item.getAlias().getName().replace("`", ""));
             }
@@ -330,14 +343,14 @@ public interface DataMapper {
         return columns;
     }
 
-    default boolean tableMatches(net.sf.jsqlparser.schema.Table table, String otherTableName) {
+    default boolean tableMatches(net.sf.jsqlparser.schema.Table table, String tableOrDesignator) {
         final String tableName = table.getName()
                 .trim()
                 .replace("`", "");
         if (table.getAlias() == null) {
             /* table does not have designator */
             log.trace("table '{}' has no designator", tableName);
-            return tableName.equals(otherTableName);
+            return tableName.equals(tableOrDesignator);
         }
         /* has designator */
         final String designator = table.getAlias()
@@ -345,26 +358,7 @@ public interface DataMapper {
                 .trim()
                 .replace("`", "");
         log.trace("table '{}' has designator {}", tableName, designator);
-        return designator.equals(otherTableName);
-    }
-
-    default boolean columnMatches(ColumnDto column, String tableOrView) {
-        if (column.getTable() != null && column.getTable().getInternalName().equals(tableOrView)) {
-            log.trace("table '{}' found in column table", tableOrView);
-            return true;
-        }
-        if (column.getViews() == null) {
-            log.trace("table/view '{}' not found among column views: empty list", tableOrView);
-            return false;
-        }
-        /* maybe matches one of the other views */
-        final boolean found = column.getViews()
-                .stream()
-                .anyMatch(v -> v.getInternalName().equals(tableOrView));
-        if (!found) {
-            log.trace("table/view '{}' not found among column views: {}", tableOrView, column.getViews().stream().map(ViewDto::getInternalName).toList());
-        }
-        return found;
+        return designator.equals(tableOrDesignator);
     }
 
     default List<FromItem> fromItemToFromItems(FromItem data) throws JSQLParserException {

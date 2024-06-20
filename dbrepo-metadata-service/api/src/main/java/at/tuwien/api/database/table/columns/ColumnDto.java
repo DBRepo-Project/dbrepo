@@ -25,6 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ColumnDto {
 
     @NotNull
@@ -52,6 +53,7 @@ public class ColumnDto {
     @Size(max = 64)
     @JsonProperty("internal_name")
     @Schema(example = "mdb_date")
+    @EqualsAndHashCode.Include
     private String internalName;
 
     @Schema
@@ -122,6 +124,7 @@ public class ColumnDto {
 
     @ToString.Exclude
     @JsonIgnore
+    @EqualsAndHashCode.Include
     private TableDto table;
 
     @ToString.Exclude

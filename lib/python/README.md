@@ -15,72 +15,50 @@ This package supports Python 3.11+.
 
 ## Quickstart
 
-Create a table and import a .csv file from your computer.
+Get public data from a table as pandas `DataFrame`:
 
 ```python
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import CreateTableColumn, ColumnType, CreateTableConstraints
 
-client = RestClient(endpoint='https://test.dbrepo.tuwien.ac.at', username="foo",
+client = RestClient(endpoint="https://dbrepo1.ec.tuwien.ac.at")
+# Get a small data slice of just three rows
+df = client.get_table_data(database_id=7, table_id=13, page=0, size=3, df=True)
+print(df)
+#     x_coord         component   unit  ... value stationid meantype
+# 0  16.52617  Feinstaub (PM10)  µg/m³  ...  21.0   01:0001      HMW
+# 1  16.52617  Feinstaub (PM10)  µg/m³  ...  23.0   01:0001      HMW
+# 2  16.52617  Feinstaub (PM10)  µg/m³  ...  26.0   01:0001      HMW
+#
+# [3 rows x 12 columns]
+```
+
+Import data into a table:
+
+```python
+import pandas as pd
+from dbrepo.RestClient import RestClient
+
+client = RestClient(endpoint="https://dbrepo1.ec.tuwien.ac.at", username="foo",
                     password="bar")
-
-# analyse csv
-analysis = client.analyse_datatypes(file_path="sensor.csv", separator=",")
-print(f"Analysis result: {analysis}")
-# -> columns=(date=date, precipitation=decimal, lat=decimal, lng=decimal), separator=,
-#    line_termination=\n
-
-# create table
-table = client.create_table(database_id=1,
-                            name="Sensor Data",
-                            constraints=CreateTableConstraints(
-                                checks=['precipitation >= 0'],
-                                uniques=[['precipitation']]),
-                            columns=[CreateTableColumn(name="date",
-                                                       type=ColumnType.DATE,
-                                                       dfid=3,  # YYYY-MM-dd
-                                                       primary_key=True,
-                                                       null_allowed=False),
-                                     CreateTableColumn(name="precipitation",
-                                                       type=ColumnType.DECIMAL,
-                                                       size=10,
-                                                       d=4,
-                                                       primary_key=False,
-                                                       null_allowed=True),
-                                     CreateTableColumn(name="lat",
-                                                       type=ColumnType.DECIMAL,
-                                                       size=10,
-                                                       d=4,
-                                                       primary_key=False,
-                                                       null_allowed=True),
-                                     CreateTableColumn(name="lng",
-                                                       type=ColumnType.DECIMAL,
-                                                       size=10,
-                                                       d=4,
-                                                       primary_key=False,
-                                                       null_allowed=True)])
-print(f"Create table result {table}")
-# -> (id=1, internal_name=sensor_data, ...)
-
-client.import_table_data(database_id=1, table_id=1, file_path="sensor.csv", separator=",",
-                         skip_lines=1, line_encoding="\n")
-print(f"Finished.")
+df = pd.DataFrame(data={'x_coord': 16.52617, 'component': 'Feinstaub (PM10)',
+                        'unit': 'µg/m³', ...})
+client.import_table_data(database_id=7, table_id=13, file_name_or_data_frame=df)
 ```
 
 ## Supported Features & Best-Practices
 
 - Manage user
-  account ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#create-user-account))
+  account ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/api/#create-user-account))
 - Manage
   databases ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#create-database))
 - Manage database access &
-  visibility ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#private-database-access))
+  visibility ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/api/#create-database))
 - Import
-  dataset ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#private-database-access))
+  dataset ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/api/#import-dataset))
 - Create persistent
-  identifiers ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#assign-database-pid))
+  identifiers ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/api/#assign-database-pid))
 - Execute
-  queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#export-subset))
+  queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/api/#export-subset))
 - Get data from tables/views/subsets
 
 ## Configure
@@ -89,16 +67,26 @@ All credentials can optionally be set/overridden with environment variables. Thi
 Jupyter Notebooks by creating an invisible `.env` file and loading it:
 
 ```
-REST_API_ENDPOINT="https://test.dbrepo.tuwien.ac.at"
+REST_API_ENDPOINT="https://dbrepo1.ec.tuwien.ac.at"
 REST_API_USERNAME="foo"
 REST_API_PASSWORD="bar"
 REST_API_SECURE="True"
-AMQP_API_HOST="https://test.dbrepo.tuwien.ac.at"
+AMQP_API_HOST="https://dbrepo1.ec.tuwien.ac.at"
 AMQP_API_PORT="5672"
 AMQP_API_USERNAME="foo"
 AMQP_API_PASSWORD="bar"
-AMQP_API_VIRTUAL_HOST="/"
-REST_UPLOAD_ENDPOINT="https://test.dbrepo.tuwien.ac.at/api/upload/files"
+AMQP_API_VIRTUAL_HOST="dbrepo"
+REST_UPLOAD_ENDPOINT="https://dbrepo1.ec.tuwien.ac.at/api/upload/files"
+```
+
+You can disable logging by setting the log level to e.g. `INFO`:
+
+```python
+from dbrepo.RestClient import RestClient
+import logging
+logging.getLogger().setLevel(logging.INFO)
+...
+client = RestClient(...)
 ```
 
 ## Roadmap

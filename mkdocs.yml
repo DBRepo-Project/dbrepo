@@ -45,10 +45,14 @@ nav:
     - UI:
       - Customization: api/ui.md
   - Examples:
-    - Hazardous Materials: examples/hazard.md
-    - Power in Industry 4.0: examples/power.md
-    - Transportation Monitoring: examples/transportation.md
-    - XPS: examples/xps.md
+    - Air Quality Data: examples/air.md
+    - COVID-19 Data: examples/covid-19.md
+    - Hazard Data: examples/hazard.md
+    - Industry 4.0 Power Data: examples/power.md
+    - Survey Data: examples/survey.md
+    - Music-ML Data: examples/music.md
+    - Transportation Data: examples/transportation.md
+    - XPS Data: examples/xps-data.md
   - publications.md
   - contact.md
 extra_css:

@@ -353,12 +353,8 @@ public interface MariaDbMapper {
      */
     default String selectDatasetRawQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
                                          Instant timestamp, Long size, Long page) {
-        final int[] idx = new int[]{0};
-        final StringBuilder statement = new StringBuilder("SELECT ");
-        columns.forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
-                .append("`")
-                .append(column.getInternalName())
-                .append("`"));
+        final StringBuilder statement = new StringBuilder("SELECT ")
+                .append(String.join(",", columns.stream().map(c -> "`" + c.getInternalName() + "`").toList()));
         statement.append(" FROM `")
                 .append(databaseName)
                 .append("`.`")
