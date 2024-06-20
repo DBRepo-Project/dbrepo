@@ -602,6 +602,7 @@ release-docs:
       - /^release-.*/
   before_script:
     - "apk add --update alpine-sdk bash sed wget openssh"
+    - "pip install pipenv"
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${APP_VERSION}/rest"
   script:
