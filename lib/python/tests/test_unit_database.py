@@ -6,7 +6,8 @@ import datetime
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType
+from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType, DatabaseBrief, \
+    UserBrief
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
 from dbrepo.api.dto import ImageDate
@@ -24,47 +25,14 @@ class DatabaseUnitTest(unittest.TestCase):
 
     def test_get_databases_succeeds(self):
         exp = [
-            Database(
+            DatabaseBrief(
                 id=1,
                 name='test',
-                creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                             attributes=UserAttributes(theme='light')),
-                owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                           attributes=UserAttributes(theme='light')),
-                contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                             attributes=UserAttributes(theme='light')),
+                owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                exchange_name='dbrepo',
                 internal_name='test_abcd',
-                is_public=True,
-                container=Container(
-                    id=1,
-                    name='MariaDB Galera 11.1.3',
-                    internal_name='mariadb',
-                    host='data-db',
-                    port=3306,
-                    sidecar_host='data-db-sidecar',
-                    sidecar_port=3305,
-                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                    image=Image(
-                        id=1,
-                        registry='docker.io',
-                        name='mariadb',
-                        version='11.2.2',
-                        dialect='org.hibernate.dialect.MariaDBDialect',
-                        driver_class='org.mariadb.jdbc.Driver',
-                        jdbc_method='mariadb',
-                        default_port=3306,
-                        date_formats=[ImageDate(id=1,
-                                                created_at=datetime.datetime(2024, 3, 25, 18, 2, 14, 0,
-                                                                             datetime.timezone.utc),
-                                                example="2024-03-25 18:02:14",
-                                                database_format='%Y-%c-%d %H:%i:%S',
-                                                unix_format='yyyy-MM-dd HH:mm:ss',
-                                                has_time=True)]
-                    )
-                )
-            )
+                is_public=True)
         ]
         with requests_mock.Mocker() as mock:
             # mock

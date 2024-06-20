@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 import logging
+import time
 
 import requests
 from pydantic import TypeAdapter
@@ -10,8 +11,10 @@ from pandas import DataFrame
 from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
-    ForbiddenError, MalformedError, NameExistsError, QueryStoreError, MetadataConsistencyError, ExternalSystemError, \
+    ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, UploadError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
+
+logger = logging.getLogger("RestClient")
 
 
 class RestClient:
@@ -45,7 +48,7 @@ class RestClient:
             self.secure = os.environ.get('REST_API_SECURE') == 'True'
         else:
             self.secure = secure
-        logging.debug(
+        logger.debug(
             f'initialized rest client with endpoint={self.endpoint}, username={username}, verify_ssl={secure}')
 
     def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
@@ -53,27 +56,27 @@ class RestClient:
         if force_auth and (self.username is None and self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
         url = f'{self.endpoint}{url}'
-        logging.debug(f'method: {method}')
-        logging.debug(f'url: {url}')
+        logger.debug(f'method: {method}')
+        logger.debug(f'url: {url}')
         if params is not None:
-            logging.debug(f'params: {params}')
+            logger.debug(f'params: {params}')
         if stream is not None:
-            logging.debug(f'stream: {stream}')
-        logging.debug(f'secure: {self.secure}')
+            logger.debug(f'stream: {stream}')
+        logger.debug(f'secure: {self.secure}')
         if headers is not None:
-            logging.debug(f'headers: {headers}')
+            logger.debug(f'headers: {headers}')
         else:
             headers = dict()
-            logging.debug(f'no headers set')
+            logger.debug(f'no headers set')
         if payload is not None:
             payload = payload.model_dump()
         auth = None
         if self.username is None and self.password is not None:
             headers["Authorization"] = f"Bearer {self.password}"
-            logging.debug(f'configured for oidc/bearer auth')
+            logger.debug(f'configured for oidc/bearer auth')
         elif self.username is not None and self.password is not None:
             auth = (self.username, self.password)
-            logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
+            logger.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
         return requests.request(method=method, url=url, auth=auth, verify=self.secure,
                                 json=payload, headers=headers, params=params, stream=stream)
 
@@ -165,9 +168,9 @@ class RestClient:
         :returns: The username, if set.
         """
         if self.username is not None:
-            logging.info(f"{self.username}")
+            print(f"{self.username}")
             return self.username
-        logging.info(f"No username set!")
+        print(f"No username set!")
         return None
 
     def get_users(self) -> List[UserBrief]:
@@ -369,7 +372,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get container: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_databases(self) -> List[Database]:
+    def get_databases(self) -> List[DatabaseBrief]:
         """
         Get all databases.
 
@@ -381,7 +384,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Database]).validate_python(body)
+            return TypeAdapter(List[DatabaseBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find databases: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
@@ -1096,9 +1099,9 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def import_table_data(self, database_id: int, table_id: int, separator: str, file_path: str,
-                          quote: str = None, skip_lines: int = 0, false_encoding: str = None,
-                          true_encoding: str = None, null_encoding: str = None,
+    def import_table_data(self, database_id: int, table_id: int, separator: str,
+                          file_name_or_data_frame: str | DataFrame, quote: str = None, skip_lines: int = 0,
+                          false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
                           line_encoding: str = "\r\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id.
@@ -1106,7 +1109,7 @@ class RestClient:
         :param database_id: The database id.
         :param table_id: The table id.
         :param separator: The csv column separator.
-        :param file_path: The path of the file that is imported on the storage service.
+        :param file_name_or_data_frame: The path of the file that is imported on the storage service or pandas dataframe.
         :param quote: The column data quotation character. Optional.
         :param skip_lines: The number of lines to skip. Optional. Default: 0.
         :param false_encoding: The encoding of boolean false. Optional.
@@ -1121,6 +1124,12 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the insert.
         """
         client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
+        if type(file_name_or_data_frame) is DataFrame:
+            file_path: str = f"./tmp-{time.time()}"
+            df: DataFrame = file_name_or_data_frame
+            df.to_csv(path_or_buf=file_path, index=False, header=False)
+        else:
+            file_path: str = file_name_or_data_frame
         filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
@@ -1543,7 +1552,8 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete database access: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10) -> Result:
+    def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10,
+                      df: bool = False) -> Result | DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
         result set can be paginated with setting page and size (both). Historic data can be queried by setting
@@ -1553,6 +1563,7 @@ class RestClient:
         :param query: The query statement.
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result set, if successful.
 
@@ -1571,7 +1582,10 @@ class RestClient:
                                  payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
             body = response.json()
-            return Result.model_validate(body)
+            res = Result.model_validate(body)
+            if df:
+                return DataFrame.from_records(res.result)
+            return res
         if response.status_code == 400:
             raise MalformedError(f'Failed to create subset: {response.text}')
         if response.status_code == 403:
