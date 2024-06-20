@@ -19,8 +19,8 @@ install:
 	(cd ../../dbrepo-analyse-service && pipenv lock)
 	cp ./dist/dbrepo-* ../../dbrepo-search-service/lib/
 	(cd ../../dbrepo-search-service && pipenv lock)
-	cp ./dist/dbrepo-* ../../../dpm2024/lib/
-	(cd ../../../dpm2024 && pipenv lock)
+	cp ./dist/dbrepo-* ../../dbrepo-search-service/init/lib/
+	(cd ../../dbrepo-search-service/init && pipenv lock)
 
 deploy: build
 	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*

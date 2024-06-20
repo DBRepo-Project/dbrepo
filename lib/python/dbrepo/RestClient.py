@@ -372,7 +372,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get container: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_databases(self) -> List[Database]:
+    def get_databases(self) -> List[DatabaseBrief]:
         """
         Get all databases.
 
@@ -384,7 +384,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Database]).validate_python(body)
+            return TypeAdapter(List[DatabaseBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find databases: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 

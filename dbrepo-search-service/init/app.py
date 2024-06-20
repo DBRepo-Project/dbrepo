@@ -102,27 +102,29 @@ class App:
 
     def fetch_databases(self) -> List[Database]:
         client = RestClient(endpoint=self.gateway_endpoint)
-        databases = client.get_databases()
+        databases = []
+        for database in client.get_databases():
+            databases.append(client.get_database(database_id=database.id))
         logging.debug(f"fetched {len(databases)} database(s)")
         return databases
 
-    def save_databases(self, databases: List[Database], index_created: bool, index_updated: bool):
+    def save_databases(self, databases: List[Database]):
         logging.debug(
-            f"save {len(databases)} database(s), index_created={index_created}, index_updated={index_updated}")
+            f"save {len(databases)} database(s)")
         for doc in databases:
             doc: Database = doc
-            if index_created:
-                self._instance().create(index="database", id=doc.id, body=doc.model_dump())
-                logging.info(f"Saved database with id {doc.id}")
-            elif index_updated:
+            try:
                 self._instance().delete(index="database", id=doc.id)
-                self._instance().create(index="database", id=doc.id, body=doc.model_dump())
-                logging.info(f"Updated database with id {doc.id}")
+                logging.debug(f"deleted database with id {doc.id}")
+            except opensearchpy.NotFoundError:
+                logging.warning(f"Database with id {doc.id} does not exist, skip.")
+            self._instance().create(index="database", id=doc.id, body=doc.model_dump())
+            logging.debug(f"created database with id {doc.id}")
 
 
 if __name__ == "__main__":
     app = App()
     create = not app.index_exists()
     update = app.index_update(is_created=create)
-    app.save_databases(databases=app.fetch_databases(), index_created=create, index_updated=update)
+    app.save_databases(databases=app.fetch_databases())
     logging.info("Finished. Exiting.")

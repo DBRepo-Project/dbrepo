@@ -564,6 +564,9 @@ public interface MetadataMapper {
                                 column.setDatabaseId(data.getDatabase().getId());
                             });
                 });
+        if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
+            table.getConstraints().setChecks(new LinkedHashSet<>());
+        }
         if (data.getIdentifiers() != null) {
             table.setIdentifiers(new LinkedList<>(data.getIdentifiers()
                     .stream()
