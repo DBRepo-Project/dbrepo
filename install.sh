@@ -84,5 +84,5 @@ if [ $? -eq 0 ]; then
   echo ""
   echo "  docker compose logs -f"
   echo ""
-  echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/deployment-docker-compose/#next-steps"
+  echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/installation/#next-steps"
 fi
