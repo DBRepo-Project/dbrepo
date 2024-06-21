@@ -44,7 +44,7 @@ are *not* recommended and not tested.
 
 ## Custom Install
 
-TBD
+In case you prefer a customized
 
 ## Architecture
 
