@@ -207,8 +207,6 @@ services:
     volumes:
       - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
-      - ./dbrepo-broker-service/cert.pem:/app/cert.pem
-      - ./dbrepo-broker-service/pubkey.pem:/app/pubkey.pem
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
     depends_on:
