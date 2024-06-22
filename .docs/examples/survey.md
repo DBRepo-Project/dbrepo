@@ -9,22 +9,25 @@ author: Martin Weise
 
 ## Description
 
-This digital record contains historical air pollution and air quality data from approximately 20 air monitoring stations
-in Vienna, spanning the years from 1980 to 2021. The data was provided by the Umweltbundesamt and is stored in its
-original form in this record. This record forms the basis of an analysis carried out in a bachelor's thesis at the TU 
-Wien.
+As part of a literature study, the research unit of data science has collected data on 47 Trusted Research Environments
+(TREs) who enable analysis of confidential data under strict security assertions who protect the data with technical, 
+organizational and legal measures from (accidentally) being leaked outside the facility. The literature study shows that
+47 TREs worldwide provide access to confidential data of which two-thirds provide data themselves (n=32, 68%), 
+predominantly via secure remote access (n=46, 98%).
 
 ## Solution
 
+We designed a database schema that allows collection of the data with correct primary key and foreign-key relationships.
+Three defined views allow for a simpler exploration of the study data. The analysis of the data was performed in TU
+Wien's virtual research environment using [JupyterHub](https://science.datalab.tuwien.ac.at/) as well as the chart
 
 <figure markdown>
-![Jupyter Notebook](../../images/screenshots/air-notebook.png){ .img-border }
+![Jupyter Notebook](../../images/screenshots/tre-notebook.png){ .img-border }
 <figcaption>Figure 1: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
 </figure>
 
 ## DBRepo Features
 
-- [x] Import complex dataset
 - [x] System versioning
 - [x] Subset exploration
 - [x] Aggregated views
@@ -33,6 +36,6 @@ Wien.
 
 ## Acknowledgement
 
-This work was part of a cooperation with the [Umweltbundesamt](https://www.umweltbundesamt.at/).
+This work was part of a cooperation with the [Research Unit of Data Science](https://informatics.tuwien.ac.at/orgs/e194-04).
 
-<img src="../../images/logos/umweltbundesamt.png" width=100 />
+<img src="../../images/logos/ds-ifs.png" width=100 />

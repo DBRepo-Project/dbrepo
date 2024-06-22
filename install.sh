@@ -63,8 +63,6 @@ curl -sSL -o ./dist/1_setup-schema.sql "https://gitlab.phaidra.org/fair-data-aus
 curl -sSL -o ./dist/2_setup-data.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-data.sql"
 curl -sSL -o ./dist/rabbitmq.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/rabbitmq.conf"
 curl -sSL -o ./dist/enabled_plugins "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/enabled_plugins"
-curl -sSL -o ./dist/cert.pem "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/cert.pem"
-curl -sSL -o ./dist/pubkey.pem "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/pubkey.pem"
 curl -sSL -o ./dist/definitions.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/definitions.json"
 curl -sSL -o ./dist/dbrepo.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-gateway-service/dbrepo.conf"
 curl -sSL -o ./dist/opensearch_dashboards.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-search-db/opensearch_dashboards.yml"
