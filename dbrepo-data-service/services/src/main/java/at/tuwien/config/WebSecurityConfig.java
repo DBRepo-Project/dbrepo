@@ -44,7 +44,8 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, KeycloakGateway keycloakGateway,
-                                           GatewayConfig gatewayConfig) throws Exception {
+                                           GatewayConfig gatewayConfig)
+            throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),

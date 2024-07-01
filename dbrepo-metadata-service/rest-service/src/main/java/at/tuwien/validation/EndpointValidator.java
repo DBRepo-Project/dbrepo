@@ -255,7 +255,7 @@ public class EndpointValidator {
             throw new NotAllowedException("Access not allowed: database with id " + database.getId() + " is not public and no authorization provided");
         }
         final User user = User.builder()
-                .id(UserUtil.getId(principal))
+                .username(principal.getName())
                 .build();
         final DatabaseAccess access = accessService.find(database, user);
         log.trace("found access {}", access);

@@ -96,7 +96,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
     public void create_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, ContainerNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
@@ -184,8 +185,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
-    public void visibility_hasRole_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
-            UserNotFoundException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public void visibility_hasRole_succeeds() throws NotAllowedException, UserNotFoundException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, AuthServiceException,
+            AuthServiceConnectionException, CredentialsInvalidException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -302,7 +304,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws ServiceConnectionException, ServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .id(USER_4_ID)
                 .build();
@@ -471,15 +474,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         if (database != null) {
             when(databaseService.findById(databaseId))
                     .thenReturn(database);
-            when(messageQueueService.findExchange(EXCHANGE_DBREPO_NAME))
-                    .thenReturn(EXCHANGE_DBREPO_DTO);
         } else {
             doThrow(DatabaseNotFoundException.class)
                     .when(databaseService)
                     .findById(databaseId);
-            doThrow(ExchangeNotFoundException.class)
-                    .when(messageQueueService)
-                    .findExchange(EXCHANGE_DBREPO_NAME);
         }
 
         /* test */

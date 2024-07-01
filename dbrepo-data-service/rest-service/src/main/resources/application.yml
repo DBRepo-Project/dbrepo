@@ -10,8 +10,8 @@ spring:
   rabbitmq:
     host: "${BROKER_HOST:broker-service}"
     virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
-    password: "${BROKER_PASSWORD:fda}"
-    username: "${BROKER_USERNAME:fda}"
+    password: "${BROKER_PASSWORD:admin}"
+    username: "${BROKER_USERNAME:admin}"
     port: ${BROKER_PORT:5672}
   jpa:
     show-sql: false

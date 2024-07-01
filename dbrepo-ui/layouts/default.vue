@@ -177,6 +177,9 @@ export default {
     }
   },
   computed: {
+    token () {
+      return this.userStore.getToken
+    },
     user () {
       return this.userStore.getUser
     },
@@ -272,6 +275,10 @@ export default {
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
+      if (this.token && !this.user) {
+        console.error('Something went wrong with loading the user: reset user cache')
+        this.userStore.logout()
+      }
       if (!this.locale) {
         this.userStore.setLocale('en')
       }

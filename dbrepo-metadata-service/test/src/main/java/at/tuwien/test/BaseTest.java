@@ -390,6 +390,7 @@ public abstract class BaseTest {
             USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
+    public final static UUID USER_1_LDAP_ID = UUID.fromString("8e541e05-f45c-4d40-ba1b-0e62f04ba3f8");
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "junit1";
     public final static String USER_1_PASSWORD = "junit1";
@@ -505,6 +506,10 @@ public abstract class BaseTest {
             .emailVerified(USER_1_VERIFIED)
             .notBefore(USER_1_NOT_BEFORE)
             .totp(USER_1_TOTP)
+            .attributes(at.tuwien.api.keycloak.UserAttributesDto.builder()
+                    .ldapEntryDn(new String[]{"cn=" + USER_1_USERNAME + ",dn=dbrepo,dn=at"})
+                    .ldapId(new UUID[]{USER_1_LDAP_ID})
+                    .build())
             .build();
 
     public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()

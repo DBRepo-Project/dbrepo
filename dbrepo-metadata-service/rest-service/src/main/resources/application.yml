@@ -2,6 +2,12 @@ application:
   title: DBRepo
   version: '@project.version@'
 spring:
+  ldap:
+    urls: "${IDENTITY_SERVICE_URLS:ldap://identity-service:1389}"
+    userDn: "${IDENTITY_SERVICE_USERNAME:cn=admin,dc=dbrepo,dc=at}"
+    password: "${IDENTITY_SERVICE_PASSWORD:adminpassword}"
+    base: "${IDENTITY_SERVICE_BASE:dc=dbrepo,dc=at}"
+    adminDn: "${IDENTITY_SERVICE_ADMIN_GROUP:cn=admins,ou=users,dc=dbrepo,dc=at}"
   datasource:
     url: "jdbc:mariadb://${METADATA_HOST:metadata-db}:3306/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS}"
     driver-class-name: org.mariadb.jdbc.Driver
@@ -13,7 +19,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        default_schema: "${METADATA_DB:fda}"
+        default_schema: "${METADATA_DB:dbrepo}"
         jdbc:
           time_zone: UTC
   application:
@@ -21,8 +27,8 @@ spring:
   rabbitmq:
     host: "${BROKER_HOST:broker-service}"
     virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
-    username: "${BROKER_USERNAME:fda}"
-    password: "${BROKER_PASSWORD:fda}"
+    username: "${BROKER_USERNAME:admin}"
+    password: "${BROKER_PASSWORD:admin}"
     port: ${BROKER_PORT:5672}
   main:
     banner-mode: off
@@ -77,8 +83,8 @@ dbrepo:
   jwt:
     public_key: "${JWT_PUBKEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
   keycloak:
-    username: "${AUTH_SERVICE_ADMIN:fda}"
-    password: "${AUTH_SERVICE_ADMIN_PASSWORD:fda}"
+    username: "${AUTH_SERVICE_ADMIN:admin}"
+    password: "${AUTH_SERVICE_ADMIN_PASSWORD:admin}"
     client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
   website: "${BASE_URL:http://localhost}"

@@ -1,7 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.repository.*;
+import at.tuwien.repository.ContainerRepository;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.repository.LicenseRepository;
+import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
@@ -9,7 +12,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.SearchServiceGateway;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +77,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
     public void save_database_succeeds() throws ServiceException, ServiceConnectionException,
             DatabaseNotFoundException, MalformedException, IdentifierNotFoundException, ViewNotFoundException,
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
@@ -93,7 +94,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
     public void save_invalidMetadata_fails() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -111,7 +111,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
     public void save_restClientException_fails() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -129,7 +128,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
     public void create_succeeds() throws SearchServiceException, MalformedException, ServiceException,
             QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
@@ -146,7 +144,6 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
     public void create_hasDoi_succeeds() throws SearchServiceException, MalformedException, ServiceException,
             QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {

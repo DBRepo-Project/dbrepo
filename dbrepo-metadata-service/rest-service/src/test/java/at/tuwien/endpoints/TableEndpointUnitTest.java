@@ -958,8 +958,6 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                     .when(accessService)
                     .find(database, user);
         }
-        when(messageQueueService.findQueue("dbrepo"))
-                .thenReturn(QUEUE_DTO);
 
         /* test */
         return tableEndpoint.findById(databaseId, tableId, principal);

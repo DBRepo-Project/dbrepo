@@ -37,7 +37,8 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
     private KeycloakGatewayImpl keycloakGateway;
 
     @Test
-    public void obtainToken_succeeds() throws ServiceException, ServiceConnectionException {
+    public void obtainToken_succeeds() throws AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -49,20 +50,6 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void obtainToken_noAccess_fails() {
-
-        /* mock */
-        doThrow(ResourceAccessException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
-            keycloakGateway.obtainToken();
-        });
-    }
-
-    @Test
     public void obtainToken_fails() {
 
         /* mock */
@@ -71,13 +58,14 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(AuthServiceConnectionException.class, () -> {
             keycloakGateway.obtainToken();
         });
     }
 
     @Test
-    public void createUser_succeeds() throws UserExistsException, ServiceException, ServiceConnectionException, EmailExistsException {
+    public void createUser_succeeds() throws UserExistsException, EmailExistsException, AuthServiceException,
+            AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -103,7 +91,7 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -149,29 +137,12 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .body(TOKEN_DTO));
-        doThrow(ResourceAccessException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
-            keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
-        });
-    }
-
-    @Test
-    public void createUser_unexpected2_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
         doThrow(HttpServerErrorException.BadGateway.create(HttpStatus.BAD_GATEWAY, "", new HttpHeaders(), new byte[]{}, Charset.defaultCharset()))
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(AuthServiceConnectionException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -188,13 +159,14 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
 
     @Test
-    public void deleteUser_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException {
+    public void deleteUser_succeeds() throws UserNotFoundException, AuthServiceException,
+            AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -220,7 +192,7 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
@@ -254,13 +226,14 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceConnectionException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
 
     @Test
-    public void updateUserCredentials_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updateUserCredentials_succeeds() throws AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -286,7 +259,7 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
         });
     }
@@ -298,29 +271,12 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .body(TOKEN_DTO));
-        doThrow(ResourceAccessException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
-            keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
-        });
-    }
-
-    @Test
-    public void updateUserCredentials_unexpected2_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
         doThrow(HttpServerErrorException.BadGateway.create(HttpStatus.BAD_GATEWAY, "", new HttpHeaders(), new byte[]{}, Charset.defaultCharset()))
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceConnectionException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
         });
     }
@@ -354,7 +310,7 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.findByUsername(USER_1_USERNAME);
         });
     }
@@ -371,7 +327,7 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(AuthServiceConnectionException.class, () -> {
             keycloakGateway.findByUsername(USER_1_USERNAME);
         });
     }

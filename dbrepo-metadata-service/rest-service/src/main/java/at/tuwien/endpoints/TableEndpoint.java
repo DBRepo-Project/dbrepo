@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
@@ -11,7 +10,6 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
-import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -53,22 +51,18 @@ public class TableEndpoint {
 
     private final UserService userService;
     private final TableService tableService;
-    private final RabbitConfig rabbitMqConfig;
     private final EntityService entityService;
-    private final BrokerService messageQueueService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(UserService userService, TableService tableService, RabbitConfig rabbitMqConfig,
-                         EntityService entityService, BrokerService messageQueueService, MetadataMapper metadataMapper,
-                         DatabaseService databaseService, EndpointValidator endpointValidator) {
+    public TableEndpoint(UserService userService, TableService tableService, EntityService entityService,
+                         MetadataMapper metadataMapper, DatabaseService databaseService,
+                         EndpointValidator endpointValidator) {
         this.userService = userService;
         this.tableService = tableService;
-        this.rabbitMqConfig = rabbitMqConfig;
         this.entityService = entityService;
-        this.messageQueueService = messageQueueService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
@@ -415,8 +409,6 @@ public class TableEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {
             /* extra effort only when logged-in */
-            final QueueDto queue = messageQueueService.findQueue(rabbitMqConfig.getQueueName());
-            dto.setQueueType(queue.getType());
             final Authentication authentication = (Authentication) principal;
             if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
                 headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());

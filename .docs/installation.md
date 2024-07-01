@@ -147,6 +147,12 @@ In case the deployment is unsuccessful, we have explanations on their origin and
 :   *Origin*:   Your deployment machine (e.g. laptop, virtual machine) appears to not have enough RAM assigned.
 :   *Solution*: Assign more RAM to the deployment machine (e.g. add vRAM to the virtual machine).
 
+**HTTP access denied: user 'admin' - invalid credentials**
+
+:   *Origin*:   The broker service cannot bind to the identity service due to wrong configuration.
+:   *Solution*: This is very likely due to a wrong `auth_ldap.dn_lookup_bind.password` in `rabbitmq.conf`. The error
+                indicates that LDAP check is not even attempted.
+
 ## Next Steps
 
 You should now be able to view the front end at [http://localhost](http://localhost).

@@ -72,7 +72,8 @@ public class UserServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws UserNotFoundException, UserExistsException, EmailExistsException,
-            ServiceException, ServiceConnectionException {
+            ServiceException, ServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))
@@ -107,7 +108,8 @@ public class UserServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updatePassword_succeeds() throws AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
 
         /* mock */
         doNothing()

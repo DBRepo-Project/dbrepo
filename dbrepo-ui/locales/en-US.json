@@ -1033,11 +1033,15 @@
     }
   },
   "error": {
+    "auth": {
+      "connection": "Failed to contact auth service",
+      "invalid": "Failed to authenticate in auth service"
+    },
     "access": {
       "missing": "Failed to find access in metadata database"
     },
     "axios": {
-      "connection": "Failed to establish connection",
+      "connection": "Failed to contact backend",
       "timeout": "Connection timed out"
     },
     "concept": {
@@ -1048,17 +1052,17 @@
       "missing": "Failed to find container in metadata database"
     },
     "data": {
+      "connection": "Failed to contact data service",
       "invalid": "Failed to communicate with data service",
-      "connection": "Failed to establish connection to data service",
       "value": "Failed to set column value",
       "drift": "Your browser clock is not synchronized with UTC and seems to be off by"
     },
     "database": {
-      "connection": "Failed to establis connection to the database",
+      "connection": "Failed to contact database",
+      "create":  "Failed to create database in data service",
       "invalid": "Failed to perform action in database",
       "querystore": "Failed to insert query into query store",
-      "missing": "Failed to find database in metadata database",
-      "create":  "Failed to establish connection with metadata service"
+      "missing": "Failed to find database in metadata database"
     },
     "doi": {
       "missing": "Failed to find DOI in metadata database"
@@ -1117,9 +1121,9 @@
       "persist": "Failed to persist query in the database query store"
     },
     "metadata": {
-      "privileged": "Failed to fetch privileged metadata in the data service",
-      "connection": "Failed to establish connection to the metadata service",
-      "invalid": "Failed to obtain authentication metadata in the data service"
+      "connection": "Failed to contact metadata service",
+      "invalid": "Failed to obtain authentication metadata in the data service",
+      "privileged": "Failed to fetch privileged metadata in the data service"
     },
     "sidecar": {
       "export": "Failed to export dataset to the database sidecar",
@@ -1164,12 +1168,12 @@
       "malformed": "Invalid pagination request"
     },
     "table": {
+      "connection": "Failed to contact database",
+      "create": "Failed to create table",
       "missing": "Failed to find table in metadata database",
       "exists": "Table with this name exists already",
       "invalid": "Failed to parse columns in the data service",
-      "malformed": "Failed to insert entry",
-      "create": "Failed to create table",
-      "connection": "Failed to load table data because database is not reachable"
+      "malformed": "Failed to insert entry"
     },
     "unit": {
       "missing": "Failed to find semantic unit in metadata database"
