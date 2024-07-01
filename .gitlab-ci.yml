@@ -4,8 +4,8 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  APP_VERSION: "1.4.4"
-  CHART_VERSION: "1.4.4"
+  APP_VERSION: "1.4.5"
+  CHART_VERSION: "1.4.5"
 
 image: debian:12-slim
 

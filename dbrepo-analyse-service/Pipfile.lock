@@ -394,8 +394,8 @@
                 "sha256:2506475fc8fb3f4fdd722e3e92f8e6ad28d0707023c3d8ea5d6d076cef71f395",
                 "sha256:2bdb48c70b4c99b5044fbfc12aa653c1e9281ca8913a433cc08a1e14cb4bd2ef"
             ],
-            "path": "./lib/dbrepo-1.4.4.tar.gz",
-            "version": "==1.4.4"
+            "path": "./lib/dbrepo-1.4.5.tar.gz",
+            "version": "==1.4.5"
         },
         "events": {
             "hashes": [

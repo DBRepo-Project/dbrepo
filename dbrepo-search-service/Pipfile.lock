@@ -343,8 +343,8 @@
                 "sha256:09a10584a44c952a7cf83852123c14bd2917ab009e50698c1f9d8c2690ec4bde",
                 "sha256:2bdb48c70b4c99b5044fbfc12aa653c1e9281ca8913a433cc08a1e14cb4bd2ef"
             ],
-            "path": "./lib/dbrepo-1.4.4.tar.gz",
-            "version": "==1.4.4"
+            "path": "./lib/dbrepo-1.4.5.tar.gz",
+            "version": "==1.4.5"
         },
         "docker": {
             "hashes": [
