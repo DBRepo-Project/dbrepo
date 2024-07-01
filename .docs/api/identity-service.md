@@ -27,6 +27,7 @@ Service.
 
 * Limited support for scaling in Kubernetes, see the
   [guide](https://github.com/jp-gouin/helm-openldap?tab=readme-ov-file#scaling-your-cluster) of the chart developers.
+* Currently no support for LDAP in the Data Database.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
@@ -39,20 +40,20 @@ Service.
 1. By default, no ingress is enabled. If you need ingress on LTP Password and phpLDAPadmin, configure the ingress
    to use your TLS secret `tls-cert-secret` containing the `tls.crt` and `tls.key`, e.g.:
 
-   ```yaml title="values.yaml"
-   identityservice:
-     ltb-passwd:
-       ingress:
-         enabled: true
-         tls:
-           - secretName: tls-cert-secret
-             hosts:
-               - example.com
-     phpldapadmin:
-       ingress:
-         enabled: true
-         tls:
-           - secretName: tls-cert-secret
-             hosts:
-               - example.com
-   ```
+       ```yaml title="values.yaml"
+       identityservice:
+         ltb-passwd:
+           ingress:
+             enabled: true
+             tls:
+               - secretName: tls-cert-secret
+                 hosts:
+                   - example.com
+         phpldapadmin:
+           ingress:
+             enabled: true
+             tls:
+               - secretName: tls-cert-secret
+                 hosts:
+                   - example.com
+       ```
