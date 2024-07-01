@@ -652,3 +652,33 @@ release-libs:
   script:
     - bash ./lib/python/package.sh
     - bash ./lib/python/release.sh
+
+scan-check:
+  stage: scan
+  image: docker.io/sonarsource/sonar-scanner-cli:10.0
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  script:
+    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}" -Dsonar.host.url="${CI_SONAR_URL}"'
+  allow_failure: true
+  cache:
+    policy: pull
+    key: "${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - sonar-scanner/
+
+scan-vulnerability:
+  stage: scan
+  image: docker.io/sonarsource/sonar-scanner-cli:10.0
+  cache:
+    key: "${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - .sonar/cache
+  script:
+    - 'curl -u "${CI_SONAR_TOKEN}:" "${CI_SONAR_URL}/api/issues/gitlab_sast_export?projectKey=DBREPO&branch=${CI_COMMIT_BRANCH}&pullRequest=${CI_MERGE_REQUEST_IID}" -o gl-sast-sonar-report.json'
+  allow_failure: true
+  artifacts:
+    expire_in: 1 day
+    reports:
+      sast: gl-sast-sonar-report.json
