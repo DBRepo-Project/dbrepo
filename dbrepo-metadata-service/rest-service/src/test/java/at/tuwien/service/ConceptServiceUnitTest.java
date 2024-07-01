@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
 import at.tuwien.exception.ConceptNotFoundException;
+import at.tuwien.repository.ConceptRepository;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.repository.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

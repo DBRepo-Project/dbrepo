@@ -34,8 +34,8 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     @Container
     private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
             .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withAdminUsername("fda")
-            .withAdminPassword("fda")
+            .withAdminUsername("admin")
+            .withAdminPassword("admin")
             .withRealmImportFile("./init/dbrepo-realm.json")
             .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
 
@@ -45,8 +45,8 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws EmailExistsException, UserExistsException, ServiceException,
-            ServiceConnectionException, UserNotFoundException {
+    public void delete_succeeds() throws EmailExistsException, UserExistsException, UserNotFoundException,
+            AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
         try {
@@ -65,7 +65,8 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws EmailExistsException, UserExistsException, ServiceException,
-            ServiceConnectionException {
+            ServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException {
 
         /* mock */
         try {

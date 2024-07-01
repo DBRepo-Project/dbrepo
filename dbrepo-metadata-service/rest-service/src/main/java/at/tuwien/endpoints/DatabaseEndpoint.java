@@ -1,9 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -43,21 +41,16 @@ import java.util.stream.Collectors;
 public class DatabaseEndpoint {
 
     private final UserService userService;
-    private final RabbitConfig rabbitConfig;
     private final AccessService accessService;
-    private final BrokerService brokerService;
     private final MetadataMapper databaseMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
 
     @Autowired
-    public DatabaseEndpoint(UserService userService, RabbitConfig rabbitConfig, AccessService accessService,
-                            BrokerService brokerService, MetadataMapper databaseMapper,
+    public DatabaseEndpoint(UserService userService, AccessService accessService, MetadataMapper databaseMapper,
                             StorageService storageService, DatabaseService databaseService) {
         this.userService = userService;
-        this.rabbitConfig = rabbitConfig;
         this.accessService = accessService;
-        this.brokerService = brokerService;
         this.databaseMapper = databaseMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
@@ -475,9 +468,6 @@ public class DatabaseEndpoint {
         }
         final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {
-            /* extra effort only when having access */
-            final ExchangeDto exchange = brokerService.findExchange(rabbitConfig.getExchangeName());
-            dto.setExchangeType(exchange.getType());
             final Authentication authentication = (Authentication) principal;
             if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
                 headers.set("X-Username", database.getContainer().getPrivilegedUsername());

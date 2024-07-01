@@ -126,7 +126,7 @@ export const useUserService = (): any => {
 
   function tokenToUserId(token: string): string {
     const data: Token = jwtDecode<Token>(token)
-    return data.sub
+    return data.uid
   }
 
   function userInfoToUser(data: UserDto) {

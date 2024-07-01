@@ -74,8 +74,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final DecodedJWT jwt = verifier.verify(token);
         final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);
         return UserDetailsDto.builder()
-                .id(jwt.getSubject())
-                .username(jwt.getClaim("client_id").asString())
+                .id(jwt.getClaim("uid").asString())
+                .username(jwt.getClaim("preferred_username").asString())
                 .authorities(Arrays.stream(realmAccess.getRoles()).map(SimpleGrantedAuthority::new).collect(Collectors.toList()))
                 .build();
     }

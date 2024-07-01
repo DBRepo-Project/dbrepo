@@ -30,39 +30,49 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void create(SignupRequestDto data) throws UserExistsException, ServiceException, ServiceConnectionException,
-            EmailExistsException {
+    public UserDto create(SignupRequestDto data) throws UserExistsException, AuthServiceException,
+            AuthServiceConnectionException, EmailExistsException, CredentialsInvalidException {
         keycloakGateway.createUser(metadataMapper.signupRequestDtoToUserCreateDto(data));
+        try {
+            return findByUsername(data.getUsername());
+        } catch (UserNotFoundException e) {
+            throw new AuthServiceException("Failed to find user in auth service", e);
+        }
     }
 
     @Override
-    public void delete(User user) throws ServiceException, ServiceConnectionException, UserNotFoundException {
+    public void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
+            CredentialsInvalidException {
         keycloakGateway.deleteUser(user.getId());
     }
 
     @Override
-    public UserDto findByUsername(String username) throws ServiceException, ServiceConnectionException, UserNotFoundException {
+    public UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException, CredentialsInvalidException {
         return keycloakGateway.findByUsername(username);
     }
 
     @Override
-    public UserDto findById(UUID id) throws ServiceException, ServiceConnectionException, UserNotFoundException {
+    public UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
+            CredentialsInvalidException {
         return keycloakGateway.findById(id);
     }
 
     @Override
-    public TokenDto obtainToken(LoginRequestDto data) throws ServiceConnectionException, CredentialsInvalidException,
-            AccountNotSetupException {
+    public TokenDto obtainToken(LoginRequestDto data) throws AuthServiceConnectionException,
+            CredentialsInvalidException, AccountNotSetupException {
         return keycloakGateway.obtainUserToken(data.getUsername(), data.getPassword());
     }
 
     @Override
-    public TokenDto refreshToken(String refreshToken) throws ServiceConnectionException, CredentialsInvalidException {
+    public TokenDto refreshToken(String refreshToken) throws AuthServiceConnectionException,
+            CredentialsInvalidException {
         return keycloakGateway.refreshUserToken(refreshToken);
     }
 
     @Override
-    public void updatePassword(User user, UserPasswordDto data) throws ServiceException, ServiceConnectionException {
+    public void updatePassword(User user, UserPasswordDto data) throws AuthServiceException,
+            AuthServiceConnectionException, CredentialsInvalidException {
         keycloakGateway.updateUserCredentials(user.getId(), data);
     }
 

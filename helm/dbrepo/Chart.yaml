@@ -49,3 +49,8 @@ dependencies:
     version: 0.1.2
     repository: https://charts.sagikazarmark.dev
     condition: uploadservice.enabled
+  - name: openldap-stack-ha
+    alias: identityservice
+    version: 4.2.5
+    repository: https://jp-gouin.github.io/helm-openldap/
+    condition: identityservice.enabled

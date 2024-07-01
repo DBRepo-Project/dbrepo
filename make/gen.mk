@@ -9,7 +9,7 @@ gen-swagger-doc: build-images ## Generate Swagger documentation and fetch.
 
 .PHONY: gen-helm-doc
 gen-helm-doc: build-helm ## Generate Helm documentation and schema
-	helm schema -input ./helm/dbrepo/values.yaml
+	helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
 	readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 .PHONY: gen-dbrepo-doc

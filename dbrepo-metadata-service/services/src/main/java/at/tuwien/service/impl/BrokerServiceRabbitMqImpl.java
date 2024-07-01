@@ -1,12 +1,9 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
-import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -92,16 +89,6 @@ public class BrokerServiceRabbitMqImpl implements BrokerService {
         }
         log.trace("mapped databases {} to read permissions '{}'", user.getAccesses().stream().map(a -> a.getDatabase().getInternalName()).toList(), permissions);
         return permissions;
-    }
-
-    @Override
-    public QueueDto findQueue(String name) throws ServiceException, ServiceConnectionException, QueueNotFoundException {
-        return brokerServiceGateway.findQueue(name);
-    }
-
-    @Override
-    public ExchangeDto findExchange(String name) throws ServiceException, ServiceConnectionException, ExchangeNotFoundException {
-        return brokerServiceGateway.findExchange(name);
     }
 
 }

@@ -46,4 +46,7 @@ public class UserDto {
     @Schema(example = "0")
     private Long notBefore;
 
+    @NotNull
+    private UserAttributesDto attributes;
+
 }

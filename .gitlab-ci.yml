@@ -4,8 +4,8 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  APP_VERSION: "1.4.4"
-  CHART_VERSION: "1.4.4"
+  APP_VERSION: "1.4.5"
+  CHART_VERSION: "1.4.5"
 
 image: debian:12-slim
 
@@ -18,6 +18,7 @@ cache:
 
 stages:
   - build
+  - lint
   - test
   - docs
   - release
@@ -139,6 +140,18 @@ verify-install-script:
     - apk add bash curl
     - bash install.sh
     - exit 0
+
+lint-helm:
+  image: docker.io/docker:24-dind
+  stage: lint
+  except:
+    refs:
+      - /^release-.*/
+  needs:
+    - build-metadata-service
+  script:
+    - apk add sed helm curl
+    - helm lint ./helm/dbrepo
 
 test-metadata-service:
   image: maven:3-openjdk-17
@@ -602,6 +615,7 @@ release-docs:
       - /^release-.*/
   before_script:
     - "apk add --update alpine-sdk bash sed wget openssh"
+    - "pip install pipenv"
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${APP_VERSION}/rest"
   script:
