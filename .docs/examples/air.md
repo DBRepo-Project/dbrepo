@@ -5,7 +5,7 @@ author: Martin Weise
 ## tl;dr
 
 [:fontawesome-solid-database: &nbsp;Dataset](https://handle.stage.datacite.org/10.82556/gd17-aq82){ .md-button .md-button--primary target="_blank" }
-[:material-file-document: &nbsp;Archive](https://doi.org/10.48436/mtha8-w2406){ .md-button .md-button--secondary target="_blank" }
+[:simple-grafana: &nbsp;Dashboard](https://dbrepo1.ec.tuwien.ac.at/admin/grafana/d/FLB9eAv4z/airquality){ .md-button .md-button--secondary target="_blank" }
 
 ## Description
 
@@ -14,13 +14,24 @@ in Vienna, spanning the years from 1980 to 2021. The data was provided by the Um
 original form in this record. This record forms the basis of an analysis carried out in a bachelor's thesis at the TU 
 Wien.
 
-## Solution
+<figure markdown>
+![Grafana Dashboard](../../images/screenshots/air-dashboard.png)
+<figcaption>Figure 1: Grafana dashboard visualizing the dataset.</figcaption>
+</figure>
 
+The analysis was carried out in a Jupyter Notebook hosted by our IT-department
+[JupyterHub](https://science.datalab.tuwien.ac.at/) as part of TU Wien's virtual research environment.
 
 <figure markdown>
 ![Jupyter Notebook](../../images/screenshots/air-notebook.png){ .img-border }
-<figcaption>Figure 1: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
+<figcaption>Figure 2: Jupyter Notebook accessing data on DBRepo using the Python Library.</figcaption>
 </figure>
+
+## Solution
+
+One of the first use-cases of importing external data into DBRepo which was provided as .csv flat file. We developed a
+database schema and a web scraper that scrapes live air quality data from the 
+[public map](https://luft.umweltbundesamt.at/pub/map_chart/index.pl) of the environment agency of Austria.
 
 ## DBRepo Features
 

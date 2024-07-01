@@ -1,21 +1,13 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "properties": {
-        "admin": {
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            },
-            "type": "object"
-        },
         "analyseservice": {
             "properties": {
                 "enabled": {
                     "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
                 },
                 "image": {
                     "properties": {
@@ -153,6 +145,9 @@
                         },
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "fullnameOverride": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -179,11 +174,11 @@
         },
         "brokerservice": {
             "properties": {
+                "advancedConfigurationExistingSecret": {
+                    "type": "string"
+                },
                 "auth": {
                     "properties": {
-                        "password": {
-                            "type": "string"
-                        },
                         "tls": {
                             "properties": {
                                 "enabled": {
@@ -200,9 +195,6 @@
                                 }
                             },
                             "type": "object"
-                        },
-                        "username": {
-                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -219,30 +211,8 @@
                 "exchangeName": {
                     "type": "string"
                 },
-                "extraConfiguration": {
-                    "type": "string"
-                },
                 "extraPlugins": {
                     "type": "string"
-                },
-                "extraVolumes": {
-                    "items": {
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "secret": {
-                                "properties": {
-                                    "secretName": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
                 },
                 "fullnameOverride": {
                     "type": "string"
@@ -254,6 +224,41 @@
                     "properties": {
                         "debug": {
                             "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "ldap": {
+                    "properties": {
+                        "authorisationEnabled": {
+                            "type": "boolean"
+                        },
+                        "basedn": {
+                            "type": "string"
+                        },
+                        "binddn": {
+                            "type": "string"
+                        },
+                        "bindpw": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "port": {
+                            "type": "integer"
+                        },
+                        "servers": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "uidField": {
+                            "type": "string"
+                        },
+                        "userDnPattern": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -311,59 +316,28 @@
         },
         "datadb": {
             "properties": {
+                "auth": {
+                    "properties": {
+                        "replicationPassword": {
+                            "type": "string"
+                        },
+                        "replicationUser": {
+                            "type": "string"
+                        },
+                        "rootPassword": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
                 },
                 "extraFlags": {
                     "type": "string"
                 },
-                "extraVolumeMounts": {
-                    "items": {
-                        "properties": {
-                            "mountPath": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
-                "extraVolumes": {
-                    "items": {
-                        "properties": {
-                            "emptyDir": {
-                                "properties": {},
-                                "type": "object"
-                            },
-                            "name": {
-                                "type": "string"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
                 "fullnameOverride": {
                     "type": "string"
-                },
-                "galera": {
-                    "properties": {
-                        "mariabackup": {
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    },
-                    "type": "object"
                 },
                 "image": {
                     "properties": {
@@ -381,44 +355,208 @@
                     },
                     "type": "object"
                 },
-                "persistence": {
+                "primary": {
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "replicaCount": {
-                    "type": "integer"
-                },
-                "rootUser": {
-                    "properties": {
-                        "password": {
-                            "type": "string"
-                        },
-                        "user": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "service": {
-                    "properties": {
-                        "extraPorts": {
+                        "extraVolumeMounts": {
                             "items": {
                                 "properties": {
+                                    "mountPath": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "extraVolumes": {
+                            "items": {
+                                "properties": {
+                                    "emptyDir": {
+                                        "properties": {},
+                                        "type": "object"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "persistence": {
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "service": {
+                            "properties": {
+                                "extraPorts": {
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "port": {
+                                                "type": "integer"
+                                            },
+                                            "protocol": {
+                                                "type": "string"
+                                            },
+                                            "targetPort": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "sidecars": {
+                            "items": {
+                                "properties": {
+                                    "envFrom": {
+                                        "items": {
+                                            "properties": {
+                                                "secretRef": {
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    },
+                                    "image": {
+                                        "type": "string"
+                                    },
+                                    "imagePullPolicy": {
+                                        "type": "string"
+                                    },
+                                    "livenessProbe": {
+                                        "properties": {
+                                            "exec": {
+                                                "properties": {
+                                                    "command": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "initialDelaySeconds": {
+                                                "type": "integer"
+                                            },
+                                            "periodSeconds": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
                                     "name": {
                                         "type": "string"
                                     },
-                                    "port": {
-                                        "type": "integer"
+                                    "ports": {
+                                        "items": {
+                                            "properties": {
+                                                "containerPort": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "protocol": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
                                     },
-                                    "protocol": {
-                                        "type": "string"
+                                    "readinessProbe": {
+                                        "properties": {
+                                            "exec": {
+                                                "properties": {
+                                                    "command": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "initialDelaySeconds": {
+                                                "type": "integer"
+                                            },
+                                            "periodSeconds": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
                                     },
-                                    "targetPort": {
-                                        "type": "integer"
+                                    "securityContext": {
+                                        "properties": {
+                                            "allowPrivilegeEscalation": {
+                                                "type": "boolean"
+                                            },
+                                            "capabilities": {
+                                                "properties": {
+                                                    "drop": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "runAsGroup": {
+                                                "type": "integer"
+                                            },
+                                            "runAsNonRoot": {
+                                                "type": "boolean"
+                                            },
+                                            "runAsUser": {
+                                                "type": "integer"
+                                            },
+                                            "seccompProfile": {
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "volumeMounts": {
+                                        "items": {
+                                            "properties": {
+                                                "mountPath": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
                                     }
                                 },
                                 "type": "object"
@@ -428,158 +566,19 @@
                     },
                     "type": "object"
                 },
-                "sidecars": {
-                    "items": {
-                        "properties": {
-                            "envFrom": {
-                                "items": {
-                                    "properties": {
-                                        "secretRef": {
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            },
-                            "image": {
-                                "type": "string"
-                            },
-                            "livenessProbe": {
-                                "properties": {
-                                    "exec": {
-                                        "properties": {
-                                            "command": {
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "type": "array"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "ports": {
-                                "items": {
-                                    "properties": {
-                                        "containerPort": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "protocol": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            },
-                            "readinessProbe": {
-                                "properties": {
-                                    "exec": {
-                                        "properties": {
-                                            "command": {
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "type": "array"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "initialDelaySeconds": {
-                                        "type": "integer"
-                                    },
-                                    "periodSeconds": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "securityContext": {
-                                "properties": {
-                                    "allowPrivilegeEscalation": {
-                                        "type": "boolean"
-                                    },
-                                    "capabilities": {
-                                        "properties": {
-                                            "drop": {
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "type": "array"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "runAsGroup": {
-                                        "type": "integer"
-                                    },
-                                    "runAsNonRoot": {
-                                        "type": "boolean"
-                                    },
-                                    "runAsUser": {
-                                        "type": "integer"
-                                    },
-                                    "seccompProfile": {
-                                        "properties": {
-                                            "type": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                },
-                                "type": "object"
-                            },
-                            "volumeMounts": {
-                                "items": {
-                                    "properties": {
-                                        "mountPath": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                },
-                                "type": "array"
-                            }
-                        },
-                        "type": "object"
+                "secondary": {
+                    "properties": {
+                        "replicaCount": {
+                            "type": "integer"
+                        }
                     },
-                    "type": "array"
+                    "type": "object"
                 }
             },
             "type": "object"
         },
         "dataservice": {
             "properties": {
-                "consumerConcurrentMax": {
-                    "type": "integer"
-                },
-                "consumerConcurrentMin": {
-                    "type": "integer"
-                },
                 "default": {
                     "properties": {
                         "date": {
@@ -625,11 +624,33 @@
                     },
                     "type": "object"
                 },
+                "rabbitmq": {
+                    "properties": {
+                        "consumer": {
+                            "properties": {
+                                "password": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "consumerConcurrentMax": {
+                            "type": "integer"
+                        },
+                        "consumerConcurrentMin": {
+                            "type": "integer"
+                        },
+                        "requeueRejected": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
                 "replicaCount": {
                     "type": "integer"
-                },
-                "requeueRejected": {
-                    "type": "boolean"
                 },
                 "s3": {
                     "properties": {
@@ -672,6 +693,91 @@
         },
         "hostname": {
             "type": "string"
+        },
+        "identityservice": {
+            "properties": {
+                "customSchemaFiles": {
+                    "properties": {
+                        "00-memberof.ldif": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "global": {
+                    "properties": {
+                        "adminPassword": {
+                            "type": "string"
+                        },
+                        "adminUser": {
+                            "type": "string"
+                        },
+                        "configUserEnabled": {
+                            "type": "boolean"
+                        },
+                        "ldapDomain": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "ltb-passwd": {
+                    "properties": {
+                        "ingress": {
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "persistence": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "phpldapadmin": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "replication": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "userPasswords": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
         },
         "ingress": {
             "properties": {
@@ -756,9 +862,21 @@
         },
         "metadatadb": {
             "properties": {
-                "db": {
+                "auth": {
                     "properties": {
-                        "name": {
+                        "database": {
+                            "type": "string"
+                        },
+                        "replicationPassword": {
+                            "type": "string"
+                        },
+                        "replicationUser": {
+                            "type": "string"
+                        },
+                        "root": {
+                            "type": "string"
+                        },
+                        "rootPassword": {
                             "type": "string"
                         }
                     },
@@ -774,32 +892,8 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
-                "galera": {
-                    "properties": {
-                        "mariabackup": {
-                            "properties": {
-                                "password": {
-                                    "type": "string"
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    },
-                    "type": "object"
-                },
                 "host": {
                     "type": "string"
-                },
-                "image": {
-                    "properties": {
-                        "debug": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
                 },
                 "initdbScriptsConfigMap": {
                     "type": "string"
@@ -815,42 +909,10 @@
                     },
                     "type": "object"
                 },
-                "persistence": {
+                "secondary": {
                     "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "replicaCount": {
-                    "type": "integer"
-                },
-                "rootUser": {
-                    "properties": {
-                        "password": {
-                            "type": "string"
-                        },
-                        "user": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "service": {
-                    "properties": {
-                        "annotations": {
-                            "properties": {},
-                            "type": "object"
-                        },
-                        "loadBalancerIP": {
-                            "type": "string"
-                        },
-                        "loadBalancerSourceRanges": {
-                            "type": "array"
-                        },
-                        "type": {
-                            "type": "string"
+                        "replicaCount": {
+                            "type": "integer"
                         }
                     },
                     "type": "object"
@@ -893,6 +955,9 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
                 },
                 "granularity": {
                     "type": "string"
@@ -966,66 +1031,8 @@
                 "clusterName": {
                     "type": "string"
                 },
-                "config": {
-                    "properties": {
-                        "opensearch.yml": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
                 "enabled": {
                     "type": "boolean"
-                },
-                "extraEnvs": {
-                    "items": {
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "value": {
-                                "type": "string"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
-                "extraVolumeMounts": {
-                    "items": {
-                        "properties": {
-                            "mountPath": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "readOnly": {
-                                "type": "boolean"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
-                },
-                "extraVolumes": {
-                    "items": {
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "secret": {
-                                "properties": {
-                                    "secretName": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "type": "array"
                 },
                 "fullnameOverride": {
                     "type": "string"
@@ -1033,53 +1040,24 @@
                 "host": {
                     "type": "string"
                 },
-                "masterService": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "persistence": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
                 "port": {
                     "type": "integer"
                 },
-                "protocol": {
-                    "type": "string"
-                },
-                "replicas": {
-                    "type": "integer"
-                },
-                "service": {
+                "security": {
                     "properties": {
-                        "annotations": {
-                            "properties": {},
-                            "type": "object"
-                        },
-                        "loadBalancerSourceRanges": {
-                            "type": "array"
-                        },
-                        "type": {
+                        "adminPassword": {
                             "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "sysctlInit": {
-                    "properties": {
+                        },
+                        "adminUsername": {
+                            "type": "string"
+                        },
                         "enabled": {
                             "type": "boolean"
                         }
                     },
                     "type": "object"
                 },
-                "username": {
+                "servicenameOverride": {
                     "type": "string"
                 }
             },
@@ -1441,6 +1419,42 @@
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "securityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"

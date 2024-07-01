@@ -20,5 +20,8 @@ dependencies:
 - name: tusd
   repository: https://charts.sagikazarmark.dev
   version: 0.1.2
-digest: sha256:867a4a60bbccfaeb880d000eeb634db20554ef91523aa3b1331c53bdf48e8db4
-generated: "2024-06-14T15:12:25.44560113+02:00"
+- name: openldap-stack-ha
+  repository: https://jp-gouin.github.io/helm-openldap/
+  version: 4.2.5
+digest: sha256:148c7e81b148258da485bc471e36de0f52b8abb1811f26557b1c11e5756e88c7
+generated: "2024-06-26T07:56:42.532498605+02:00"

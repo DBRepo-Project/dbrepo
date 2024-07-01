@@ -44,7 +44,48 @@ are *not* recommended and not tested.
 
 ## Custom Install
 
-TBD
+In case you prefer a customized install, start by downloading the `docker-compose.yml` file used to define the services:
+
+```bash
+curl -O docker-compose.yml -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/.docker/docker-compose.yml
+```
+
+Create the folder `dist/` that hold necessary configuration files and download the Metadata Database schema and initial 
+data to display the created Data Database container:
+
+```bash
+mkdir -p dist
+curl -O dist/setup-schema.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-metadata-db/setup-schema.sql
+curl -O dist/setup-data.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-metadata-db/setup-data.sql
+```
+
+Download the Broker Service configuration files:
+
+```bash
+curl -O dist/rabbitmq.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/rabbitmq.conf
+curl -O dist/enabled_plugins -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/enabled_plugins
+curl -O dist/definitions.json -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/definitions.json
+```
+
+!!! warning "Default admin user credentials"
+
+    Note that you need to change the default user credentials `fda:fda` of the Broker Service by setting `users.0.name`
+    and `users.0.password_hash` of the `definitions.json` file. The `password_hash` can be created by executing 
+    `./helm/dbrepo/hack/generate-rabbitmq-pw.sh <your_password>`.
+
+Download the Gateway Service configuration file (or integrate it into your existing NGINX reverse proxy config):
+
+```bash
+curl -O dist/dbrepo.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-gateway-service/dbrepo.conf
+```
+
+Download the S3 configuration for the Storage Service:
+
+```bash
+curl -O dist/s3_config.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-storage-service/s3_config.conf
+```
+
+Continue the custom install by customizing the [User Interface](../api/ui).
 
 ## Architecture
 
@@ -105,6 +146,12 @@ In case the deployment is unsuccessful, we have explanations on their origin and
 
 :   *Origin*:   Your deployment machine (e.g. laptop, virtual machine) appears to not have enough RAM assigned.
 :   *Solution*: Assign more RAM to the deployment machine (e.g. add vRAM to the virtual machine).
+
+**HTTP access denied: user 'admin' - invalid credentials**
+
+:   *Origin*:   The broker service cannot bind to the identity service due to wrong configuration.
+:   *Solution*: This is very likely due to a wrong `auth_ldap.dn_lookup_bind.password` in `rabbitmq.conf`. The error
+                indicates that LDAP check is not even attempted.
 
 ## Next Steps
 

@@ -21,15 +21,7 @@
   ],
   "global_parameters": [],
   "parameters": [],
-  "permissions": [
-    {
-      "configure": ".*",
-      "read": ".*",
-      "user": "fda",
-      "vhost": "dbrepo",
-      "write": ".*"
-    }
-  ],
+  "permissions": [],
   "policies": [],
   "queues": [
     {
@@ -46,17 +38,7 @@
   "rabbit_version": "3.10.25",
   "rabbitmq_version": "3.10.25",
   "topic_permissions": [],
-  "users": [
-    {
-      "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "limits": {},
-      "name": "fda",
-      "password_hash": "7e3Pa0qgP4kvQmCecg6mfFLDWuBEtKagLcNvPcgCd1XCr3sR",
-      "tags": [
-        "administrator"
-      ]
-    }
-  ],
+  "users": [],
   "vhosts": [
     {
       "limits": [],

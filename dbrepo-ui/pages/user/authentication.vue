@@ -112,10 +112,10 @@ export default {
     changePassword () {
       this.loadingUpdate = true
       const userService = useUserService()
-      userService.updatePassword(this.user.id, this.password)
+      userService.updatePassword(this.user.id, {'password': this.password})
         .then(() => {
           const toast = useToastInstance()
-          toast.success('success.user.password')
+          toast.success(this.$t('success.user.password'))
           this.loadingUpdate = false
         })
         .catch(() => {

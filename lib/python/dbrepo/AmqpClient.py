@@ -60,5 +60,5 @@ class AmqpClient:
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.basic_publish(exchange=exchange, routing_key=routing_key,
-                              body=CreateData(data=data).model_dump_json())
+                              body=json.dumps(data))
         connection.close()

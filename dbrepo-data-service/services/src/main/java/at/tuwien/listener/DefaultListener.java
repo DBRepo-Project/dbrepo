@@ -12,7 +12,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +22,6 @@ import java.util.Map;
 
 @Log4j2
 @Component
-@RabbitListener(queues = "dbrepo")
 public class DefaultListener implements MessageListener {
 
     private final ObjectMapper objectMapper;

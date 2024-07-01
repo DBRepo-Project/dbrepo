@@ -92,9 +92,9 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> create(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
-                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+                                                    @NotBlank @PathVariable("userId") UUID userId,
+                                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
@@ -154,9 +154,9 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> update(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
-                                    @NotNull Principal principal) throws NotAllowedException,
+                                       @NotBlank @PathVariable("userId") UUID userId,
+                                       @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                       @NotNull Principal principal) throws NotAllowedException,
             ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
@@ -255,8 +255,8 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                    @NotBlank @PathVariable("userId") UUID userId,
-                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+                                       @NotBlank @PathVariable("userId") UUID userId,
+                                       @NotNull Principal principal) throws NotAllowedException, ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);

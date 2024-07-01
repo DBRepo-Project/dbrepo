@@ -1048,15 +1048,6 @@ export function isActiveMessage(message: any) {
   return false
 }
 
-export function translate(t: any, code: string): string {
-  if (t === null) {
-    console.error('$t is null')
-    return ''
-  }
-  console.debug('$t argument', code)
-  return t(code)
-}
-
 export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
   if (error.code === 'ECONNABORTED') {
     /* timeout */

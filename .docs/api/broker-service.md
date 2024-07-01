@@ -19,23 +19,18 @@ It holds exchanges and topics responsible for holding AMQP messages for later co
 use [RabbitMQ](https://www.rabbitmq.com/) in the implementation. By default, the endpoint listens to the insecure port `5672` for incoming 
 AMQP tuples and insecure port `15672` for the management UI.
 
-The default configuration creates a user with administrative privileges on the default virtual host `dbrepo`:
+The default configuration allows any user in the `cn=system,ou=users,dc=dbrepo,dc=at` from the 
+[Identity Service](../identity-service) to access the Broker Service as user with `administrator` role, i.e. the
+`cn=admin,dc=dbrepo,dc=at` user that is created by default.
 
-* Username: `fda`
-* Password: `fda`
-* Roles: `["administrator"]`
+The Broker Service allows two ways of authentication for AMQP tuples:
 
-The Broker Service allows two ways of authentication:
+1. LDAP
+2. Plain (RabbitMQ's internal authentication)
 
-1. Plain
-2. OAuth2
-
-For detailed examples how to authenticate with the Broker Service see 
-the [usage](/usage-broker) page.
-
-The architecture of the Broker Service is very simple. There is only one durable, topic exchange `dbrepo` and one quorum
-queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples with routing key prefix `dbrepo.` (mind 
-the dot!) to this queue.
+The queue architecture of the Broker Service is very simple. There is only one durable, topic exchange `dbrepo` and one
+quorum queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples with routing key prefix `dbrepo.`
+to this queue.
 
 <figure markdown>
    ![Data ingest](../images/queue-quorum.png)
@@ -64,10 +59,10 @@ The consumer takes care of writing it to the correct table in the [Data Service]
 
 For a secure deployment it is necessary to configure the Broker Service as follows:
 
-1. Download the [`rabbitmq.conf`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-broker-service/rabbitmq.conf.secure) and
-   change the `default_user` and `default_pass` lines before mounting it to `/etc/rabbitmq/rabbitmq.conf`.
-2. Mount your previously generated certificate and RSA public key pair (PEM-encoded) to `/app/cert.pem` 
+1. Once you change the admin password of the [Identity Service](../identity-service), you need to change it in the
+   `rabbitmq.conf` as well: `auth_ldap.dn_lookup_bind.password=newpassword`.
+2. Enable TLS and mount your previously generated certificate and RSA public key pair (PEM-encoded) to `/app/cert.pem` 
    and `/app/pubkey.pem`. Note that these are *not* used for TLS encryption, but only for authentication of users. It
-   is not recommended to use "real" TLS certificates, self-signed certificates with *sufficient keylength* are best-practice.
-3. Mount your TLS certificate authority file into `/etc/rabbitmq/cacert.crt` and your TLS certificate / private key pair
-   into `/etc/tls/tls.crt` and `/etc/tls/tls.key`.
+   is not recommended to use "real" TLS certificates, self-signed certificates with *sufficient keylength* are 
+   best-practice. Mount your TLS certificate authority file into `/etc/rabbitmq/cacert.crt` and your TLS certificate 
+   / private key pair into `/etc/tls/tls.crt` and `/etc/tls/tls.key`.

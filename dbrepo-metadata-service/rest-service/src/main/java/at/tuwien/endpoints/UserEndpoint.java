@@ -6,6 +6,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.*;
+import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -92,8 +93,13 @@ public class UserEndpoint {
             @ApiResponse(responseCode = "400",
                     description = "Parameters are not well-formed (likely email)",
                     content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403",
+                    description = "Internal authentication to the auth service is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "default role not found",
+                    description = "Default role not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -119,14 +125,12 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws UserExistsException, EmailExistsException, ServiceException, ServiceConnectionException,
-            UserNotFoundException {
+            throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException, CredentialsInvalidException {
         log.debug("endpoint create user, data.username={}", data.getUsername());
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
-        authenticationService.create(data);
-        final at.tuwien.api.keycloak.UserDto keycloakUserDto = authenticationService.findByUsername(data.getUsername());
-        final User user = userService.create(data, keycloakUserDto.getId());
+        final User user = userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0]);
         log.info("Created user with id: {}", user.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserDto(user));
@@ -174,7 +178,7 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
-            throws ServiceException, ServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
+            throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
             AccountNotSetupException {
         log.debug("endpoint get token, data.username={}", data.getUsername());
         /* check */
@@ -223,7 +227,7 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TokenDto> refreshToken(@NotNull @Valid @RequestBody RefreshTokenRequestDto data)
-            throws ServiceConnectionException, CredentialsInvalidException {
+            throws AuthServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint refresh token");
         /* check */
         final TokenDto token = authenticationService.refreshToken(data.getRefreshToken());
@@ -258,7 +262,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("userId") UUID userId,
                                         @NotNull Principal principal) throws NotAllowedException,
             UserNotFoundException {
-        log.debug("endpoint find a user, userId={}", userId);
+        log.debug("endpoint find a user, userId={}, principal.name={}", userId, principal.getName());
         /* check */
         final User user = userService.findById(userId);
         if (!user.equals(principal)) {
@@ -354,9 +358,10 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> password(@NotNull @PathVariable("userId") UUID userId,
-                                      @NotNull @Valid @RequestBody UserPasswordDto data,
-                                      @NotNull Principal principal) throws NotAllowedException, ServiceException,
-            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException {
+                                         @NotNull @Valid @RequestBody UserPasswordDto data,
+                                         @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
+            AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ServiceException,
+            ServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint modify a user password, userId={}, data.password=(hidden)", userId);
         User user = userService.findById(userId);
         if (!user.equals(principal)) {

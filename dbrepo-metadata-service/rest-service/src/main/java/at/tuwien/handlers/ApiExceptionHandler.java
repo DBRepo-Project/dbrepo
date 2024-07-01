@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Log4j2
@@ -28,6 +27,20 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.PRECONDITION_REQUIRED)
     @ExceptionHandler(AccountNotSetupException.class)
     public ResponseEntity<ApiErrorDto> handle(AccountNotSetupException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
+    @ExceptionHandler(AuthServiceConnectionException.class)
+    public ResponseEntity<ApiErrorDto> handle(AuthServiceConnectionException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(AuthServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(AuthServiceException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
