@@ -4,6 +4,7 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
@@ -48,7 +49,7 @@ public class ViewEndpoint {
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewEndpoint(UserService userService, ViewService viewService, MetadataMapper metadataMapper, 
+    public ViewEndpoint(UserService userService, ViewService viewService, MetadataMapper metadataMapper,
                         DatabaseService databaseService) {
         this.userService = userService;
         this.viewService = viewService;
@@ -242,8 +243,8 @@ public class ViewEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<View> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                    @NotNull @PathVariable("viewId") Long viewId,
-                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+                                       @NotNull @PathVariable("viewId") Long viewId,
+                                       @NotNull Principal principal) throws NotAllowedException, ServiceException,
             ServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);

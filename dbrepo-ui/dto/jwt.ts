@@ -11,7 +11,8 @@ interface Token {
   realm_access: RealmAccess;
   scope: string;
   sid: string;
-  client_id: string;
+  uid: string;
+  preferred_username: string;
 }
 
 interface RealmAccess {

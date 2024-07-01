@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.Database;
@@ -7,7 +8,6 @@ import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.repository.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

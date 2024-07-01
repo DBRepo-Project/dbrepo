@@ -3,6 +3,7 @@ package at.tuwien.entities.user;
 import at.tuwien.entities.database.DatabaseAccess;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -10,6 +11,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
+@Log4j2
 @Data
 @Entity
 @Builder
@@ -19,9 +21,6 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_users")
-@NamedQueries({
-        @NamedQuery(name = "User.findByUsername", query = "select u from User u where u.username = ?1")
-})
 public class User {
 
     @Id
@@ -71,12 +70,16 @@ public class User {
             return true;
         }
         if (o instanceof Principal principal) {
-            return this.getUsername().equals(principal.getName());
+            final boolean result = this.getUsername().equals(principal.getName());
+            log.trace("check if username {} equals principal name {}: {}", username, principal.getName(), result);
+            return result;
         }
         if (!(o instanceof User other)) {
             return false;
         }
-        return this.getId().equals(other.getId());
+        final boolean result = this.getId().equals(other.getId());
+        log.trace("check if id {} equals other id {}: {}", id, other.getId(), result);
+        return result;
     }
 
 }

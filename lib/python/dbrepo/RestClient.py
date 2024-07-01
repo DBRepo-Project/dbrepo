@@ -238,6 +238,7 @@ class RestClient:
         :returns: The user, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
+        :raises ForbiddenError: If the internal authentication to the auth service is invalid.
         :raises UsernameExistsError: The username exists already.
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the created user was not found in the auth service.
@@ -253,8 +254,10 @@ class RestClient:
             return UserBrief.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create user: {response.text}')
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to create user: internal authentication to the auth service is invalid')
         if response.status_code == 404:
-            raise NotExistsError(f'Failed to create user: failed to find created user in auth service')
+            raise NotExistsError(f'Failed to create user: created user not found in auth service')
         if response.status_code == 409:
             raise UsernameExistsError(f'Failed to create user: user with username exists')
         if response.status_code == 417:

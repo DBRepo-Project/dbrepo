@@ -46,6 +46,7 @@ public class QueueServiceRabbitMqImpl extends HibernateConnector implements Queu
                 dataMapper.prepareStatementWithColumnTypeObject(preparedStatement, optional.get().getColumnType(), idx[0]++,
                         entry.getValue());
             }
+            preparedStatement.executeUpdate();
             log.trace("successfully inserted tuple");
         } finally {
             dataSource.close();

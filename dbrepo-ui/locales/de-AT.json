@@ -1030,6 +1030,10 @@
     }
   },
   "error": {
+    "auth": {
+      "connection": "Kontakt zum Authentifizierungsdienst fehlgeschlagen",
+      "invalid": "Authentifizierung im Authentifizierungsdienst fehlgeschlagen"
+    },
     "access": {
       "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden"
     },

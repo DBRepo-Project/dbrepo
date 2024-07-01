@@ -38,6 +38,7 @@ nav:
       - Broker Service: api/broker-service.md
       - Data Service: api/data-service.md
       - Gateway Service: api/gateway-service.md
+      - Identity Service: api/identity-service.md
       - Metadata Service: api/metadata-service.md
       - Search Service: api/search-service.md
       - Storage Service: api/storage-service.md

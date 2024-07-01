@@ -1,8 +1,6 @@
 package at.tuwien.gateway;
 
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.amqp.ExchangeDto;
-import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.exception.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -141,90 +139,6 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(ServiceException.class, () -> {
             brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
-        });
-    }
-
-    @Test
-    public void findQueue_fails() {
-        final ResponseEntity<QueueDto> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(QueueDto.class)))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(ServiceException.class, () -> {
-            brokerServiceGateway.findQueue("dbrepo");
-        });
-    }
-
-    @Test
-    public void findQueue_unexpected_fails() {
-
-        /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(QueueDto.class));
-
-        /* test */
-        assertThrows(ServiceException.class, () -> {
-            brokerServiceGateway.findQueue("dbrepo");
-        });
-    }
-
-    @Test
-    public void findQueue_succeeds() throws ServiceConnectionException, ServiceException, QueueNotFoundException {
-        final ResponseEntity<QueueDto> mock = ResponseEntity.status(HttpStatus.OK)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(QueueDto.class)))
-                .thenReturn(mock);
-
-        /* test */
-        brokerServiceGateway.findQueue("dbrepo");
-    }
-
-    @Test
-    public void findExchange_fails() {
-        final ResponseEntity<ExchangeDto> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ExchangeDto.class)))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(ServiceException.class, () -> {
-            brokerServiceGateway.findExchange("dbrepo");
-        });
-    }
-
-    @Test
-    public void findExchange_succeeds() throws ServiceConnectionException, ServiceException, ExchangeNotFoundException {
-        final ResponseEntity<ExchangeDto> mock = ResponseEntity.status(HttpStatus.OK)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ExchangeDto.class)))
-                .thenReturn(mock);
-
-        /* test */
-        brokerServiceGateway.findExchange("dbrepo");
-    }
-
-    @Test
-    public void findExchange_unexpected_fails() {
-
-        /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ExchangeDto.class));
-
-        /* test */
-        assertThrows(ServiceException.class, () -> {
-            brokerServiceGateway.findExchange("dbrepo");
         });
     }
 

@@ -1,5 +1,6 @@
 package at.tuwien.config;
 
+import at.tuwien.listener.DefaultListener;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.core.AcknowledgeMode;
@@ -7,6 +8,8 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,34 +56,25 @@ public class RabbitConfig {
     private Integer connectionTimeout;
 
     @Bean
-    public SimpleRabbitListenerContainerFactory getSimpleRabbitListenerContainerFactory() {
-        log.debug("container factory settings: concurrentConsumers={}, maxConcurrentConsumers={}, acknowledgeMode={}, requeueRejected={}",
-                minConcurrent, maxConcurrent, AcknowledgeMode.AUTO, requeueRejected);
-        final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(getConnectionFactory());
-        factory.setConcurrentConsumers(minConcurrent);
-        factory.setMaxConcurrentConsumers(maxConcurrent);
-        factory.setConsecutiveActiveTrigger(1);
-        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
-        factory.setDefaultRequeueRejected(requeueRejected);
-        return factory;
+    public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
+                                             MessageListenerAdapter listenerAdapter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setQueueNames(queueName);
+        container.setMessageListener(listenerAdapter);
+        container.setConcurrentConsumers(minConcurrent);
+        container.setMaxConcurrentConsumers(maxConcurrent);
+        return container;
     }
 
     @Bean
-    public ConnectionFactory getConnectionFactory() {
-        log.debug("rabbitmq endpoint: amqp://{}:{}/{}", host, port, virtualHost);
-        final CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setAddresses(host);
-        factory.setPort(port);
-        factory.setUsername(username);
-        factory.setPassword(password);
-        factory.setVirtualHost(virtualHost);
-        return factory;
+    public MessageListenerAdapter listenerAdapter(DefaultListener listener) {
+        return new MessageListenerAdapter(listener, "onMessage");
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate() {
-        return new RabbitTemplate(getConnectionFactory());
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        return new RabbitTemplate(connectionFactory);
     }
 
 }

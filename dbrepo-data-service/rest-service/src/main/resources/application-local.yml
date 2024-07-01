@@ -9,8 +9,8 @@ spring:
   rabbitmq:
     host: localhost
     virtual-host: dbrepo
-    password: guest
-    username: guest
+    password: admin
+    username: admin
     port: 5672
   jpa:
     show-sql: false

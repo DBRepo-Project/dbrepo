@@ -18,6 +18,7 @@ cache:
 
 stages:
   - build
+  - lint
   - test
   - docs
   - release
@@ -139,6 +140,18 @@ verify-install-script:
     - apk add bash curl
     - bash install.sh
     - exit 0
+
+lint-helm:
+  image: docker.io/docker:24-dind
+  stage: lint
+  except:
+    refs:
+      - /^release-.*/
+  needs:
+    - build-metadata-service
+  script:
+    - apk add sed helm curl
+    - helm lint ./helm/dbrepo
 
 test-metadata-service:
   image: maven:3-openjdk-17

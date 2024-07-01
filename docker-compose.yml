@@ -8,6 +8,7 @@ volumes:
   upload-service-data:
   search-db-data:
   storage-service-data:
+  identity-service-data:
 
 services:
   dbrepo-metadata-db:
@@ -38,8 +39,10 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
-      - data-db-data:/bitnami/mariadb
+      - ./dbrepo-data-db/mysql:/etc/pam.d/mysql
+      - ./dbrepo-data-db/ldap.conf:/etc/ldap.conf
       - "${SHARED_VOLUME:-/tmp}:/tmp"
+      - data-db-data:/bitnami/mariadb
     ports:
       - "3307:3306"
     environment:
@@ -91,9 +94,11 @@ services:
       AUTH_DB: "${AUTH_DB:-keycloak}"
       KC_DB_USERNAME: "${AUTH_USERNAME:-root}"
       KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
-      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
-      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-admin}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-admin}"
     depends_on:
+      dbrepo-identity-service:
+        condition: service_healthy
       dbrepo-auth-db:
         condition: service_healthy
     logging:
@@ -116,8 +121,8 @@ services:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
       ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://gateway-service}"
-      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-fda}
-      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-fda}
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://gateway-service/api/auth}
@@ -125,10 +130,10 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
-      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
@@ -204,13 +209,17 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: docker.io/bitnami/rabbitmq:3.12-debian-12
+    ports:
+      - 15672:15672
+      - 5672:5672
     volumes:
       - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./dbrepo-broker-service/advanced.config:/etc/rabbitmq/advanced.config
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
     depends_on:
-      dbrepo-auth-service:
+      dbrepo-identity-service:
         condition: service_healthy
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
@@ -364,6 +373,28 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-identity-service:
+    restart: "no"
+    container_name: dbrepo-identity-service
+    hostname: identity-service
+    image: bitnami/openldap:2.6.8-debian-12-r1
+    ports:
+      - '1389:1389'
+      - '1636:1636'
+    environment:
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_USERS: "${ADMIN_USERNAME:-admin}"
+      LDAP_PASSWORDS: "${ADMIN_PASSWORD:-admin}"
+      LDAP_GROUP: "${ADMIN_GROUP:-system}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+      LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
+    healthcheck:
+      test: "ldapwhoami -H ldap://localhost:1389 -D ${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at} -w ${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin} || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   dbrepo-search-service-init:
     restart: "no"
     container_name: dbrepo-search-service-init
@@ -459,18 +490,18 @@ services:
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
       ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
-      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-fda}
-      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-fda}
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
-      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}

@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public interface KeycloakGateway {
 
-    TokenDto obtainUserToken(String username, String password) throws ServiceConnectionException,
+    TokenDto obtainUserToken(String username, String password) throws AuthServiceConnectionException,
             CredentialsInvalidException, AccountNotSetupException;
 
-    TokenDto refreshUserToken(String refreshToken) throws ServiceConnectionException,
+    TokenDto refreshUserToken(String refreshToken) throws AuthServiceConnectionException,
             CredentialsInvalidException;
 
     /**
@@ -23,14 +23,14 @@ public interface KeycloakGateway {
      * @throws UserExistsException      The user already exists at the Authentication Service.
      * @throws EmailExistsException The user email already exists in the metadata database.
      */
-    void createUser(UserCreateDto data) throws ServiceException, ServiceConnectionException, EmailExistsException, UserExistsException;
+    void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException, EmailExistsException, UserExistsException, CredentialsInvalidException;
 
     /**
      * Deletes a user at the Authentication Service with given user id.
      *
      * @param id The user id.
      */
-    void deleteUser(UUID id) throws ServiceException, ServiceConnectionException, UserNotFoundException;
+    void deleteUser(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
 
     /**
      * Update the credentials for a given user.
@@ -38,7 +38,7 @@ public interface KeycloakGateway {
      * @param id       The user id.
      * @param password The user credential.
      */
-    void updateUserCredentials(UUID id, UserPasswordDto password) throws ServiceException, ServiceConnectionException;
+    void updateUserCredentials(UUID id, UserPasswordDto password) throws AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException;
 
     /**
      * Finds a user in the metadata database by given username.
@@ -46,8 +46,8 @@ public interface KeycloakGateway {
      * @param username The user username.
      * @return The updated user.
      */
-    UserDto findByUsername(String username) throws ServiceException, ServiceConnectionException, UserNotFoundException;
+    UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
 
-    UserDto findById(UUID id) throws ServiceException, ServiceConnectionException,
-            UserNotFoundException;
+    UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException, CredentialsInvalidException;
 }

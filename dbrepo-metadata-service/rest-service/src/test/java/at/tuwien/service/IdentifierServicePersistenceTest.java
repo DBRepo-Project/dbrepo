@@ -1,7 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.database.License;
-import at.tuwien.repository.*;
+import at.tuwien.repository.ContainerRepository;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.repository.LicenseRepository;
+import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
