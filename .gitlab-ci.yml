@@ -32,7 +32,7 @@ scan-check:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
     GIT_DEPTH: "0"
   script:
-    - "sonar-scanner -Dsonar.token='${CI_SONAR_TOKEN}' -Dsonar.host.url='${CI_SONAR_URL}'"
+    - "sonar-scanner -Dsonar.token=${CI_SONAR_TOKEN} -Dsonar.host.url=${CI_SONAR_URL}"
   allow_failure: true
   cache:
     policy: pull
