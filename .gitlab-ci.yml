@@ -272,18 +272,24 @@ test-lib:
       junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
-scan-check:
+scan-java:
   stage: scan
-  image: docker.io/sonarsource/sonar-scanner-cli:10.0
-  dependencies:
-    - build-metadata-service
-    - build-data-service
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-    GIT_DEPTH: "0"
+  image: maven:3-openjdk-17
   script:
-    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
-  allow_failure: true
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean verify sonar:sonar -Dsonar.projectKey=DBREPO -Dsonar.host.url=${CI_SONAR_URL} -Dsonar.token=${CI_SONAR_TOKEN} -DskipTests"
+    - "mvn -f ./dbrepo-data-service/pom.xml clean verify sonar:sonar -Dsonar.projectKey=DBREPO -Dsonar.host.url=${CI_SONAR_URL} -Dsonar.token=${CI_SONAR_TOKEN} -DskipTests"
+  cache:
+    policy: pull
+    key: "${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - sonar-scanner/
+
+scan-other:
+  stage: scan
+  image: sonarsource/sonar-scanner-cli:10.0
+  script:
+    - 'sonar-scanner -Dsonar.projectKey=DBREPO -Dsonar.host.url=${CI_SONAR_URL} -Dsonar.token="${CI_SONAR_TOKEN}" -Dsonar.exclusions=./dbrepo-metadata-service/**,./dbrepo-data-service/**'
   cache:
     policy: pull
     key: "${CI_COMMIT_SHORT_SHA}"
