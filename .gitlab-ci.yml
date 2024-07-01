@@ -272,285 +272,35 @@ test-lib:
       junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
-scan-analyse-service:
-  image: bitnami/trivy:latest
+scan-check:
   stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
+  image: docker.io/sonarsource/sonar-scanner-cli:10.0
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-analyse-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-analyse-service:latest
+    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+  allow_failure: true
   cache:
+    policy: pull
+    key: "${CI_COMMIT_SHORT_SHA}"
     paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-analyse-service-report.json
+      - sonar-scanner/
 
-scan-auth-service:
-  image: bitnami/trivy:latest
+scan-vulnerability:
   stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json dbrepo-auth-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-auth-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-auth-service:latest
+  image: docker.io/sonarsource/sonar-scanner-cli:10.0
   cache:
+    key: "${CI_COMMIT_SHORT_SHA}"
     paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-authentication-service-report.json
-
-scan-broker-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
+      - .sonar/cache
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-broker-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-broker-service-report.json
-
-scan-data-db-sidecar:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
+    - 'curl -u "${CI_SONAR_TOKEN}:" "${CI_SONAR_URL}/api/issues/gitlab_sast_export?projectKey=DBREPO&branch=${CI_COMMIT_BRANCH}&pullRequest=${CI_MERGE_REQUEST_IID}" -o gl-sast-sonar-report.json'
   allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-data-db-sidecar-report.json dbrepo-data-db-sidecar:latest
-    - trivy image --insecure --exit-code 0 data-db-sidecar:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL data-db-sidecar:latest
-  cache:
-    paths:
-      - .trivycache/
   artifacts:
-    when: always
-    expire_in: 1 days
+    expire_in: 1 day
     reports:
-      container_scanning: ./.trivy/trivy-data-db-sidecar-report.json
-
-scan-gateway-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
-    - trivy image --insecure --exit-code 0 docker.io/nginx:1.25.0-alpine-slim
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/nginx:1.25.0-alpine-slim
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-gateway-service-report.json
-
-scan-metadata-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json dbrepo-metadata-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-metadata-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-service-report.json
-
-scan-data-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json dbrepo-data-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-data-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-data-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-data-service-report.json
-
-scan-search-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json dbrepo-search-db:latest
-    - trivy image --insecure --exit-code 0 dbrepo-search-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-db:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-db-report.json
-
-scan-search-service-init:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-search-service-init-report.json dbrepo-search-service-init:latest
-    - trivy image --insecure --exit-code 0 dbrepo-search-service-init:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-service-init:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-service-init-report.json
-
-scan-data-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-data-db-report.json
-
-scan-ui:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
-    - trivy image --insecure --exit-code 0 dbrepo-ui:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-ui:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-ui-report.json
-
-scan-search-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-search-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-search-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-ui-report.json
-
-scan-storage-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
-    - trivy image --insecure --exit-code 0 docker.io/chrislusf/seaweedfs:3.59
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/chrislusf/seaweedfs:3.59
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-storage-service-report.json
-
-scan-storage-service-init:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.gitlab/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json dbrepo-storage-service-init:latest
-    - trivy image --insecure --exit-code 0 dbrepo-storage-service-init:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-storage-service-init:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-storage-service-init-report.json
+      sast: gl-sast-sonar-report.json
 
 docs-registry:
   stage: docs
@@ -652,33 +402,3 @@ release-libs:
   script:
     - bash ./lib/python/package.sh
     - bash ./lib/python/release.sh
-
-scan-check:
-  stage: scan
-  image: docker.io/sonarsource/sonar-scanner-cli:10.0
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-    GIT_DEPTH: "0"
-  script:
-    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}" -Dsonar.host.url="${CI_SONAR_URL}"'
-  allow_failure: true
-  cache:
-    policy: pull
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - sonar-scanner/
-
-scan-vulnerability:
-  stage: scan
-  image: docker.io/sonarsource/sonar-scanner-cli:10.0
-  cache:
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - .sonar/cache
-  script:
-    - 'curl -u "${CI_SONAR_TOKEN}:" "${CI_SONAR_URL}/api/issues/gitlab_sast_export?projectKey=DBREPO&branch=${CI_COMMIT_BRANCH}&pullRequest=${CI_MERGE_REQUEST_IID}" -o gl-sast-sonar-report.json'
-  allow_failure: true
-  artifacts:
-    expire_in: 1 day
-    reports:
-      sast: gl-sast-sonar-report.json

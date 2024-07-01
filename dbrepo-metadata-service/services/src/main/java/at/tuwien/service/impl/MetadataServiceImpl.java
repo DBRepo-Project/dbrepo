@@ -17,7 +17,6 @@ import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
-import at.tuwien.utils.XmlUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -120,7 +119,7 @@ public class MetadataServiceImpl implements MetadataService {
         final StringBuilder builder = new StringBuilder("<ListMetadataFormats>");
         builder.append(templateEngine.process("metadata-format.xml", new Context()));
         builder.append("</ListMetadataFormats>");
-        return XmlUtil.pretty(parseResponse("verb=\"ListMetadataFormats\"", builder.toString()));
+        return parseResponse("verb=\"ListMetadataFormats\"", builder.toString());
     }
 
     @Override
@@ -130,7 +129,7 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("message", type.getErrorText());
         final String body = templateEngine.process("error.xml", context);
         log.trace("mapped error {}", type);
-        return XmlUtil.pretty(parseResponse(body));
+        return parseResponse(body);
     }
 
     private String requestUrl() {
@@ -153,7 +152,7 @@ public class MetadataServiceImpl implements MetadataService {
             context.setVariable("request", "<request " + parameterString + ">" + requestUrl() + "</request>");
         }
         context.setVariable("body", body);
-        return XmlUtil.pretty(templateEngine.process("_header.xml", context));
+        return templateEngine.process("_header.xml", context);
     }
 
     @Override

@@ -12,6 +12,7 @@ build/
 *.tar
 tmp.yaml
 .docs/.swagger/api-*
+.scannerwork/
 
 # docs
 .docs/.swagger/dist/

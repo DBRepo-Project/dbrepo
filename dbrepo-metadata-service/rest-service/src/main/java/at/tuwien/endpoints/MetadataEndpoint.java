@@ -5,7 +5,6 @@ import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.service.MetadataService;
-import at.tuwien.utils.XmlUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -67,7 +66,7 @@ public class MetadataEndpoint {
         log.debug("endpoint identify repository, verb=Identify");
         final String xml = metadataService.identify();
         log.trace("identify repository resulted in xml {}", xml);
-        return ResponseEntity.ok(XmlUtil.pretty(xml));
+        return ResponseEntity.ok(xml);
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = MediaType.TEXT_XML_VALUE)
@@ -77,7 +76,7 @@ public class MetadataEndpoint {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
         final String xml = metadataService.listIdentifiers(parameters);
         log.trace("list identifiers resulted in xml {}", xml);
-        return ResponseEntity.ok(XmlUtil.pretty(xml));
+        return ResponseEntity.ok(xml);
     }
 
     @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)
@@ -90,28 +89,28 @@ public class MetadataEndpoint {
             log.trace("metadataPrefix does not match supported list: {}", supportedMetadataFormats);
             log.error("Failed to get record: Format {} is not supported", parameters.getMetadataPrefix());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT)));
+                    .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
         }
         log.trace("metadata prefix {} is supported", parameters.getMetadataPrefix());
         final List<String> supportedIdentifierPrefixes = List.of("doi", "oai");
         if (parameters.getIdentifier() == null) {
             log.error("Failed to get record: Identifier is empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.NO_RECORDS_MATCH)));
+                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         } else if (supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
                 || parameters.getIdentifier().indexOf(':') > 3) {
             log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.NO_RECORDS_MATCH)));
+                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         }
         log.trace("identifier prefix of {} is supported", parameters.getIdentifier());
         try {
             final String xml = metadataService.getRecord(parameters);
             log.trace("get record resulted in xml {}", xml);
-            return ResponseEntity.ok(XmlUtil.pretty(xml));
+            return ResponseEntity.ok(xml);
         } catch (IdentifierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST)));
+                    .body(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST));
         }
     }
 
@@ -122,7 +121,7 @@ public class MetadataEndpoint {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
         final String xml = metadataService.listMetadataFormats();
         log.trace("list metadata formats resulted in xml {}", xml);
-        return ResponseEntity.ok(XmlUtil.pretty(xml));
+        return ResponseEntity.ok(xml);
     }
 
 }

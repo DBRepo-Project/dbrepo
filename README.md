@@ -4,6 +4,7 @@
 ![MariaDB 11.2](https://img.shields.io/badge/MariaDB-11.2-white?style=flat)
 ![OpenSearch 2.10](https://img.shields.io/badge/OpenSearch-2.10-white?style=flat)
 ![SeaweedFS 3.59](https://img.shields.io/badge/SeaweedFS-3.59-white?style=flat)
+![OpenLDAP 2.6](https://img.shields.io/badge/OpenLDAP-2.6-white?style=flat)
 
 <img src="./dbrepo-ui/public/logo.png" width="200" alt="DBRepo &mdash; Repository for Data in Databases" />
 
