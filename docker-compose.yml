@@ -39,8 +39,6 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
-      - ./dbrepo-data-db/mysql:/etc/pam.d/mysql
-      - ./dbrepo-data-db/ldap.conf:/etc/ldap.conf
       - "${SHARED_VOLUME:-/tmp}:/tmp"
       - data-db-data:/bitnami/mariadb
     ports:
