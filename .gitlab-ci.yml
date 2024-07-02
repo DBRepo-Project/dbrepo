@@ -49,8 +49,8 @@ build-data-service:
       - /^release-.*/
   needs:
     - build-metadata-service
-  before_script:
-    - ls -la .m2/repository
   script:
+    - "ls -la ~"
+    - "ls -la .m2/repository"
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_CLI_OPTS -DskipTests"
 
