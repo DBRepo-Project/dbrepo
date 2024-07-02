@@ -45,6 +45,8 @@ build-data-service:
   except:
     refs:
       - /^release-.*/
+  needs:
+    - build-metadata-service
   dependencies:
     - build-metadata-service
   script:
