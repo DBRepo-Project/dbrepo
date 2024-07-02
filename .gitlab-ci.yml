@@ -1,8 +1,7 @@
 variables:
   HOSTALIASES: ./hosts
-  TRIVY_NO_PROGRESS: "true"
-  TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
   APP_VERSION: "1.4.5"
@@ -14,7 +13,7 @@ default:
   cache: &global_cache
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - ~/.m2
+      - .m2/repository
     policy: pull-push
 
 stages:
