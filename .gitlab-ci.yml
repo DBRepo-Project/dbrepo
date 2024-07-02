@@ -4,6 +4,7 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
+  PYTHON_VERSION: 3.11
   APP_VERSION: "1.4.5"
   CHART_VERSION: "1.4.5"
 
@@ -289,7 +290,7 @@ scan-other:
   stage: scan
   image: sonarsource/sonar-scanner-cli:10.0
   script:
-    - 'sonar-scanner -Dsonar.projectKey=DBREPO -Dsonar.host.url=${CI_SONAR_URL} -Dsonar.token="${CI_SONAR_TOKEN}" -Dsonar.exclusions=./dbrepo-metadata-service/**,./dbrepo-data-service/**'
+    - 'sonar-scanner -Dsonar.host.url="${CI_SONAR_URL}" -Dsonar.token="${CI_SONAR_TOKEN}" -Dsonar.projectKey=DBREPO -Dsonar.java.file.suffixes=.foo -Dsonar.python.version="${PYTHON_VERSION}"'
   cache:
     policy: pull
     key: "${CI_COMMIT_SHORT_SHA}"
