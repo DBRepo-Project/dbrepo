@@ -39,7 +39,7 @@ build-metadata-service:
     refs:
       - /^release-.*/
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_CLI_OPTS -DskipTests"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
 
 build-analyse-service:
   image: docker.io/python:3.11-alpine
@@ -86,7 +86,7 @@ build-data-service:
   needs:
     - build-metadata-service
   script:
-    - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_CLI_OPTS -DskipTests"
+    - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
 
 build-ui:
   image: oven/bun:1.0.26-alpine
@@ -168,7 +168,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test $MAVEN_CLI_OPTS verify"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test $MAVEN_OPTS verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -189,7 +189,7 @@ test-data-service:
   needs:
     - build-data-service
   script:
-    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_CLI_OPTS"
+    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -275,6 +275,26 @@ test-lib:
     reports:
       junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+scan-sonarqube:
+  image: sonarsource/sonar-scanner-cli:10.0
+  stage: scan
+  only:
+    refs:
+      - master
+  needs:
+    - test-data-service
+    - test-metadata-service
+  dependencies:
+    - test-data-service
+    - test-metadata-service
+  script:
+    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+  cache:
+    policy: pull
+    key: "${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - sonar-scanner/
 
 docs-registry:
   stage: docs
