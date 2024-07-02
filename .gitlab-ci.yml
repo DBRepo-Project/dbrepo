@@ -14,7 +14,7 @@ default:
   cache: &global_cache
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - ~/.m2/
+      - ~/.m2
     policy: pull-push
 
 stages:
