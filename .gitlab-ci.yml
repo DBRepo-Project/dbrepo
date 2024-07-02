@@ -276,6 +276,9 @@ test-lib:
 scan-sonarqube:
   stage: scan
   image: sonarsource/sonar-scanner-cli:10.0
+  needs:
+    - test-data-service
+    - test-metadata-service
   dependencies:
     - test-data-service
     - test-metadata-service
