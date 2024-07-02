@@ -25,7 +25,6 @@ cache:
 
 stages:
   - build
-  - build2
   - lint
   - test
   - docs
@@ -44,10 +43,12 @@ build-metadata-service:
 
 build-data-service:
   image: maven:3-openjdk-17
-  stage: build2
+  stage: build
   except:
     refs:
       - /^release-.*/
+  needs:
+    - build-metadata-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_CLI_OPTS -DskipTests"
 
