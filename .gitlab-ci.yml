@@ -41,7 +41,7 @@ build-data-service:
   except:
     refs:
       - /^release-.*/
-  dependencies:
+  needs:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
