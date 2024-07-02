@@ -14,8 +14,7 @@ default:
   cache: &global_cache
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - node_modules/
-      - .m2/
+      - ~/.m2/
     policy: pull-push
 
 stages:
@@ -36,7 +35,7 @@ build-metadata-service:
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
   after_script:
-    - "ls -la ."
+    - "ls -la ~/"
 
 build-data-service:
   image: maven:3-openjdk-17
