@@ -297,8 +297,8 @@ scan-sonarqube:
     refs:
       - master
   needs:
-    - test-data-service
-    - test-metadata-service
+    - build-data-service
+    - build-metadata-service
   dependencies:
     - build-data-service
     - build-metadata-service
