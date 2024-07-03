@@ -154,7 +154,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`                            |
 | `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`                          |
 | `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`                          |
-| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `nil`                           |
+| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `""`                            |
 | `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`                          |
 | `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`                          |
 | `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`                          |
@@ -178,7 +178,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metadataservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                        | `[]`                            |
 | `metadataservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                        | `1001`                          |
 | `metadataservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                               | `true`                          |
-| `metadataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                   | `nil`                           |
+| `metadataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                   | `""`                            |
 | `metadataservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                | `1001`                          |
 | `metadataservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                               | `1001`                          |
 | `metadataservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                             | `true`                          |
@@ -214,7 +214,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `dataservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                                                      | `[]`                                                                                                                        |
 | `dataservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                                                      | `1001`                                                                                                                      |
 | `dataservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                                                             | `true`                                                                                                                      |
-| `dataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                                                 | `nil`                                                                                                                       |
+| `dataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                                                 | `""`                                                                                                                        |
 | `dataservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                                                              | `1001`                                                                                                                      |
 | `dataservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                                                             | `1001`                                                                                                                      |
 | `dataservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                                                           | `true`                                                                                                                      |
@@ -250,7 +250,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `searchservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`             |
 | `searchservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`           |
 | `searchservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`           |
-| `searchservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `nil`            |
+| `searchservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `""`             |
 | `searchservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`           |
 | `searchservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`           |
 | `searchservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`           |
@@ -293,7 +293,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `ui.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                  | `[]`                    |
 | `ui.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                  | `1001`                  |
 | `ui.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                         | `true`                  |
-| `ui.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                             | `nil`                   |
+| `ui.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                             | `""`                    |
 | `ui.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                          | `1001`                  |
 | `ui.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                         | `1001`                  |
 | `ui.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                       | `true`                  |
