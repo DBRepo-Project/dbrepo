@@ -34,9 +34,9 @@ RUN apk add --no-cache curl bash jq
 
 WORKDIR /app
 
-USER 65534
+USER 1001
 
-COPY --from=build --chown=65534 ./rest-service/target/dbrepo-metadata-service-rest-service-*.jar ./metadata-service.jar
+COPY --from=build --chown=1001 ./rest-service/target/dbrepo-metadata-service-rest-service-*.jar ./metadata-service.jar
 
 # non-root port
 EXPOSE 8080
