@@ -300,8 +300,8 @@ scan-sonarqube:
     - test-data-service
     - test-metadata-service
   dependencies:
-    - test-data-service
-    - test-metadata-service
+    - build-data-service
+    - build-metadata-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
   cache:
