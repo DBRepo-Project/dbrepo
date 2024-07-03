@@ -184,24 +184,6 @@ lint-helm-chart:
   script:
     - helm lint ./helm/dbrepo
 
-lint-helm-readme:
-  image: docker.io/node:18-alpine3.20
-  stage: lint
-  except:
-    refs:
-      - /^release-.*/
-  needs:
-    - build-metadata-service
-  dependencies:
-    - build-metadata-service
-  before_script:
-    - apk add helm git
-    - git clone https://github.com/bitnami/readme-generator-for-helm && cd ./readme-generator-for-helm && npm install && npm install -g pkg && pkg . -o readme-generator-for-helm
-    - helm plugin install https://github.com/losisin/helm-values-schema-json.git
-  script:
-    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
-    - ./readme-generator-for-helm/readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
-
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
