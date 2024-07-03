@@ -43,7 +43,13 @@ build-metadata-service:
   artifacts:
     when: always
     paths:
-      - .m2/repository/at/tuwien
+      - ./dbrepo-metadata-service/test/target/classes
+      - ./dbrepo-metadata-service/services/target/classes
+      - ./dbrepo-metadata-service/repositories/target/classes
+      - ./dbrepo-metadata-service/rest-service/target/classes
+      - ./dbrepo-metadata-service/api/target/classes
+      - ./dbrepo-metadata-service/oai/target/classes
+      - ./dbrepo-metadata-service/entities/target/classes
     expire_in: 1 days
 
 #build-analyse-service:
@@ -94,6 +100,13 @@ build-data-service:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-data-service/services/target/classes
+      - ./dbrepo-data-service/rest-service/target/classes
+      - ./dbrepo-data-service/querystore/target/classes
+    expire_in: 1 days
 
 #build-ui:
 #  image: oven/bun:1.0.26-alpine
