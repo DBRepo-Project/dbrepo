@@ -79,6 +79,8 @@ build-data-service:
       - /^release-.*/
   needs:
     - build-metadata-service
+  dependencies:
+    - build-metadata-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
     - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
