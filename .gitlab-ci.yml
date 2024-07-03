@@ -157,6 +157,8 @@ lint-helm:
       - /^release-.*/
   needs:
     - build-metadata-service
+  dependencies:
+    - build-metadata-service
   script:
     - apk add sed helm curl
     - helm lint ./helm/dbrepo
@@ -168,6 +170,8 @@ test-metadata-service:
     refs:
       - /^release-.*/
   needs:
+    - build-metadata-service
+  dependencies:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test $MAVEN_OPTS verify"
@@ -189,6 +193,8 @@ test-data-service:
     refs:
       - /^release-.*/
   needs:
+    - build-data-service
+  dependencies:
     - build-data-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
@@ -212,6 +218,8 @@ test-analyse-service:
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
+    - build-analyse-service
+  dependencies:
     - build-analyse-service
   script:
     - "pip install pipenv"
@@ -238,6 +246,8 @@ test-search-service:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
     - build-search-service
+  dependencies:
+    - build-search-service
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
@@ -262,6 +272,8 @@ test-lib:
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
+    - build-lib
+  dependencies:
     - build-lib
   script:
     - "pip install pipenv"
