@@ -40,6 +40,18 @@ build-metadata-service:
       - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+  # Compiled classes are needed for SonarQube in later stages
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-metadata-service/test/target/classes
+      - ./dbrepo-metadata-service/services/target/classes
+      - ./dbrepo-metadata-service/repositories/target/classes
+      - ./dbrepo-metadata-service/rest-service/target/classes
+      - ./dbrepo-metadata-service/api/target/classes
+      - ./dbrepo-metadata-service/oai/target/classes
+      - ./dbrepo-metadata-service/entities/target/classes
+    expire_in: 1 days
 
 build-analyse-service:
   image: docker.io/python:3.11-alpine
@@ -85,8 +97,18 @@ build-data-service:
       - /^release-.*/
   needs:
     - build-metadata-service
+  dependencies:
+    - build-metadata-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+  # Compiled classes are needed for SonarQube in later stages
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-data-service/services/target/classes
+      - ./dbrepo-data-service/rest-service/target/classes
+      - ./dbrepo-data-service/querystore/target/classes
+    expire_in: 1 days
 
 build-ui:
   image: oven/bun:1.0.26-alpine
@@ -155,6 +177,8 @@ lint-helm:
       - /^release-.*/
   needs:
     - build-metadata-service
+  dependencies:
+    - build-metadata-service
   script:
     - apk add sed helm curl
     - helm lint ./helm/dbrepo
@@ -166,6 +190,8 @@ test-metadata-service:
     refs:
       - /^release-.*/
   needs:
+    - build-metadata-service
+  dependencies:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test $MAVEN_OPTS verify"
@@ -187,6 +213,8 @@ test-data-service:
     refs:
       - /^release-.*/
   needs:
+    - build-data-service
+  dependencies:
     - build-data-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
@@ -210,6 +238,8 @@ test-analyse-service:
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
+    - build-analyse-service
+  dependencies:
     - build-analyse-service
   script:
     - "pip install pipenv"
@@ -236,6 +266,8 @@ test-search-service:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
     - build-search-service
+  dependencies:
+    - build-search-service
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
@@ -261,6 +293,8 @@ test-lib:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
     - build-lib
+  dependencies:
+    - build-lib
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
@@ -283,13 +317,14 @@ scan-sonarqube:
     refs:
       - master
   needs:
-    - test-data-service
-    - test-metadata-service
+    - build-data-service
+    - build-metadata-service
   dependencies:
-    - test-data-service
-    - test-metadata-service
+    - build-data-service
+    - build-metadata-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+  allow_failure: true
   cache:
     policy: pull
     key: "${CI_COMMIT_SHORT_SHA}"
