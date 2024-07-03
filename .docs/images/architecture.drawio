@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2024-02-23T12:34:29.996Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/23.1.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="wHh4Le3WT9S2OAsQk6sP" version="23.1.5" type="device" pages="8">
+<mxfile host="Electron" modified="2024-07-03T03:24:26.258Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.5.3 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="RiZoZviH4PcE-qe7O5P3" version="24.5.3" type="device" pages="8">
   <diagram id="mvBsv1rP8O80Qe3yGnn_" name="docker-compose">
     <mxGraphModel dx="1434" dy="822" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -780,18 +780,18 @@
     </mxGraphModel>
   </diagram>
   <diagram id="0gRvLy_AUZ0Xau8SBKI8" name="Gitlab Runner">
-    <mxGraphModel dx="1434" dy="822" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="925" dy="530" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-1" value="" style="rounded=1;whiteSpace=wrap;html=1;arcSize=2;" parent="1" vertex="1">
-          <mxGeometry x="280" y="40" width="730" height="260" as="geometry" />
+          <mxGeometry x="250" y="40" width="760" height="260" as="geometry" />
         </mxCell>
-        <mxCell id="r9iJ3a_E54lvpWGN0BaG-3" value="minikube" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" parent="1" vertex="1">
-          <mxGeometry x="322" y="50" width="110" height="10" as="geometry" />
+        <mxCell id="r9iJ3a_E54lvpWGN0BaG-3" value="Kubernetes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="292" y="50" width="110" height="10" as="geometry" />
         </mxCell>
-        <mxCell id="r9iJ3a_E54lvpWGN0BaG-4" value="&lt;font style=&quot;font-weight: normal; font-size: 10px;&quot;&gt;128.130.202.116&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" parent="1" vertex="1">
-          <mxGeometry x="322" y="65" width="110" height="10" as="geometry" />
+        <mxCell id="r9iJ3a_E54lvpWGN0BaG-4" value="&lt;font style=&quot;font-weight: normal; font-size: 10px;&quot;&gt;azimuth.datalab.tuwien.ac.at&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="292" y="65" width="110" height="10" as="geometry" />
         </mxCell>
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="r9iJ3a_E54lvpWGN0BaG-5" target="r9iJ3a_E54lvpWGN0BaG-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -813,14 +813,14 @@
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="r9iJ3a_E54lvpWGN0BaG-5" target="r9iJ3a_E54lvpWGN0BaG-29" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="r9iJ3a_E54lvpWGN0BaG-5" value="&lt;b&gt;agentpool&lt;/b&gt;&lt;br&gt;6 CPU, 24GB RAM" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="r9iJ3a_E54lvpWGN0BaG-5" value="&lt;b&gt;agentpool&lt;/b&gt;&lt;br&gt;8 vCPU, 32GB RAM" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="567.5" y="75" width="115" height="40" as="geometry" />
         </mxCell>
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-6" value="&lt;b&gt;gitlab-runner&lt;/b&gt;&lt;br&gt;kubernetes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
-          <mxGeometry x="300" y="140" width="100" height="40" as="geometry" />
+          <mxGeometry x="270" y="140" width="100" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="r9iJ3a_E54lvpWGN0BaG-7" value="&lt;b&gt;gitlab-runner&lt;/b&gt;&lt;br&gt;kubernetes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
-          <mxGeometry x="420" y="140" width="100" height="40" as="geometry" />
+        <mxCell id="r9iJ3a_E54lvpWGN0BaG-7" value="&lt;b&gt;seaweedfs-s3&lt;/b&gt;&lt;br&gt;kubernetes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="390" y="140" width="100" height="40" as="geometry" />
         </mxCell>
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-20" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="540" y="140" width="170" height="140" as="geometry" />
@@ -881,8 +881,8 @@
         <mxCell id="r9iJ3a_E54lvpWGN0BaG-29" value="•&amp;nbsp;&amp;nbsp;•&amp;nbsp;&amp;nbsp;•&amp;nbsp; •&amp;nbsp;&amp;nbsp;•" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="734" y="193" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="vhbaQO3R_VC2zLA3inCI-4" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://miro.medium.com/v2/resize:fit:400/0*KzqL3xqmXzV5PPjX.png;" parent="1" vertex="1">
-          <mxGeometry x="290" y="50" width="25.78" height="25" as="geometry" />
+        <mxCell id="EFzMD_oVcaiTEb37ajv_-6" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/144_Gitlab_logo_logos-512.png;" vertex="1" parent="1">
+          <mxGeometry x="259" y="47" width="30" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
