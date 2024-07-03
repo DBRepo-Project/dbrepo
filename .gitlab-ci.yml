@@ -40,6 +40,11 @@ build-metadata-service:
       - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+  artifacts:
+    when: always
+    paths:
+      - .m2/repository/at/tuwien/dbrepo/
+    expire_in: 1 days
 
 #build-analyse-service:
 #  image: docker.io/python:3.11-alpine
