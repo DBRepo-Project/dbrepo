@@ -185,7 +185,7 @@ lint-helm-chart:
     - helm lint ./helm/dbrepo
 
 lint-helm-readme:
-  image: docker.io/node:20-alpine3.20
+  image: docker.io/node:18-alpine3.20
   stage: lint
   except:
     refs:
