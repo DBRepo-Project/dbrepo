@@ -179,8 +179,9 @@ lint-helm-chart:
     - build-metadata-service
   dependencies:
     - build-metadata-service
-  script:
+  before_script:
     - apk add helm
+  script:
     - helm lint ./helm/dbrepo
 
 lint-helm-readme:
@@ -193,10 +194,12 @@ lint-helm-readme:
     - build-metadata-service
   dependencies:
     - build-metadata-service
-  script:
+  before_script:
     - apk add helm git
-    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
     - git clone https://github.com/bitnami/readme-generator-for-helm && npm install ./readme-generator-for-helm
+    - helm plugin install https://github.com/losisin/helm-values-schema-json.git
+  script:
+    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
     - readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 test-metadata-service:
