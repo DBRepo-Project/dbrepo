@@ -43,7 +43,7 @@ build-metadata-service:
   artifacts:
     when: always
     paths:
-      - .m2/repository/at/tuwien/dbrepo/
+      - .m2/repository
     expire_in: 1 days
 
 #build-analyse-service:
