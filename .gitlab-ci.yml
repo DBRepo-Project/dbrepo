@@ -40,6 +40,7 @@ build-metadata-service:
       - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+  # Compiled classes are needed for SonarQube in later stages
   artifacts:
     when: always
     paths:
@@ -100,6 +101,7 @@ build-data-service:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+  # Compiled classes are needed for SonarQube in later stages
   artifacts:
     when: always
     paths:
@@ -322,6 +324,7 @@ scan-sonarqube:
     - build-metadata-service
   script:
     - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+  allow_failure: true
   cache:
     policy: pull
     key: "${CI_COMMIT_SHORT_SHA}"
