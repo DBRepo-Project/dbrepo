@@ -169,8 +169,8 @@ verify-install-script:
     - bash install.sh
     - exit 0
 
-lint-helm:
-  image: docker.io/docker:24-dind
+lint-helm-chart:
+  image: docker.io/alpine:3.20
   stage: lint
   except:
     refs:
@@ -180,8 +180,24 @@ lint-helm:
   dependencies:
     - build-metadata-service
   script:
-    - apk add sed helm curl
+    - apk add helm
     - helm lint ./helm/dbrepo
+
+lint-helm-readme:
+  image: docker.io/node:20-alpine3.20
+  stage: lint
+  except:
+    refs:
+      - /^release-.*/
+  needs:
+    - build-metadata-service
+  dependencies:
+    - build-metadata-service
+  script:
+    - apk add helm git
+    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
+    - git clone https://github.com/bitnami/readme-generator-for-helm && npm install ./readme-generator-for-helm
+    - readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 test-metadata-service:
   image: maven:3-openjdk-17
