@@ -200,7 +200,7 @@ lint-helm-readme:
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
   script:
     - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
-    - readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
+    - readme-generator-for-helm --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
 
 test-metadata-service:
   image: maven:3-openjdk-17
