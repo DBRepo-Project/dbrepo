@@ -22,25 +22,16 @@ spec:
         app: metadata-service
         service: metadata-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 65534
-        runAsUser: 65534
-        runAsGroup: 65534
+      {{- if .Values.metadataservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metadataservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
       containers:
         - name: metadata-service
           image: {{ .Values.metadataservice.image.name }}
           imagePullPolicy: {{ .Values.metadataservice.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 65534
-            runAsGroup: 65534
-            seccompProfile:
-              type: {{ .Values.metadataservice.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.metadataservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metadataservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 80
               protocol: TCP
@@ -63,4 +54,7 @@ spec:
                 - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
             initialDelaySeconds: 30
             periodSeconds: 30
+          {{- if .Values.metadataservice.resources }}
+          resources: {{- toYaml .Values.metadataservice.resources | nindent 12 }}
+          {{- end }}
 {{- end }}

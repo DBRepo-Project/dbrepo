@@ -22,25 +22,16 @@ spec:
         app: data-service
         service: data-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 65534
-        runAsUser: 65534
-        runAsGroup: 65534
+      {{- if .Values.dataservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dataservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
       containers:
         - name: data-service
           image: {{ .Values.dataservice.image.name }}
           imagePullPolicy: {{ .Values.dataservice.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 65534
-            runAsGroup: 65534
-            seccompProfile:
-              type: {{ .Values.dataservice.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.dataservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.dataservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 80
               protocol: TCP
@@ -63,6 +54,9 @@ spec:
                 - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
             initialDelaySeconds: 30
             periodSeconds: 30
+          {{- if .Values.dataservice.resources }}
+          resources: {{- toYaml .Values.dataservice.resources | nindent 12 }}
+          {{- end }}
           volumeMounts: []
       volumes: []
 {{- end }}

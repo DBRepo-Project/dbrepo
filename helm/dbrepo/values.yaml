@@ -336,6 +336,32 @@ analyseservice:
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: [ ]
+    supplementalGroups: [ ]
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: null
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ "ALL" ]
+    seccompProfile:
+      type: "RuntimeDefault"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 2048Mi
+
   ## @param analyseservice.endpoint The url of the endpoint.
   endpoint: http://analyse-service
   s3:
@@ -356,6 +382,31 @@ metadataservice:
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: [ ]
+    supplementalGroups: [ ]
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: null
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ "ALL" ]
+    seccompProfile:
+      type: "RuntimeDefault"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   admin:
@@ -410,6 +461,31 @@ dataservice:
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: [ ]
+    supplementalGroups: [ ]
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: null
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ "ALL" ]
+    seccompProfile:
+      type: "RuntimeDefault"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
     read: SELECT
@@ -465,6 +541,31 @@ searchservice:
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: [ ]
+    supplementalGroups: [ ]
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: null
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ "ALL" ]
+    seccompProfile:
+      type: "RuntimeDefault"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
   ## @skip searchservice.init
   init:
     image:
@@ -583,6 +684,31 @@ ui:
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: [ ]
+    supplementalGroups: [ ]
+    fsGroup: 1000
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: null
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop: [ "ALL" ]
+    seccompProfile:
+      type: "RuntimeDefault"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
   public:
     api:
       ## @param ui.public.api.client The endpoint for the client api.

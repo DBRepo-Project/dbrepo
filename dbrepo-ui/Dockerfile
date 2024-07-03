@@ -32,11 +32,11 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 ARG APP_VERSION="latest"
 ARG COMMIT=""
 
-USER 1000
+USER 65534
 
 WORKDIR /app
 
-COPY --from=build --chown=1000:1000 /app/.output /app/.output
+COPY --from=build --chown=65534 /app/.output /app/.output
 
 ENV NUXT_PUBLIC_VERSION="${APP_VERSION:-}"
 ENV NUXT_PUBLIC_COMMIT="${COMMIT:-}"

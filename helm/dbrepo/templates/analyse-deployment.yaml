@@ -22,25 +22,16 @@ spec:
         app: analyse-service
         service: analyse-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 1001
-        runAsUser: 1001
-        runAsGroup: 1001
+      {{- if .Values.analyseservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.analyseservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
       containers:
         - name: analyse-service
           image: {{ .Values.analyseservice.image.name }}
           imagePullPolicy: {{ .Values.analyseservice.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            runAsGroup: 1001
-            seccompProfile:
-              type: {{ .Values.analyseservice.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.analyseservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.analyseservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -63,4 +54,7 @@ spec:
                 - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
             initialDelaySeconds: 10
             periodSeconds: 30
+          {{- if .Values.analyseservice.resources }}
+          resources: {{- toYaml .Values.analyseservice.resources | nindent 12 }}
+          {{- end }}
 {{- end }}
