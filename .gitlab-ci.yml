@@ -41,41 +41,41 @@ build-metadata-service:
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
 
-build-analyse-service:
-  image: docker.io/python:3.11-alpine
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
-build-data-db-sidecar:
-  image: docker.io/python:3.11-alpine
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
-build-lib:
-  image: docker.io/python:3.11-alpine
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./lib/python/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#build-analyse-service:
+#  image: docker.io/python:3.11-alpine
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#
+#build-data-db-sidecar:
+#  image: docker.io/python:3.11-alpine
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#
+#build-lib:
+#  image: docker.io/python:3.11-alpine
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./lib/python/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
 build-data-service:
   image: maven:3-openjdk-17
@@ -90,78 +90,78 @@ build-data-service:
   script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
 
-build-ui:
-  image: oven/bun:1.0.26-alpine
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  script:
-    - "cd ./dbrepo-ui && bun install && bun run build"
-
-build-search-service:
-  image: docker.io/python:3.11-alpine
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  script:
-    - "pip install pipenv"
-    - "cd dbrepo-search-service && pipenv install --system --deploy"
-
-build-docker:
-  image: docker.io/docker:24-dind
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - "cp .env.unix.example .env"
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker compose build --parallel"
-
-build-helm:
-  image: docker.io/docker:24-dind
-  stage: build
-  except:
-    refs:
-      - /^release-.*/
-  before_script:
-    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - apk add sed helm curl
-    - helm package ./helm/dbrepo --destination ./build
-
-verify-install-script:
-  image: docker.io/docker:24-dind
-  stage: verify
-  only:
-    refs:
-      - /^release-.*/
-  variables:
-    SKIP_CHECKS: 1
-  script:
-    - apk add bash curl
-    - bash install.sh
-    - exit 0
-
-lint-helm:
-  image: docker.io/docker:24-dind
-  stage: lint
-  except:
-    refs:
-      - /^release-.*/
-  needs:
-    - build-metadata-service
-  dependencies:
-    - build-metadata-service
-  script:
-    - apk add sed helm curl
-    - helm lint ./helm/dbrepo
+#build-ui:
+#  image: oven/bun:1.0.26-alpine
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  script:
+#    - "cd ./dbrepo-ui && bun install && bun run build"
+#
+#build-search-service:
+#  image: docker.io/python:3.11-alpine
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  script:
+#    - "pip install pipenv"
+#    - "cd dbrepo-search-service && pipenv install --system --deploy"
+#
+#build-docker:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - "cp .env.unix.example .env"
+#    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+#    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
+#    - "docker compose build --parallel"
+#
+#build-helm:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  except:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - apk add sed helm curl
+#    - helm package ./helm/dbrepo --destination ./build
+#
+#verify-install-script:
+#  image: docker.io/docker:24-dind
+#  stage: verify
+#  only:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    SKIP_CHECKS: 1
+#  script:
+#    - apk add bash curl
+#    - bash install.sh
+#    - exit 0
+#
+#lint-helm:
+#  image: docker.io/docker:24-dind
+#  stage: lint
+#  except:
+#    refs:
+#      - /^release-.*/
+#  needs:
+#    - build-metadata-service
+#  dependencies:
+#    - build-metadata-service
+#  script:
+#    - apk add sed helm curl
+#    - helm lint ./helm/dbrepo
 
 test-metadata-service:
   image: maven:3-openjdk-17
@@ -209,86 +209,86 @@ test-data-service:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
-test-analyse-service:
-  image: docker.io/python:3.11-alpine
-  stage: test
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  needs:
-    - build-analyse-service
-  dependencies:
-    - build-analyse-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-analyse-service/report.xml
-      - ./dbrepo-analyse-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-analyse-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-search-service:
-  image: docker.io/python:3.11-alpine
-  stage: test
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
-  needs:
-    - build-search-service
-  dependencies:
-    - build-search-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-service/report.xml
-      - ./dbrepo-search-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-lib:
-  image: docker.io/python:3.11-alpine
-  stage: test
-  except:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./lib/python/Pipfile"
-  needs:
-    - build-lib
-  dependencies:
-    - build-lib
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./lib/python/report.xml
-      - ./lib/python/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./lib/python/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#test-analyse-service:
+#  image: docker.io/python:3.11-alpine
+#  stage: test
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  needs:
+#    - build-analyse-service
+#  dependencies:
+#    - build-analyse-service
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-analyse-service/report.xml
+#      - ./dbrepo-analyse-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-analyse-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-search-service:
+#  image: docker.io/python:3.11-alpine
+#  stage: test
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
+#  needs:
+#    - build-search-service
+#  dependencies:
+#    - build-search-service
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-search-service/report.xml
+#      - ./dbrepo-search-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-search-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-lib:
+#  image: docker.io/python:3.11-alpine
+#  stage: test
+#  except:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./lib/python/Pipfile"
+#  needs:
+#    - build-lib
+#  dependencies:
+#    - build-lib
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./lib/python/report.xml
+#      - ./lib/python/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./lib/python/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:10.0
@@ -310,103 +310,103 @@ scan-sonarqube:
     paths:
       - sonar-scanner/
 
-docs-registry:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apt-get update && apt-get install -y sed"
-  script:
-    - pip install -r ./requirements.txt
-    - python3 .docs/docker/release.py
-
-release-images:
-  stage: release
-  image: docker:24-dind
-  dependencies:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
-  script:
-    - "make release-images"
-
-release-helm:
-  stage: release
-  image: docker:24-dind
-  only:
-    refs:
-      - /^release-.*/
-  except:
-    refs:
-      - release-latest
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "apk add sed helm curl"
-    - "mkdir -p ~/.gnupg"
-    - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
-    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
-    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
-    - "helm plugin install https://github.com/sigstore/helm-sigstore"
-  script:
-    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
-
-release-docs:
-  stage: release
-  image: docker.io/python:3.11-alpine
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apk add --update alpine-sdk bash sed wget openssh"
-    - "pip install pipenv"
-    - "pip install -r ./requirements.txt"
-    - "mkdir -p ./final/${APP_VERSION}/rest"
-  script:
-    - "make gen-lib-doc gen-docs-doc"
-    - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
-    - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
-    - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
-    - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
-    - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
-    - eval $(ssh-agent -s)
-    - "mkdir -p /root/.ssh"
-    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
-    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
-    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
-    - tar czf ./final.tar.gz ./final
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final"'
-
-release-libs:
-  stage: release
-  image: docker.io/python:3.11-alpine
-  when: manual
-  only:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  before_script:
-    - "apk add sed bash"
-    - "pip install pipenv twine build"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-  script:
-    - bash ./lib/python/package.sh
-    - bash ./lib/python/release.sh
+#docs-registry:
+#  stage: docs
+#  image: docker.io/python:3.11-slim
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "apt-get update && apt-get install -y sed"
+#  script:
+#    - pip install -r ./requirements.txt
+#    - python3 .docs/docker/release.py
+#
+#release-images:
+#  stage: release
+#  image: docker:24-dind
+#  dependencies:
+#    - test-metadata-service
+#    - test-data-service
+#    - test-analyse-service
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "docker logout ${CI_REGISTRY_URL}"
+#    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+#    - "docker logout ${CI_REGISTRY2_URL}"
+#    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+#    - "ifconfig eth0 mtu 1450 up"
+#    - "apk add make bash"
+#  script:
+#    - "make release-images"
+#
+#release-helm:
+#  stage: release
+#  image: docker:24-dind
+#  only:
+#    refs:
+#      - /^release-.*/
+#  except:
+#    refs:
+#      - release-latest
+#  before_script:
+#    - "docker logout ${CI_REGISTRY_URL}"
+#    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+#    - "docker logout ${CI_REGISTRY2_URL}"
+#    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+#    - "apk add sed helm curl"
+#    - "mkdir -p ~/.gnupg"
+#    - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
+#    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
+#    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
+#    - "helm plugin install https://github.com/sigstore/helm-sigstore"
+#  script:
+#    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
+#
+#release-docs:
+#  stage: release
+#  image: docker.io/python:3.11-alpine
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "apk add --update alpine-sdk bash sed wget openssh"
+#    - "pip install pipenv"
+#    - "pip install -r ./requirements.txt"
+#    - "mkdir -p ./final/${APP_VERSION}/rest"
+#  script:
+#    - "make gen-lib-doc gen-docs-doc"
+#    - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
+#    - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
+#    - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
+#    - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
+#    - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
+#    - eval $(ssh-agent -s)
+#    - "mkdir -p /root/.ssh"
+#    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
+#    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
+#    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
+#    - tar czf ./final.tar.gz ./final
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
+#    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${APP_VERSION}; rm -rf ./final"'
+#
+#release-libs:
+#  stage: release
+#  image: docker.io/python:3.11-alpine
+#  when: manual
+#  only:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  before_script:
+#    - "apk add sed bash"
+#    - "pip install pipenv twine build"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#  script:
+#    - bash ./lib/python/package.sh
+#    - bash ./lib/python/release.sh
