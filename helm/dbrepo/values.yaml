@@ -1,23 +1,29 @@
 # Copyright the DBRepo developers
 # SPDX-License-Identifier: APACHE-2.0
 
+## @section Global parameters
+
+global:
+  ## Compatibility adaptations for Kubernetes platforms
+  compatibility:
+    ##  Compatibility adaptations for Openshift
+    openshift:
+      ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
+      adaptSecurityContext: auto
+  ## @param global.storageClass Global StorageClass for Persistent Volume(s)
+  storageClass: ""
+
 ## @section Common parameters
-##
 
 ## @param namespace The namespace to install the chart
-##
 namespace: dbrepo
 ## @param hostname The hostname.
-##
 hostname: example.com
 ## @param gateway The gateway endpoint.
-##
 gateway: https://example.com
 ## @param strategyType The image pull
-##
 strategyType: RollingUpdate
 ## @param clusterDomain The cluster domain.
-##
 clusterDomain: cluster.local
 
 ## @section Metadata Database
@@ -336,24 +342,40 @@ analyseservice:
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
+    ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param analyseservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
     fsGroupChangePolicy: Always
+    ## @param analyseservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
     sysctls: [ ]
+    ## @param analyseservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
+    ## @param analyseservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
+    ## @param analyseservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
+    ## @param analyseservice.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
     seLinuxOptions: null
+    ## @param analyseservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
+    ## @param analyseservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
     runAsGroup: 1001
+    ## @param analyseservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
+    ## @param analyseservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
     allowPrivilegeEscalation: false
+    ## @param analyseservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
     readOnlyRootFilesystem: false
     capabilities:
+      ## @param analyseservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
       drop: [ "ALL" ]
     seccompProfile:
+      ## @param analyseservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @skip analyseservice.resources
   resources:
     requests:
       cpu: 250m
@@ -373,7 +395,7 @@ analyseservice:
 ## @section Metadata Service
 
 metadataservice:
-  ## @param metadataservice.enabled Enable the Metadata Service.
+  ## @param metadataservice.enabled Enable the Broker Service.
   enabled: true
   image:
     ## @skip metadataservice.image.name
@@ -382,24 +404,40 @@ metadataservice:
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
+    ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param metadataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
     fsGroupChangePolicy: Always
+    ## @param metadataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
     sysctls: [ ]
+    ## @param metadataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
+    ## @param metadataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
+    ## @param metadataservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
+    ## @param metadataservice.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
     seLinuxOptions: null
+    ## @param metadataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
+    ## @param metadataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
     runAsGroup: 1001
+    ## @param metadataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
+    ## @param metadataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
     allowPrivilegeEscalation: false
+    ## @param metadataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
     readOnlyRootFilesystem: false
     capabilities:
+      ## @param metadataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
       drop: [ "ALL" ]
     seccompProfile:
+      ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @skip metadataservice.resources
   resources:
     requests:
       cpu: 250m
@@ -450,10 +488,8 @@ metadataservice:
 ## @section Data Service
 
 dataservice:
-  ## @param dataservice.enabled Enable the Metadata Service.
+  ## @param dataservice.enabled Enable the Broker Service.
   enabled: true
-  ## @param dataservice.endpoint The endpoint for the microservices.
-  endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4
@@ -461,31 +497,40 @@ dataservice:
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
+    ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param dataservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
     fsGroupChangePolicy: Always
+    ## @param dataservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
     sysctls: [ ]
+    ## @param dataservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
+    ## @param dataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
+    ## @param dataservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
+    ## @param dataservice.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
     seLinuxOptions: null
+    ## @param dataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
+    ## @param dataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
     runAsGroup: 1001
+    ## @param dataservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
+    ## @param dataservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
     allowPrivilegeEscalation: false
+    ## @param dataservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
     readOnlyRootFilesystem: false
     capabilities:
+      ## @param dataservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
       drop: [ "ALL" ]
     seccompProfile:
+      ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
+  ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
     read: SELECT
@@ -530,10 +575,8 @@ dataservice:
 ## @section Search Service
 
 searchservice:
-  ## @param searchservice.enabled Enable the Search Service.
+  ## @param searchservice.enabled Enable the Broker Service.
   enabled: true
-  ## @param searchservice.endpoint The endpoint for the microservices.
-  endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
     name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.4
@@ -541,24 +584,40 @@ searchservice:
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
+    ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param searchservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
     fsGroupChangePolicy: Always
+    ## @param searchservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
     sysctls: [ ]
+    ## @param searchservice.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
+    ## @param searchservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
+    ## @param searchservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
+    ## @param searchservice.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
     seLinuxOptions: null
+    ## @param searchservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
+    ## @param searchservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
     runAsGroup: 1001
+    ## @param searchservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
+    ## @param searchservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
     allowPrivilegeEscalation: false
+    ## @param searchservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
     readOnlyRootFilesystem: true
     capabilities:
+      ## @param searchservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
       drop: [ "ALL" ]
     seccompProfile:
+      ## @param searchservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @skip searchservice.resources
   resources:
     requests:
       cpu: 250m
@@ -675,7 +734,7 @@ identityservice:
 ## @section User Interface
 
 ui:
-  ## @param ui.enabled Enable the User Interface.
+  ## @param ui.enabled Enable the Broker Service.
   enabled: true
   image:
     ## @skip ui.image.name
@@ -684,24 +743,40 @@ ui:
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
+    ## @param ui.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param ui.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
     fsGroupChangePolicy: Always
+    ## @param ui.podSecurityContext.sysctls Set kernel settings using the sysctl interface
     sysctls: [ ]
+    ## @param ui.podSecurityContext.supplementalGroups Set filesystem extra groups
     supplementalGroups: [ ]
-    fsGroup: 1000
+    ## @param ui.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 1001
   containerSecurityContext:
+    ## @param ui.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
+    ## @param ui.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
     seLinuxOptions: null
-    runAsUser: 1000
-    runAsGroup: 1000
+    ## @param ui.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param ui.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 1001
+    ## @param ui.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
+    ## @param ui.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
+    ## @param ui.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
     capabilities:
+      ## @param ui.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
       drop: [ "ALL" ]
     seccompProfile:
+      ## @param ui.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @skip ui.resources
   resources:
     requests:
       cpu: 250m

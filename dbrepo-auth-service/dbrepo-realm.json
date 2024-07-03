@@ -2237,7 +2237,7 @@
         "enabled" : [ "true" ],
         "usernameLDAPAttribute" : [ "uid" ],
         "bindDn" : [ "cn=admin,dc=dbrepo,dc=at" ],
-        "bindCredential" : [ "adminpassword" ],
+        "bindCredential" : [ "admin" ],
         "changedSyncPeriod" : [ "-1" ],
         "lastSync" : [ "1719252666" ],
         "vendor" : [ "other" ],

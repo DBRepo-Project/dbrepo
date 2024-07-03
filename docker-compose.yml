@@ -39,6 +39,7 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
+      - ./dbrepo-data-db/enable_history_insert.cnf:/opt/bitnami/mariadb/conf.default/enable_history_insert.cnf
       - "${SHARED_VOLUME:-/tmp}:/tmp"
       - data-db-data:/bitnami/mariadb
     ports:
