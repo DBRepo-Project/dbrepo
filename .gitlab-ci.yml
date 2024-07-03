@@ -40,6 +40,8 @@ build-metadata-service:
       - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+  after_script:
+    - ls -la .m2/repository
   artifacts:
     when: always
     paths:
