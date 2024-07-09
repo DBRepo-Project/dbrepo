@@ -1,4 +1,4 @@
-package at.tuwien.config;
+package at.tuwien.utils;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.log4j.Log4j2;

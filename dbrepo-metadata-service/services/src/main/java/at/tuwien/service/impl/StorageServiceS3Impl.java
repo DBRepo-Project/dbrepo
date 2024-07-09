@@ -29,6 +29,7 @@ public class StorageServiceS3Impl implements StorageService {
     @Override
     public InputStream getObject(String bucket, String key) throws StorageNotFoundException,
             StorageUnavailableException {
+        log.trace("get object with key {} from bucket {}", key, bucket);
         try {
             return s3Client.getObject(GetObjectRequest.builder()
                     .bucket(bucket)
@@ -45,11 +46,13 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public byte[] getBytes(String key) throws StorageNotFoundException, StorageUnavailableException {
+        log.trace("get bytes with key {} from bucket {}", key, s3Config.getS3ImportBucket());
         return getBytes(s3Config.getS3ImportBucket(), key);
     }
 
     @Override
     public byte[] getBytes(String bucket, String key) throws StorageNotFoundException, StorageUnavailableException {
+        log.trace("get bytes with key {} from bucket {}", key, bucket);
         try {
             return getObject(bucket, key)
                     .readAllBytes();

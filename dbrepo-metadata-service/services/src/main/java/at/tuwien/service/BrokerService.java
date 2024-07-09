@@ -10,12 +10,12 @@ public interface BrokerService {
      *
      * @param user The user.
      */
-    void setVirtualHostPermissions(User user) throws ServiceException, ServiceConnectionException;
+    void setVirtualHostPermissions(User user) throws BrokerServiceException, BrokerServiceConnectionException;
 
     /**
      * Sets topic exchange permissions for a user.
      *
      * @param user The user.
      */
-    void setTopicExchangePermissions(User user) throws ServiceException, ServiceConnectionException;
+    void setTopicExchangePermissions(User user) throws BrokerServiceException, BrokerServiceConnectionException;
 }

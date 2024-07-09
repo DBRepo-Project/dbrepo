@@ -171,91 +171,38 @@ class OpenSearchClient:
         logging.info(f"Found {len(response['hits']['hits'])} result(s)")
         return response
 
-    def general_search(self, type=None, t1=None, t2=None, field_value_pairs=None):
+    def general_search(self, type: str = None, field_value_pairs: dict = None):
         """
         Main method for searching stuff in the opensearch db
 
         all parameters are optional
 
         :param type: The index to be searched. Optional.
-        :param t1: The start range value. Optional.
-        :param t2: The end range value. Optional.
         :param field_value_pairs: The key-value pair of properties that need to match. Optional.
         :return: The object of results and HTTP status code. e.g. { "hits": { "hits": [] } }, 200
         """
         musts = []
         if field_value_pairs is not None and len(field_value_pairs) > 0:
             logging.debug(f'field_value_pairs present: {field_value_pairs}')
-            is_range_open_end = False
-            is_range_open_begin = False
-            is_range_query = False
-            if t1 is not None and t2 is None:
-                is_range_open_begin = True
-                logging.debug(f"query has only start value {t1} present")
-            if t1 is None and t2 is not None:
-                is_range_open_end = True
-                logging.debug(f"query has only end value {t2} present")
-            if t1 is not None and t2 is not None:
-                is_range_query = True
-                logging.debug(f"query has start value {t1} and end value {t2} present")
             for key, value in field_value_pairs.items():
                 if field_value_pairs[key] == None:
                     logging.debug(f"skip empty key: {key}")
                     continue
                 logging.debug(f"processing key: {key}")
-                if is_range_open_end and re.match(f"unit\.", key):
-                    logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
-                    logging.info(f"add match-query for range ),{t2}]")
+                if '.' in key:
+                    logging.debug(f'key {key} is nested: use nested query')
                     musts.append({
-                        "range": {
-                            "val_max": {
-                                "lte": t2
-                            }
-                        }
-                    })
-                elif is_range_open_begin and re.match(f"unit\.", key):
-                    logging.debug(f"omit key={key} because query type=open begin range and key is somewhat unit")
-                    logging.info(f"add match-query for range [{t1},(")
-                    musts.append({
-                        "range": {
-                            "val_min": {
-                                "gte": t1
-                            }
-                        }
-                    })
-                elif is_range_query and re.match(f"unit\.", key):
-                    logging.debug(
-                        f"omit key={key} because query type=full range and key is somewhat unit")
-                    logging.info(f"add match-query for range [{t1},{t2}]")
-                    musts.append({
-                        "range": {
-                            "val_min": {
-                                "gte": t1
-                            }
-                        }
-                    })
-                    musts.append({
-                        "range": {
-                            "val_max": {
-                                "lte": t2
-                            }
+                        "match": {
+                            key: value
                         }
                     })
                 else:
-                    if '.' in key:
-                        logging.debug(f'key {key} is nested: use nested query')
-                        musts.append({
-                            "match": {
-                                key: value
-                            }
-                        })
-                    else:
-                        logging.debug(f'key {key} is flat: use bool query')
-                        musts.append({
-                            "match": {
-                                key: {"query": value, "minimum_should_match": "90%"}
-                            }
-                        })
+                    logging.debug(f'key {key} is flat: use bool query')
+                    musts.append({
+                        "match": {
+                            key: {"query": value, "minimum_should_match": "90%"}
+                        }
+                    })
         body = {
             "query": {"bool": {"must": musts}}
         }
@@ -290,7 +237,7 @@ class OpenSearchClient:
             }
         }
         response = self._instance().search(
-            index="column",
+            index="database",
             body=dumps(body)
         )
         unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]

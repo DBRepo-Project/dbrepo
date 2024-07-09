@@ -64,8 +64,8 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws EmailExistsException, UserExistsException, ServiceException,
-            ServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+    public void create_succeeds() throws EmailExistsException, UserExistsException,
+            DataServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
             CredentialsInvalidException {
 
         /* mock */

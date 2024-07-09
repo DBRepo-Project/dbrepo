@@ -2,8 +2,8 @@ package at.tuwien.listener;
 
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.ServiceException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
@@ -76,7 +76,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
 
     @Test
     public void onMessage_messageMalformed_fails(CapturedOutput output) throws TableNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, MetadataServiceException {
         final Message request = buildMessage("dbrepo.1.1", "{,}", new HashMap<>());
 
         /* mock */
@@ -90,7 +90,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
 
     @Test
     public void onMessage_tableNotFound_fails(CapturedOutput output) throws TableNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, MetadataServiceException {
         final Message request = buildMessage("dbrepo.1.1", "{\"id\":1}", new HashMap<>());
 
         /* mock */

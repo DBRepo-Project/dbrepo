@@ -79,7 +79,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws SearchServiceException, ServiceException, ServiceConnectionException,
+    public void delete_succeeds() throws SearchServiceException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceConnectionException, ViewNotFoundException {
 
         /* mock */

@@ -32,4 +32,8 @@ public class UserCreateDto {
     @NotNull
     private List<CredentialDto> credentials;
 
+    private List<String> realmRoles;
+
+    private List<String> groups;
+
 }

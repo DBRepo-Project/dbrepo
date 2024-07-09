@@ -94,6 +94,13 @@ public interface MariaDbMapper {
         return statement;
     }
 
+    @Named("dropView")
+    default String dropViewRawQuery(String viewName) {
+        final String statement = "DROP VIEW IF EXISTS `" + viewName + "`;";
+        log.trace("mapped drop view statement: {}", statement);
+        return statement;
+    }
+
     default String databaseViewSelectRawQuery() {
         final String statement = "SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = ? AND t.`TABLE_TYPE` = 'VIEW' AND t.`TABLE_NAME` != 'qs_queries' AND t.`TABLE_NAME` = ?";
         log.trace("mapped select view statement: {}", statement);
@@ -439,9 +446,20 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String subsetToRawExportQuery(String query, Instant timestamp, String filePath) {
-        final StringBuilder statement = new StringBuilder(query.replaceAll(";", ""))
-                .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+    default String subsetToRawTemporaryViewQuery(String viewName, String query) {
+        final StringBuilder statement = new StringBuilder("CREATE VIEW `")
+                .append(viewName)
+                .append("` AS (")
+                .append(query)
+                .append(");");
+        log.debug("mapped temporary view query: {}", statement);
+        return statement.toString();
+    }
+
+    default String subsetToRawExportQuery(String viewName, Instant timestamp, String filePath) {
+        final StringBuilder statement = new StringBuilder("SELECT * FROM `")
+                .append(viewName)
+                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(mariaDbFormatter.format(timestamp))
                 .append("'")
                 .append(" INTO OUTFILE '")

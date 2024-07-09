@@ -12,16 +12,22 @@ author: Martin Weise
 
 ## Overview
 
-This service holds the user identities which we simply call identities in the following. It is integrated into the 
-[Auth Service](../auth-service) through an LDAP federation, allowing any identity to authenticate through the Auth
-Service. The LDAP protocol is not used for authentication. You can use your own identity provider, e.g. Active
-Directory.
+This optional service holds the user identities which we simply call identities in the following. It is integrated into
+the [Auth Service](../auth-service) through an LDAP federation, allowing any identity to authenticate through the Auth
+Service. The LDAP protocol is not used for authentication. 
+
+The Identity Service can be optionally replaced with your existing LDAP solution. Your LDAP solution should store
+users using the RFC 2798 [`InetOrgPerson`](https://datatracker.ietf.org/doc/html/rfc2798) schema which is standard
+to most LDAP solutions.
 
 ## Identities
 
 Any identity is identified by its `entryUUID` by default in the Auth Service. Note that Keycloak (the software running
 the Auth Service) may assign a different UUID to a user. DBRepo **always** uses the UUID provided through the Identity
 Service.
+
+The field `uid` is the username and is used for bind/unbind operations. The fields `cn` and `sn` are ignored by the
+Auth Service and can be empty `""`.
 
 ## Limitations
 

@@ -78,8 +78,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json0_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_json0_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -109,8 +110,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json1_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_json1_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -160,8 +162,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_csv_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_csv_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/csv";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
         final InputStreamResource mock = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
@@ -182,7 +185,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @Disabled("not testable with xml")
-    public void find_xml0_succeeds() throws IOException, MalformedException, ServiceException, ServiceConnectionException, IdentifierNotFoundException, QueryNotFoundException, FormatNotAvailableException {
+    public void find_xml0_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, IdentifierNotFoundException, QueryNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata0.xml")));
 
@@ -200,8 +205,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @Disabled("not testable with xml")
-    public void find_xml1_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_xml1_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata1.xml")));
 
@@ -220,8 +226,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliography_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliography_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -242,8 +249,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyApa0_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyApa0_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa0.txt"),
                 StandardCharsets.UTF_8);
@@ -264,8 +272,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyApa1_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyApa1_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -286,8 +295,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyApa2_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyApa2_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa2.txt"),
                 StandardCharsets.UTF_8);
@@ -308,8 +318,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyApa3_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyApa3_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa3.txt"),
                 StandardCharsets.UTF_8);
@@ -330,8 +341,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyApa4_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyApa4_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
                 StandardCharsets.UTF_8);
@@ -352,8 +364,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyIeee0_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyIeee0_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee0.txt"),
                 StandardCharsets.UTF_8);
@@ -374,8 +387,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyIeee1_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyIeee1_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee1.txt"),
                 StandardCharsets.UTF_8);
@@ -396,8 +410,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyIeee2_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyIeee2_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee2.txt"),
                 StandardCharsets.UTF_8);
@@ -418,8 +433,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyIeee3_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyIeee3_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee3.txt"),
                 StandardCharsets.UTF_8);
@@ -440,8 +456,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyBibtex0_succeeds() throws IOException, MalformedException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyBibtex0_succeeds() throws IOException, MalformedException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex0.txt"),
                 StandardCharsets.UTF_8);
@@ -462,8 +479,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyBibtex1_succeeds() throws MalformedException, IOException, ServiceException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyBibtex1_succeeds() throws MalformedException, IOException, DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex1.txt"),
                 StandardCharsets.UTF_8);
@@ -484,8 +502,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyBibtex2_succeeds() throws MalformedException, ServiceException, IOException,
-            ServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
+    public void find_bibliographyBibtex2_succeeds() throws MalformedException, DataServiceException, IOException,
+            DataServiceConnectionException, QueryNotFoundException, IdentifierNotFoundException,
+            FormatNotAvailableException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex2.txt"),
                 StandardCharsets.UTF_8);
@@ -506,8 +525,8 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliographyBibtex3_succeeds() throws MalformedException, ServiceException,
-            ServiceConnectionException, IOException, QueryNotFoundException, IdentifierNotFoundException,
+    public void find_bibliographyBibtex3_succeeds() throws MalformedException, DataServiceException,
+            DataServiceConnectionException, IOException, QueryNotFoundException, IdentifierNotFoundException,
             FormatNotAvailableException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex3.txt"),
@@ -545,9 +564,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-identifier"})
-    public void delete_hasRole_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
-            DatabaseNotFoundException, IdentifierNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+    public void delete_hasRole_succeeds() throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, IdentifierNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
 
         /* test */
         this.generic_delete();
@@ -555,7 +574,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void find_json_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             FormatNotAvailableException, QueryNotFoundException, IdentifierNotFoundException {
         final String accept = "application/json";
 
@@ -582,7 +601,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_xml_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void find_xml_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             IOException, QueryNotFoundException, IdentifierNotFoundException, FormatNotAvailableException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/xml/datacite-example-dataset-v4.xml")));
@@ -598,8 +617,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_httpRedirect_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
-            FormatNotAvailableException, QueryNotFoundException, IdentifierNotFoundException {
+    public void find_httpRedirect_succeeds() throws MalformedException, DataServiceException,
+            DataServiceConnectionException, FormatNotAvailableException, QueryNotFoundException,
+            IdentifierNotFoundException {
 
         /* test */
         final ResponseEntity<?> response = generic_find(null, null);
@@ -611,10 +631,10 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void save_hasRoleDatabase_succeeds() throws MalformedException, NotAllowedException, ServiceException,
-            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
+    public void save_hasRoleDatabase_succeeds() throws MalformedException, NotAllowedException, DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
             QueryNotFoundException, IdentifierNotFoundException, ViewNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, TableNotFoundException {
+            SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
         /* test */
         generic_save(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1, IDENTIFIER_1_SAVE_DTO, USER_1_PRINCIPAL, USER_1);
@@ -633,9 +653,9 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"create-identifier"})
     public void save_hasRoleReadAccessQuery_succeeds() throws MalformedException, NotAllowedException,
-            ServiceException, ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, QueryNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, TableNotFoundException {
+            SearchServiceException, SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
         /* mock */
         when(dataServiceGateway.findQuery(DATABASE_2_ID, IDENTIFIER_5_QUERY_ID))
@@ -798,10 +818,10 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     protected void generic_save(Long databaseId, Database database, DatabaseAccess access, Identifier identifier,
                                 IdentifierSaveDto data, Principal principal, User user) throws MalformedException,
-            NotAllowedException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, QueryNotFoundException,
             IdentifierNotFoundException, ViewNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, TableNotFoundException {
+            SearchServiceConnectionException, TableNotFoundException, ExternalServiceException {
 
         /* mock */
         if (access != null) {
@@ -842,7 +862,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource)
-            throws MalformedException, ServiceException, ServiceConnectionException, FormatNotAvailableException,
+            throws MalformedException, DataServiceException, DataServiceConnectionException, FormatNotAvailableException,
             QueryNotFoundException, IdentifierNotFoundException {
 
         /* mock */
@@ -863,7 +883,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_delete() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    protected void generic_delete() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, IdentifierNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 

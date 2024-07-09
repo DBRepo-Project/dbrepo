@@ -72,7 +72,7 @@ public class UserServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws UserNotFoundException, UserExistsException, EmailExistsException,
-            ServiceException, ServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
+            DataServiceException, DataServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
             CredentialsInvalidException {
 
         /* mock */

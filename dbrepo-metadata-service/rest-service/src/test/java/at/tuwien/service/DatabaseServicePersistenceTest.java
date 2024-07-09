@@ -47,9 +47,9 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        containerRepository.save(CONTAINER_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
-        databaseRepository.save(DATABASE_1);
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4));
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
     }
 
     @Test
@@ -58,6 +58,48 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final Database response = databaseService.findById(DATABASE_1_ID);
+        assertEquals(DATABASE_1_ID, response.getId());
+        assertEquals(CONTAINER_1_ID, response.getCid());
+        /* container */
+        assertNotNull(response.getContainer());
+        assertEquals(CONTAINER_1_ID, response.getContainer().getId());
+        assertEquals(CONTAINER_1_NAME, response.getContainer().getName());
+        assertEquals(CONTAINER_1_INTERNALNAME, response.getContainer().getInternalName());
+        assertEquals(CONTAINER_1_HOST, response.getContainer().getHost());
+        assertEquals(CONTAINER_1_PORT, response.getContainer().getPort());
+        assertEquals(CONTAINER_1_UI_HOST, response.getContainer().getUiHost());
+        assertEquals(CONTAINER_1_UI_PORT, response.getContainer().getUiPort());
+        assertEquals(CONTAINER_1_UI_ADDITIONAL_FLAGS, response.getContainer().getUiAdditionalFlags());
+        assertEquals(CONTAINER_1_SIDECAR_HOST, response.getContainer().getSidecarHost());
+        assertEquals(CONTAINER_1_SIDECAR_PORT, response.getContainer().getSidecarPort());
+        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getContainer().getPrivilegedUsername());
+        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getContainer().getPrivilegedPassword());
+        assertNotNull(response.getContainer().getImage());
+        assertEquals(IMAGE_1_NAME, response.getContainer().getImage().getName());
+        assertEquals(IMAGE_1_VERSION, response.getContainer().getImage().getVersion());
+        assertEquals(IMAGE_1_DIALECT, response.getContainer().getImage().getDialect());
+        assertEquals(IMAGE_1_JDBC, response.getContainer().getImage().getJdbcMethod());
+        assertEquals(IMAGE_1_DRIVER, response.getContainer().getImage().getDriverClass());
+        assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
+        assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
+        assertNotNull(response.getContainer().getImage().getDateFormats());
+        assertEquals(4, response.getContainer().getImage().getDateFormats().size());
+        /* creator */
+        assertNotNull(response.getCreator());
+        assertEquals(USER_1_ID, response.getCreator().getId());
+        assertEquals(USER_1_USERNAME, response.getCreator().getUsername());
+        assertEquals(USER_1_EMAIL, response.getCreator().getEmail());
+        assertEquals(USER_1_THEME, response.getCreator().getTheme());
+        assertEquals(USER_1_LANGUAGE, response.getCreator().getLanguage());
+        assertNotNull(response.getCreator().getAccesses());
+    }
+
+    @Test
+    @Transactional
+    public void findByInternalName_succeeds() throws DatabaseNotFoundException {
+
+        /* test */
+        final Database response = databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
         assertEquals(DATABASE_1_ID, response.getId());
         assertEquals(CONTAINER_1_ID, response.getCid());
         /* container */

@@ -36,3 +36,10 @@ a couple of days at maximum, one could go directly for a PR. It's fine.
   - `mvn -f ./dbrepo-metadata-service/pom.xml versions:set -DnewVersion=VERSION`
   - `mvn -f ./dbrepo-data-service/pom.xml versions:set -DnewVersion=VERSION`
 - [ ] Change the versions in `versions.json` for the generated website
+
+Then generate the REST API-, Python Library- and Helm Chart documentation:
+
+```bash
+# optional: pip install -r ./requirements.txt
+make gen-swagger-doc gen-lib-doc gen-helm-doc
+```

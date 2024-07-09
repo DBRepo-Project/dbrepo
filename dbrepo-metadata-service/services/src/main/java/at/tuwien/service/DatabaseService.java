@@ -2,15 +2,11 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
-import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,21 +51,21 @@ public interface DatabaseService {
      * @param user      The user.
      * @return The database, if successful.
      * @throws UserNotFoundException      If the container/user was not found in the metadata database.
-     * @throws ServiceException           If the data service returned non-successfully.
-     * @throws ServiceConnectionException If failing to connect to the data service/search service.
+     * @throws DataServiceException           If the data service returned non-successfully.
+     * @throws DataServiceConnectionException If failing to connect to the data service/search service.
      */
     Database create(DatabaseCreateDto createDto, User user) throws UserNotFoundException, ContainerNotFoundException,
-            ServiceException, ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Updates the user's password.
      *
      * @param database The database.
      * @param user     The user.
-     * @throws ServiceException           If the data service returned non-successfully.
-     * @throws ServiceConnectionException If failing to connect to the data service.
+     * @throws DataServiceException           If the data service returned non-successfully.
+     * @throws DataServiceConnectionException If failing to connect to the data service.
      */
-    void updatePassword(Database database, User user) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException;
+    void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException;
 
     /**
      * Updates the visibility of the database.
@@ -78,7 +74,7 @@ public interface DatabaseService {
      * @param data     The visibility
      * @return The database, if successful.
      * @throws NotFoundException          The database was not found in the metadata database.
-     * @throws ServiceConnectionException If failing to connect to the search service.
+     * @throws DataServiceConnectionException If failing to connect to the search service.
      */
     Database modifyVisibility(Database database, DatabaseModifyVisibilityDto data) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
@@ -101,11 +97,11 @@ public interface DatabaseService {
      */
     Database modifyImage(Database database, byte[] image) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
-    Database updateTableMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
+    Database updateTableMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
             SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
-            ServiceConnectionException, MalformedException;
+            DataServiceConnectionException, MalformedException, TableNotFoundException;
 
-    Database updateViewMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
+    Database updateViewMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
             SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
-            ServiceConnectionException;
+            DataServiceConnectionException, ViewNotFoundException;
 }

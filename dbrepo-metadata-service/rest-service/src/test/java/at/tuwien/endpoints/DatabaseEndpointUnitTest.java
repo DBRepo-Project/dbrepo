@@ -94,10 +94,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
-    public void create_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException,
+    public void create_succeeds() throws DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, ContainerNotFoundException, SearchServiceException,
             SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
+            CredentialsInvalidException, BrokerServiceException, BrokerServiceConnectionException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
@@ -302,7 +302,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
-    public void transfer_hasRole_succeeds() throws ServiceConnectionException, ServiceException,
+    public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
             CredentialsInvalidException {
@@ -345,7 +345,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_anonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ExchangeNotFoundException {
 
         /* test */
@@ -364,7 +364,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_hasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ExchangeNotFoundException {
 
         /* pre-condition */
@@ -376,7 +376,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRoleForeign_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_hasRoleForeign_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ExchangeNotFoundException {
 
         /* pre-condition */
@@ -388,7 +388,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_ownerSeesAccessRights_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_ownerSeesAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ExchangeNotFoundException {
 
         /* mock */
@@ -430,9 +430,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertEquals(databases.size(), body.size());
     }
 
-    public void create_generic(DatabaseCreateDto data, Principal principal, User user) throws ServiceException,
-            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public void create_generic(DatabaseCreateDto data, Principal principal, User user) throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            BrokerServiceException, BrokerServiceConnectionException {
 
         /* mock */
         doNothing()
@@ -468,7 +469,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
-            throws ServiceException, ServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException {
+            throws DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException,
+            DataServiceException {
 
         /* mock */
         if (database != null) {

@@ -1,18 +1,22 @@
 package at.tuwien.utils;
 
 import at.tuwien.api.amqp.*;
+import at.tuwien.test.BaseTest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -20,13 +24,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
-@Service
-public class AmqpUtils {
+public class AmqpUtils extends BaseTest {
+
+    private static final String BASIC_AUTH = new String(Base64.encodeBase64((USER_1_USERNAME + ":" + USER_1_PASSWORD).getBytes(Charset.defaultCharset())));
 
     private final RestTemplate restTemplate;
 
-    @Autowired
-    public AmqpUtils(@Qualifier("brokerRestTemplate") RestTemplate restTemplate) {
+    public AmqpUtils(String endpoint) {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(endpoint));
+        restTemplate.getInterceptors()
+                .add(new BasicAuthenticationInterceptor(USER_1_USERNAME, USER_1_PASSWORD));
         this.restTemplate = restTemplate;
     }
 
@@ -97,10 +105,10 @@ public class AmqpUtils {
 
     public void setVirtualHostPermissions(String vhost, String username, GrantVirtualHostPermissionsDto data) {
         final String url = "/api/permissions/" + vhost + "/" + username;
-        log.debug("set virtual host permissions: {}", url);
         log.trace("body: {}", data);
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("Authentication", "Basic " + new String(Base64.encodeBase64("guest:guest".getBytes(Charset.defaultCharset()))));
+        headers.add("Authentication", "Basic " + BASIC_AUTH);
+        log.trace("set virtual host permissions: {}", url);
         final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data, headers), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to set virtual host permissions: {}", response.getStatusCode());
@@ -113,7 +121,7 @@ public class AmqpUtils {
         log.debug("set topic permissions: {}", url);
         log.trace("body: {}", data);
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("Authentication", "Basic " + new String(Base64.encodeBase64("guest:guest".getBytes(Charset.defaultCharset()))));
+        headers.add("Authentication", "Basic " + BASIC_AUTH);
         final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data, headers), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to set topic permissions: {}", response.getStatusCode());

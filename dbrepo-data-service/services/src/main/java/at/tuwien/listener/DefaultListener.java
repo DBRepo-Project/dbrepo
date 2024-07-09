@@ -64,7 +64,7 @@ public class DefaultListener implements MessageListener {
             log.error("Failed to read object: {}", e.getMessage());
         } catch (SQLException | RemoteUnavailableException e) {
             log.error("Failed to insert tuple: {}", e.getMessage());
-        } catch (TableNotFoundException | ServiceException e) {
+        } catch (TableNotFoundException | MetadataServiceException e) {
             log.error("Failed to find table: {}", e.getMessage());
         }
     }

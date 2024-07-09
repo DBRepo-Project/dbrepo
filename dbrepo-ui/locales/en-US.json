@@ -1182,6 +1182,13 @@
       "create": "Failed to create view",
       "missing": "Failed to find view in metadata database",
       "invalid": "Failed to map view query to columns in data service"
+    },
+    "broker": {
+      "connection": "Failed to contact broker service",
+      "invalid": "Failed to obtain metadata in the broker service"
+    },
+    "external": {
+      "invalid": "Failed to obtain metadata from the datacite system"
     }
   },
   "success": {
