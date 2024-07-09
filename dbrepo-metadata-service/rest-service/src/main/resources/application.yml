@@ -2,12 +2,6 @@ application:
   title: DBRepo
   version: '@project.version@'
 spring:
-  ldap:
-    urls: "${IDENTITY_SERVICE_URLS:ldap://identity-service:1389}"
-    userDn: "${IDENTITY_SERVICE_USERNAME:cn=admin,dc=dbrepo,dc=at}"
-    password: "${IDENTITY_SERVICE_PASSWORD:adminpassword}"
-    base: "${IDENTITY_SERVICE_BASE:dc=dbrepo,dc=at}"
-    adminDn: "${IDENTITY_SERVICE_ADMIN_GROUP:cn=admins,ou=users,dc=dbrepo,dc=at}"
   datasource:
     url: "jdbc:mariadb://${METADATA_HOST:metadata-db}:3306/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS}"
     driver-class-name: org.mariadb.jdbc.Driver
@@ -68,9 +62,9 @@ dbrepo:
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
     importBucket: "${S3_IMPORT_BUCKET:dbrepo-upload}"
     exportBucket: "${S3_EXPORT_BUCKET:dbrepo-download}"
-  admin:
-    username: "${ADMIN_USERNAME:admin}"
-    password: "${ADMIN_PASSWORD:admin}"
+  system:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
   endpoints:
     searchService: "${SEARCH_SERVICE_ENDPOINT:http://gateway-service}"
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://gateway-service}"

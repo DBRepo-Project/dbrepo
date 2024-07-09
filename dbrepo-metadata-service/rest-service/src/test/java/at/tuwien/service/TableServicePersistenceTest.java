@@ -78,7 +78,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional
-    public void create_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")

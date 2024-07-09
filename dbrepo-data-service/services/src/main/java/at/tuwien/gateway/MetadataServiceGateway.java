@@ -24,10 +24,10 @@ public interface MetadataServiceGateway {
      * @return The container with privileged connection information, if successful.
      * @throws ContainerNotFoundException  The table was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
-            ContainerNotFoundException, ServiceException;
+            ContainerNotFoundException, MetadataServiceException;
 
     /**
      * Get a database with given id from the metadata service.
@@ -36,10 +36,10 @@ public interface MetadataServiceGateway {
      * @return The database, if successful.
      * @throws DatabaseNotFoundException  The database was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
-            ServiceException;
+            MetadataServiceException;
 
     /**
      * Get a database with given internal name from the metadata service.
@@ -48,10 +48,10 @@ public interface MetadataServiceGateway {
      * @return The database, if successful.
      * @throws DatabaseNotFoundException  The database was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
-            RemoteUnavailableException, ServiceException;
+            RemoteUnavailableException, MetadataServiceException;
 
     /**
      * Get a table with given database id and table id from the metadata service.
@@ -61,10 +61,10 @@ public interface MetadataServiceGateway {
      * @return The table, if successful.
      * @throws TableNotFoundException     The table was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException, RemoteUnavailableException,
-            ServiceException;
+            MetadataServiceException;
 
     /**
      * Get a view with given database id and view id from the metadata service.
@@ -73,10 +73,10 @@ public interface MetadataServiceGateway {
      * @return The view, if successful.
      * @throws ViewNotFoundException     The view was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException, ViewNotFoundException,
-            ServiceException;
+            MetadataServiceException;
 
     /**
      * Get a user with given user id from the metadata service.
@@ -85,9 +85,9 @@ public interface MetadataServiceGateway {
      * @return The user, if successful.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws UserNotFoundException      The user was not found in the metadata service.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
-    UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException, ServiceException;
+    UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
 
     /**
      * Get a user with given user id from the metadata service.
@@ -96,10 +96,10 @@ public interface MetadataServiceGateway {
      * @return The user, if successful.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws UserNotFoundException      The user was not found in the metadata service.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     PrivilegedUserDto getPrivilegedUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
-            ServiceException;
+            MetadataServiceException;
 
     /**
      * Get database access for a given user and database id from the metadata service.
@@ -108,10 +108,10 @@ public interface MetadataServiceGateway {
      * @return The database access, if successful.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws NotAllowedException The access to this database is denied for the given user.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
     DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException, NotAllowedException,
-            ServiceException;
+            MetadataServiceException;
 
     /**
      * Get a list of identifiers for a given database id and optional subset id.
@@ -120,9 +120,9 @@ public interface MetadataServiceGateway {
      * @return The list of identifiers.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws DatabaseNotFoundException The database was not found.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
-    List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws ServiceException,
+    List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException;
 
     /**
@@ -131,7 +131,7 @@ public interface MetadataServiceGateway {
      * @param tableId The table id.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws TableNotFoundException The table was not found.
-     * @throws ServiceException The remote service returned invalid data.
+     * @throws MetadataServiceException The remote service returned invalid data.
      */
-    void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, ServiceException, RemoteUnavailableException;
+    void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, MetadataServiceException, RemoteUnavailableException;
 }

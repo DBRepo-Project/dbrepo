@@ -33,7 +33,7 @@ public interface ViewService {
      *
      * @param view The view.
      */
-    void delete(View view) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+    void delete(View view) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             ViewNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
@@ -44,6 +44,6 @@ public interface ViewService {
      * @param data     The given query.
      * @return The view that was created.
      */
-    View create(Database database, User user, ViewCreateDto data) throws MalformedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    View create(Database database, User user, ViewCreateDto data) throws MalformedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 }

@@ -94,8 +94,8 @@ public class AccessEndpoint {
     public ResponseEntity<DatabaseAccessDto> create(@NotBlank @PathVariable("databaseId") Long databaseId,
                                                     @NotBlank @PathVariable("userId") UUID userId,
                                                     @Valid @RequestBody UpdateDatabaseAccessDto data,
-                                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
+                                                    @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 data.getType());
@@ -157,7 +157,7 @@ public class AccessEndpoint {
                                        @NotBlank @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto data,
                                        @NotNull Principal principal) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 data.getType());
@@ -176,9 +176,9 @@ public class AccessEndpoint {
     @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_access_get")
-    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('check-foreign-database-access')")
     @Operation(summary = "Find/Check access",
-            description = "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `admin`.",
+            description = "Finds or checks access of a user with given id to a database with given id. Requests with HTTP method **GET** return the access object, requests with HTTP method **HEAD** only the status. When the user has at least *READ* access, the status 200 is returned, 403 otherwise. Requires role `check-database-access` or `check-foreign-database-access`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -204,7 +204,7 @@ public class AccessEndpoint {
         log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
                 principal.getName());
         if (!userId.equals(UserUtil.getId(principal))) {
-            if (!UserUtil.hasRole(principal, "admin")) {
+            if (!UserUtil.hasRole(principal, "check-foreign-database-access")) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
             }
@@ -256,8 +256,8 @@ public class AccessEndpoint {
     })
     public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("userId") UUID userId,
-                                       @NotNull Principal principal) throws NotAllowedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
+                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);
         final Database database = databaseService.findById(databaseId);

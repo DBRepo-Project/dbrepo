@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "error.metadata.invalid")
-public class ServiceException extends Exception {
+public class MetadataServiceException extends Exception {
 
-    public ServiceException(String message) {
+    public MetadataServiceException(String message) {
         super(message);
     }
 
-    public ServiceException(String message, Throwable thr) {
+    public MetadataServiceException(String message, Throwable thr) {
         super(message, thr);
     }
 
-    public ServiceException(Throwable thr) {
+    public MetadataServiceException(Throwable thr) {
         super(thr);
     }
 

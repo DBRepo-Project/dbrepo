@@ -4,7 +4,6 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
@@ -13,6 +12,7 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -29,7 +29,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -136,7 +135,7 @@ public class ViewEndpoint {
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @Valid @RequestBody ViewCreateDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
-            MalformedException, ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+            MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
@@ -184,17 +183,14 @@ public class ViewEndpoint {
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
         final HttpHeaders headers = new HttpHeaders();
-        if (principal != null) {
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
-                headers.set("X-Username", view.getDatabase().getContainer().getPrivilegedUsername());
-                headers.set("X-Password", view.getDatabase().getContainer().getPrivilegedPassword());
-                headers.set("X-Host", view.getDatabase().getContainer().getHost());
-                headers.set("X-Port", "" + view.getDatabase().getContainer().getPort());
-                headers.set("X-Type", view.getDatabase().getContainer().getImage().getJdbcMethod());
-                headers.set("X-Database", view.getDatabase().getInternalName());
-                headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database");
-            }
+        if (UserUtil.isSystem(principal)) {
+            headers.set("X-Username", view.getDatabase().getContainer().getPrivilegedUsername());
+            headers.set("X-Password", view.getDatabase().getContainer().getPrivilegedPassword());
+            headers.set("X-Host", view.getDatabase().getContainer().getHost());
+            headers.set("X-Port", "" + view.getDatabase().getContainer().getPort());
+            headers.set("X-Type", view.getDatabase().getContainer().getImage().getJdbcMethod());
+            headers.set("X-Database", view.getDatabase().getInternalName());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
@@ -244,8 +240,8 @@ public class ViewEndpoint {
     })
     public ResponseEntity<View> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("viewId") Long viewId,
-                                       @NotNull Principal principal) throws NotAllowedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
+                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);

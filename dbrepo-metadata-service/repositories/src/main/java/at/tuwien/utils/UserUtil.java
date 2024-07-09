@@ -18,6 +18,16 @@ public class UserUtil {
                 .anyMatch(a -> a.getAuthority().equals(role));
     }
 
+    public static boolean isSystem(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+        final Authentication authentication = (Authentication) principal;
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("system"));
+    }
+
     public static UUID getId(Principal principal) {
         if (principal == null) {
             return null;

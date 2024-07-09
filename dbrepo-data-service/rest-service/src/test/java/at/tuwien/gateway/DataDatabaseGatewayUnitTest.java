@@ -41,7 +41,8 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void importFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException, ServiceException {
+    public void importFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
+            SidecarImportException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -75,7 +76,7 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(SidecarImportException.class, () -> {
             dataDatabaseSidecarGateway.importFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
         });
     }
@@ -95,7 +96,8 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void exportFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException, ServiceException {
+    public void exportFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
+            SidecarExportException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -129,7 +131,7 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(SidecarExportException.class, () -> {
             dataDatabaseSidecarGateway.exportFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
         });
     }

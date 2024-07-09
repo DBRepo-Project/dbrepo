@@ -105,7 +105,7 @@ public interface TableService {
             QueryMalformedException;
 
     void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws SidecarImportException,
-            StorageNotFoundException, SQLException, QueryMalformedException, ServiceException, RemoteUnavailableException;
+            StorageNotFoundException, SQLException, QueryMalformedException, RemoteUnavailableException;
 
     void deleteTuple(PrivilegedTableDto table, TupleDeleteDto data) throws SQLException,
             TableMalformedException, QueryMalformedException;
@@ -118,5 +118,5 @@ public interface TableService {
 
     ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp)
             throws SQLException, SidecarExportException, StorageNotFoundException, StorageUnavailableException,
-            QueryMalformedException, ServiceException, RemoteUnavailableException;
+            QueryMalformedException, RemoteUnavailableException;
 }

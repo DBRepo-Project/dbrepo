@@ -5,10 +5,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface AccessService {
 
@@ -37,11 +35,11 @@ public interface AccessService {
      * @param access   The access.
      * @param user     The user.
      * @return The database access, if successful.
-     * @throws ServiceException           The data service responded with unexpected behavior.
-     * @throws ServiceConnectionException The connection with the data service could not be established.
+     * @throws DataServiceException           The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException The connection with the data service could not be established.
      * @throws DatabaseNotFoundException  The database was not found in the metadata/search database.
      */
-    DatabaseAccess create(Database database, User user, AccessTypeDto access) throws ServiceException, ServiceConnectionException,
+    DatabaseAccess create(Database database, User user, AccessTypeDto access) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
@@ -50,11 +48,11 @@ public interface AccessService {
      * @param database The database.
      * @param user     The user.
      * @param access   The updated access.
-     * @throws ServiceException           The data service responded with unexpected behavior.
-     * @throws ServiceConnectionException The connection with the data service could not be established.
+     * @throws DataServiceException           The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException The connection with the data service could not be established.
      * @throws DatabaseNotFoundException  The database was not found in the metadata/search database.
      */
-    void update(Database database, User user, AccessTypeDto access) throws ServiceException, ServiceConnectionException,
+    void update(Database database, User user, AccessTypeDto access) throws at.tuwien.exception.DataServiceException, DataServiceConnectionException,
             AccessNotFoundException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
@@ -62,10 +60,10 @@ public interface AccessService {
      *
      * @param database The database.
      * @param user     The user.
-     * @throws ServiceException           The data service responded with unexpected behavior.
-     * @throws ServiceConnectionException The connection with the data service could not be established.
+     * @throws DataServiceException           The data service responded with unexpected behavior.
+     * @throws DataServiceConnectionException The connection with the data service could not be established.
      * @throws DatabaseNotFoundException  The database was not found in the search database.
      */
-    void delete(Database database, User user) throws AccessNotFoundException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    void delete(Database database, User user) throws AccessNotFoundException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 }

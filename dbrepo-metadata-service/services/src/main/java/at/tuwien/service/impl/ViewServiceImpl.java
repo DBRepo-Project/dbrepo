@@ -70,7 +70,7 @@ public class ViewServiceImpl implements ViewService {
 
     @Override
     @Transactional
-    public void delete(View view) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+    public void delete(View view) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
         /* delete in data service */
         dataServiceGateway.deleteView(view.getDatabase().getId(), view.getId());
@@ -84,8 +84,8 @@ public class ViewServiceImpl implements ViewService {
 
     @Override
     @Transactional
-    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
         /* create in metadata database */
         final View view = View.builder()
                 .vdbid(database.getId())

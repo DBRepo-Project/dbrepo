@@ -24,12 +24,15 @@ import java.util.UUID;
 public class KeycloakGatewayImpl implements KeycloakGateway {
 
     private final RestTemplate restTemplate;
+    private final RestTemplate keycloakRestTemplate;
     private final KeycloakConfig keycloakConfig;
     private final MetadataMapper metadataMapper;
 
-    public KeycloakGatewayImpl(@Qualifier("keycloakRestTemplate") RestTemplate restTemplate,
+    public KeycloakGatewayImpl(@Qualifier("restTemplate") RestTemplate restTemplate,
+                               @Qualifier("keycloakRestTemplate") RestTemplate keycloakRestTemplate,
                                KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
+        this.keycloakRestTemplate = keycloakRestTemplate;
         this.keycloakConfig = keycloakConfig;
         this.metadataMapper = metadataMapper;
     }
@@ -45,13 +48,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("client_id", "admin-cli");
         final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/master/protocol/openid-connect/token";
         log.trace("request admin token from url: {}", url);
-        log.trace("request username: {}", keycloakConfig.getKeycloakUsername());
-        log.trace("request password: {}", keycloakConfig.getKeycloakPassword() != null ? "(set)" : "(not set)");
-        log.trace("request client_id: admin-cli");
-        log.trace("request client_secret: (not set)");
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -78,15 +77,10 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("client_id", keycloakConfig.getKeycloakClient());
         payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
         final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
-        log.trace("request user token from url: {}", url);
-        log.trace("request username: {}", username);
-        log.trace("request password: {}", password != null ? "(set)" : "(not set)");
-        log.trace("request client_id: {}", keycloakConfig.getKeycloakClient());
-        log.trace("request client_secret: {}", keycloakConfig.getKeycloakClientSecret());
+        log.trace("request admin token from url: {}", url);
         final ResponseEntity<TokenDto> response;
         try {
-            response = new RestTemplate()
-                    .exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to obtain user token: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -119,8 +113,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.trace("request user token from url: {}", url);
         final ResponseEntity<TokenDto> response;
         try {
-            response = new RestTemplate()
-                    .exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to refresh user token: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -128,7 +121,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             log.error("Failed to refresh user token: invalid credentials");
             throw new CredentialsInvalidException("Invalid credentials", e);
         } catch (HttpClientErrorException.BadRequest e) {
-            if (e.getMessage().contains("Session not active")) {
+            if (e.getMessage() != null && e.getMessage().contains("Session not active")) {
                 log.error("Failed to refresh user token: inactive session", e);
                 throw new CredentialsInvalidException("Inactive session", e);
             }
@@ -148,18 +141,20 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.debug("create user at url {}", url);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
         } catch (HttpClientErrorException.Conflict e) {
-            if (e.getMessage().contains("same email")) {
-                log.error("Failed to create user: email exists: {}", e.getMessage());
-                throw new EmailExistsException("E-Mail exists", e);
-            } else {
-                log.error("Failed to create user: user exists: {}", e.getMessage());
-                throw new UserExistsException("User exists", e);
+            if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
+                final KeycloakErrorDto error = e.getResponseBodyAs(KeycloakErrorDto.class);
+                if (error != null && error.getErrorMessage().contains("same email")) {
+                    log.error("Failed to create user: email exists: {}", e.getMessage());
+                    throw new EmailExistsException("E-Mail exists", e);
+                }
             }
+            log.error("Failed to create user: user exists: {}", e.getMessage());
+            throw new UserExistsException("User exists", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create user: unexpected status: {}", response.getStatusCode().value());
@@ -178,7 +173,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.debug("delete user at url {}", url);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null, headers), Void.class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null, headers), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to delete user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -207,7 +202,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.debug("update user credentials at url {}", url);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(payload, headers), Void.class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(payload, headers), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -232,7 +227,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.debug("find user from url {}", url);
         final ResponseEntity<UserDto[]> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -258,7 +253,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         log.debug("find user from url {}", url);
         final ResponseEntity<UserDto> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto.class);
+            response = keycloakRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);

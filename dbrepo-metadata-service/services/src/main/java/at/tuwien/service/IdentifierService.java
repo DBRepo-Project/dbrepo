@@ -85,8 +85,20 @@ public interface IdentifierService {
      */
     List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId);
 
+    /**
+     * Publishes a draft identifier with DataCite.
+     * @param identifierId The identifier id.
+     * @return The resulting identifier.
+     * @throws SearchServiceException
+     * @throws DatabaseNotFoundException
+     * @throws SearchServiceConnectionException
+     * @throws MalformedException
+     * @throws DataServiceConnectionException
+     * @throws IdentifierNotFoundException
+     */
     Identifier publish(Long identifierId) throws SearchServiceException, DatabaseNotFoundException,
-            SearchServiceConnectionException, MalformedException, ServiceConnectionException, IdentifierNotFoundException;
+            SearchServiceConnectionException, MalformedException, DataServiceConnectionException,
+            IdentifierNotFoundException, ExternalServiceException;
 
     /**
      * Creates a new identifier in the metadata database for a query or database.
@@ -95,10 +107,19 @@ public interface IdentifierService {
      * @param user     The user.
      * @param data     The data.
      * @return The created identifier from the metadata database if successful.
+     * @throws DataServiceException
+     * @throws DataServiceConnectionException
+     * @throws IdentifierNotFoundException
+     * @throws MalformedException
+     * @throws ViewNotFoundException
+     * @throws DatabaseNotFoundException
+     * @throws QueryNotFoundException
+     * @throws SearchServiceException
+     * @throws SearchServiceConnectionException
      */
-    Identifier save(Database database, User user, IdentifierSaveDto data) throws ServiceException,
-            ServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
-            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    Identifier save(Database database, User user, IdentifierSaveDto data) throws DataServiceException,
+            DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
+            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
 
     /**
      * Creates a new identifier in the metadata database for a query or database.
@@ -107,10 +128,19 @@ public interface IdentifierService {
      * @param user     The user.
      * @param data     The data.
      * @return The created identifier from the metadata database if successful.
+     * @throws DataServiceException
+     * @throws DataServiceConnectionException
+     * @throws IdentifierNotFoundException
+     * @throws MalformedException
+     * @throws ViewNotFoundException
+     * @throws DatabaseNotFoundException
+     * @throws QueryNotFoundException
+     * @throws SearchServiceException
+     * @throws SearchServiceConnectionException
      */
-    Identifier create(Database database, User user, IdentifierCreateDto data) throws ServiceException,
-            ServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
-            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    Identifier create(Database database, User user, IdentifierCreateDto data) throws DataServiceException,
+            DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
+            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
 
     /**
      * Export metadata for a identifier
@@ -135,8 +165,12 @@ public interface IdentifierService {
      *
      * @param identifier The identifier.
      * @return The XML resource, if successful.
+     * @throws DataServiceException
+     * @throws DataServiceConnectionException
+     * @throws IdentifierNotFoundException
+     * @throws QueryNotFoundException
      */
-    InputStreamResource exportResource(Identifier identifier) throws ServiceException, ServiceConnectionException,
+    InputStreamResource exportResource(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
             IdentifierNotFoundException, QueryNotFoundException;
 
     /**
@@ -144,7 +178,13 @@ public interface IdentifierService {
      * database, but sets it as deleted.
      *
      * @param identifier The identifier.
+     * @throws DataServiceException
+     * @throws DataServiceConnectionException
+     * @throws IdentifierNotFoundException
+     * @throws DatabaseNotFoundException
+     * @throws SearchServiceException
+     * @throws SearchServiceConnectionException
      */
-    void delete(Identifier identifier) throws ServiceException, ServiceConnectionException, IdentifierNotFoundException,
+    void delete(Identifier identifier) throws DataServiceException, DataServiceConnectionException, IdentifierNotFoundException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 }

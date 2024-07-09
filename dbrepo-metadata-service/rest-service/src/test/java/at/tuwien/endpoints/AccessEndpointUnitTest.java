@@ -73,7 +73,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
-    public void create_succeeds() throws ServiceException, ServiceConnectionException, NotAllowedException,
+    public void create_succeeds() throws DataServiceException, DataServiceConnectionException, NotAllowedException,
             DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -115,12 +115,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-foreign-database-access"})
     public void find_hasRoleHasAccessForeign_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
-        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_LOCAL_ADMIN_PRINCIPAL, USER_1_ID, USER_1);
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1_ID, USER_1);
     }
 
     @Test
@@ -155,7 +155,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
-    public void update_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void update_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             AccessNotFoundException, DatabaseNotFoundException, UserNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -190,7 +190,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
-    public void revoke_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void revoke_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -208,7 +208,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     /* ################################################################################################### */
 
     protected void generic_create(Principal principal, UUID userId, String username, User user)
-            throws NotAllowedException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            throws NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -269,7 +269,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void generic_update(DatabaseAccess access, String otherUsername, User otherUser, Principal principal,
-                                  User user) throws NotAllowedException, ServiceException, ServiceConnectionException,
+                                  User user) throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             AccessNotFoundException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -307,8 +307,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         assertNull(response.getBody());
     }
 
-    protected void generic_revoke(Principal principal, User user) throws ServiceConnectionException,
-            NotAllowedException, ServiceException, UserNotFoundException, DatabaseNotFoundException,
+    protected void generic_revoke(Principal principal, User user) throws DataServiceConnectionException,
+            NotAllowedException, DataServiceException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

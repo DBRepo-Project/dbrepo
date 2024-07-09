@@ -1,10 +1,4 @@
 spring:
-  ldap:
-    urls: ldap://localhost:1389
-    userDn: cn=admin,dc=dbrepo,dc=at
-    password: adminpassword
-    base: dc=dbrepo,dc=at
-    adminDn: cn=admins,ou=users,dc=dbrepo,dc=at
   datasource:
     url: jdbc:mariadb://localhost:3306/dbrepo
     driver-class-name: org.mariadb.jdbc.Driver
@@ -66,7 +60,7 @@ dbrepo:
     secretAccessKey: seaweedfsadmin
     importBucket: dbrepo-upload
     exportBucket: dbrepo-download
-  admin:
+  system:
     username: admin
     password: admin
   endpoints:
