@@ -22,22 +22,16 @@ spec:
         app: ui
         service: ui
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 1000
-        runAsUser: 1000
-        runAsGroup: 1000
+      {{- if .Values.ui.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.ui.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
       containers:
         - name: ui
           image: {{ .Values.ui.image.name }}
           imagePullPolicy: {{ .Values.ui.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            seccompProfile:
-              type: {{ .Values.ui.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.ui.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.ui.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 3000
               protocol: TCP
@@ -143,6 +137,9 @@ spec:
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 30
+          {{- if .Values.ui.resources }}
+          resources: {{- toYaml .Values.ui.resources | nindent 12 }}
+          {{- end }}
       volumes:
         {{- if .Values.ui.extraVolumes }}
         {{- .Values.ui.extraVolumes | toYaml | nindent 8 }}

@@ -174,7 +174,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         final Connection connection = dataSource.getConnection();
         try {
             /* drop view if exists */
-            connection.prepareStatement("DROP VIEW IF EXISTS `" + view.getInternalName() + "`;")
+            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(view.getInternalName()))
                     .execute();
             connection.commit();
         } catch (SQLException e) {
@@ -214,8 +214,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
 
     @Override
     public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
-            throws SQLException, QueryMalformedException, StorageNotFoundException,
-            StorageUnavailableException, ServiceException, RemoteUnavailableException {
+            throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
+            RemoteUnavailableException, SidecarExportException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);

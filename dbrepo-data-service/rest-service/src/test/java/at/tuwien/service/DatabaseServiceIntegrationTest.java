@@ -9,6 +9,7 @@ import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MariaDbMapperImpl;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,11 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private MariaDbMapper mariaDbMapper;
+
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        Thread.sleep(1000) /* wait for test container some more */;
+    }
 
     @BeforeEach
     public void beforeEach() throws SQLException {

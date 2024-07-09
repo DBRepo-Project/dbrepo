@@ -73,7 +73,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws ServiceException, ServiceConnectionException,
+    public void create_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -99,7 +99,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -113,7 +113,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -141,7 +141,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(DataServiceConnectionException.class, () -> {
             accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -223,7 +223,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void update_succeeds() throws ServiceException, ServiceConnectionException, AccessNotFoundException,
+    public void update_succeeds() throws DataServiceException, DataServiceConnectionException, AccessNotFoundException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -249,7 +249,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -263,7 +263,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -291,7 +291,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(DataServiceConnectionException.class, () -> {
             accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
@@ -373,7 +373,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws ServiceException, ServiceConnectionException, AccessNotFoundException,
+    public void delete_succeeds() throws DataServiceException, DataServiceConnectionException, AccessNotFoundException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -401,7 +401,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             accessService.delete(DATABASE_1, USER_1);
         });
     }
@@ -429,7 +429,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(DataServiceConnectionException.class, () -> {
             accessService.delete(DATABASE_1, USER_1);
         });
     }

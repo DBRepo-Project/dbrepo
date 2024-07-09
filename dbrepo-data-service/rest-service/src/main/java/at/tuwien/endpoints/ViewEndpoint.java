@@ -54,7 +54,7 @@ public class ViewEndpoint {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_view_schema_list")
     @Operation(summary = "Find views",
             hidden = true)
@@ -93,7 +93,7 @@ public class ViewEndpoint {
     public ResponseEntity<List<ViewDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             ViewMalformedException, ViewNotFoundException, DatabaseMalformedException, ViewSchemaException,
-            ServiceException {
+            MetadataServiceException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -105,7 +105,7 @@ public class ViewEndpoint {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Create view",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
             hidden = true)
@@ -138,7 +138,7 @@ public class ViewEndpoint {
     })
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                           @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
-            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, ServiceException {
+            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -151,7 +151,7 @@ public class ViewEndpoint {
     }
 
     @DeleteMapping("/{viewId}")
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Delete view",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")},
             hidden = true)
@@ -182,7 +182,7 @@ public class ViewEndpoint {
     public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("viewId") Long viewId)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            ViewMalformedException, ServiceException {
+            ViewMalformedException, MetadataServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         try {
@@ -243,7 +243,7 @@ public class ViewEndpoint {
                                                   Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             QueryMalformedException, ViewMalformedException, PaginationException, NotAllowedException,
-            ServiceException {
+            MetadataServiceException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
                 viewId, page, size, timestamp);
         endpointValidator.validateDataParams(page, size);

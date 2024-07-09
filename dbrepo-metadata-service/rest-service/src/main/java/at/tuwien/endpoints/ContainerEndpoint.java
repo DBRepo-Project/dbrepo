@@ -10,6 +10,7 @@ import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.ContainerService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -143,14 +144,11 @@ public class ContainerEndpoint {
         final ContainerDto dto = metadataMapper.containerToContainerDto(container);
         log.trace("find container resulted in container {}", dto);
         final HttpHeaders headers = new HttpHeaders();
-        if (principal != null) {
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
-                log.trace("attach privileged credential information");
-                headers.set("X-Username", container.getPrivilegedUsername());
-                headers.set("X-Password", container.getPrivilegedPassword());
-                headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
-            }
+        if (UserUtil.isSystem(principal)) {
+            log.trace("attach privileged credential information");
+            headers.set("X-Username", container.getPrivilegedUsername());
+            headers.set("X-Password", container.getPrivilegedPassword());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
         }
         return ResponseEntity.ok()
                 .headers(headers)

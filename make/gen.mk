@@ -1,6 +1,6 @@
 ##@ Generate
 
-.PHONY: gen-swagger-doc-fe
+.PHONY: gen-swagger-doc
 gen-swagger-doc: build-images ## Generate Swagger documentation and fetch.
 	docker compose up -d
 	bash .docs/.swagger/swagger-generate.sh

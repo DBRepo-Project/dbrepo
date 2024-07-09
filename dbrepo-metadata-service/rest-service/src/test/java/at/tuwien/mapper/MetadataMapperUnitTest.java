@@ -15,9 +15,7 @@ import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.identifier.*;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,12 +102,42 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
 
         /* test */
         final Identifier response = metadataMapper.identifierCreateDtoToIdentifier(IDENTIFIER_1_CREATE_DTO);
-        assertNull(response.getDatabase());
-        assertNull(response.getViewId());
-        assertNull(response.getQueryId());
-        assertNull(response.getTableId());
-        assertNull(response.getDoi());
-        assertEquals(IDENTIFIER_1_TYPE, response.getType());
+        assertNotNull(response.getTitles());
+        final List<IdentifierTitle> titles = response.getTitles();
+        assertEquals(2, titles.size());
+        final IdentifierTitle title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
+        final IdentifierTitle title1 = titles.get(1);
+        assertEquals(IDENTIFIER_1_TITLE_2_TITLE, title1.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_2_LANG, title1.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_2_TYPE, title1.getTitleType());
+        assertNotNull(response.getDescriptions());
+        assertEquals(1, response.getDescriptions().size());
+        final List<IdentifierDescription> descriptions = response.getDescriptions();
+        final IdentifierDescription description0 = descriptions.get(0);
+        assertNull(description0.getId());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG, description0.getLanguage());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_TYPE, description0.getDescriptionType());
+        assertNotNull(response.getCreators());
+        assertEquals(1, response.getCreators().size());
+        final Creator creator0 = response.getCreators().get(0);
+        assertNotNull(creator0);
+        assertNull(creator0.getId());
+        assertEquals(IDENTIFIER_1_CREATOR_1_FIRSTNAME, creator0.getFirstname());
+        assertEquals(IDENTIFIER_1_CREATOR_1_LASTNAME, creator0.getLastname());
+        assertEquals(IDENTIFIER_1_CREATOR_1_NAME, creator0.getCreatorName());
+        assertEquals(IDENTIFIER_1_CREATOR_1_ORCID, creator0.getNameIdentifier());
+        assertEquals(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE, creator0.getNameIdentifierScheme());
+        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION, creator0.getAffiliation());
+        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER, creator0.getAffiliationIdentifier());
+        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME, creator0.getAffiliationIdentifierScheme());
+        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI, creator0.getAffiliationIdentifierSchemeUri());
+        assertNotNull(response.getFunders());
+        assertEquals(1, response.getFunders().size());
+        assertNull(response.getRelatedIdentifiers()); /* mapstruct strategy for empty values is to set null */
     }
 
     @Test
@@ -154,6 +182,8 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     @Test
     public void customDatabaseToDatabaseDto_succeeds() {
 
+        final Database debug = DATABASE_1;
+
         /* test */
         final DatabaseDto response = metadataMapper.customDatabaseToDatabaseDto(DATABASE_1);
         assertEquals(DATABASE_1_ID, response.getId());
@@ -193,7 +223,9 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(TABLE_1_DESCRIPTION, table0.getDescription());
         assertEquals(DATABASE_1_ID, table0.getTdbid());
         assertEquals(USER_1_ID, table0.getCreatedBy());
+        assertNotNull(table0.getOwner());
         assertEquals(USER_1_ID, table0.getOwner().getId());
+        assertNotNull(table0.getCreator());
         assertEquals(USER_1_ID, table0.getCreator().getId());
         assertEquals(TABLE_1_AVG_ROW_LENGTH, table0.getAvgRowLength());
         assertEquals(TABLE_1_NUM_ROWS, table0.getNumRows());
@@ -244,7 +276,9 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(TABLE_2_DESCRIPTION, table1.getDescription());
         assertEquals(DATABASE_1_ID, table1.getTdbid());
         assertEquals(USER_2_ID, table1.getCreatedBy());
+        assertNotNull(table1.getOwner());
         assertEquals(USER_2_ID, table1.getOwner().getId());
+        assertNotNull(table1.getCreator());
         assertEquals(USER_2_ID, table1.getCreator().getId());
         assertEquals(TABLE_2_AVG_ROW_LENGTH, table1.getAvgRowLength());
         assertEquals(TABLE_2_NUM_ROWS, table1.getNumRows());
@@ -316,7 +350,9 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(TABLE_3_DESCRIPTION, table2.getDescription());
         assertEquals(DATABASE_1_ID, table2.getTdbid());
         assertEquals(USER_3_ID, table2.getCreatedBy());
+        assertNotNull(table2.getOwner());
         assertEquals(USER_3_ID, table2.getOwner().getId());
+        assertNotNull(table2.getCreator());
         assertEquals(USER_3_ID, table2.getCreator().getId());
         assertEquals(TABLE_3_AVG_ROW_LENGTH, table2.getAvgRowLength());
         assertEquals(TABLE_3_NUM_ROWS, table2.getNumRows());
@@ -359,7 +395,9 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(TABLE_4_DESCRIPTION, table3.getDescription());
         assertEquals(DATABASE_1_ID, table3.getTdbid());
         assertEquals(USER_1_ID, table3.getCreatedBy());
+        assertNotNull(table3.getOwner());
         assertEquals(USER_1_ID, table3.getOwner().getId());
+        assertNotNull(table3.getCreator());
         assertEquals(USER_1_ID, table3.getCreator().getId());
         assertEquals(TABLE_4_AVG_ROW_LENGTH, table3.getAvgRowLength());
         assertEquals(TABLE_4_NUM_ROWS, table3.getNumRows());

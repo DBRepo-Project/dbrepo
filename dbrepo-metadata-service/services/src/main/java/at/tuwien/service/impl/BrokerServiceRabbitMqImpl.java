@@ -27,7 +27,7 @@ public class BrokerServiceRabbitMqImpl implements BrokerService {
     }
 
     @Override
-    public void setVirtualHostPermissions(User user) throws ServiceException, ServiceConnectionException {
+    public void setVirtualHostPermissions(User user) throws BrokerServiceException, BrokerServiceConnectionException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
                 .configure("")
                 .write(".*")
@@ -39,7 +39,7 @@ public class BrokerServiceRabbitMqImpl implements BrokerService {
 
     @Override
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions(User user) throws ServiceException, ServiceConnectionException {
+    public void setTopicExchangePermissions(User user) throws BrokerServiceException, BrokerServiceConnectionException {
         final GrantExchangePermissionsDto permissions = GrantExchangePermissionsDto.builder()
                 .exchange(rabbitConfig.getExchangeName())
                 .write(userToExchangeWritePermissionString(user))

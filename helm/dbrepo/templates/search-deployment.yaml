@@ -22,25 +22,16 @@ spec:
         app: search-service
         service: search-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        fsGroup: 1001
-        runAsUser: 1001
-        runAsGroup: 1001
+      {{- if .Values.searchservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: init
           image: {{ .Values.searchservice.init.image.name }}
           imagePullPolicy: {{ .Values.searchservice.init.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            runAsGroup: 1001
-            seccompProfile:
-              type: {{ .Values.searchservice.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.searchservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: search-service-secret
@@ -80,6 +71,9 @@ spec:
                 - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
             initialDelaySeconds: 10
             periodSeconds: 30
+          {{- if .Values.searchservice.resources }}
+          resources: {{- toYaml .Values.searchservice.resources | nindent 12 }}
+          {{- end }}
           volumeMounts: [ ]
       volumes: [ ]
 {{- end }}

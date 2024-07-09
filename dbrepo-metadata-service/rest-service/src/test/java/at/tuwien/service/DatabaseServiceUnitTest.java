@@ -161,33 +161,35 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_dataServiceError_fails() throws ServiceException, ServiceConnectionException {
+    public void create_dataServiceError_fails() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException {
 
         /* mock */
         when(containerRepository.findById(DATABASE_1.getCid()))
                 .thenReturn(Optional.of(CONTAINER_1));
-        doThrow(ServiceException.class)
+        doThrow(DataServiceException.class)
                 .when(dataServiceGateway)
                 .createDatabase(any(CreateDatabaseDto.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             generic_create(DATABASE_1_CREATE, DATABASE_1);
         });
     }
 
     @Test
-    public void create_dataServiceConnection_fails() throws ServiceException, ServiceConnectionException {
+    public void create_dataServiceConnection_fails() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException {
 
         /* mock */
         when(containerRepository.findById(DATABASE_1.getCid()))
                 .thenReturn(Optional.of(CONTAINER_1));
-        doThrow(ServiceConnectionException.class)
+        doThrow(DataServiceConnectionException.class)
                 .when(dataServiceGateway)
                 .createDatabase(any(CreateDatabaseDto.class));
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(DataServiceConnectionException.class, () -> {
             generic_create(DATABASE_1_CREATE, DATABASE_1);
         });
     }
@@ -302,8 +304,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected Database generic_create(DatabaseCreateDto createDto, Database database) throws ServiceException,
-            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+    protected Database generic_create(DatabaseCreateDto createDto, Database database) throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

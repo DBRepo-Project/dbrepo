@@ -39,7 +39,6 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
-@Disabled("keep failing on CI but works locally")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class IdentifierServicePersistenceTest extends AbstractUnitTest {
@@ -154,9 +153,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_database_succeeds() throws ServiceException, ServiceConnectionException, MalformedException,
-            DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException, QueryNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public void save_database_succeeds() throws DataServiceException, DataServiceConnectionException,
+            MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
@@ -168,9 +167,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_existsSubset_succeeds() throws ServiceException, ServiceConnectionException, MalformedException,
-            DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException, QueryNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public void save_existsSubset_succeeds() throws DataServiceException, DataServiceConnectionException,
+            MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* mock */
         when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
@@ -183,9 +182,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_existsDatabase_succeeds() throws MalformedException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public void save_existsDatabase_succeeds() throws MalformedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, IdentifierNotFoundException,
+            ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            ExternalServiceException {
 
         /* test */
         identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
@@ -279,8 +279,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
-            IdentifierNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public void delete_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, IdentifierNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
         when(searchServiceGateway.update(any(Database.class)))
@@ -300,9 +301,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional
-    public void save_subsetRelatedIdentifiers_succeeds() throws ServiceException, ServiceConnectionException,
+    public void save_subsetRelatedIdentifiers_succeeds() throws DataServiceException, DataServiceConnectionException,
             MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* mock */
         when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
@@ -339,9 +340,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void save_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException, QueryNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_DTO);
@@ -384,9 +385,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_repeatedRemoveChildren_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
-            DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException, QueryNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public void save_repeatedRemoveChildren_succeeds() throws MalformedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, IdentifierNotFoundException,
+            ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_1_SAVE_MODIFY_DTO);
@@ -413,9 +415,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_noRelatedTitleDescription_succeeds() throws ServiceException, ServiceConnectionException,
+    public void save_noRelatedTitleDescription_succeeds() throws DataServiceException, DataServiceConnectionException,
             MalformedException, DatabaseNotFoundException, IdentifierNotFoundException, ViewNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_4, USER_4, IDENTIFIER_7_SAVE_DTO);
@@ -430,9 +432,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_subsetHasDatabaseIdentifier_succeeds() throws ServiceException, ServiceConnectionException,
+    public void save_subsetHasDatabaseIdentifier_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, ViewNotFoundException,
-            SearchServiceConnectionException, MalformedException, IdentifierNotFoundException {
+            SearchServiceConnectionException, MalformedException, IdentifierNotFoundException,
+            ExternalServiceException {
 
         /* mock */
         when(dataServiceGateway.findQuery(IDENTIFIER_2_DATABASE_ID, IDENTIFIER_2_QUERY_ID))
@@ -449,9 +452,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void save_viewIdentifier_succeeds() throws SearchServiceException, MalformedException, ServiceException,
-            QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
+    public void save_viewIdentifier_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
+            QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
+            ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO);
@@ -465,9 +469,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws MalformedException, ServiceConnectionException, SearchServiceException,
-            ServiceException, QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
-            IdentifierNotFoundException, ViewNotFoundException {
+    public void create_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
+            DataServiceException, QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO);
@@ -475,9 +479,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_hasDoi_succeeds() throws SearchServiceException, MalformedException, ServiceException,
-            QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
+    public void create_hasDoi_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
+            QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
+            ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
@@ -486,8 +491,9 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void publish_succeeds() throws MalformedException, ServiceConnectionException, SearchServiceException,
-            DatabaseNotFoundException, SearchServiceConnectionException, IdentifierNotFoundException {
+    public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
+            DatabaseNotFoundException, SearchServiceConnectionException, IdentifierNotFoundException,
+            ExternalServiceException {
 
         /* test */
         final Identifier response = identifierService.publish(IDENTIFIER_7_ID);

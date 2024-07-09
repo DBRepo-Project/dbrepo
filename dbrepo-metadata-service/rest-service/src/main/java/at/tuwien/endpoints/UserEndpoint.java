@@ -6,7 +6,6 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.*;
-import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -187,14 +186,19 @@ public class UserEndpoint {
             userService.findByUsername(data.getUsername());
         } catch (UserNotFoundException e) {
             /* need to sync */
-            log.debug("User with username {} does not exist in metadata database yet", data.getUsername());
+            log.warn("User with username {} does not exist in metadata database yet", data.getUsername());
             final SignupRequestDto request = SignupRequestDto.builder()
                     .username(data.getUsername())
                     .email("noreply@example.com")
                     .password(data.getPassword())
                     .build();
-            userService.create(request, authenticationService.findByUsername(data.getUsername()).getId());
-            log.info("Fetched user information from auth service and stored it into metadata database");
+            final at.tuwien.api.keycloak.UserDto user = authenticationService.findByUsername(data.getUsername());
+            if (user.getAttributes().getLdapId().length != 1) {
+                log.error("Failed to map ldap id for user with username: {}", data.getUsername());
+                throw new UserNotFoundException("Failed to map ldap id");
+            }
+            userService.create(request, user.getAttributes().getLdapId()[0]);
+            log.info("Patched missing user information for user with username: {}", data.getUsername());
         }
         return ResponseEntity.accepted()
                 .body(token);
@@ -266,7 +270,7 @@ public class UserEndpoint {
         /* check */
         final User user = userService.findById(userId);
         if (!user.equals(principal)) {
-            if (!UserUtil.hasRole(principal, "admin")) {
+            if (!UserUtil.hasRole(principal, "find-foreign-user")) {
                 log.error("Failed to find user: foreign user");
                 throw new NotAllowedException("Failed to find user: foreign user");
             }
@@ -360,8 +364,8 @@ public class UserEndpoint {
     public ResponseEntity<Void> password(@NotNull @PathVariable("userId") UUID userId,
                                          @NotNull @Valid @RequestBody UserPasswordDto data,
                                          @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
-            AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ServiceException,
-            ServiceConnectionException, CredentialsInvalidException {
+            AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
+            DataServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint modify a user password, userId={}, data.password=(hidden)", userId);
         User user = userService.findById(userId);
         if (!user.equals(principal)) {

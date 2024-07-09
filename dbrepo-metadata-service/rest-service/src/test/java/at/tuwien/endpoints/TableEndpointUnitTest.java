@@ -348,7 +348,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicAnonymous_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_publicAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -367,7 +367,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRoleDatabaseNotFound_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_publicHasRoleDatabaseNotFound_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -376,7 +376,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRole_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_publicHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -388,7 +388,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicNoRole_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_publicNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -497,8 +497,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws MalformedException, ServiceException,
-            NotAllowedException, ServiceConnectionException, UserNotFoundException, TableNotFoundException,
+    public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws MalformedException, DataServiceException,
+            NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
@@ -540,8 +540,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, ServiceException,
-            NotAllowedException, ServiceConnectionException, UserNotFoundException, TableNotFoundException,
+    public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, DataServiceException,
+            NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
@@ -601,8 +601,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws MalformedException, ServiceException,
-            NotAllowedException, ServiceConnectionException, UserNotFoundException, TableNotFoundException,
+    public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws MalformedException, DataServiceException,
+            NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
@@ -644,8 +644,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, ServiceException,
-            NotAllowedException, ServiceConnectionException, UserNotFoundException, TableNotFoundException,
+    public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws MalformedException, DataServiceException,
+            NotAllowedException, DataServiceConnectionException, UserNotFoundException, TableNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
@@ -731,7 +731,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_privateAnonymous_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_privateAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -750,7 +750,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRoleDatabaseNotFound_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_privateHasRoleDatabaseNotFound_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -759,7 +759,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRole_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_privateHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
@@ -771,7 +771,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_privateNoRole_succeeds() throws ServiceException, ServiceConnectionException,
+    public void findById_privateNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException {
 
         /* test */
@@ -790,7 +790,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table"})
-    public void delete_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void delete_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -810,9 +810,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-foreign-table"})
-    public void delete_foreign_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void delete_foreign_succeeds() throws NotAllowedException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, DataServiceException {
 
         /* test */
         generic_delete(USER_2_PRINCIPAL, TABLE_1);
@@ -895,9 +895,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     protected ResponseEntity<TableDto> generic_create(Long databaseId, Database database, TableCreateDto data,
                                                       Principal principal, User user, DatabaseAccess access)
-            throws MalformedException, NotAllowedException, ServiceException, ServiceConnectionException,
+            throws MalformedException, NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
-            TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
+            SemanticEntityNotFoundException {
 
         /* mock */
         if (principal != null) {
@@ -927,8 +928,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     protected ResponseEntity<TableDto> generic_findById(Long databaseId, Database database, Long tableId,
                                                         Table table, Principal principal, User user,
-                                                        DatabaseAccess access) throws ServiceException,
-            ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
+                                                        DatabaseAccess access) throws DataServiceException,
+            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
             QueueNotFoundException {
 
         /* mock */
@@ -964,7 +965,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected ResponseEntity<?> generic_delete(Principal principal, Table table) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
+            DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -978,7 +979,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     protected ResponseEntity<ColumnDto> generic_update(Long databaseId, Database database, Long tableId, Table table,
                                                        Long columnId, TableColumn column, Principal principal,
                                                        User user, ColumnSemanticsUpdateDto data, DatabaseAccess access)
-            throws ServiceException, ServiceConnectionException, MalformedException, NotAllowedException,
+            throws DataServiceException, DataServiceConnectionException, MalformedException, NotAllowedException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
@@ -990,7 +991,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             when(tableService.update(column, data))
                     .thenReturn(column);
         } else {
-            doThrow(ServiceException.class)
+            doThrow(DataServiceException.class)
                     .when(tableService)
                     .update(column, data);
             doThrow(TableNotFoundException.class)

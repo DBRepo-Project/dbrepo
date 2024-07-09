@@ -45,6 +45,13 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ## Parameters
 
+### Global parameters
+
+| Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value  |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto` |
+| `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`   |
+
 ### Common parameters
 
 | Name            | Description                        | Value                 |
@@ -137,67 +144,121 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Analyse Service
 
-| Name                          | Description                                                 | Value                           |
-| ----------------------------- | ----------------------------------------------------------- | ------------------------------- |
-| `analyseservice.enabled`      | Enable the Broker Service.                                  | `true`                          |
-| `analyseservice.image.debug`  | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                         |
-| `analyseservice.endpoint`     | The url of the endpoint.                                    | `http://analyse-service`        |
-| `analyseservice.s3.endpoint`  | The S3-capable endpoint the microservice connects to.       | `http://storageservice-s3:9000` |
-| `analyseservice.replicaCount` | The number of replicas.                                     | `2`                             |
+| Name                                                               | Description                                                 | Value                           |
+| ------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------- |
+| `analyseservice.enabled`                                           | Enable the Broker Service.                                  | `true`                          |
+| `analyseservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                         |
+| `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                               | `true`                          |
+| `analyseservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                          | `Always`                        |
+| `analyseservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface              | `[]`                            |
+| `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`                            |
+| `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`                          |
+| `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`                          |
+| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `""`                            |
+| `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`                          |
+| `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`                          |
+| `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`                          |
+| `analyseservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                        | `false`                         |
+| `analyseservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem     | `false`                         |
+| `analyseservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot               | `["ALL"]`                       |
+| `analyseservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile            | `RuntimeDefault`                |
+| `analyseservice.endpoint`                                          | The url of the endpoint.                                    | `http://analyse-service`        |
+| `analyseservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.       | `http://storageservice-s3:9000` |
+| `analyseservice.replicaCount`                                      | The number of replicas.                                     | `2`                             |
 
 ### Metadata Service
 
-| Name                                       | Description                                                                        | Value                           |
-| ------------------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------- |
-| `metadataservice.enabled`                  | Enable the Metadata Service.                                                       | `true`                          |
-| `metadataservice.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`.                        | `false`                         |
-| `metadataservice.endpoint`                 | The Metadata Service endpoint.                                                     | `http://metadata-service`       |
-| `metadataservice.admin.email`              | The OAI-PMH exposed e-mail for contacting the metadata records responsible person. | `noreply@example.com`           |
-| `metadataservice.deletedRecord`            | The OAI-PMH exposed delete policy.                                                 | `permanent`                     |
-| `metadataservice.repositoryName`           | The OAI-PMH exposed repository name.                                               | `Database Repository`           |
-| `metadataservice.granularity`              | The OAI-PMH exposed record granularity.                                            | `YYYY-MM-DDThh:mm:ssZ`          |
-| `metadataservice.datacite.enabled`         | If set to true, the service mints DOIs instead of local PIDs.                      | `false`                         |
-| `metadataservice.datacite.url`             | The DataCite api endpoint url.                                                     | `https://api.datacite.org`      |
-| `metadataservice.datacite.prefix`          | The DataCite prefix.                                                               | `""`                            |
-| `metadataservice.datacite.username`        | The DataCite api username.                                                         | `""`                            |
-| `metadataservice.datacite.password`        | The DataCite api user password.                                                    | `""`                            |
-| `metadataservice.sparql.connectionTimeout` | The connection timeout for sparql queries fetching remote data in ms.              | `10000`                         |
-| `metadataservice.s3.endpoint`              | The S3-capable endpoint the microservice connects to.                              | `http://storageservice-s3:9000` |
-| `metadataservice.s3.auth.username`         | The S3-capable endpoint username (or access key id).                               | `seaweedfsadmin`                |
-| `metadataservice.s3.auth.password`         | The S3-capable endpoint user password (or access key secret).                      | `seaweedfsadmin`                |
-| `metadataservice.replicaCount`             | The number of replicas.                                                            | `2`                             |
+| Name                                                                | Description                                                                        | Value                           |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------- |
+| `metadataservice.enabled`                                           | Enable the Broker Service.                                                         | `true`                          |
+| `metadataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                        | `false`                         |
+| `metadataservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                      | `true`                          |
+| `metadataservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                 | `Always`                        |
+| `metadataservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                     | `[]`                            |
+| `metadataservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                        | `[]`                            |
+| `metadataservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                        | `1001`                          |
+| `metadataservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                               | `true`                          |
+| `metadataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                   | `""`                            |
+| `metadataservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                | `1001`                          |
+| `metadataservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                               | `1001`                          |
+| `metadataservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                             | `true`                          |
+| `metadataservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                               | `false`                         |
+| `metadataservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                            | `false`                         |
+| `metadataservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                      | `["ALL"]`                       |
+| `metadataservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                   | `RuntimeDefault`                |
+| `metadataservice.endpoint`                                          | The Metadata Service endpoint.                                                     | `http://metadata-service`       |
+| `metadataservice.admin.email`                                       | The OAI-PMH exposed e-mail for contacting the metadata records responsible person. | `noreply@example.com`           |
+| `metadataservice.deletedRecord`                                     | The OAI-PMH exposed delete policy.                                                 | `permanent`                     |
+| `metadataservice.repositoryName`                                    | The OAI-PMH exposed repository name.                                               | `Database Repository`           |
+| `metadataservice.granularity`                                       | The OAI-PMH exposed record granularity.                                            | `YYYY-MM-DDThh:mm:ssZ`          |
+| `metadataservice.datacite.enabled`                                  | If set to true, the service mints DOIs instead of local PIDs.                      | `false`                         |
+| `metadataservice.datacite.url`                                      | The DataCite api endpoint url.                                                     | `https://api.datacite.org`      |
+| `metadataservice.datacite.prefix`                                   | The DataCite prefix.                                                               | `""`                            |
+| `metadataservice.datacite.username`                                 | The DataCite api username.                                                         | `""`                            |
+| `metadataservice.datacite.password`                                 | The DataCite api user password.                                                    | `""`                            |
+| `metadataservice.sparql.connectionTimeout`                          | The connection timeout for sparql queries fetching remote data in ms.              | `10000`                         |
+| `metadataservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                              | `http://storageservice-s3:9000` |
+| `metadataservice.s3.auth.username`                                  | The S3-capable endpoint username (or access key id).                               | `seaweedfsadmin`                |
+| `metadataservice.s3.auth.password`                                  | The S3-capable endpoint user password (or access key secret).                      | `seaweedfsadmin`                |
+| `metadataservice.replicaCount`                                      | The number of replicas.                                                            | `2`                             |
 
 ### Data Service
 
-| Name                                         | Description                                                                                                                                      | Value                                                                                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `dataservice.enabled`                        | Enable the Metadata Service.                                                                                                                     | `true`                                                                                                                      |
-| `dataservice.endpoint`                       | The endpoint for the microservices.                                                                                                              | `http://data-service`                                                                                                       |
-| `dataservice.image.debug`                    | Set the logging level to `trace`. Otherwise, set to `info`.                                                                                      | `false`                                                                                                                     |
-| `dataservice.grant.read`                     | The default database permissions for users with read access.                                                                                     | `SELECT`                                                                                                                    |
-| `dataservice.grant.write`                    | The default database permissions for users with write access.                                                                                    | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
-| `dataservice.default.date`                   | The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).                                                                     | `3`                                                                                                                         |
-| `dataservice.default.time`                   | The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).                                                                         | `4`                                                                                                                         |
-| `dataservice.default.timestamp`              | The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42).                                              | `1`                                                                                                                         |
-| `dataservice.rabbitmq.consumerConcurrentMin` | The minimal number of RabbitMQ consumers.                                                                                                        | `2`                                                                                                                         |
-| `dataservice.rabbitmq.consumerConcurrentMax` | The maximal number of RabbitMQ consumers.                                                                                                        | `6`                                                                                                                         |
-| `dataservice.rabbitmq.requeueRejected`       | If set to true, rejected tuples will be re-queued.                                                                                               | `false`                                                                                                                     |
-| `dataservice.rabbitmq.consumer.username`     | The username for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.users`.              | `admin`                                                                                                                     |
-| `dataservice.rabbitmq.consumer.password`     | The user password for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.userPasswords`. | `admin`                                                                                                                     |
-| `dataservice.s3.endpoint`                    | The S3-capable endpoint the microservice connects to.                                                                                            | `http://storageservice-s3:9000`                                                                                             |
-| `dataservice.s3.auth.username`               | The S3-capable endpoint username (or access key id).                                                                                             | `seaweedfsadmin`                                                                                                            |
-| `dataservice.s3.auth.password`               | The S3-capable endpoint user password (or access key secret).                                                                                    | `seaweedfsadmin`                                                                                                            |
-| `dataservice.s3.filePath`                    | The local location to download/upload files from/to S3-capable endpoint.                                                                         | `/s3`                                                                                                                       |
-| `dataservice.replicaCount`                   | The number of replicas.                                                                                                                          | `2`                                                                                                                         |
+| Name                                                            | Description                                                                                                                                      | Value                                                                                                                       |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `dataservice.enabled`                                           | Enable the Broker Service.                                                                                                                       | `true`                                                                                                                      |
+| `dataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                                                                                      | `false`                                                                                                                     |
+| `dataservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                                                                    | `true`                                                                                                                      |
+| `dataservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                                                                               | `Always`                                                                                                                    |
+| `dataservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                                                                                   | `[]`                                                                                                                        |
+| `dataservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                                                                                      | `[]`                                                                                                                        |
+| `dataservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                                                                                      | `1001`                                                                                                                      |
+| `dataservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                                                                                             | `true`                                                                                                                      |
+| `dataservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                                                                                 | `""`                                                                                                                        |
+| `dataservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                                                                              | `1001`                                                                                                                      |
+| `dataservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                                                                             | `1001`                                                                                                                      |
+| `dataservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                                                                                           | `true`                                                                                                                      |
+| `dataservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                                                                                             | `false`                                                                                                                     |
+| `dataservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                                                                          | `false`                                                                                                                     |
+| `dataservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                                                                                    | `["ALL"]`                                                                                                                   |
+| `dataservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                                                 | `RuntimeDefault`                                                                                                            |
+| `dataservice.grant.read`                                        | The default database permissions for users with read access.                                                                                     | `SELECT`                                                                                                                    |
+| `dataservice.grant.write`                                       | The default database permissions for users with write access.                                                                                    | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
+| `dataservice.default.date`                                      | The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).                                                                     | `3`                                                                                                                         |
+| `dataservice.default.time`                                      | The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).                                                                         | `4`                                                                                                                         |
+| `dataservice.default.timestamp`                                 | The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42).                                              | `1`                                                                                                                         |
+| `dataservice.rabbitmq.consumerConcurrentMin`                    | The minimal number of RabbitMQ consumers.                                                                                                        | `2`                                                                                                                         |
+| `dataservice.rabbitmq.consumerConcurrentMax`                    | The maximal number of RabbitMQ consumers.                                                                                                        | `6`                                                                                                                         |
+| `dataservice.rabbitmq.requeueRejected`                          | If set to true, rejected tuples will be re-queued.                                                                                               | `false`                                                                                                                     |
+| `dataservice.rabbitmq.consumer.username`                        | The username for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.users`.              | `admin`                                                                                                                     |
+| `dataservice.rabbitmq.consumer.password`                        | The user password for the consumer to read tuples from the broker service. In many cases this value is equal to `identityservice.userPasswords`. | `admin`                                                                                                                     |
+| `dataservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.                                                                                            | `http://storageservice-s3:9000`                                                                                             |
+| `dataservice.s3.auth.username`                                  | The S3-capable endpoint username (or access key id).                                                                                             | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.auth.password`                                  | The S3-capable endpoint user password (or access key secret).                                                                                    | `seaweedfsadmin`                                                                                                            |
+| `dataservice.s3.filePath`                                       | The local location to download/upload files from/to S3-capable endpoint.                                                                         | `/s3`                                                                                                                       |
+| `dataservice.replicaCount`                                      | The number of replicas.                                                                                                                          | `2`                                                                                                                         |
 
 ### Search Service
 
-| Name                         | Description                                                 | Value                   |
-| ---------------------------- | ----------------------------------------------------------- | ----------------------- |
-| `searchservice.enabled`      | Enable the Search Service.                                  | `true`                  |
-| `searchservice.endpoint`     | The endpoint for the microservices.                         | `http://search-service` |
-| `searchservice.image.debug`  | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                 |
-| `searchservice.replicaCount` | The number of replicas.                                     | `2`                     |
+| Name                                                              | Description                                                 | Value            |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- | ---------------- |
+| `searchservice.enabled`                                           | Enable the Broker Service.                                  | `true`           |
+| `searchservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`          |
+| `searchservice.podSecurityContext.enabled`                        | Enable pods' Security Context                               | `true`           |
+| `searchservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                          | `Always`         |
+| `searchservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface              | `[]`             |
+| `searchservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`             |
+| `searchservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`           |
+| `searchservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`           |
+| `searchservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `""`             |
+| `searchservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`           |
+| `searchservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`           |
+| `searchservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`           |
+| `searchservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                        | `false`          |
+| `searchservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem     | `true`           |
+| `searchservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot               | `["ALL"]`        |
+| `searchservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile            | `RuntimeDefault` |
+| `searchservice.replicaCount`                                      | The number of replicas.                                     | `2`              |
 
 ### Storage Service
 
@@ -222,25 +283,39 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### User Interface
 
-| Name                              | Description                                                                  | Value                   |
-| --------------------------------- | ---------------------------------------------------------------------------- | ----------------------- |
-| `ui.enabled`                      | Enable the User Interface.                                                   | `true`                  |
-| `ui.image.debug`                  | Set the logging level to `trace`. Otherwise, set to `info`.                  | `false`                 |
-| `ui.public.api.client`            | The endpoint for the client api.                                             | `""`                    |
-| `ui.public.api.server`            | The endpoint for the server api.                                             | `""`                    |
-| `ui.public.title`                 | The user interface title.                                                    | `Database Repository`   |
-| `ui.public.logo`                  | The user interface logo.                                                     | `/logo.svg`             |
-| `ui.public.icon`                  | The user interface icon.                                                     | `/favicon.ico`          |
-| `ui.public.touch`                 | The user interface apple touch icon.                                         | `/apple-touch-icon.png` |
-| `ui.public.broker.host`           | The displayed broker hostname.                                               | `example.com`           |
-| `ui.public.broker.port.5671`      | Enable display of the broker 5671 port and mark it as secure (SSL/TLS).      | `true`                  |
-| `ui.public.broker.port.5672`      | Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS). | `false`                 |
-| `ui.public.broker.extra`          | Extra metadata displayed.                                                    | `""`                    |
-| `ui.public.database.extra`        | Extra metadata displayed.                                                    | `128.130.0.0/15`        |
-| `ui.public.pid.default.publisher` | The default dataset publisher for persisted identifiers.                     | `Example University`    |
-| `ui.public.doi.enabled`           | Enable the display that DOIs are minted.                                     | `false`                 |
-| `ui.public.doi.endpoint`          | The DOI proxy.                                                               | `https://doi.org`       |
-| `ui.replicaCount`                 | The number of replicas.                                                      | `2`                     |
+| Name                                                   | Description                                                                  | Value                   |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------- |
+| `ui.enabled`                                           | Enable the Broker Service.                                                   | `true`                  |
+| `ui.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                  | `false`                 |
+| `ui.podSecurityContext.enabled`                        | Enable pods' Security Context                                                | `true`                  |
+| `ui.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                           | `Always`                |
+| `ui.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                               | `[]`                    |
+| `ui.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                  | `[]`                    |
+| `ui.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                  | `1001`                  |
+| `ui.containerSecurityContext.enabled`                  | Enabled containers' Security Context                                         | `true`                  |
+| `ui.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                             | `""`                    |
+| `ui.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                          | `1001`                  |
+| `ui.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                         | `1001`                  |
+| `ui.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot                       | `true`                  |
+| `ui.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                                         | `false`                 |
+| `ui.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                      | `false`                 |
+| `ui.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                | `["ALL"]`               |
+| `ui.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                             | `RuntimeDefault`        |
+| `ui.public.api.client`                                 | The endpoint for the client api.                                             | `""`                    |
+| `ui.public.api.server`                                 | The endpoint for the server api.                                             | `""`                    |
+| `ui.public.title`                                      | The user interface title.                                                    | `Database Repository`   |
+| `ui.public.logo`                                       | The user interface logo.                                                     | `/logo.svg`             |
+| `ui.public.icon`                                       | The user interface icon.                                                     | `/favicon.ico`          |
+| `ui.public.touch`                                      | The user interface apple touch icon.                                         | `/apple-touch-icon.png` |
+| `ui.public.broker.host`                                | The displayed broker hostname.                                               | `example.com`           |
+| `ui.public.broker.port.5671`                           | Enable display of the broker 5671 port and mark it as secure (SSL/TLS).      | `true`                  |
+| `ui.public.broker.port.5672`                           | Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS). | `false`                 |
+| `ui.public.broker.extra`                               | Extra metadata displayed.                                                    | `""`                    |
+| `ui.public.database.extra`                             | Extra metadata displayed.                                                    | `128.130.0.0/15`        |
+| `ui.public.pid.default.publisher`                      | The default dataset publisher for persisted identifiers.                     | `Example University`    |
+| `ui.public.doi.enabled`                                | Enable the display that DOIs are minted.                                     | `false`                 |
+| `ui.public.doi.endpoint`                               | The DOI proxy.                                                               | `https://doi.org`       |
+| `ui.replicaCount`                                      | The number of replicas.                                                      | `2`                     |
 
 ### Ingress
 

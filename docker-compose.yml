@@ -39,6 +39,7 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
+      - ./dbrepo-data-db/enable_history_insert.cnf:/opt/bitnami/mariadb/conf.default/enable_history_insert.cnf
       - "${SHARED_VOLUME:-/tmp}:/tmp"
       - data-db-data:/bitnami/mariadb
     ports:
@@ -116,8 +117,6 @@ services:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
       ADMIN_EMAIL: "${ADMIN_EMAIL:-noreply@localhost}"
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
-      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       ANALYSE_SERVICE_ENDPOINT: "${ANALYSE_SERVICE_ENDPOINT:-http://gateway-service}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -152,6 +151,8 @@ services:
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
       interval: 10s
@@ -180,8 +181,6 @@ services:
     ports:
       - "5000:8080"
     environment:
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
-      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -265,8 +264,6 @@ services:
     ports:
       - "4000:8080"
     environment:
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
-      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -382,8 +379,8 @@ services:
     environment:
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
-      LDAP_USERS: "${ADMIN_USERNAME:-admin}"
-      LDAP_PASSWORDS: "${ADMIN_PASSWORD:-admin}"
+      LDAP_USERS: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_PASSWORDS: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_GROUP: "${ADMIN_GROUP:-system}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
       LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
@@ -486,8 +483,6 @@ services:
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
-      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
@@ -519,6 +514,8 @@ services:
       S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1
       interval: 10s

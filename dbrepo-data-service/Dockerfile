@@ -28,9 +28,9 @@ RUN apk add --no-cache curl bash jq
 
 WORKDIR /app
 
-USER 65534
+USER 1001
 
-COPY --from=build --chown=65534 ./rest-service/target/rest-service-*.jar ./data-service.jar
+COPY --from=build --chown=1001 ./rest-service/target/rest-service-*.jar ./data-service.jar
 
 # non-root port
 EXPOSE 8080

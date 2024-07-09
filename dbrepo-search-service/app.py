@@ -199,8 +199,6 @@ app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKE
 app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost/api/auth")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
-app.config["ADMIN_USERNAME"] = os.getenv('ADMIN_USERNAME', 'admin')
-app.config["ADMIN_PASSWORD"] = os.getenv('ADMIN_PASSWORD', 'admin')
 app.config["OPENSEARCH_HOST"] = os.getenv('OPENSEARCH_HOST', 'localhost')
 app.config["OPENSEARCH_PORT"] = os.getenv('OPENSEARCH_PORT', '9200')
 app.config["OPENSEARCH_USERNAME"] = os.getenv('OPENSEARCH_USERNAME', 'admin')
@@ -227,8 +225,6 @@ def verify_token(token: str):
 def verify_password(username: str, password: str) -> Any:
     if username is None or username == "" or password is None or password == "":
         return False
-    if username == app.config["ADMIN_USERNAME"] and password == app.config["ADMIN_PASSWORD"]:
-        return User(username=username, roles=["admin"])
     client = KeycloakClient()
     try:
         return client.verify_jwt(access_token=client.obtain_user_token(username=username, password=password))
@@ -374,7 +370,7 @@ def post_general_search(type):
     if t1 is not None and t2 is not None and "unit.uri" in req_body and "concept.uri" in req_body:
         response = OpenSearchClient().unit_independent_search(t1, t2, req_body)
     else:
-        response = OpenSearchClient().general_search(type, t1, t2, req_body)
+        response = OpenSearchClient().general_search(type, req_body)
     # filter by type
     if type == 'table':
         tmp = []
@@ -431,7 +427,7 @@ def post_general_search(type):
 @app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="search_put_database")
 @metrics.gauge(name='dbrepo_search_update_database',
                description='Time needed to update a database in the search database')
-@auth.login_required(role=['admin'])
+@auth.login_required(role=['update-search-index'])
 def update_database(database_id: int) -> Database | ApiError:
     logging.debug(f"updating database with id: {database_id}")
     try:

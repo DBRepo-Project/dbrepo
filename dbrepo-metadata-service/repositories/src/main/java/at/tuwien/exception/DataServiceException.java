@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "error.data.invalid")
-public class ServiceException extends Exception {
+public class DataServiceException extends Exception {
 
-    public ServiceException(String message) {
+    public DataServiceException(String message) {
         super(message);
     }
 
-    public ServiceException(String message, Throwable thr) {
+    public DataServiceException(String message, Throwable thr) {
         super(message, thr);
     }
 
-    public ServiceException(Throwable thr) {
+    public DataServiceException(Throwable thr) {
         super(thr);
     }
 

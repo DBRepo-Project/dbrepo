@@ -7,14 +7,14 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -23,7 +23,6 @@ import static org.mockito.Mockito.*;
 public class RorGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
-    @Qualifier("keycloakRestTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
@@ -42,15 +41,17 @@ public class RorGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findById_fails() throws RorNotFoundException {
+    public void findById_fails() {
 
         /* mock */
-        doThrow(ResourceAccessException.class)
+        doThrow(HttpServerErrorException.class)
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(RorDto.class));
 
         /* test */
-        rorGateway.findById("04d836q62");
+        assertThrows(RorNotFoundException.class, () -> {
+            rorGateway.findById("04d836q62");
+        });
     }
 
 }

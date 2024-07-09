@@ -35,7 +35,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -152,7 +151,7 @@ public class TableEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
-    @PreAuthorize("hasAuthority('update-table-statistic') or hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('update-table-statistic')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update statistics",
             description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. Requires role `update-table-statistic`",
@@ -184,7 +183,7 @@ public class TableEndpoint {
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, MalformedException, ServiceException, ServiceConnectionException {
+            SearchServiceConnectionException, MalformedException, DataServiceException, DataServiceConnectionException {
         log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
         tableService.updateStatistics(table);
@@ -236,7 +235,7 @@ public class TableEndpoint {
                                             @NotNull @PathVariable("columnId") Long columnId,
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
                                             @NotNull Principal principal) throws NotAllowedException,
-            MalformedException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            MalformedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
@@ -343,7 +342,7 @@ public class TableEndpoint {
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                            @NotNull @Valid @RequestBody TableCreateDto data,
                                            @NotNull Principal principal) throws NotAllowedException, MalformedException,
-            ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
@@ -401,26 +400,22 @@ public class TableEndpoint {
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal) throws ServiceException,
-            ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
+                                             Principal principal) throws DataServiceException,
+            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = metadataMapper.customTableToTableDto(table);
         final HttpHeaders headers = new HttpHeaders();
-        if (principal != null) {
-            /* extra effort only when logged-in */
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
-                headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
-                headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
-                headers.set("X-Host", table.getDatabase().getContainer().getHost());
-                headers.set("X-Port", "" + table.getDatabase().getContainer().getPort());
-                headers.set("X-Type", table.getDatabase().getContainer().getImage().getJdbcMethod());
-                headers.set("X-Database", table.getDatabase().getInternalName());
-                headers.set("X-Sidecar-Host", table.getDatabase().getContainer().getSidecarHost());
-                headers.set("X-Sidecar-Port", "" + table.getDatabase().getContainer().getSidecarPort());
-                headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Sidecar-Host X-Sidecar-Port");
-            }
+        if (UserUtil.isSystem(principal)) {
+            headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
+            headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
+            headers.set("X-Host", table.getDatabase().getContainer().getHost());
+            headers.set("X-Port", "" + table.getDatabase().getContainer().getPort());
+            headers.set("X-Type", table.getDatabase().getContainer().getImage().getJdbcMethod());
+            headers.set("X-Database", table.getDatabase().getInternalName());
+            headers.set("X-Sidecar-Host", table.getDatabase().getContainer().getSidecarHost());
+            headers.set("X-Sidecar-Port", "" + table.getDatabase().getContainer().getSidecarPort());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Sidecar-Host X-Sidecar-Port");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
@@ -466,7 +461,7 @@ public class TableEndpoint {
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull Principal principal) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
+            DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);

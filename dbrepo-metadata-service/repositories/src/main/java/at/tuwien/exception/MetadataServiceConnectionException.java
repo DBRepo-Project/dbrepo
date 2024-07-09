@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_GATEWAY, reason = "error.metadata.connection")
-public class ServiceConnectionException extends Exception {
+public class MetadataServiceConnectionException extends Exception {
 
-    public ServiceConnectionException(String msg) {
+    public MetadataServiceConnectionException(String msg) {
         super(msg);
     }
 
-    public ServiceConnectionException(String msg, Throwable thr) {
+    public MetadataServiceConnectionException(String msg, Throwable thr) {
         super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
-    public ServiceConnectionException(Throwable thr) {
+    public MetadataServiceConnectionException(Throwable thr) {
         super(thr);
     }
 

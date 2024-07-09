@@ -72,9 +72,10 @@ public class StorageServiceS3Impl implements StorageService {
     @Override
     public ExportResourceDto getResource(String bucket, String key) throws StorageNotFoundException,
             StorageUnavailableException {
-        final InputStream stream = getObject(bucket, key);
+        final InputStreamResource resource = new InputStreamResource(getObject(bucket, key));
+        log.trace("return export resource with filename: {}", key);
         return ExportResourceDto.builder()
-                .resource(new InputStreamResource(stream))
+                .resource(resource)
                 .filename(key)
                 .build();
     }

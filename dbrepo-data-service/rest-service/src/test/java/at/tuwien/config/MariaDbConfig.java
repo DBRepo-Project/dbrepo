@@ -177,7 +177,8 @@ public class MariaDbConfig {
             if (set.next()) {
                 final Matcher matcher = Pattern.compile("GRANT (.*) ON.*").matcher(set.getString(1));
                 if (matcher.find()) {
-                    final List<String> privileges = Arrays.asList(matcher.group(1).split(","));;
+                    final List<String> privileges = Arrays.asList(matcher.group(1).split(","));
+                    ;
                     log.trace("found privileges: {}", privileges);
                     return privileges;
                 }
@@ -224,7 +225,7 @@ public class MariaDbConfig {
     public static Long mockUserQueryInsert(PrivilegedDatabaseDto database, String query, String username, String password)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
+        log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
             final String call = "{call store_query(?,?,?)}";
             log.trace("prepare procedure '{}'", call);
@@ -255,7 +256,7 @@ public class MariaDbConfig {
 
     public static void insertQueryStore(PrivilegedDatabaseDto database, QueryDto query, UUID userId) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
+        log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             final PreparedStatement prepareStatement = connection.prepareStatement(
                     "INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed) VALUES (?,?,?,?,?,?,?,?,?)");
@@ -332,10 +333,24 @@ public class MariaDbConfig {
     public static void execute(PrivilegedContainerDto container, String query)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
-        log.trace("connect to database {}", jdbc);
+        log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
             final Statement statement = connection.createStatement();
             statement.executeUpdate(query);
+        }
+    }
+
+    public static void dropQueryStore(PrivilegedDatabaseDto database)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database: {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final Statement statement = connection.createStatement();
+            statement.executeUpdate("DROP SEQUENCE IF EXISTS `qs_queries_seq`;");
+            statement.executeUpdate("DROP TABLE IF EXISTS `qs_queries`;");
+            statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_table`;");
+            statement.executeUpdate("DROP PROCEDURE IF EXISTS `store_query`;");
+            statement.executeUpdate("DROP PROCEDURE IF EXISTS `_store_query`;");
         }
     }
 

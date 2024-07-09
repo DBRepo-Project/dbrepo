@@ -15,9 +15,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -26,7 +28,6 @@ import static org.mockito.Mockito.*;
 public class CrossrefGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
-    @Qualifier("keycloakRestTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
@@ -45,15 +46,17 @@ public class CrossrefGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findById_fails() throws DoiNotFoundException {
+    public void findById_fails() {
 
         /* mock */
-        doThrow(ResourceAccessException.class)
+        doThrow(HttpServerErrorException.class)
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CrossrefDto.class));
 
         /* test */
-        crossrefGateway.findById("501100004729");
+        assertThrows(DoiNotFoundException.class, () -> {
+            crossrefGateway.findById("501100004729");
+        });
     }
 
 }
