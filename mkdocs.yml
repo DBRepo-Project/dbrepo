@@ -12,7 +12,6 @@ nav:
     - Help with DBRepo: help.md
     - Installation: installation.md
     - Kubernetes: kubernetes.md
-    - Migration Guide: migration.md
     - contributing.md
   - Concepts:
     - Overview: concepts/index.md
@@ -22,7 +21,6 @@ nav:
     - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md
     - Search: concepts/search.md
-    - Storage: concepts/storage.md
     - User Interface: concepts/ui.md
   - API:
     - Overview: api/index.md

@@ -370,6 +370,7 @@ release-helm:
   only:
     refs:
       - /^release-.*/
+  when: manual
   except:
     refs:
       - release-latest

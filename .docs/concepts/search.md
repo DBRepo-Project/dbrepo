@@ -2,22 +2,16 @@
 author: Martin Weise
 ---
 
-## Index
-
-tbd
-
 ## Document
 
-TBD
-
-## Query
+Each database in DBRepo has their own document where the document id (the identifier of a database in OpenSearch) is
+equivalent to the database id (the identifier of a database in the [Metadata Database](../../api/metadata-db)).
 
 ## Unit Independent Search
 
 Since the repository automatically collects statistical properties (min, max, mean, median, std.dev) in both the
-[Metadata Database](../system-databases-metadata) and the [Search Database](../system-databases-search), a special
-search can be performed when at least two columns have the same semantic concept (e.g. temperature) annotated and
-the units of measurements can be transformed.
+[Metadata Database](../../api/metadata-db) and the Search Database, a special search can be performed when at least two
+columns have the same semantic concept (e.g. temperature) annotated and the units of measurements can be transformed.
 
 <figure markdown>
 ![Two tables with compatible semantic concepts (Temperature) and units of measurement (left is in degree Celsius, right is in degree Fahrenheit)](../images/statistics-example.png)
