@@ -8,6 +8,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -25,7 +26,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -139,8 +139,8 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody DatabaseCreateDto data,
-                                              @NotNull Principal principal) throws ServiceException,
-            ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
+                                              @NotNull Principal principal) throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final User user = userService.findByUsername(principal.getName());
@@ -190,9 +190,10 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                            @NotNull Principal principal) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException {
+                                                            @NotNull Principal principal) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException,
+            TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         Database database = databaseService.findById(databaseId);
         if (!database.getOwner().equals(principal)) {
@@ -238,9 +239,9 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                           @NotNull Principal principal) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException {
+                                                           @NotNull Principal principal) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         Database database = databaseService.findById(databaseId);
         if (!database.getOwner().equals(principal)) {
@@ -347,7 +348,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto data,
                                                 @NotNull Principal principal) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.id={}", databaseId, data.getId());
         final Database database = databaseService.findById(databaseId);
@@ -452,8 +453,8 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                Principal principal) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException {
+                                                Principal principal) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
         final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
@@ -467,13 +468,10 @@ public class DatabaseEndpoint {
             log.debug("found {} database accesses", accesses.size());
         }
         final HttpHeaders headers = new HttpHeaders();
-        if (principal != null) {
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
-                headers.set("X-Username", database.getContainer().getPrivilegedUsername());
-                headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-                headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
-            }
+        if (UserUtil.isSystem(principal)) {
+            headers.set("X-Username", database.getContainer().getPrivilegedUsername());
+            headers.set("X-Password", database.getContainer().getPrivilegedPassword());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)

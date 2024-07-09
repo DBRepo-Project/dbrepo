@@ -89,7 +89,7 @@ public class SubsetEndpoint {
                                                @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
                                                Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            QueryNotFoundException, NotAllowedException, ServiceException {
+            QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         if (!database.getIsPublic()) {
@@ -156,7 +156,7 @@ public class SubsetEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, QueryMalformedException,
             SidecarExportException, StorageNotFoundException, NotAllowedException, UserNotFoundException,
-            ServiceException {
+            MetadataServiceException {
         String accept = httpServletRequest.getHeader("Accept");
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
@@ -260,7 +260,7 @@ public class SubsetEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
-            QueryNotSupportedException, NotAllowedException, UserNotFoundException, ServiceException {
+            QueryNotSupportedException, NotAllowedException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, " +
                 "size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size, timestamp);
         /* check */
@@ -337,7 +337,7 @@ public class SubsetEndpoint {
                                                   @RequestParam(required = false) Long size) throws PaginationException,
             DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException, QueryNotFoundException,
             DatabaseUnavailableException, TableMalformedException, QueryMalformedException, UserNotFoundException,
-            ServiceException {
+            MetadataServiceException {
         log.debug("endpoint re-execute query, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -424,7 +424,7 @@ public class SubsetEndpoint {
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
                                             @NotNull Principal principal) throws NotAllowedException,
             RemoteUnavailableException, DatabaseNotFoundException, QueryStorePersistException,
-            DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, ServiceException {
+            DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
         metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));

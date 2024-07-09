@@ -467,8 +467,8 @@ public interface MetadataMapper {
     TableBriefDto tableToTableBriefDto(Table data);
 
     default UniqueDto uniqueToUniqueDto(Unique data) {
-        data.getTable().setOwner(null); /* loop */
-        data.getTable().setCreator(null); /* loop */
+//        data.getTable().setOwner(null); /* loop */
+//        data.getTable().setCreator(null); /* loop */
         return UniqueDto.builder()
                 .id(data.getId())
                 .name(data.getName())

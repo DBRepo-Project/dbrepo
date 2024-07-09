@@ -19,12 +19,16 @@ import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.StorageService;
+import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.util.LinkedList;
@@ -58,7 +62,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public void createQueryStore(PrivilegedContainerDto container, String databaseName) throws SQLException, QueryStoreCreateException {
+    public void createQueryStore(PrivilegedContainerDto container, String databaseName) throws SQLException,
+            QueryStoreCreateException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container, databaseName);
         final Connection connection = dataSource.getConnection();
         try {
@@ -88,8 +93,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     public QueryResultDto execute(PrivilegedDatabaseDto database, String statement, Instant timestamp,
                                   UUID userId, Long page, Long size, SortTypeDto sortDirection, String sortColumn)
             throws QueryStoreInsertException, SQLException, QueryNotFoundException, TableMalformedException,
-            UserNotFoundException, NotAllowedException, RemoteUnavailableException, ServiceException,
-            DatabaseNotFoundException {
+            UserNotFoundException, NotAllowedException, RemoteUnavailableException, DatabaseNotFoundException,
+            MetadataServiceException {
         final Long queryId = storeQuery(database, statement, timestamp, userId);
         final QueryDto query = findById(database, queryId);
         return reExecute(database, query, page, size, sortDirection, sortColumn);
@@ -120,7 +125,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
 
     @Override
     public List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, RemoteUnavailableException, ServiceException, DatabaseNotFoundException {
+            QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
         final List<IdentifierDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -153,13 +158,21 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     @Override
     public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException, ServiceException, RemoteUnavailableException {
+            StorageUnavailableException, RemoteUnavailableException {
         final String filePath = s3Config.getS3FilePath() + "/" + filename;
+        final String viewName = "ex_" + Hashing.sha512()
+                .hashString(new String(RandomUtils.nextBytes(256), Charset.defaultCharset()), Charset.defaultCharset())
+                .toString()
+                .substring(0, 60);
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
-            connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(query.getQuery(), timestamp, filePath))
+            connection.prepareStatement(mariaDbMapper.subsetToRawTemporaryViewQuery(viewName, query.getQuery()))
+                    .executeUpdate();
+            connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(viewName, timestamp, filePath))
+                    .executeUpdate();
+            connection.prepareStatement(mariaDbMapper.dropViewRawQuery(viewName))
                     .executeUpdate();
             connection.commit();
         } catch (SQLException e) {
@@ -208,7 +221,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
 
     @Override
     public QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
-            RemoteUnavailableException, UserNotFoundException, ServiceException, DatabaseNotFoundException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {

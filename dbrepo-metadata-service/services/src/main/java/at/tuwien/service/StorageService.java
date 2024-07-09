@@ -14,6 +14,7 @@ public interface StorageService {
      * @param key    The object key.
      * @return The input stream, if successful.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException The object could not be found in the Storage Service.
      */
     InputStream getObject(String bucket, String key) throws StorageNotFoundException,
             StorageUnavailableException;
@@ -24,6 +25,7 @@ public interface StorageService {
      * @param key The object key.
      * @return The byte array.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException The object could not be found in the Storage Service.
      */
     byte[] getBytes(String key) throws StorageUnavailableException, StorageNotFoundException;
 
@@ -34,6 +36,7 @@ public interface StorageService {
      * @param key    The object key.
      * @return The byte array.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException The object could not be found in the Storage Service.
      */
     byte[] getBytes(String bucket, String key) throws StorageNotFoundException, StorageUnavailableException;
 }

@@ -61,7 +61,7 @@ public class TableEndpoint {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Create table",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
@@ -95,7 +95,7 @@ public class TableEndpoint {
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                            @Valid @RequestBody TableCreateDto data) throws DatabaseNotFoundException,
             RemoteUnavailableException, TableMalformedException, DatabaseUnavailableException, TableExistsException,
-            TableNotFoundException, QueryMalformedException, ServiceException {
+            TableNotFoundException, QueryMalformedException, MetadataServiceException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -108,7 +108,7 @@ public class TableEndpoint {
     }
 
     @DeleteMapping("/{tableId}")
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Delete table",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
@@ -137,7 +137,7 @@ public class TableEndpoint {
     public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            QueryMalformedException, ServiceException {
+            QueryMalformedException, MetadataServiceException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         try {
@@ -191,7 +191,7 @@ public class TableEndpoint {
                                                   @RequestParam(required = false) Long size,
                                                   Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, PaginationException, QueryMalformedException, ServiceException,
+            TableMalformedException, PaginationException, QueryMalformedException, MetadataServiceException,
             NotAllowedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
                 tableId, timestamp, page, size);
@@ -268,7 +268,7 @@ public class TableEndpoint {
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
-            StorageNotFoundException, ServiceException {
+            StorageNotFoundException, MetadataServiceException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
@@ -319,7 +319,7 @@ public class TableEndpoint {
                                                @Valid @RequestBody TupleUpdateDto data,
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, QueryMalformedException, NotAllowedException, ServiceException {
+            TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
@@ -371,7 +371,7 @@ public class TableEndpoint {
                                                @Valid @RequestBody TupleDeleteDto data,
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, QueryMalformedException, NotAllowedException, ServiceException {
+            TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
@@ -424,7 +424,7 @@ public class TableEndpoint {
                                                             @NotNull @PathVariable("tableId") Long tableId,
                                                             @RequestParam(value = "size", required = false) Long size,
                                                             Principal principal) throws DatabaseUnavailableException,
-            RemoteUnavailableException, TableNotFoundException, NotAllowedException, ServiceException,
+            RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
             PaginationException {
         log.debug("endpoint find table history, databaseId={}, tableId={}", databaseId, tableId);
         if (size != null && size <= 0) {
@@ -453,7 +453,7 @@ public class TableEndpoint {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_table_schema_list")
     @Operation(summary = "Find tables",
             hidden = true)
@@ -491,7 +491,7 @@ public class TableEndpoint {
     })
     public ResponseEntity<List<TableDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            DatabaseMalformedException, TableNotFoundException, QueryMalformedException, ServiceException {
+            DatabaseMalformedException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint inspect table schemas, databaseId={}", databaseId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -540,7 +540,7 @@ public class TableEndpoint {
                                                           Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             NotAllowedException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
-            StorageNotFoundException, ServiceException {
+            StorageNotFoundException, MetadataServiceException {
         log.debug("endpoint find table history, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
         /* parameters */
         if (timestamp == null) {
@@ -606,7 +606,7 @@ public class TableEndpoint {
                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, StorageNotFoundException, SidecarImportException, NotAllowedException,
-            ServiceException {
+            MetadataServiceException {
         log.debug("endpoint insert table data, databaseId={}, tableId={}, data.location={}", databaseId, tableId, data.getLocation());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
@@ -659,7 +659,7 @@ public class TableEndpoint {
     public ResponseEntity<TableStatisticDto> statistic(@NotBlank @PathVariable("databaseId") Long databaseId,
                                                        @NotBlank @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            ServiceException, TableMalformedException, QueryMalformedException {
+            MetadataServiceException, TableMalformedException, QueryMalformedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         try {

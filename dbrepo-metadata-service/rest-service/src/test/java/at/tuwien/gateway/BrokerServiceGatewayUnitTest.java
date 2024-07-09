@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,7 +34,8 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
     private BrokerServiceGateway brokerServiceGateway;
 
     @Test
-    public void grantTopicPermission_exchangeNoRightsBefore_succeeds() throws ServiceException, ServiceConnectionException {
+    public void grantTopicPermission_exchangeNoRightsBefore_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -46,7 +48,8 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void grantTopicPermission_exchangeRightsSame_succeeds() throws ServiceException, ServiceConnectionException {
+    public void grantTopicPermission_exchangeRightsSame_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -68,13 +71,14 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
             brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
         });
     }
 
     @Test
-    public void grantVirtualHostPermission_virtualHostNoRightsBefore_succeeds() throws ServiceConnectionException, ServiceException {
+    public void grantVirtualHostPermission_virtualHostNoRightsBefore_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -87,7 +91,8 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void grantVirtualHostPermission_virtualHostRightsSame_succeeds() throws ServiceConnectionException, ServiceException {
+    public void grantVirtualHostPermission_virtualHostRightsSame_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -109,7 +114,7 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
             brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         });
     }
@@ -123,7 +128,21 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
+            brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        });
+    }
+
+    @Test
+    public void grantVirtualHostPermission_connection_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.class)
+                .when(restTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(BrokerServiceConnectionException.class, () -> {
             brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         });
     }
@@ -137,13 +156,28 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
             brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
         });
     }
 
     @Test
-    public void grantExchangePermission_succeeds() throws ServiceConnectionException, ServiceException {
+    public void grantTopicPermission_connection_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.class)
+                .when(restTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(BrokerServiceConnectionException.class, () -> {
+            brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void grantExchangePermission_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -156,7 +190,8 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void grantExchangePermission_exists_succeeds() throws ServiceConnectionException, ServiceException {
+    public void grantExchangePermission_exists_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -178,7 +213,21 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        });
+    }
+
+    @Test
+    public void grantExchangePermission_connection_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.class)
+                .when(restTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(BrokerServiceConnectionException.class, () -> {
             brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
         });
     }
@@ -192,7 +241,7 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(BrokerServiceException.class, () -> {
             brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
         });
     }

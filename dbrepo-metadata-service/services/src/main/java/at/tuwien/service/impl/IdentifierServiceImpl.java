@@ -155,7 +155,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional
     public Identifier save(Database database, User user, IdentifierSaveDto data) throws SearchServiceException,
-            ServiceException, QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
+            DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = find(data.getId());
         identifier.setDatabase(database);
@@ -223,7 +223,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional
     public Identifier create(Database database, User user, IdentifierCreateDto data) throws SearchServiceException,
-            ServiceException, QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
+            DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierCreateDtoToIdentifier(data);
         identifier.setDatabase(database);
@@ -276,9 +276,9 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Transactional
-    public Identifier save(Identifier identifier) throws ServiceException,
-            ServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException, DatabaseNotFoundException,
-            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public Identifier save(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
+            IdentifierNotFoundException, ViewNotFoundException, DatabaseNotFoundException, QueryNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
         /* save identifier */
         switch (identifier.getType()) {
             case SUBSET -> {
@@ -356,15 +356,15 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Identifier identifier) throws ServiceException,
-            ServiceConnectionException, QueryNotFoundException {
+    public InputStreamResource exportResource(Identifier identifier) throws DataServiceException,
+            DataServiceConnectionException, QueryNotFoundException {
         final ExportResourceDto exportResource = dataServiceGateway.exportQuery(identifier.getDatabase().getId(), identifier.getQueryId());
         return exportResource.getResource();
     }
 
     @Override
     @Transactional
-    public void delete(Identifier identifier) throws ServiceException, ServiceConnectionException,
+    public void delete(Identifier identifier) throws DataServiceException, DataServiceConnectionException,
             IdentifierNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* delete in metadata database */

@@ -41,7 +41,7 @@ public class AccessEndpoint {
     }
 
     @PostMapping("/{userId}")
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Give access",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
@@ -78,7 +78,7 @@ public class AccessEndpoint {
                                        @NotBlank @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, ServiceException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         final PrivilegedUserDto user = metadataServiceGateway.getPrivilegedUserById(userId);
@@ -97,7 +97,7 @@ public class AccessEndpoint {
     }
 
     @PutMapping("/{userId}")
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Update access",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
@@ -134,7 +134,7 @@ public class AccessEndpoint {
                                        @NotBlank @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException, ServiceException {
+            DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
@@ -154,7 +154,7 @@ public class AccessEndpoint {
     }
 
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasAuthority('admin')")
+    @PreAuthorize("hasAuthority('system')")
     @Operation(summary = "Revoke access",
             security = {@SecurityRequirement(name = "basicAuth")},
             hidden = true)
@@ -190,7 +190,7 @@ public class AccessEndpoint {
     public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
                                        @NotBlank @PathVariable("userId") UUID userId) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseMalformedException, ServiceException {
+            DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         final UserDto user = metadataServiceGateway.getUserById(userId);

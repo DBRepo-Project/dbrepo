@@ -62,8 +62,8 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public DatabaseAccess create(Database database, User user, AccessTypeDto type) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+    public DatabaseAccess create(Database database, User user, AccessTypeDto type) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* create in data database */
         dataServiceGateway.createAccess(database.getId(), user.getId(), type);
@@ -85,8 +85,8 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public void update(Database database, User user, AccessTypeDto access) throws ServiceException,
-            ServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
+    public void update(Database database, User user, AccessTypeDto access) throws DataServiceException,
+            DataServiceConnectionException, AccessNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in data database */
         dataServiceGateway.updateAccess(database.getId(), user.getId(), access);
@@ -112,8 +112,8 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional
-    public void delete(Database database, User user) throws AccessNotFoundException, ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+    public void delete(Database database, User user) throws AccessNotFoundException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* delete in data database */
         dataServiceGateway.deleteAccess(database.getId(), user.getId());

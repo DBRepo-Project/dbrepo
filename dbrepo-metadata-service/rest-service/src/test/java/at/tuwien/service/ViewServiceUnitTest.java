@@ -48,7 +48,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
         final ViewCreateDto request = ViewCreateDto.builder()
                 .name(VIEW_1_NAME)
@@ -107,8 +107,8 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
-            ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public void delete_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
         doNothing()
@@ -124,37 +124,37 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_dataServiceException_fails() throws ServiceException, ServiceConnectionException,
+    public void delete_dataServiceException_fails() throws DataServiceException, DataServiceConnectionException,
             ViewNotFoundException {
 
         /* mock */
-        doThrow(ServiceException.class)
+        doThrow(DataServiceException.class)
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             viewService.delete(VIEW_1);
         });
     }
 
     @Test
-    public void delete_dataServiceConnection_fails() throws ServiceException, ServiceConnectionException,
+    public void delete_dataServiceConnection_fails() throws DataServiceException, DataServiceConnectionException,
             ViewNotFoundException {
 
         /* mock */
-        doThrow(ServiceConnectionException.class)
+        doThrow(DataServiceConnectionException.class)
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
-        assertThrows(ServiceConnectionException.class, () -> {
+        assertThrows(DataServiceConnectionException.class, () -> {
             viewService.delete(VIEW_1);
         });
     }
 
     @Test
-    public void delete_searchServiceError_fails() throws ServiceException, ServiceConnectionException,
+    public void delete_searchServiceError_fails() throws DataServiceException, DataServiceConnectionException,
             ViewNotFoundException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -174,7 +174,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_searchServiceConnection_fails() throws ServiceException, ServiceConnectionException,
+    public void delete_searchServiceConnection_fails() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
@@ -194,7 +194,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void delete_searchServiceNotFound_fails() throws ServiceException, ServiceConnectionException,
+    public void delete_searchServiceNotFound_fails() throws DataServiceException, DataServiceConnectionException,
             ViewNotFoundException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

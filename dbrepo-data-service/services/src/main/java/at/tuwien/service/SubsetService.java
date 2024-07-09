@@ -28,7 +28,9 @@ public interface SubsetService {
 
     QueryResultDto execute(PrivilegedDatabaseDto database, String statement, Instant timestamp, UUID userId, Long page,
                            Long size, SortTypeDto sortDirection, String sortColumn)
-            throws QueryStoreInsertException, SQLException, QueryNotFoundException, TableMalformedException, UserNotFoundException, NotAllowedException, RemoteUnavailableException, ServiceException, DatabaseNotFoundException;
+            throws QueryStoreInsertException, SQLException, QueryNotFoundException, TableMalformedException,
+            UserNotFoundException, NotAllowedException, RemoteUnavailableException, DatabaseNotFoundException,
+            MetadataServiceException;
 
     QueryResultDto reExecute(PrivilegedDatabaseDto database, QueryDto query, Long page, Long size,
                              SortTypeDto sortDirection, String sortColumn) throws TableMalformedException,
@@ -45,11 +47,12 @@ public interface SubsetService {
      * @return The list of queries.
      */
     List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
-            QueryNotFoundException, NotAllowedException, RemoteUnavailableException, ServiceException, DatabaseNotFoundException;
+            QueryNotFoundException, NotAllowedException, RemoteUnavailableException, DatabaseNotFoundException,
+            MetadataServiceException;
 
     ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
             throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException, ServiceException, RemoteUnavailableException;
+            StorageUnavailableException, MetadataServiceException, RemoteUnavailableException;
 
     Long executeCountNonPersistent(PrivilegedDatabaseDto database, String statement, Instant timestamp)
             throws SQLException, QueryMalformedException, TableMalformedException;
@@ -62,7 +65,9 @@ public interface SubsetService {
      * @return The query.
      * @throws QueryNotFoundException The query store did not return a query
      */
-    QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException, NotAllowedException, RemoteUnavailableException, UserNotFoundException, ServiceException, DatabaseNotFoundException;
+    QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
+            NotAllowedException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            MetadataServiceException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id.

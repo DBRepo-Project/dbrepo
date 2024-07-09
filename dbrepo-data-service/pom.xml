@@ -173,6 +173,12 @@
             <artifactId>dbrepo-metadata-service-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Exceptions -->
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-repositories</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- AMPQ -->
         <dependency>
             <groupId>org.springframework.amqp</groupId>

@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -173,7 +172,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, AccessNotFoundException {
 
         /* mock */
-        when(databaseService.findById(DATABASE_3_ID))
+        when(databaseService.findById(anyLong()))
                 .thenReturn(DATABASE_3);
 
         /* test */
@@ -181,11 +180,11 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled("keep failing on CI but works locally")
+    @Disabled
     public void validateOnlyAccessOrPublic_privateAnonymous_fails() throws DatabaseNotFoundException {
 
         /* mock */
-        when(databaseService.findById(DATABASE_1_ID))
+        when(databaseService.findById(anyLong()))
                 .thenReturn(DATABASE_1);
 
         /* test */
@@ -195,7 +194,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled("keep failing on CI but works locally")
+    @Disabled
     public void validateOnlyAccessOrPublic_privateNoAccess_fails() throws DatabaseNotFoundException,
             AccessNotFoundException {
 
@@ -204,7 +203,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
-                .find(eq(DATABASE_1), any(User.class));
+                .find(any(Database.class), any(User.class));
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
@@ -402,11 +401,11 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled("keep failing on CI but works locally")
+    @Disabled
     public void validateOnlyPrivateHasRole_privatePrincipalMissing_fails() throws DatabaseNotFoundException {
 
         /* mock */
-        when(databaseService.findById(DATABASE_1_ID))
+        when(databaseService.findById(anyLong()))
                 .thenReturn(DATABASE_1);
 
         /* test */
@@ -416,11 +415,11 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled("keep failing on CI but works locally")
+    @Disabled
     public void validateOnlyPrivateHasRole_privateRoleMissing_fails() throws DatabaseNotFoundException {
 
         /* mock */
-        when(databaseService.findById(DATABASE_1_ID))
+        when(databaseService.findById(anyLong()))
                 .thenReturn(DATABASE_1);
 
         /* test */

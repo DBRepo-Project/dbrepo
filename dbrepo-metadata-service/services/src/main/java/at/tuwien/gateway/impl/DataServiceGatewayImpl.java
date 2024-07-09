@@ -34,7 +34,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
 
     @Override
     public void createAccess(Long databaseId, UUID userId, AccessTypeDto access)
-            throws ServiceConnectionException, ServiceException, DatabaseNotFoundException {
+            throws DataServiceConnectionException, DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
         try {
@@ -42,23 +42,23 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
                     new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create access: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to create access: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to create access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to create access: not found: {}", e.getMessage());
             throw new DatabaseNotFoundException("Failed to create access: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to create access: {}", e.getMessage());
-            throw new ServiceException("Failed to create access: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to create access: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create access: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to create access: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to create access: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
     public void updateAccess(Long databaseId, UUID userId, AccessTypeDto access)
-            throws ServiceConnectionException, ServiceException, AccessNotFoundException {
+            throws DataServiceConnectionException, DataServiceException, AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
         try {
@@ -66,22 +66,22 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
                     new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to update access: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to update access: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to update access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to update access: not found: {}", e.getMessage());
             throw new AccessNotFoundException("Failed to update access: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to update access: {}", e.getMessage());
-            throw new ServiceException("Failed to update access: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to update access: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update access: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to update access: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to update access: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public void deleteAccess(Long databaseId, UUID userId) throws ServiceConnectionException, ServiceException,
+    public void deleteAccess(Long databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
@@ -89,65 +89,69 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to delete access: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to delete access: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to delete access: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to delete access: not found: {}", e.getMessage());
             throw new AccessNotFoundException("Failed to delete access: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to delete access: {}", e.getMessage());
-            throw new ServiceException("Failed to delete access: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to delete access: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to delete access: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to delete access: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to delete access: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public DatabaseDto createDatabase(CreateDatabaseDto data) throws ServiceConnectionException, ServiceException {
+    public DatabaseDto createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException,
+            DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
         final String url = "/api/database";
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), DatabaseDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create database: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to create database: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to create database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to create database: {}", e.getMessage());
-            throw new ServiceException("Failed to create database: " + e.getMessage(), e);
+            log.error("Failed to create database: malformed: {}", e.getMessage());
+            throw new DataServiceException("Failed to create database: malformed: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to create database: not found: {}", e.getMessage());
+            throw new DatabaseNotFoundException("Failed to create database: not found: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create database: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to create database: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to create database: wrong http code: " + response.getStatusCode());
         }
         return response.getBody();
     }
 
     @Override
-    public void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws ServiceConnectionException,
-            ServiceException, DatabaseNotFoundException {
+    public void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
+            DataServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to update user password in database: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to update user password in database: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to update user password in database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to update user password in database: not found: {}", e.getMessage());
             throw new DatabaseNotFoundException("Failed to update user password in database: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to update user password in database: {}", e.getMessage());
-            throw new ServiceException("Failed to update user password in database: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to update user password in database: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update user password in database: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to update user password in database: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to update user password in database: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public void createTable(Long databaseId, TableCreateDto data) throws ServiceConnectionException, ServiceException,
+    public void createTable(Long databaseId, TableCreateDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table";
@@ -155,7 +159,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create table: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to create table: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to create table: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to create table: not found: {}", e.getMessage());
             throw new DatabaseNotFoundException("Failed to create table: not found: " + e.getMessage(), e);
@@ -164,16 +168,16 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             throw new TableExistsException("Failed to create table: already exists", e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to create table: {}", e.getMessage());
-            throw new ServiceException("Failed to create table: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to create table: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create table: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to create table: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to create table: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public void deleteTable(Long databaseId, Long tableId) throws ServiceConnectionException, ServiceException,
+    public void deleteTable(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId;
@@ -181,46 +185,46 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to delete table: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to delete table: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to delete table: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to delete table: not found: {}", e.getMessage());
             throw new TableNotFoundException("Failed to delete table: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to delete table: {}", e.getMessage());
-            throw new ServiceException("Failed to delete table: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to delete table: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to delete table: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to delete table: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to delete table: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public ViewDto createView(Long databaseId, ViewCreateDto data) throws ServiceConnectionException, ServiceException {
+    public ViewDto createView(Long databaseId, ViewCreateDto data) throws DataServiceConnectionException, DataServiceException {
         final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view";
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), ViewDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create view: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to create view: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to create view: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
             log.error("Failed to create view: {}", e.getMessage());
-            throw new ServiceException("Failed to create view: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to create view: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create view: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to create view: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to create view: wrong http code: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to create view: empty body: {}", response.getStatusCode());
-            throw new ServiceException("Failed to create view: empty body: " + response.getStatusCode());
+            throw new DataServiceException("Failed to create view: empty body: " + response.getStatusCode());
         }
         return response.getBody();
     }
 
     @Override
-    public void deleteView(Long databaseId, Long viewId) throws ServiceConnectionException, ServiceException,
+    public void deleteView(Long databaseId, Long viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/view/" + viewId;
@@ -228,22 +232,22 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to delete view: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to delete view: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to delete view: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to delete view: not found: {}", e.getMessage());
             throw new ViewNotFoundException("Failed to delete view: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to delete view: {}", e.getMessage());
-            throw new ServiceException("Failed to delete view: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to delete view: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to delete view: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to delete view: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to delete view: wrong http code: " + response.getStatusCode());
         }
     }
 
     @Override
-    public QueryDto findQuery(Long databaseId, Long queryId) throws ServiceConnectionException, ServiceException,
+    public QueryDto findQuery(Long databaseId, Long queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;
         final String url = "/api/database/" + databaseId + "/subset/" + queryId;
@@ -251,71 +255,72 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, QueryDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to find query: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to find query", e);
+            throw new DataServiceConnectionException("Failed to find query", e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find query: not found: {}", e.getMessage());
             throw new QueryNotFoundException("Failed to find query: not found", e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to find query: unauthorized: {}", e.getMessage());
-            throw new ServiceException("Failed to find query: unauthorized", e);
+            throw new DataServiceException("Failed to find query: unauthorized", e);
         } catch (HttpClientErrorException.NotAcceptable e) {
             log.error("Failed to find query: format not acccepted: {}", e.getMessage());
-            throw new ServiceException("Failed to find query: format not accepted", e);
+            throw new DataServiceException("Failed to find query: format not accepted", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find query: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to find query: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to find query: wrong http code: " + response.getStatusCode());
         }
         return response.getBody();
     }
 
     @Override
-    public ExportResourceDto exportQuery(Long databaseId, Long queryId) throws ServiceConnectionException,
-            ServiceException, QueryNotFoundException {
+    public ExportResourceDto exportQuery(Long databaseId, Long queryId) throws DataServiceConnectionException,
+            DataServiceException, QueryNotFoundException {
         final ResponseEntity<ExportResourceDto> response;
         final String url = "/api/database/" + databaseId + "/subset/" + queryId;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ExportResourceDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to export query: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to export query: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to export query: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to export query: not found: {}", e.getMessage());
             throw new QueryNotFoundException("Failed to export query: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to export query: {}", e.getMessage());
-            throw new ServiceException("Failed to export query: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to export query: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to export query: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to export query: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to export query: wrong http code: " + response.getStatusCode());
         }
         return response.getBody();
     }
 
     @Override
-    public List<TableDto> getTableSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException {
+    public List<TableDto> getTableSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+            TableNotFoundException {
         final ResponseEntity<TableDto[]> response;
         final String url = "/api/database/" + databaseId + "/table";
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto[].class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to get table schemas: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to get table schemas: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to get table schemas: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to get table schemas: not found: {}", e.getMessage());
-            throw new QueryNotFoundException("Failed to get table schemas: not found: " + e.getMessage(), e);
+            throw new TableNotFoundException("Failed to get table schemas: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to get table schemas: {}", e.getMessage());
-            throw new ServiceException("Failed to get table schemas: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to get table schemas: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to get table schemas: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to get table schemas: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to get table schemas: wrong http code: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to get table schemas: empty body: {}", response.getStatusCode());
-            throw new ServiceException("Failed to get table schemas: empty body: " + response.getStatusCode());
+            throw new DataServiceException("Failed to get table schemas: empty body: " + response.getStatusCode());
         }
         final List<TableDto> tables = Arrays.asList(response.getBody());
         log.debug("found {} table(s) in data service", tables.size());
@@ -323,28 +328,29 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public List<ViewDto> getViewSchemas(Long databaseId) throws ServiceConnectionException, ServiceException, QueryNotFoundException {
+    public List<ViewDto> getViewSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
+            ViewNotFoundException {
         final ResponseEntity<ViewDto[]> response;
         final String url = "/api/database/" + databaseId + "/view";
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto[].class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to get view schemas: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to get view schemas: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to get view schemas: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to get view schemas: not found: {}", e.getMessage());
-            throw new QueryNotFoundException("Failed to get view schemas: not found: " + e.getMessage(), e);
+            throw new ViewNotFoundException("Failed to get view schemas: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to get view schemas: {}", e.getMessage());
-            throw new ServiceException("Failed to get view schemas: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to get view schemas: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to get view schemas: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to get view schemas: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to get view schemas: wrong http code: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to get view schemas: empty body: {}", response.getStatusCode());
-            throw new ServiceException("Failed to get view schemas: empty body: " + response.getStatusCode());
+            throw new DataServiceException("Failed to get view schemas: empty body: " + response.getStatusCode());
         }
         final List<ViewDto> views = Arrays.asList(response.getBody());
         log.debug("found {} view(s) in data service", views.size());
@@ -352,28 +358,28 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws ServiceConnectionException, ServiceException, TableNotFoundException {
+    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException, TableNotFoundException {
         final ResponseEntity<TableStatisticDto> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableStatisticDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to analyse table statistic: {}", e.getMessage());
-            throw new ServiceConnectionException("Failed to analyse table statistic: " + e.getMessage(), e);
+            throw new DataServiceConnectionException("Failed to analyse table statistic: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to analyse table statistic: not found: {}", e.getMessage());
             throw new TableNotFoundException("Failed to analyse table statistic: not found: " + e.getMessage(), e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to analyse table statistic: {}", e.getMessage());
-            throw new ServiceException("Failed to analyse table statistic: " + e.getMessage(), e);
+            throw new DataServiceException("Failed to analyse table statistic: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to analyse table statistic: wrong http code: {}", response.getStatusCode());
-            throw new ServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
+            throw new DataServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to analyse table statistic: empty body: {}", response.getStatusCode());
-            throw new ServiceException("Failed to analyse table statistic: empty body: " + response.getStatusCode());
+            throw new DataServiceException("Failed to analyse table statistic: empty body: " + response.getStatusCode());
         }
         return response.getBody();
     }

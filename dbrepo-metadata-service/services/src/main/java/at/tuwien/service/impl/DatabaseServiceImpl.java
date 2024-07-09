@@ -62,6 +62,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public Database findByInternalName(String internalName) throws DatabaseNotFoundException {
+        log.trace("find database by internal name: {}", internalName);
         final Optional<Database> database = databaseRepository.findByInternalName(internalName);
         if (database.isEmpty()) {
             log.error("Failed to find database with internal name {} in metadata database", internalName);
@@ -84,7 +85,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Override
     @Transactional
     public Database create(DatabaseCreateDto data, User user) throws UserNotFoundException,
-            ContainerNotFoundException, ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+            ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         final Container container = containerService.find(data.getCid());
         Database database = Database.builder()
@@ -135,7 +136,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional(readOnly = true)
-    public void updatePassword(Database database, User user) throws ServiceException, ServiceConnectionException,
+    public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
         final List<Database> databases = databaseRepository.findReadAccess(user.getId())
                 .stream()
@@ -190,10 +191,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
-    public Database updateTableMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
-            SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
-            ServiceConnectionException, MalformedException {
+    @Transactional(rollbackFor = {Exception.class})
+    public Database updateTableMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
+            MalformedException, TableNotFoundException {
         for (TableDto table : dataServiceGateway.getTableSchemas(database.getId())) {
             if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(table.getInternalName()))) {
                 log.debug("fetched known table from data service: {}.{}", database.getInternalName(), table.getInternalName());
@@ -296,10 +297,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional(rollbackFor = {SearchServiceException.class, SearchServiceConnectionException.class, DatabaseNotFoundException.class})
-    public Database updateViewMetadata(Database database) throws DatabaseNotFoundException, ServiceException,
-            SearchServiceException, SearchServiceConnectionException, QueryNotFoundException,
-            ServiceConnectionException {
+    @Transactional(rollbackFor = {Exception.class})
+    public Database updateViewMetadata(Database database) throws DatabaseNotFoundException, DataServiceException,
+            SearchServiceException, SearchServiceConnectionException, DataServiceConnectionException,
+            ViewNotFoundException {
         for (ViewDto view : dataServiceGateway.getViewSchemas(database.getId())) {
             if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(view.getInternalName()))) {
                 log.debug("fetched known view from data service: {}.{}", database.getInternalName(), view.getInternalName());

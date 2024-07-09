@@ -500,7 +500,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table", "delete-table",
-            "modify-table-column-semantics", "modify-foreign-table-column-semantics", "admin",
+            "modify-table-column-semantics", "modify-foreign-table-column-semantics", "update-table-statistic",
             "table-semantic-analyse"})
     public void prometheusTableEndpoint_succeeds() {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
