@@ -95,9 +95,10 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
-    public Table createTable(Database database, TableCreateDto data, Principal principal) throws ServiceException,
-            ServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
-            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException {
+    public Table createTable(Database database, TableCreateDto data, Principal principal) throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException {
         final User owner = userService.findByUsername(principal.getName());
         /* check */
         if (data.getConstraints().getPrimaryKey().isEmpty()) {
@@ -217,7 +218,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
-    public void deleteTable(Table table) throws ServiceException, ServiceConnectionException,
+    public void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* delete at data service */
@@ -232,8 +233,8 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
-    public TableColumn update(TableColumn column, ColumnSemanticsUpdateDto data) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+    public TableColumn update(TableColumn column, ColumnSemanticsUpdateDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
         /* assign */
@@ -288,7 +289,7 @@ public class TableServiceImpl implements TableService {
     @Transactional
     public void updateStatistics(Table table) throws SearchServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException,
-            ServiceException, ServiceConnectionException {
+            DataServiceException, DataServiceConnectionException {
         final TableStatisticDto statistic = dataServiceGateway.getTableStatistics(table.getTdbid(), table.getId());
         table.setNumRows(statistic.getRows());
         for (Map.Entry<String, ColumnStatisticDto> entry : statistic.getColumns().entrySet()) {

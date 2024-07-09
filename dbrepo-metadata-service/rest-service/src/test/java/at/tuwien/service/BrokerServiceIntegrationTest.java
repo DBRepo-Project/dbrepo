@@ -1,15 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.config.RabbitConfig;
+import at.tuwien.exception.*;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.TopicPermissionDto;
 import at.tuwien.api.amqp.VirtualHostPermissionDto;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.ServiceConnectionException;
-import at.tuwien.exception.ServiceException;
-import at.tuwien.repository.*;
 import at.tuwien.utils.AmqpUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +42,6 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     @Autowired
     private BrokerService brokerService;
 
-    @Autowired
-    private AmqpUtils amqpUtils;
-
     @Container
     private static final RabbitMQContainer rabbitContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withUser(USER_1_USERNAME, USER_1_PASSWORD, Set.of("administrator"))
@@ -55,10 +50,6 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     @DynamicPropertySource
     static void rabbitProperties(DynamicPropertyRegistry registry) {
         registry.add("dbrepo.endpoints.brokerService", rabbitContainer::getHttpUrl);
-        registry.add("spring.rabbitmq.host", rabbitContainer::getHost);
-        registry.add("spring.rabbitmq.port", rabbitContainer::getAmqpPort);
-        registry.add("spring.rabbitmq.username", rabbitContainer::getAdminUsername);
-        registry.add("spring.rabbitmq.password", rabbitContainer::getAdminPassword);
     }
 
     @BeforeEach
@@ -67,7 +58,7 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePermissions_empty_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updatePermissions_empty_succeeds() throws BrokerServiceException, BrokerServiceConnectionException {
 
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
@@ -79,7 +70,7 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePermissions_writeAll_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updatePermissions_writeAll_succeeds() throws BrokerServiceException, BrokerServiceConnectionException {
 
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
@@ -91,7 +82,7 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePermissions_writeOwn_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updatePermissions_writeOwn_succeeds() throws BrokerServiceException, BrokerServiceConnectionException {
 
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
@@ -103,7 +94,7 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePermissions_read_succeeds() throws ServiceException, ServiceConnectionException {
+    public void updatePermissions_read_succeeds() throws BrokerServiceException, BrokerServiceConnectionException {
 
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
@@ -116,7 +107,8 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_empty_succeeds() throws ServiceException, ServiceConnectionException {
+    public void setTopicExchangePermissions_empty_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of());
@@ -129,7 +121,8 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_writeAll_succeeds() throws ServiceException, ServiceConnectionException {
+    public void setTopicExchangePermissions_writeAll_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS));
@@ -142,7 +135,8 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_writeOwn_succeeds() throws ServiceException, ServiceConnectionException {
+    public void setTopicExchangePermissions_writeOwn_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_OWN_ACCESS));
@@ -155,7 +149,8 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_read_succeeds() throws ServiceException, ServiceConnectionException {
+    public void setTopicExchangePermissions_read_succeeds() throws BrokerServiceException,
+            BrokerServiceConnectionException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_READ_ACCESS));
@@ -170,8 +165,9 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected VirtualHostPermissionDto setVirtualHostPermissions_generic() throws ServiceException,
-            ServiceConnectionException {
+    protected VirtualHostPermissionDto setVirtualHostPermissions_generic() throws BrokerServiceException,
+            BrokerServiceConnectionException {
+        final AmqpUtils amqpUtils = new AmqpUtils(rabbitContainer.getHttpUrl());
 
         /* mock */
         amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
@@ -183,13 +179,14 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     @Transactional(readOnly = true)
     protected TopicPermissionDto setTopicExchangePermissions_generic(List<DatabaseAccess> accesses)
-            throws ServiceException, ServiceConnectionException {
+            throws BrokerServiceException, BrokerServiceConnectionException {
+        final AmqpUtils amqpUtils = new AmqpUtils(rabbitContainer.getHttpUrl());
         final GrantExchangePermissionsDto request = GrantExchangePermissionsDto.builder()
                 .exchange(rabbitConfig.getExchangeName())
                 .read("")
                 .write("")
                 .build();
-        final User user1 = User.builder()
+        final User user = User.builder()
                 .id(USER_1_ID)
                 .username(USER_1_USERNAME)
                 .accesses(accesses)
@@ -200,7 +197,7 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
         amqpUtils.setTopicPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, request);
 
         /* test */
-        brokerService.setTopicExchangePermissions(user1);
+        brokerService.setTopicExchangePermissions(user);
         return amqpUtils.getTopicPermissions(USER_1_USERNAME);
     }
 

@@ -136,6 +136,20 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    public void delete_unauthorized_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(restTemplate)
+                .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            searchServiceGateway.delete(DATABASE_1_ID);
+        });
+    }
+
+    @Test
     public void delete_unexpectedResponse_fails() {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.OK)
                 .build();

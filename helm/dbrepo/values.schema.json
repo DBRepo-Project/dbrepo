@@ -3,6 +3,51 @@
     "properties": {
         "analyseservice": {
             "properties": {
+                "containerSecurityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "string"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -23,8 +68,55 @@
                     },
                     "type": "object"
                 },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resources": {
+                    "properties": {
+                        "limits": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "requests": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 },
                 "s3": {
                     "properties": {
@@ -579,6 +671,51 @@
         },
         "dataservice": {
             "properties": {
+                "containerSecurityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "string"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "default": {
                     "properties": {
                         "date": {
@@ -595,9 +732,6 @@
                 },
                 "enabled": {
                     "type": "boolean"
-                },
-                "endpoint": {
-                    "type": "string"
                 },
                 "grant": {
                     "properties": {
@@ -620,6 +754,26 @@
                         },
                         "pullPolicy": {
                             "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
                         }
                     },
                     "type": "object"
@@ -690,6 +844,27 @@
         },
         "gateway": {
             "type": "string"
+        },
+        "global": {
+            "properties": {
+                "compatibility": {
+                    "properties": {
+                        "openshift": {
+                            "properties": {
+                                "adaptSecurityContext": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "storageClass": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
         },
         "hostname": {
             "type": "string"
@@ -930,6 +1105,51 @@
                     },
                     "type": "object"
                 },
+                "containerSecurityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "string"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "datacite": {
                     "properties": {
                         "enabled": {
@@ -976,11 +1196,58 @@
                     },
                     "type": "object"
                 },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
                 "replicaCount": {
                     "type": "integer"
                 },
                 "repositoryName": {
                     "type": "string"
+                },
+                "resources": {
+                    "properties": {
+                        "limits": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "requests": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 },
                 "s3": {
                     "properties": {
@@ -1065,11 +1332,53 @@
         },
         "searchservice": {
             "properties": {
+                "containerSecurityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "string"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
-                },
-                "endpoint": {
-                    "type": "string"
                 },
                 "image": {
                     "properties": {
@@ -1101,8 +1410,55 @@
                     },
                     "type": "object"
                 },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resources": {
+                    "properties": {
+                        "limits": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "requests": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
@@ -1238,6 +1594,51 @@
         },
         "ui": {
             "properties": {
+                "containerSecurityContext": {
+                    "properties": {
+                        "allowPrivilegeEscalation": {
+                            "type": "boolean"
+                        },
+                        "capabilities": {
+                            "properties": {
+                                "drop": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "readOnlyRootFilesystem": {
+                            "type": "boolean"
+                        },
+                        "runAsGroup": {
+                            "type": "integer"
+                        },
+                        "runAsNonRoot": {
+                            "type": "boolean"
+                        },
+                        "runAsUser": {
+                            "type": "integer"
+                        },
+                        "seLinuxOptions": {
+                            "type": "string"
+                        },
+                        "seccompProfile": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -1257,6 +1658,26 @@
                         },
                         "pullPolicy": {
                             "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "podSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fsGroup": {
+                            "type": "integer"
+                        },
+                        "fsGroupChangePolicy": {
+                            "type": "string"
+                        },
+                        "supplementalGroups": {
+                            "type": "array"
+                        },
+                        "sysctls": {
+                            "type": "array"
                         }
                     },
                     "type": "object"
@@ -1372,6 +1793,33 @@
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resources": {
+                    "properties": {
+                        "limits": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "requests": {
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"

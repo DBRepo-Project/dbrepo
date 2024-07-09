@@ -24,13 +24,13 @@ public class DataDatabaseSidecarGatewayImpl implements DataDatabaseSidecarGatewa
 
     @Override
     public void importFile(String hostname, Integer port, String filename) throws StorageNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, SidecarImportException {
         final ResponseEntity<Void> response;
         final String url = "http://" + hostname + ":" + port + "/sidecar/import/" + filename;
         log.debug("import file into data database sidecar");
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(null), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to import dataset with filename: {}: {}", filename, e.getMessage());
             throw new RemoteUnavailableException("Failed to import dataset: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest e) {
@@ -39,19 +39,19 @@ public class DataDatabaseSidecarGatewayImpl implements DataDatabaseSidecarGatewa
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to import dataset with filename: {}: service responded unsuccessful: {}", filename, response.getStatusCode());
-            throw new ServiceException("Failed to import dataset: service responded unsuccessful: " + response.getStatusCode());
+            throw new SidecarImportException("Failed to import dataset: service responded unsuccessful: " + response.getStatusCode());
         }
     }
 
     @Override
     public void exportFile(String hostname, Integer port, String filename) throws StorageNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, SidecarExportException {
         final ResponseEntity<Void> response;
         final String url = "http://" + hostname + ":" + port + "/sidecar/export/" + filename;
         log.debug("export file from data database sidecar: {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(null), Void.class);
-        } catch (ResourceAccessException | HttpServerErrorException e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to export dataset with filename: {}: {}", filename, e.getMessage());
             throw new RemoteUnavailableException("Failed to export dataset: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest e) {
@@ -60,7 +60,7 @@ public class DataDatabaseSidecarGatewayImpl implements DataDatabaseSidecarGatewa
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to export dataset with filename: {}: service responded unsuccessful: {}", filename, response.getStatusCode());
-            throw new ServiceException("Failed to export dataset: service responded unsuccessful: " + response.getStatusCode());
+            throw new SidecarExportException("Failed to export dataset: service responded unsuccessful: " + response.getStatusCode());
         }
     }
 }

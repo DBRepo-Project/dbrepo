@@ -42,7 +42,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     public void findById_anonymous_succeeds() throws ContainerNotFoundException {
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, null, false);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1, null);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     public void findById_hasRole_succeeds() throws ContainerNotFoundException {
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL, false);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -58,15 +58,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     public void findById_noRole_succeeds() throws ContainerNotFoundException {
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL, false);
-    }
-
-    @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
-    public void findById_admin_succeeds() throws ContainerNotFoundException {
-
-        /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_LOCAL_ADMIN_PRINCIPAL, true);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
     }
 
     @Test
@@ -173,7 +165,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void findById_generic(Long containerId, Container container, Principal principal, Boolean isAdmin)
+    public void findById_generic(Long containerId, Container container, Principal principal)
             throws ContainerNotFoundException {
 
         /* mock */
@@ -184,15 +176,6 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         final ResponseEntity<ContainerDto> response = containerEndpoint.findById(containerId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        if (isAdmin) {
-            assertNotNull(response.getHeaders());
-            final List<String> xUsername = response.getHeaders().get("X-Username");
-            assertNotNull(xUsername);
-            assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, xUsername.get(0));
-            final List<String> xPassword = response.getHeaders().get("X-Password");
-            assertNotNull(xPassword);
-            assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, xPassword.get(0));
-        }
     }
 
     public void delete_generic(Long containerId, Container container) throws ContainerNotFoundException {

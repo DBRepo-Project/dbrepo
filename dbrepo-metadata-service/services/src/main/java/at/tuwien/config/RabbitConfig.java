@@ -19,4 +19,7 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.virtual-host}")
     private String virtualHost;
 
+    @Value("${dbrepo.endpoints.brokerService}")
+    private String brokerEndpoint;
+
 }

@@ -52,9 +52,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
-            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException, ServiceException {
+            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException, MetadataServiceException {
 
         /* test */
         databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
@@ -63,7 +63,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
     public void create_noRole_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            SQLException, QueryStoreCreateException, DatabaseMalformedException, ServiceException {
+            SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -84,9 +84,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_containerNotFound_fails() throws RemoteUnavailableException, ContainerNotFoundException,
-            ServiceException {
+            MetadataServiceException {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
@@ -100,9 +100,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_queryStore_fails() throws RemoteUnavailableException, ContainerNotFoundException, SQLException,
-            DatabaseMalformedException, QueryStoreCreateException, ServiceException {
+            DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
@@ -121,9 +121,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void update_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
-            DatabaseMalformedException, DatabaseNotFoundException, ServiceException {
+            DatabaseMalformedException, DatabaseNotFoundException, MetadataServiceException {
 
         /* test */
         databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
@@ -131,7 +131,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
-    public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, ServiceException {
+    public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
@@ -144,9 +144,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void update_databaseNotFound_fails() throws RemoteUnavailableException, DatabaseNotFoundException,
-            ServiceException {
+            MetadataServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -160,9 +160,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"admin"})
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void update_password_fails() throws RemoteUnavailableException, DatabaseNotFoundException, SQLException,
-            DatabaseMalformedException, ServiceException {
+            DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))

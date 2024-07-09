@@ -185,8 +185,6 @@ app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKE
 app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost/api/auth")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
-app.config["ADMIN_USERNAME"] = os.getenv('ADMIN_USERNAME', 'admin')
-app.config["ADMIN_PASSWORD"] = os.getenv('ADMIN_PASSWORD', 'admin')
 app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
 app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
 app.config["S3_EXPORT_BUCKET"] = os.getenv('S3_EXPORT_BUCKET', 'dbrepo-download')
@@ -211,8 +209,6 @@ def verify_token(token: str):
 def verify_password(username: str, password: str) -> Any:
     if username is None or username == "" or password is None or password == "":
         return False
-    if username == app.config["ADMIN_USERNAME"] and password == app.config["ADMIN_PASSWORD"]:
-        return User(username=username, roles=["admin"])
     client = KeycloakClient()
     try:
         return client.verify_jwt(access_token=client.obtain_user_token(username=username, password=password))

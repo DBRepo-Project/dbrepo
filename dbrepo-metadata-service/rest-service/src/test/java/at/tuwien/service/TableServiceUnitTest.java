@@ -8,11 +8,9 @@ import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
@@ -117,9 +115,9 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTable_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException,
-            TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
-            SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
+    public void createTable_succeeds() throws DataServiceException, DataServiceConnectionException,
+            UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
+            SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
 
         /* mock */
@@ -139,10 +137,10 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTable_nonStandardColumnNames_succeeds() throws ServiceException, ServiceConnectionException,
-            UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
-            SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
-            SemanticEntityNotFoundException {
+    public void createTable_nonStandardColumnNames_succeeds() throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
@@ -202,7 +200,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTable_dateFormatNotFound_fails() throws ServiceException, ServiceConnectionException,
+    public void createTable_dateFormatNotFound_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException {
         final TableCreateDto request = TableCreateDto.builder()
@@ -240,7 +238,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws MalformedException, ServiceException, ServiceConnectionException,
+    public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException,
             SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException,
             SemanticEntityNotFoundException {
@@ -262,31 +260,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Transactional
-    public void update_succeeds() throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
-            SemanticEntityNotFoundException {
-        final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
-                .conceptUri(CONCEPT_1_URI)
-                .build();
-
-        /* mock */
-        when(ontologyService.find(anyString()))
-                .thenReturn(ONTOLOGY_2);
-        when(ontologyService.findAll())
-                .thenReturn(List.of(ONTOLOGY_1, ONTOLOGY_2, ONTOLOGY_3, ONTOLOGY_4, ONTOLOGY_5));
-        when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
-
-        /* test */
-        final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
-        assertNotNull(response.getConcept());
-        final TableColumnConcept concept = response.getConcept();
-        assertEquals(CONCEPT_1_URI, concept.getUri());
-    }
-
-    @Test
-    public void create_dataServiceError_fails() throws ServiceException, ServiceConnectionException,
+    public void create_dataServiceError_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -295,14 +269,14 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_1);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        doThrow(ServiceException.class)
+        doThrow(DataServiceException.class)
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
-        assertThrows(ServiceException.class, () -> {
+        assertThrows(DataServiceException.class, () -> {
             tableService.createTable(DATABASE_1, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
         });
     }
@@ -388,8 +362,9 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @Test
     @Transactional
-    public void delete_succeeds() throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
-            TableNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public void delete_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
         doNothing()
@@ -404,7 +379,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @Test
     @Transactional
-    public void delete_hasIdentifier_succeeds() throws ServiceException, ServiceConnectionException,
+    public void delete_hasIdentifier_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

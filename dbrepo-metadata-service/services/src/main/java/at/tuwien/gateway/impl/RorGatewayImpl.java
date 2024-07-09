@@ -4,6 +4,7 @@ import at.tuwien.api.ror.RorDto;
 import at.tuwien.exception.RorNotFoundException;
 import at.tuwien.gateway.RorGateway;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,8 +20,9 @@ public class RorGatewayImpl implements RorGateway {
 
     private final RestTemplate restTemplate;
 
-    public RorGatewayImpl() {
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public RorGatewayImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class RorGatewayImpl implements RorGateway {
         try {
             log.trace("find ror from url {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), RorDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to retrieve ROR metadata from URL {}: {}", url, e.getMessage());
             throw new RorNotFoundException("Failed to retrieve ROR metadata from URL " + url + ": " + e.getMessage(), e);
         }

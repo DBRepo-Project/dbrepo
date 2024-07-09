@@ -45,6 +45,20 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
+    @ExceptionHandler(BrokerServiceConnectionException.class)
+    public ResponseEntity<ApiErrorDto> handle(BrokerServiceConnectionException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(BrokerServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(BrokerServiceException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(ConceptNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ConceptNotFoundException e) {
@@ -73,9 +87,23 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(DatabaseMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(DatabaseMalformedException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(DatabaseNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(DatabaseUnavailableException.class)
+    public ResponseEntity<ApiErrorDto> handle(DatabaseUnavailableException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
@@ -101,29 +129,36 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(ExternalServiceException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({FilterBadRequestException.class})
+    @ExceptionHandler(FilterBadRequestException.class)
     public ResponseEntity<ApiErrorDto> handle(FilterBadRequestException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_ACCEPTABLE)
-    @ExceptionHandler({FormatNotAvailableException.class})
+    @ExceptionHandler(FormatNotAvailableException.class)
     public ResponseEntity<ApiErrorDto> handle(FormatNotAvailableException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({IdentifierNotFoundException.class})
+    @ExceptionHandler(IdentifierNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({IdentifierNotSupportedException.class})
+    @ExceptionHandler(IdentifierNotSupportedException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierNotSupportedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
@@ -158,15 +193,29 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({MalformedException.class})
+    @ExceptionHandler(MalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(MalformedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({MessageNotFoundException.class})
+    @ExceptionHandler(MessageNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(MessageNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
+    @ExceptionHandler(MetadataServiceConnectionException.class)
+    public ResponseEntity<ApiErrorDto> handle(MetadataServiceConnectionException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(MetadataServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(MetadataServiceException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
@@ -193,8 +242,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({PaginationException.class})
+    @ExceptionHandler(PaginationException.class)
     public ResponseEntity<ApiErrorDto> handle(PaginationException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(QueryMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryMalformedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
@@ -206,51 +262,107 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({QueueNotFoundException.class})
-    public ResponseEntity<ApiErrorDto> handle(QueueNotFoundException e) {
+    @ResponseStatus(code = HttpStatus.NOT_IMPLEMENTED)
+    @ExceptionHandler(QueryNotSupportedException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryNotSupportedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({RorNotFoundException.class})
+    @ExceptionHandler(QueueNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueueNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(QueryStoreCreateException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryStoreCreateException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(QueryStoreGCException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryStoreGCException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(QueryStoreInsertException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryStoreInsertException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(QueryStorePersistException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryStorePersistException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(RemoteUnavailableException.class)
+    public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(RorNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(RorNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
-    @ExceptionHandler({SearchServiceConnectionException.class})
+    @ExceptionHandler(SearchServiceConnectionException.class)
     public ResponseEntity<ApiErrorDto> handle(SearchServiceConnectionException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
-    @ExceptionHandler({SearchServiceException.class})
+    @ExceptionHandler(SearchServiceException.class)
     public ResponseEntity<ApiErrorDto> handle(SearchServiceException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({SemanticEntityNotFoundException.class})
+    @ExceptionHandler(SemanticEntityNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(SemanticEntityNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
-    @ExceptionHandler({ServiceConnectionException.class})
-    public ResponseEntity<ApiErrorDto> handle(ServiceConnectionException e) {
+    @ExceptionHandler(DataServiceConnectionException.class)
+    public ResponseEntity<ApiErrorDto> handle(DataServiceConnectionException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
-    @ExceptionHandler({ServiceException.class})
-    public ResponseEntity<ApiErrorDto> handle(ServiceException e) {
+    @ExceptionHandler(DataServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(DataServiceException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(SidecarExportException.class)
+    public ResponseEntity<ApiErrorDto> handle(SidecarExportException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(SidecarImportException.class)
+    public ResponseEntity<ApiErrorDto> handle(SidecarImportException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
@@ -283,22 +395,36 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(TableMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(TableMalformedException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ExceptionHandler(TableSchemaException.class)
+    public ResponseEntity<ApiErrorDto> handle(TableSchemaException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({TableNotFoundException.class})
+    @ExceptionHandler(TableNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({UnitNotFoundException.class})
+    @ExceptionHandler(UnitNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UnitNotFoundException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
-    @ExceptionHandler({UriMalformedException.class})
+    @ExceptionHandler(UriMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(UriMalformedException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
@@ -318,9 +444,23 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ViewMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(ViewMalformedException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     @ExceptionHandler(ViewNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewNotFoundException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ExceptionHandler(ViewSchemaException.class)
+    public ResponseEntity<ApiErrorDto> handle(ViewSchemaException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 

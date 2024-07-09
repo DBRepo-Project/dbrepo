@@ -216,7 +216,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void password_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void password_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AuthServiceException, AuthServiceConnectionException,
             CredentialsInvalidException {
         final UserPasswordDto request = UserPasswordDto.builder()
@@ -302,7 +302,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void password_generic(Principal principal, UserPasswordDto data) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */

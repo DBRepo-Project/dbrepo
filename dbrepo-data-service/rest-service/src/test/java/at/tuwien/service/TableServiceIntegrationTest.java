@@ -25,6 +25,7 @@ import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,6 +75,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        Thread.sleep(1000) /* wait for test container some more */;
+    }
+
     @BeforeEach
     public void beforeEach() throws SQLException {
         genesis();
@@ -84,9 +90,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            ServiceException {
+    public void updateTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, MetadataServiceException {
         /* modify row based on primary key */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -99,9 +104,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                     put("id", 1L);
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -120,9 +122,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_modifyPrimaryKey_succeeds() throws InterruptedException, SQLException,
-            RemoteUnavailableException, ContainerNotFoundException, TableNotFoundException, TableMalformedException,
-            QueryMalformedException, ServiceException {
+    public void updateTuple_modifyPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
+            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
+            MetadataServiceException {
         /* modify row primary key based on primary key */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -137,9 +139,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
-
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
@@ -157,9 +156,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_missingPrimaryKey_succeeds() throws InterruptedException, SQLException,
-            RemoteUnavailableException, ContainerNotFoundException, TableNotFoundException, TableMalformedException,
-            QueryMalformedException, ServiceException {
+    public void updateTuple_missingPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
+            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
+            MetadataServiceException {
         /* modify row based on non-primary key column */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -172,9 +171,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                     put("date", "2008-12-01");
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -193,9 +189,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_notInOrder_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
+    public void updateTuple_notInOrder_succeeds() throws SQLException, RemoteUnavailableException,
             ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            ServiceException {
+            MetadataServiceException {
         /* modify row based on non-primary key column */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -208,9 +204,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                     put("date", "2008-12-01");
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -229,9 +222,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTuple_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            StorageUnavailableException, StorageNotFoundException, ServiceException {
+    public void createTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, StorageUnavailableException,
+            StorageNotFoundException, MetadataServiceException {
         /* add row with primary key */
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
@@ -242,9 +235,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                     put("rainfall", 0.2);
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -263,9 +253,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTuple_notInOrder_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
+    public void createTuple_notInOrder_succeeds() throws SQLException, RemoteUnavailableException,
             ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            StorageUnavailableException, StorageNotFoundException, ServiceException {
+            StorageUnavailableException, StorageNotFoundException, MetadataServiceException {
         /* add row with primary key */
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
@@ -276,9 +266,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                     put("mintemp", 15.0);
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -297,18 +284,14 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void deleteTuple_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            ServiceException {
+    public void deleteTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, MetadataServiceException {
         /* delete row based on primary key */
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
                     put("id", 1L);
                 }})
                 .build();
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -323,9 +306,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void deleteTuple_withoutPrimaryKey_succeeds() throws InterruptedException, SQLException,
-            RemoteUnavailableException, ContainerNotFoundException, TableNotFoundException, TableMalformedException,
-            QueryMalformedException, ServiceException {
+    public void deleteTuple_withoutPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
+            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
+            MetadataServiceException {
         /* remove row based on non-primary key */
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
@@ -334,9 +317,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
-
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
@@ -350,8 +330,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getSchemas_succeeds() throws TableNotFoundException, SQLException, QueryMalformedException,
-            DatabaseMalformedException {
+    public void getSchemas_succeeds() throws TableNotFoundException, SQLException, DatabaseMalformedException {
 
         /* test */
         final List<TableDto> response = tableService.getSchemas(DATABASE_1_PRIVILEGED_DTO);
@@ -462,7 +441,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws TableNotFoundException, TableMalformedException, SQLException,
-            QueryMalformedException, TableExistsException {
+            TableExistsException {
 
         /* test */
         final TableDto response = tableService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
@@ -538,7 +517,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void create_needSequence_succeeds() throws TableNotFoundException, TableMalformedException, SQLException,
-            QueryMalformedException, TableExistsException {
+            TableExistsException {
 
         /* mock */
         MariaDbConfig.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNALNAME);
@@ -665,8 +644,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void importDataset_withSeparatorAndQuoteAndNullElement_succeeds() throws SidecarImportException, ServiceException, SQLException,
-            QueryMalformedException, RemoteUnavailableException, StorageNotFoundException, IOException {
+    public void importDataset_withSeparatorAndQuoteAndNullElement_succeeds() throws SidecarImportException,
+            SQLException, QueryMalformedException, RemoteUnavailableException, StorageNotFoundException, IOException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .location("weather_aus.csv")
                 .separator(';')
@@ -688,8 +667,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void importDataset_malformedData_fails() throws ServiceException, RemoteUnavailableException, StorageNotFoundException,
-            IOException {
+    public void importDataset_malformedData_fails() throws RemoteUnavailableException, StorageNotFoundException,
+            IOException, SidecarImportException {
         final ImportCsvDto request = ImportCsvDto.builder()
                 .location("weather_aus.csv")
                 .separator(';')
@@ -712,9 +691,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void exportDataset_succeeds() throws ServiceException, SQLException,
-            QueryMalformedException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException,
-            SidecarExportException {
+    public void exportDataset_succeeds() throws SQLException, QueryMalformedException, RemoteUnavailableException,
+            StorageNotFoundException, StorageUnavailableException, SidecarExportException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("weather_aus.csv")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))

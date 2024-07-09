@@ -1179,6 +1179,13 @@
       "create": "Ansicht konnte nicht erstellt werden",
       "missing": "Die Ansicht konnte in der Metadatendatenbank nicht gefunden werden",
       "invalid": "Die Ansichtsabfrage konnte den Spalten im Datendienst nicht zugeordnet werden"
+    },
+    "broker": {
+      "connection": "Es konnte keine Verbindung zum Vermittlungsdienst hergestellt werden",
+      "invalid": "Es konnten keine Metadaten im Metadatendienst abgerufen werden"
+    },
+    "external": {
+      "invalid": "Metadaten konnten nicht aus dem Datacite-System abgerufen werden"
     }
   },
   "success": {

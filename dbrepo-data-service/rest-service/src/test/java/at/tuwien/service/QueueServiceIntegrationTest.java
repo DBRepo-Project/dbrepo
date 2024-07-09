@@ -3,13 +3,14 @@ package at.tuwien.service;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.ServiceException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.impl.QueueServiceRabbitMqImpl;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,11 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        Thread.sleep(1000) /* wait for test container some more */;
+    }
+
     @BeforeEach
     public void beforeEach() throws SQLException {
         genesis();
@@ -51,8 +57,8 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void insert_succeeds() throws InterruptedException, SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, ServiceException {
+    public void insert_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
+            TableNotFoundException, MetadataServiceException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 4L);
             put("date", "2023-10-03");
@@ -60,9 +66,6 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
             put("mintemp", 15.0);
             put("rainfall", 0.2);
         }};
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
@@ -75,15 +78,12 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void insert_onlyMandatoryFields_succeeds() throws InterruptedException, SQLException,
-            RemoteUnavailableException, TableNotFoundException, ServiceException {
+    public void insert_onlyMandatoryFields_succeeds() throws SQLException, RemoteUnavailableException,
+            TableNotFoundException, MetadataServiceException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 5L);
             put("date", "2023-10-04");
         }};
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))

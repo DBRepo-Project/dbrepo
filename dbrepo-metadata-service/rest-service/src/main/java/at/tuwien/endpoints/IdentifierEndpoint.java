@@ -205,7 +205,7 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<?> find(@Valid @PathVariable("identifierId") Long identifierId,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
-            ServiceException, ServiceConnectionException, MalformedException, FormatNotAvailableException,
+            DataServiceException, DataServiceConnectionException, MalformedException, FormatNotAvailableException,
             QueryNotFoundException {
         log.debug("endpoint find identifier, identifierId={}, accept={}", identifierId, accept);
         final Identifier identifier = identifierService.find(identifierId);
@@ -300,8 +300,9 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("identifierId") Long identifierId)
-            throws IdentifierNotFoundException, NotAllowedException, ServiceException, ServiceConnectionException,
-            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            throws IdentifierNotFoundException, NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
         log.debug("endpoint delete identifier, identifierId={}", identifierId);
         final Identifier identifier = identifierService.find(identifierId);
         if (identifier.getStatus().equals(IdentifierStatusType.PUBLISHED)) {
@@ -354,7 +355,7 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<IdentifierDto> publish(@Valid @PathVariable("identifierId") Long identifierId)
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
-            MalformedException, ServiceConnectionException, IdentifierNotFoundException {
+            MalformedException, DataServiceConnectionException, IdentifierNotFoundException, ExternalServiceException {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
         identifierService.find(identifierId);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -403,9 +404,10 @@ public class IdentifierEndpoint {
     public ResponseEntity<IdentifierDto> save(@NotNull @PathVariable("identifierId") Long identifierId,
                                               @NotNull @Valid @RequestBody IdentifierSaveDto data,
                                               @NotNull Principal principal) throws UserNotFoundException,
-            DatabaseNotFoundException, MalformedException, NotAllowedException, ServiceException,
-            ServiceConnectionException, SearchServiceException, QueryNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException, TableNotFoundException {
+            DatabaseNotFoundException, MalformedException, NotAllowedException, DataServiceException,
+            DataServiceConnectionException, SearchServiceException, QueryNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException,
+            TableNotFoundException, ExternalServiceException {
         log.debug("endpoint save identifier, identifierId={}, data.id={}, principal.name={}", identifierId,
                 data.getId(), principal.getName());
         final Database database = databaseService.findById(data.getDatabaseId());
@@ -524,9 +526,9 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException, MalformedException, ServiceConnectionException,
-            SearchServiceException, ServiceException, QueryNotFoundException, SearchServiceConnectionException,
-            IdentifierNotFoundException, ViewNotFoundException {
+            UserNotFoundException, NotAllowedException, MalformedException, DataServiceConnectionException,
+            SearchServiceException, DataServiceException, QueryNotFoundException, SearchServiceConnectionException,
+            IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
         log.debug("endpoint create identifier, data.databaseId={}", data.getDatabaseId());
         final Database database = databaseService.findById(data.getDatabaseId());
         final User user = userService.findByUsername(principal.getName());

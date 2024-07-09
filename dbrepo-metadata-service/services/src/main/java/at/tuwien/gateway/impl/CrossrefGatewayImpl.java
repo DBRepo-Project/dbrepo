@@ -4,6 +4,7 @@ import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.exception.DoiNotFoundException;
 import at.tuwien.gateway.CrossrefGateway;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,8 +20,9 @@ public class CrossrefGatewayImpl implements CrossrefGateway {
 
     private final RestTemplate restTemplate;
 
-    public CrossrefGatewayImpl() {
-        this.restTemplate = new RestTemplate();
+    @Autowired
+    public CrossrefGatewayImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class CrossrefGatewayImpl implements CrossrefGateway {
         try {
             log.trace("find crossref doi from url {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), CrossrefDto.class);
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+        } catch (HttpServerErrorException e) {
             log.error("Failed to retrieve CrossRef metadata from URL {}: {}", url, e.getMessage());
             throw new DoiNotFoundException("Failed to retrieve CrossRef metadata from URL " + url + ": " + e.getMessage());
         }

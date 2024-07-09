@@ -100,6 +100,7 @@ build-data-service:
   dependencies:
     - build-metadata-service
   script:
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
   artifacts:
@@ -169,8 +170,8 @@ verify-install-script:
     - bash install.sh
     - exit 0
 
-lint-helm:
-  image: docker.io/docker:24-dind
+lint-helm-chart:
+  image: docker.io/alpine:3.20
   stage: lint
   except:
     refs:
@@ -179,8 +180,9 @@ lint-helm:
     - build-metadata-service
   dependencies:
     - build-metadata-service
+  before_script:
+    - apk add helm
   script:
-    - apk add sed helm curl
     - helm lint ./helm/dbrepo
 
 test-metadata-service:
@@ -271,7 +273,7 @@ test-search-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*,omlib/*" && coverage report --omit="test/*,omlib/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

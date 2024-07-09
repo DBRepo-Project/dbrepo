@@ -196,8 +196,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-database-view"})
-    public void delete_publicOwner_succeeds() throws NotAllowedException, ServiceException,
-            ServiceConnectionException, ViewNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
+    public void delete_publicOwner_succeeds() throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, ViewNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
 
         /* test */
@@ -352,7 +352,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-view"})
-    public void delete_privateOwner_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+    public void delete_privateOwner_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, AccessNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
@@ -401,8 +401,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void create_generic(Long databaseId, Database database, Principal principal, UUID userId, User user,
-                                  DatabaseAccess access) throws MalformedException, ServiceException,
-            ServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
+                                  DatabaseAccess access) throws MalformedException, DataServiceException,
+            DataServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
         final ViewCreateDto request = ViewCreateDto.builder()
                 .name(VIEW_1_NAME)
@@ -469,7 +469,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     protected void delete_generic(Long databaseId, Database database, Long viewId, View view, Principal principal,
                                   UUID userId, User user, DatabaseAccess access) throws NotAllowedException,
-            ServiceException, ServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
             ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */

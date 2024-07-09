@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Builder
@@ -13,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class KeycloakErrorDto {
+public class KeycloakErrorDto implements Serializable {
 
     @NotNull
     @Schema(example = "invalid_grant")
@@ -22,5 +24,7 @@ public class KeycloakErrorDto {
     @NotNull
     @JsonProperty("error_description")
     private String errorDescription;
+
+    private String errorMessage;
 
 }

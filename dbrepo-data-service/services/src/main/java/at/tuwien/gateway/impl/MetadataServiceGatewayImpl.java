@@ -46,7 +46,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
-            ContainerNotFoundException, ServiceException {
+            ContainerNotFoundException, MetadataServiceException {
         final ResponseEntity<ContainerDto> response;
         try {
             response = restTemplate.exchange("/api/container/" + containerId, HttpMethod.GET, HttpEntity.EMPTY,
@@ -60,15 +60,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to find container with id {}: service responded unsuccessful: {}", containerId, response.getStatusCode());
-            throw new ServiceException("Failed to find container: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find container: service responded unsuccessful: " + response.getStatusCode());
         }
         if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
             log.error("Failed to find all privileged container headers");
-            throw new ServiceException("Failed to find all privileged container headers");
+            throw new MetadataServiceException("Failed to find all privileged container headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find container with id {}: body is empty", containerId);
-            throw new ServiceException("Failed to find container with id " + containerId + ": body is empty");
+            throw new MetadataServiceException("Failed to find container with id " + containerId + ": body is empty");
         }
         final PrivilegedContainerDto container = metadataMapper.containerDtoToPrivilegedContainerDto(response.getBody());
         container.setUsername(response.getHeaders().get("X-Username").get(0));
@@ -78,7 +78,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
-            ServiceException {
+            MetadataServiceException {
         final ResponseEntity<PrivilegedDatabaseDto> response;
         try {
             response = restTemplate.exchange("/api/database/" + id, HttpMethod.GET, HttpEntity.EMPTY,
@@ -92,15 +92,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
-            throw new ServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
         if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
             log.error("Failed to find all privileged database headers");
-            throw new ServiceException("Failed to find all privileged database headers");
+            throw new MetadataServiceException("Failed to find all privileged database headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find database with id {}: body is empty", id);
-            throw new ServiceException("Failed to find database with id " + id + ": body is empty");
+            throw new MetadataServiceException("Failed to find database with id " + id + ": body is empty");
         }
         final PrivilegedDatabaseDto database = response.getBody();
         database.getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
@@ -111,7 +111,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<PrivilegedDatabaseDto[]> response;
         try {
             response = restTemplate.exchange("/api/database/", HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto[].class);
@@ -121,7 +121,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
             log.error("Failed to find database with internal name {}: service responded unsuccessful: {}", internalName, response.getStatusCode());
-            throw new ServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody().length != 1) {
             log.error("Failed to find database with internal name {}: body is empty", internalName);
@@ -132,7 +132,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException,
-            RemoteUnavailableException, ServiceException {
+            RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
         try {
             response = restTemplate.exchange("/api/database/" + databaseId + "/table/" + id, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
@@ -145,15 +145,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
-            throw new ServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
         }
         if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port"))) {
             log.error("Failed to find all privileged table headers");
-            throw new ServiceException("Failed to find all privileged table headers");
+            throw new MetadataServiceException("Failed to find all privileged table headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find table with id {}: body is empty", id);
-            throw new ServiceException("Failed to find table with id " + id + ": body is empty");
+            throw new MetadataServiceException("Failed to find table with id " + id + ": body is empty");
         }
         final PrivilegedTableDto table = metadataMapper.tableDtoToPrivilegedTableDto(response.getBody());
         table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
@@ -170,7 +170,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException,
-            ViewNotFoundException, ServiceException {
+            ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
         try {
             response = restTemplate.exchange("/api/database/" + databaseId + "/view/" + id, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
@@ -183,15 +183,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
-            throw new ServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
         }
         if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database"))) {
             log.error("Failed to find all privileged view headers");
-            throw new ServiceException("Failed to find all privileged view headers");
+            throw new MetadataServiceException("Failed to find all privileged view headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find view with id {}: body is empty", id);
-            throw new ServiceException("Failed to find view with id " + id + ": body is empty");
+            throw new MetadataServiceException("Failed to find view with id " + id + ": body is empty");
         }
         final PrivilegedViewDto table = metadataMapper.viewDtoToPrivilegedViewDto(response.getBody());
         table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
@@ -205,7 +205,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
-            ServiceException {
+            MetadataServiceException {
         final ResponseEntity<UserDto> response;
         try {
             response = restTemplate.exchange("/api/user/" + userId, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
@@ -218,18 +218,18 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
-            throw new ServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to find user with id {}: body is empty", userId);
-            throw new ServiceException("Failed to find user with id " + userId + ": body is empty");
+            throw new MetadataServiceException("Failed to find user with id " + userId + ": body is empty");
         }
         return response.getBody();
     }
 
     @Override
     public PrivilegedUserDto getPrivilegedUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
-            ServiceException {
+            MetadataServiceException {
         final ResponseEntity<UserDto> response;
         try {
             response = restTemplate.exchange("/api/user/" + userId, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
@@ -242,15 +242,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
-            throw new ServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
         }
         if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
             log.error("Failed to find all privileged user headers");
-            throw new ServiceException("Failed to find all privileged user headers");
+            throw new MetadataServiceException("Failed to find all privileged user headers");
         }
         if (response.getBody() == null) {
             log.error("Failed to find user with id {}: body is empty", userId);
-            throw new ServiceException("Failed to find user with id " + userId + ": body is empty");
+            throw new MetadataServiceException("Failed to find user with id " + userId + ": body is empty");
         }
         final PrivilegedUserDto user = metadataMapper.userDtoToPrivilegedUserDto(response.getBody());
         user.setUsername(response.getHeaders().get("X-Username").get(0));
@@ -260,7 +260,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     @Override
     public DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
-            NotAllowedException, ServiceException {
+            NotAllowedException, MetadataServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
         try {
             response = restTemplate.exchange("/api/database/" + databaseId + "/access/" + userId, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
@@ -273,17 +273,17 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find database access for user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
-            throw new ServiceException("Failed to find database access: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find database access: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to find database access: body is empty");
-            throw new ServiceException("Failed to find database access: body is empty");
+            throw new MetadataServiceException("Failed to find database access: body is empty");
         }
         return response.getBody();
     }
 
     @Override
-    public List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws ServiceException,
+    public List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException {
         final ResponseEntity<IdentifierDto[]> response;
         final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
@@ -299,17 +299,17 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find identifiers for database with id {} and subset with id {}: service responded unsuccessful: {}", databaseId, subsetId, response.getStatusCode());
-            throw new ServiceException("Failed to find identifiers for database: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to find identifiers for database: service responded unsuccessful: " + response.getStatusCode());
         }
         if (response.getBody() == null) {
             log.error("Failed to find identifiers: body is null");
-            throw new ServiceException("Failed to find identifiers: body is null");
+            throw new MetadataServiceException("Failed to find identifiers: body is null");
         }
         return List.of(response.getBody());
     }
 
     @Override
-    public void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, ServiceException,
+    public void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, MetadataServiceException,
             RemoteUnavailableException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId;
@@ -324,7 +324,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update table statistic for table with id {}: service responded unsuccessful: {}", tableId, response.getStatusCode());
-            throw new ServiceException("Failed to update table statistic for database: service responded unsuccessful: " + response.getStatusCode());
+            throw new MetadataServiceException("Failed to update table statistic for database: service responded unsuccessful: " + response.getStatusCode());
         }
     }
 

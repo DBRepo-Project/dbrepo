@@ -1,17 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.List;
 
 public interface TableService {
 
@@ -43,7 +39,7 @@ public interface TableService {
      * @return The created table.
      */
     Table createTable(Database database, TableCreateDto createDto, Principal principal)
-            throws TableNotFoundException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            throws TableNotFoundException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
 
     /**
@@ -51,12 +47,12 @@ public interface TableService {
      *
      * @param table The table.
      */
-    void deleteTable(Table table) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
-    TableColumn update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws ServiceException,
-            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
+    TableColumn update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
 
     TableColumn findColumnById(Table table, Long columnId) throws MalformedException;
 
-    void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException, ServiceException, ServiceConnectionException;
+    void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException, DataServiceException, DataServiceConnectionException;
 }

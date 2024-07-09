@@ -245,8 +245,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public void importDataset(PrivilegedTableDto table, ImportCsvDto data)
-            throws StorageNotFoundException, SQLException, QueryMalformedException, ServiceException, RemoteUnavailableException {
+    public void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws StorageNotFoundException,
+            SQLException, QueryMalformedException, RemoteUnavailableException, SidecarImportException {
         /* import .csv from blob storage to sidecar */
         dataDatabaseSidecarGateway.importFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), data.getLocation());
         /* import .csv from sidecar to database */
@@ -297,8 +297,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public void createTuple(PrivilegedTableDto table, TupleDto data) throws SQLException,
-            QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException {
+    public void createTuple(PrivilegedTableDto table, TupleDto data) throws SQLException, QueryMalformedException,
+            TableMalformedException, StorageUnavailableException, StorageNotFoundException {
         log.trace("create tuple: {}", data);
         /* for each LOB-like data-column, retrieve the bytes and replace the value */
         for (String key : data.getData().keySet()) {
@@ -385,8 +385,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
 
     @Override
     public ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws SQLException,
-            StorageNotFoundException, StorageUnavailableException, QueryMalformedException, ServiceException,
-            RemoteUnavailableException {
+            StorageNotFoundException, StorageUnavailableException, QueryMalformedException, RemoteUnavailableException,
+            SidecarExportException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final String filePath = s3Config.getS3FilePath() + "/" + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
