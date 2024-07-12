@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp
 
@@ -35,7 +35,7 @@ if you use a Kubernetes deployment via ConfigMap and Volumes).
 ```yaml title="docker-compose.yml"
 services:
   dbrepo-ui:
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
     volumes:
       - ./my_logo.png:/app/.output/public/my_logo.png
   ...

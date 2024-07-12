@@ -32,7 +32,7 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     private KeycloakGateway keycloakGateway;
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("admin")
             .withAdminPassword("admin")

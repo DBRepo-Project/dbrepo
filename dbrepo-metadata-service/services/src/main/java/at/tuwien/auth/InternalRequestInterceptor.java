@@ -38,6 +38,7 @@ public class InternalRequestInterceptor implements ClientHttpRequestInterceptor 
                     gatewayConfig.getSystemPassword());
             headers.setBearerAuth(token.getAccessToken());
             log.trace("set bearer token for internal user: {}", gatewayConfig.getSystemUsername());
+            log.trace("set access token: {}", token.getAccessToken());
             return execution.execute(request, body);
         } catch (AuthServiceConnectionException | CredentialsInvalidException | AccountNotSetupException e) {
             log.error("Failed to obtain token for internal user: {}", gatewayConfig.getSystemUsername());

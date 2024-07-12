@@ -27,15 +27,13 @@ public class OrcidGatewayImpl implements OrcidGateway {
 
     @Override
     public OrcidDto findByUrl(String url) throws OrcidNotFoundException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", "application/json");
+        log.trace("find orcid by url at endpoint {}", url);
         final ResponseEntity<OrcidDto> response;
         try {
-            log.debug("find orcid from url {}", url);
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), OrcidDto.class);
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, OrcidDto.class);
         } catch (HttpServerErrorException e) {
-            log.error("Failed to retrieve ORCID metadata from URL {}: {}", url, e.getMessage());
-            throw new OrcidNotFoundException("Failed to retrieve ORCID metadata from URL " + url + ": " + e.getMessage());
+            log.error("Failed to retrieve orcid metadata: {}", e.getMessage());
+            throw new OrcidNotFoundException("Failed to retrieve orcid metadata: " + e.getMessage());
         }
         return response.getBody();
     }

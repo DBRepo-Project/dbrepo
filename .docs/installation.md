@@ -11,7 +11,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | bash
 ```
 
 Or perform a [custom install](#custom-install).
@@ -47,7 +47,7 @@ are *not* recommended and not tested.
 In case you prefer a customized install, start by downloading the `docker-compose.yml` file used to define the services:
 
 ```bash
-curl -O docker-compose.yml -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/.docker/docker-compose.yml
+curl -O docker-compose.yml -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.docker/docker-compose.yml
 ```
 
 Create the folder `dist/` that hold necessary configuration files and download the Metadata Database schema and initial 
@@ -55,16 +55,16 @@ data to display the created Data Database container:
 
 ```bash
 mkdir -p dist
-curl -O dist/setup-schema.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-metadata-db/setup-schema.sql
-curl -O dist/setup-data.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-metadata-db/setup-data.sql
+curl -O dist/setup-schema.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-metadata-db/setup-schema.sql
+curl -O dist/setup-data.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-metadata-db/setup-data.sql
 ```
 
 Download the Broker Service configuration files:
 
 ```bash
-curl -O dist/rabbitmq.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/rabbitmq.conf
-curl -O dist/enabled_plugins -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/enabled_plugins
-curl -O dist/definitions.json -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-broker-service/definitions.json
+curl -O dist/rabbitmq.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/rabbitmq.conf
+curl -O dist/enabled_plugins -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/enabled_plugins
+curl -O dist/definitions.json -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/definitions.json
 ```
 
 !!! warning "Default admin user credentials"
@@ -76,13 +76,13 @@ curl -O dist/definitions.json -sSL https://gitlab.phaidra.org/fair-data-austria-
 Download the Gateway Service configuration file (or integrate it into your existing NGINX reverse proxy config):
 
 ```bash
-curl -O dist/dbrepo.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-gateway-service/dbrepo.conf
+curl -O dist/dbrepo.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-gateway-service/dbrepo.conf
 ```
 
 Download the S3 configuration for the Storage Service:
 
 ```bash
-curl -O dist/s3_config.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/dbrepo-storage-service/s3_config.conf
+curl -O dist/s3_config.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-storage-service/s3_config.conf
 ```
 
 Continue the custom install by customizing the [User Interface](../api/ui).

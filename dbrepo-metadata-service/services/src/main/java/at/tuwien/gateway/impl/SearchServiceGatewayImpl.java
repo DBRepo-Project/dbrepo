@@ -1,6 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.config.GatewayConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.SearchServiceGateway;
@@ -20,12 +21,14 @@ import org.springframework.web.client.RestTemplate;
 public class SearchServiceGatewayImpl implements SearchServiceGateway {
 
     private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
     private final MetadataMapper metadataMapper;
 
     @Autowired
     public SearchServiceGatewayImpl(@Qualifier("searchServiceRestTemplate") RestTemplate restTemplate,
-                                    MetadataMapper metadataMapper) {
+                                    GatewayConfig gatewayConfig, MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
         this.metadataMapper = metadataMapper;
     }
 
@@ -35,9 +38,10 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
-        final String url = "/api/search/database/" + database.getId();
+        final String path = "/api/search/database/" + database.getId();
+        log.trace("update database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(
+            response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(
                     metadataMapper.customDatabaseToDatabaseDto(database), headers), DatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
@@ -60,9 +64,10 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     @Override
     public void delete(Long databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
-        final String url = "/api/search/database/" + databaseId;
+        final String path = "/api/search/database/" + databaseId;
+        log.trace("delete database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
-            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
+            response = restTemplate.exchange(path, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to delete database: {}", e.getMessage());

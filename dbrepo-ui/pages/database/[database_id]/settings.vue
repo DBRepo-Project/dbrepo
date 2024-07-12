@@ -31,7 +31,7 @@
               <v-row dense>
                 <v-col md="8">
                   <v-file-input
-                    v-model="fileModel"
+                    v-model="file"
                     accept="image/*"
                     :hint="$t('pages.database.subpages.settings.image.hint')"
                     persistent-hint
@@ -229,7 +229,7 @@ export default {
       loadingSchema: false,
       validUpload: false,
       loadingDeleteImage: false,
-      fileModel: null,
+      file: null,
       loadingUsers: false,
       editAccessDialog: false,
       editVisibilityDialog: false,
@@ -366,10 +366,10 @@ export default {
       return this.roles.includes('modify-database-image')
     },
     databaseImage () {
-      if (!this.fileModel) {
+      if (!this.file) {
         return null
       }
-      return URL.createObjectURL(this.fileModel[0])
+      return URL.createObjectURL(this.file[0])
     },
     maxWidth () {
       return this.$config.public.database.image.width
@@ -431,14 +431,21 @@ export default {
     },
     uploadFile () {
       this.loadingUpload = true
+      console.debug('upload file', this.file)
       const uploadService = useUploadService()
-      uploadService.create(this.fileModel[0])
+      uploadService.create(this.file)
         .then((s3key) => {
           console.debug('uploaded image', s3key)
           const toast = useToastInstance()
           toast.success(this.$t('success.database.upload'))
           this.modifyImage.key = s3key
           this.loadingUpload = false
+        })
+        .catch((error) => {
+          console.error('Failed to upload dataset', error)
+          const toast = useToastInstance()
+          toast.error(this.$t('error.upload.dataset'))
+          this.loading = false
         })
         .finally(() => {
           this.loadingUpload = false

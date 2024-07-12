@@ -1,6 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.ror.RorDto;
+import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.RorNotFoundException;
 import at.tuwien.gateway.RorGateway;
 import lombok.extern.log4j.Log4j2;
@@ -19,24 +20,24 @@ import org.springframework.web.client.RestTemplate;
 public class RorGatewayImpl implements RorGateway {
 
     private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public RorGatewayImpl(RestTemplate restTemplate) {
+    public RorGatewayImpl(RestTemplate restTemplate, GatewayConfig gatewayConfig) {
         this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override
     public RorDto findById(String id) throws RorNotFoundException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", "application/json");
-        final String url = "https://api.ror.org/organizations/" + id;
+        final String path = "/organizations/" + id;
+        log.trace("find ror by id at endpoint {} with path {}", gatewayConfig.getRorEndpoint(), path);
         final ResponseEntity<RorDto> response;
         try {
-            log.trace("find ror from url {}", url);
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), RorDto.class);
+            response = restTemplate.exchange(gatewayConfig.getRorEndpoint() + path, HttpMethod.GET, HttpEntity.EMPTY, RorDto.class);
         } catch (HttpServerErrorException e) {
-            log.error("Failed to retrieve ROR metadata from URL {}: {}", url, e.getMessage());
-            throw new RorNotFoundException("Failed to retrieve ROR metadata from URL " + url + ": " + e.getMessage(), e);
+            log.error("Failed to retrieve ror metadata: {}", e.getMessage());
+            throw new RorNotFoundException("Failed to retrieve ror metadata: " + e.getMessage(), e);
         }
         return response.getBody();
     }

@@ -58,8 +58,7 @@ dbrepo:
   s3:
     accessKeyId: seaweedfsadmin
     secretAccessKey: seaweedfsadmin
-    importBucket: dbrepo-upload
-    exportBucket: dbrepo-download
+    bucket: dbrepo
   system:
     username: admin
     password: admin
@@ -70,6 +69,8 @@ dbrepo:
     brokerService: http://localhost/admin/broker
     authService: http://localhost/api/auth
     storageService: http://localhost/api/storage
+    rorService: https://api.ror.org
+    crossRefService: http://data.crossref.org
   pid:
     base: http://localhost/pid/
   jwt:
