@@ -1,6 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.crossref.CrossrefDto;
+import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.DoiNotFoundException;
 import at.tuwien.gateway.CrossrefGateway;
 import lombok.extern.log4j.Log4j2;
@@ -19,24 +20,24 @@ import org.springframework.web.client.RestTemplate;
 public class CrossrefGatewayImpl implements CrossrefGateway {
 
     private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public CrossrefGatewayImpl(RestTemplate restTemplate) {
+    public CrossrefGatewayImpl(RestTemplate restTemplate, GatewayConfig gatewayConfig) {
         this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override
     public CrossrefDto findById(String id) throws DoiNotFoundException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", "application/json");
-        final String url = "http://data.crossref.org/fundingdata/funder/" + id;
+        final String path = "/fundingdata/funder/" + id;
+        log.trace("find crossref metadata by id from endpoint {} with path {}", gatewayConfig.getCrossRefEndpoint(), path);
         final ResponseEntity<CrossrefDto> response;
         try {
-            log.trace("find crossref doi from url {}", url);
-            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), CrossrefDto.class);
+            response = restTemplate.exchange(gatewayConfig.getCrossRefEndpoint() + path, HttpMethod.GET, HttpEntity.EMPTY, CrossrefDto.class);
         } catch (HttpServerErrorException e) {
-            log.error("Failed to retrieve CrossRef metadata from URL {}: {}", url, e.getMessage());
-            throw new DoiNotFoundException("Failed to retrieve CrossRef metadata from URL " + url + ": " + e.getMessage());
+            log.error("Failed to retrieve crossref metadata: {}", e.getMessage());
+            throw new DoiNotFoundException("Failed to retrieve crossref metadata: " + e.getMessage());
         }
         return response.getBody();
     }

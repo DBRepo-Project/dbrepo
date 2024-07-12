@@ -35,17 +35,20 @@ metadatadb:
   fullnameOverride: metadata-db
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
-  auth:
-    ## @param metadatadb.auth.root The root username.
-    root: root
-    ## @param metadatadb.auth.rootPassword The root user password.
-    rootPassword: dbrepo
-    ## @param metadatadb.auth.database The database name.
-    database: dbrepo
-    ## @param metadatadb.auth.replicationUser The database replication username.
-    replicationUser: replication
-    ## @param metadatadb.auth.replicationPassword The database replication user password
-    replicationPassword: replication
+  rootUser:
+    ## @param metadatadb.rootUser.user The root username.
+    user: root
+    ## @param metadatadb.rootUser.password The root user password.
+    password: dbrepo
+  db:
+    ## @param metadatadb.db.name The database name.
+    name: dbrepo
+  galera:
+    mariabackup:
+      ## @param metadatadb.galera.mariabackup.user The database backup username.
+      user: backup
+      ## @param metadatadb.galera.mariabackup.password The database backup user password
+      password: backup
   ## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
   jdbcExtraArgs: ""
   metrics:
@@ -53,16 +56,18 @@ metadatadb:
     enabled: false
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
-  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
-  extraInitDbScripts: { }
+  ## @param metadatadb.initdbScripts Additional init.db scripts that are executed on the first start.
+  initdbScripts: { }
   #    03-additional-data.sql: |
   #      BEGIN;
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
-  secondary:
-    ## @param metadatadb.secondary.replicaCount The number of replicas of the secondary database pods.
-    replicaCount: 2
+  ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
+  replicaCount: 3
+  persistence:
+    ## @param metadatadb.persistence.enabled Enable persistent storage.
+    enabled: true
 
 ## @section Auth Service
 
@@ -131,8 +136,6 @@ datadb:
   image:
     ## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: false
-  ## @skip datadb.extraFlags
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   auth:
     ## @param datadb.auth.rootPassword The root user password.
     rootPassword: dbrepo
@@ -153,7 +156,7 @@ datadb:
           protocol: TCP
     sidecars:
       - name: sidecar
-        image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.4
+        image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.5
         imagePullPolicy: Always
         securityContext:
           runAsUser: 1001
@@ -248,9 +251,11 @@ uploadservice:
         - ALL
   ## @skip uploadservice.containerArgs
   containerArgs:
-    - "--base-path=/api/upload/files/"
-    - "-s3-endpoint=http://storageservice-s3:9000"
-    - "-s3-bucket=dbrepo-upload"
+    - "-behind-proxy"
+    - "-max-size=2000000000"
+    - "-base-path=/api/upload/files/"
+    - "-s3-endpoint=http://storage-service-s3:8333"
+    - "-s3-bucket=dbrepo"
   ## @skip uploadservice.envFrom
   envFrom:
     - secretRef:
@@ -337,7 +342,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.5
     ## @skip analyseservice.image.pullPolicy
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -358,7 +363,7 @@ analyseservice:
     ## @param analyseservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
     ## @param analyseservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: ""
+    seLinuxOptions: { }
     ## @param analyseservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
     ## @param analyseservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
@@ -388,7 +393,7 @@ analyseservice:
   endpoint: http://analyse-service
   s3:
     ## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storageservice-s3:9000
+    endpoint: http://storage-service-s3:8333
   ## @param analyseservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -399,7 +404,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.5
     ## @skip metadataservice.image.pullPolicy
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -420,7 +425,7 @@ metadataservice:
     ## @param metadataservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
     ## @param metadataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: ""
+    seLinuxOptions: { }
     ## @param metadataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
     ## @param metadataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
@@ -447,6 +452,12 @@ metadataservice:
       memory: 2048Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
+  crossref:
+    ## @param metadataservice.crossref.endpoint The CrossRef endpoint.
+    endpoint: http://data.crossref.org
+  ror:
+    ## @param metadataservice.ror.endpoint The ROR endpoint.
+    endpoint: https://api.ror.org
   admin:
     ## @param metadataservice.admin.email The OAI-PMH exposed e-mail for contacting the metadata records responsible person.
     email: noreply@example.com
@@ -472,11 +483,9 @@ metadataservice:
     connectionTimeout: 10000
   s3:
     ## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storageservice-s3:9000
+    endpoint: http://storage-service-s3:8333
     ## @skip metadataservice.s3.bucket
-    bucket:
-      import: dbrepo-upload
-      export: dbrepo-download
+    bucket: dbrepo
     auth:
       ## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
       username: seaweedfsadmin
@@ -490,9 +499,11 @@ metadataservice:
 dataservice:
   ## @param dataservice.enabled Enable the Broker Service.
   enabled: true
+  ## @param dataservice.endpoint Absolute URL to the data service in the form of http://host:port
+  endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.5
     ## @skip dataservice.image.pullPolicy
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -513,7 +524,7 @@ dataservice:
     ## @param dataservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
     ## @param dataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: ""
+    seLinuxOptions: { }
     ## @param dataservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
     ## @param dataservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
@@ -557,11 +568,9 @@ dataservice:
       password: admin
   s3:
     ## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storageservice-s3:9000
-    ## @skip dataservice.s3.bucket
-    bucket:
-      import: dbrepo-upload
-      export: dbrepo-download
+    endpoint: http://storage-service-s3:8333
+    ## @param dataservice.s3.bucket The S3 bucket name.
+    bucket: dbrepo
     auth:
       ## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
       username: seaweedfsadmin
@@ -577,9 +586,11 @@ dataservice:
 searchservice:
   ## @param searchservice.enabled Enable the Broker Service.
   enabled: true
+  ## @param searchservice.endpoint Absolute URL to the search service in the form of http://host:port
+  endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.5
     ## @skip searchservice.image.pullPolicy
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -600,7 +611,7 @@ searchservice:
     ## @param searchservice.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
     ## @param searchservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: ""
+    seLinuxOptions: { }
     ## @param searchservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
     ## @param searchservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
@@ -628,7 +639,7 @@ searchservice:
   ## @skip searchservice.init
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.4
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.5
       pullPolicy: Always
   ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
@@ -638,44 +649,39 @@ searchservice:
 storageservice:
   ## @param storageservice.enabled Enable the Storage Service.
   enabled: true
-  ## @skip storageservice.master
+  ## @skip storageservice.fullnameOverride
+  fullnameOverride: storage-service
+  mariadb:
+    ## @skip storageservice.mariadb.fullnameOverride
+    fullnameOverride: storage-service-db
+    ## @skip storageservice.mariadb.enabled
+    enabled: true
   master:
+    ## @skip storageservice.master.enabled
     enabled: true
-  ## @skip storageservice.filer
   filer:
+    ## @param storageservice.filer.enabled Enable the storage service filer which is required for S3.
     enabled: true
-    replicas: 1
-    enablePVC: false
-    storage: 25Gi
-    s3:
-      enabled: true
-      allowEmptyFolder: true
-      port: 9000
-      enableAuth: true
-      skipAuthSecretCreation: true
-      existingConfigSecret: seaweedfs-s3-secret
-  ## @skip storageservice.volume
   volume:
-    enabled: true
-    replicas: 1
-  ## @skip storageservice.s3
+    ## @skip storageservice.volume.enabled
+    enabled: false
   s3:
+    ## @skip storageservice.s3.enabled
     enabled: true
-    replicas: 2
-    port: 9000
-    metricsPort: 9091
-    enableAuth: true
-    skipAuthSecretCreation: true
-    existingConfigSecret: seaweedfs-s3-secret
-    bucket:
-      import: dbrepo-upload
-      export: dbrepo-download
+    ## @param storageservice.s3.replicaCount The number of replicas.
+    replicaCount: 2
+    ## @param storageservice.s3.bucket The S3-bucket name.
+    bucket: dbrepo
     auth:
-      username: seaweedfsadmin
-      password: seaweedfsadmin
+      ## @param storageservice.s3.auth.enabled Enable the S3 service.
+      enabled: true
+      ## @param storageservice.s3.auth.adminAccessKeyId The S3 access key id for the admin user. In some systems this is named `username`.
+      adminAccessKeyId: seaweedfsadmin
+      ## @param storageservice.s3.auth.adminSecretAccessKey The S3 secret access key for the admin user. In some systems this is named `password`.
+      adminSecretAccessKey: seaweedfsadmin
   ## @skip storageservice.init
   init:
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.4
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.5
     pullPolicy: Always
 
 ## @section Identity Service
@@ -738,7 +744,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.4
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
     ## @skip ui.image.pullPolicy
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -759,7 +765,7 @@ ui:
     ## @param ui.containerSecurityContext.enabled Enabled containers' Security Context
     enabled: true
     ## @param ui.containerSecurityContext.seLinuxOptions Set SELinux options in container
-    seLinuxOptions: ""
+    seLinuxOptions: { }
     ## @param ui.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1001
     ## @param ui.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
@@ -786,10 +792,13 @@ ui:
       memory: 2048Mi
   public:
     api:
-      ## @param ui.public.api.client The endpoint for the client api.
+      ## @param ui.public.api.client The endpoint for the client api. Defaults to the value of `gateway`.
       client: ""
-      ## @param ui.public.api.server The endpoint for the server api.
+      ## @param ui.public.api.server The endpoint for the server api. Defaults to the value of `gateway`.
       server: ""
+    upload:
+      ## @param ui.public.upload.client The endpoint for the upload client. Defaults to the value of `gateway` and path `/api/upload/files`.
+      client: ""
     ## @param ui.public.title The user interface title.
     title: "Database Repository"
     ## @param ui.public.logo The user interface logo.

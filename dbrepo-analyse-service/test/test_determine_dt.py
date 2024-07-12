@@ -24,7 +24,7 @@ class DetermineDatatypesTest(unittest.TestCase):
         }
 
         # mock
-        S3Client().upload_file("datetime.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("datetime.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime.csv", separator=",")
@@ -47,7 +47,7 @@ class DetermineDatatypesTest(unittest.TestCase):
         }
 
         # mock
-        S3Client().upload_file("datetime_tz.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("datetime_tz.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_tz.csv", separator=",")
@@ -70,7 +70,7 @@ class DetermineDatatypesTest(unittest.TestCase):
         }
 
         # mock
-        S3Client().upload_file("datetime_t.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("datetime_t.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_t.csv", separator=",")
@@ -94,7 +94,7 @@ class DetermineDatatypesTest(unittest.TestCase):
         }
 
         # mock
-        S3Client().upload_file("datatypes.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("datatypes.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datatypes.csv", separator=",")
@@ -117,7 +117,7 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_fileEmpty_succeeds(self):
 
         # mock
-        S3Client().upload_file("empty.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("empty.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes("empty.csv")
@@ -129,7 +129,7 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_separatorSemicolon_succeeds(self):
 
         # mock
-        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="separator.csv", separator=";")
@@ -140,7 +140,7 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_separatorGuess_succeeds(self):
 
         # mock
-        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("separator.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="separator.csv")
@@ -151,7 +151,7 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_separatorGuessLargeDataset_succeeds(self):
 
         # mock
-        S3Client().upload_file("large.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("large.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="large.csv")
@@ -171,7 +171,7 @@ class DetermineDatatypesTest(unittest.TestCase):
         }
 
         # mock
-        S3Client().upload_file("novel.csv", './data/test_dt/', 'dbrepo-upload')
+        S3Client().upload_file("novel.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="novel.csv", separator=";")

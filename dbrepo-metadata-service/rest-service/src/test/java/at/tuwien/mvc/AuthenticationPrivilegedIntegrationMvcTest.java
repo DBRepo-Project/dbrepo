@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @SpringBootTest
-public class AuthenticationIntegrationTest extends AbstractUnitTest {
+public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,7 +64,7 @@ public class AuthenticationIntegrationTest extends AbstractUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("admin")
             .withAdminPassword("admin")

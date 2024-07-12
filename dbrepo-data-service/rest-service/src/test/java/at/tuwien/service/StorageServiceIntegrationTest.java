@@ -60,14 +60,14 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* s3 */
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3ImportBucket()))) {
+        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3ImportBucket())
+                    .bucket(s3Config.getS3Bucket())
                     .build());
         }
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3ExportBucket()))) {
+        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3ExportBucket())
+                    .bucket(s3Config.getS3Bucket())
                     .build());
         }
     }
@@ -78,11 +78,11 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
-        final InputStream response = storageService.getObject(s3Config.getS3ImportBucket(), "s3key");
+        final InputStream response = storageService.getObject(s3Config.getS3Bucket(), "s3key");
         assertNotNull(response);
     }
 
@@ -91,7 +91,7 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            storageService.getObject(s3Config.getS3ImportBucket(), "i_do_not_exist");
+            storageService.getObject(s3Config.getS3Bucket(), "i_do_not_exist");
         });
     }
 
@@ -110,11 +110,11 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
-        final byte[] response = storageService.getBytes(s3Config.getS3ImportBucket(), "s3key");
+        final byte[] response = storageService.getBytes(s3Config.getS3Bucket(), "s3key");
         assertNotNull(response);
     }
 
@@ -124,7 +124,7 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
@@ -137,7 +137,7 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            storageService.getBytes(s3Config.getS3ImportBucket(), "i_do_not_exist");
+            storageService.getBytes(s3Config.getS3Bucket(), "i_do_not_exist");
         });
     }
 
@@ -147,11 +147,11 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
-        final ExportResourceDto response = storageService.getResource(s3Config.getS3ImportBucket(), "s3key");
+        final ExportResourceDto response = storageService.getResource(s3Config.getS3Bucket(), "s3key");
         assertEquals("s3key", response.getFilename());
         assertNotNull(response.getResource());
     }
@@ -161,7 +161,7 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            storageService.getBytes(s3Config.getS3ImportBucket(), "i_do_not_exist");
+            storageService.getBytes(s3Config.getS3Bucket(), "i_do_not_exist");
         });
     }
 

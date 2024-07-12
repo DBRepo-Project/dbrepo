@@ -186,9 +186,8 @@ app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http:/
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
+app.config["S3_BUCKET"] = os.getenv('S3_BUCKET', 'dbrepo')
 app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
-app.config["S3_EXPORT_BUCKET"] = os.getenv('S3_EXPORT_BUCKET', 'dbrepo-download')
-app.config["S3_IMPORT_BUCKET"] = os.getenv('S3_IMPORT_BUCKET', 'dbrepo-upload')
 app.config["S3_SECRET_ACCESS_KEY"] = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
 
 app.json_encoder = LazyJSONEncoder

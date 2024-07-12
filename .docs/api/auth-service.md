@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/authentication-service:1.4.4`](https://hub.docker.com/r/dbrepo/authentication-service)
+    Image: [`quay.io/keycloak/keycloak:24.0`](quay.io/keycloak/keycloak)
 
     * Ports: 8080/tcp
     * UI: `http://<hostname>/api/auth/`
