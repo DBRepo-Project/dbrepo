@@ -3,12 +3,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: storageservice-create-buckets-job
+  name: storage-service-create-buckets-job
   namespace: {{ .Values.namespace }}
 spec:
   template:
     metadata:
-      name: storageservice-create-buckets-job
+      name: storage-service-create-buckets-job
     spec:
       restartPolicy: OnFailure
       containers:
@@ -18,11 +18,9 @@ spec:
             - name: WEED_CLUSTER_DEFAULT
               value: "sw"
             - name: WEED_CLUSTER_SW_MASTER
-              value: "storageservice-master.{{ .Release.Name }}:9333"
-            - name: SEAWEEDFS_ENDPOINT
-              value: "storageservice-master.{{ .Release.Name }}:9333"
+              value: "storage-service-master:9333"
             - name: WEED_CLUSTER_SW_FILER
-              value: "storageservice-filer-client.{{ .Release.Name }}:8888"
+              value: "storage-service-filer:8888"
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -35,8 +33,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: storage-service-secret
+                  key: S3_BUCKET
             - name: SEAWEEDFS_FULLNAME
-              value: "storageservice"
+              value: "storage-service"
           volumeMounts:
             - name: config-users
               mountPath: /etc/sw
@@ -50,5 +53,5 @@ spec:
         - name: config-users
           secret:
             defaultMode: 420
-            secretName: seaweedfs-s3-secret
+            secretName: storage-service-secret
 {{- end }}

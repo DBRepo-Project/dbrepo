@@ -37,7 +37,7 @@ public class KeycloakConfig {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(keycloakEndpoint));
         restTemplate.getInterceptors()
-                .add(new KeycloakInterceptor(keycloakUsername, keycloakPassword, keycloakEndpoint));
+                .add(new KeycloakInterceptor(restTemplate(), keycloakUsername, keycloakPassword, keycloakEndpoint));
         return restTemplate;
     }
 }

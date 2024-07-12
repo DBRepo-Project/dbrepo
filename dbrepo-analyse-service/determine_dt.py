@@ -18,8 +18,8 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
     s3_client = S3Client()
-    s3_client.file_exists(current_app.config['S3_IMPORT_BUCKET'], filename)
-    response = s3_client.get_file(current_app.config['S3_IMPORT_BUCKET'], filename)
+    s3_client.file_exists(current_app.config['S3_BUCKET'], filename)
+    response = s3_client.get_file(current_app.config['S3_BUCKET'], filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine data types: file {filename} has empty body')

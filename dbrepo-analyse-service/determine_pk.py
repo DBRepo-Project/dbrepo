@@ -16,8 +16,8 @@ def determine_pk(filename, separator=","):
     colindex = list(range(0, len(colnames)))
 
     s3_client = S3Client()
-    s3_client.file_exists('dbrepo-upload', filename)
-    response = s3_client.get_file('dbrepo-upload', filename)
+    s3_client.file_exists('dbrepo', filename)
+    response = s3_client.get_file('dbrepo', filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         raise OSError(f'Failed to determine primary key: file {filename} has empty body')

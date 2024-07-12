@@ -11,7 +11,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/data-db-sidecar:1.4.4`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
+    Image: [`dbrepo/data-db-sidecar:1.4.5`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
 
     * Ports: 8080/tcp
 

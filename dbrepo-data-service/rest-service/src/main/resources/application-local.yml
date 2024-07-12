@@ -55,8 +55,7 @@ dbrepo:
   s3:
     accessKeyId: seaweedfsadmin
     secretAccessKey: seaweedfsadmin
-    importBucket: dbrepo-upload
-    exportBucket: dbrepo-download
+    bucket: dbrepo
   system:
     username: admin
     password: admin

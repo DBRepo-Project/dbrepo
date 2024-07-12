@@ -56,14 +56,14 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* s3 */
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3ImportBucket()))) {
+        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3ImportBucket())
+                    .bucket(s3Config.getS3Bucket())
                     .build());
         }
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3ExportBucket()))) {
+        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
-                    .bucket(s3Config.getS3ExportBucket())
+                    .bucket(s3Config.getS3Bucket())
                     .build());
         }
     }
@@ -73,14 +73,14 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         final String key = "s3key";
 
         /* mock */
-        log.trace("mock object with key {} to bucket {}", key, s3Config.getS3ImportBucket());
+        log.trace("mock object with key {} to bucket {}", key, s3Config.getS3Bucket());
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/keyboard.csv")));
 
         /* test */
-        final InputStream response = storageService.getObject(s3Config.getS3ImportBucket(), key);
+        final InputStream response = storageService.getObject(s3Config.getS3Bucket(), key);
         assertNotNull(response);
     }
 
@@ -89,7 +89,7 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            storageService.getObject(s3Config.getS3ImportBucket(), "i_do_not_exist");
+            storageService.getObject(s3Config.getS3Bucket(), "i_do_not_exist");
         });
     }
 
@@ -107,10 +107,10 @@ public class StorageServiceIntegrationTest extends AbstractUnitTest {
         final String key = "s3key";
 
         /* mock */
-        log.trace("mock object with key {} to bucket {}", key, s3Config.getS3ImportBucket());
+        log.trace("mock object with key {} to bucket {}", key, s3Config.getS3Bucket());
         s3Client.putObject(PutObjectRequest.builder()
                 .key(key)
-                .bucket(s3Config.getS3ImportBucket())
+                .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/keyboard.csv")));
 
         /* test */

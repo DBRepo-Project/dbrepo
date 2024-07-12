@@ -27,11 +27,8 @@ public class S3Config {
     @Value("${dbrepo.s3.secretAccessKey}")
     private String s3SecretAccessKey;
 
-    @Value("${dbrepo.s3.importBucket}")
-    private String s3ImportBucket;
-
-    @Value("${dbrepo.s3.exportBucket}")
-    private String s3ExportBucket;
+    @Value("${dbrepo.s3.bucket}")
+    private String s3Bucket;
 
     @Value("${dbrepo.s3.filePath}")
     private String s3FilePath;

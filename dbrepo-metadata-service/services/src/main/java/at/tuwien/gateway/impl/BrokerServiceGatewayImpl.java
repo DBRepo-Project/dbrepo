@@ -31,10 +31,11 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantTopicPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerServiceConnectionException, BrokerServiceException {
-        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        final String path = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        log.trace("grant topic permission at endpoint {} with path {}", rabbitConfig.getBrokerEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+            response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant topic permissions: {}", e.getMessage());
             throw new BrokerServiceConnectionException("Failed to grant topic permissions: " + e.getMessage());
@@ -51,10 +52,11 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantVirtualHostPermission(String username, GrantVirtualHostPermissionsDto data)
             throws BrokerServiceConnectionException, BrokerServiceException {
-        final String url = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        final String path = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        log.trace("grant virtual host permission at endpoint {} with path {}", rabbitConfig.getBrokerEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+            response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant virtual host permissions: {}", e.getMessage());
             throw new BrokerServiceConnectionException("Failed to grant virtual host permissions: " + e.getMessage());
@@ -71,10 +73,11 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantExchangePermission(String username, GrantExchangePermissionsDto data)
             throws BrokerServiceConnectionException, BrokerServiceException {
-        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        final String path = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        log.trace("grant exchange permission at endpoint {} with path {}", rabbitConfig.getBrokerEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+            response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant exchange permissions: {}", e.getMessage());
             throw new BrokerServiceConnectionException("Failed to grant exchange permissions: " + e.getMessage());

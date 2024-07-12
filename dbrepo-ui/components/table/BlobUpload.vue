@@ -31,20 +31,20 @@ export default {
       if (!this.file || this.file.length === 0) {
         return
       }
+      console.debug('upload file', this.file)
       const uploadService = useUploadService()
-      uploadService.create(this.file[0])
+      uploadService.create(this.file)
         .then((filename) => {
           console.debug('uploaded file', filename)
           this.filename = filename
           this.value = filename
           this.$emit('blob', { column: this.column, s3key: filename })
         })
-        .catch(({code}) => {
+        .catch((error) => {
+          console.error('Failed to upload dataset', error)
           const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            return
-          }
-          toast.error(this.$t(code))
+          toast.error(this.$t('error.upload.dataset'))
+          this.loading = false
         })
     }
   }

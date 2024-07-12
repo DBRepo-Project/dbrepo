@@ -23,14 +23,15 @@ public interface KeycloakGateway {
      * @throws UserExistsException      The user already exists at the Authentication Service.
      * @throws EmailExistsException The user email already exists in the metadata database.
      */
-    void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException, EmailExistsException, UserExistsException, CredentialsInvalidException;
+    void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException,
+            EmailExistsException, UserExistsException;
 
     /**
      * Deletes a user at the Authentication Service with given user id.
      *
      * @param id The user id.
      */
-    void deleteUser(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
+    void deleteUser(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException;
 
     /**
      * Update the credentials for a given user.
@@ -38,7 +39,8 @@ public interface KeycloakGateway {
      * @param id       The user id.
      * @param password The user credential.
      */
-    void updateUserCredentials(UUID id, UserPasswordDto password) throws AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException;
+    void updateUserCredentials(UUID id, UserPasswordDto password) throws AuthServiceException,
+            AuthServiceConnectionException;
 
     /**
      * Finds a user in the metadata database by given username.
@@ -46,8 +48,8 @@ public interface KeycloakGateway {
      * @param username The user username.
      * @return The updated user.
      */
-    UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
+    UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException;
 
-    UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException,
-            UserNotFoundException, CredentialsInvalidException;
+    UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException;
 }

@@ -17,10 +17,9 @@ class S3Client:
                      endpoint_url, aws_access_key_id)
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
-        self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
-        self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
+        self.bucket_exists_or_exit(current_app.config['S3_BUCKET'])
 
-    def upload_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo-upload") -> bool:
+    def upload_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo") -> bool:
         """
         Uploads a file to the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html.
@@ -43,7 +42,7 @@ class S3Client:
             logging.warning(f"Failed to upload file with key {filename}")
             raise ConnectionRefusedError(f"Failed to upload file with key {filename}", e)
 
-    def download_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo-download"):
+    def download_file(self, filename: str, path: str = "/tmp", bucket: str = "dbrepo"):
         """
         Downloads a file from the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html

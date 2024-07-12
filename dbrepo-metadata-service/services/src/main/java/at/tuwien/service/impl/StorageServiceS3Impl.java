@@ -46,8 +46,8 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public byte[] getBytes(String key) throws StorageNotFoundException, StorageUnavailableException {
-        log.trace("get bytes with key {} from bucket {}", key, s3Config.getS3ImportBucket());
-        return getBytes(s3Config.getS3ImportBucket(), key);
+        log.trace("get bytes with key {} from bucket {}", key, s3Config.getS3Bucket());
+        return getBytes(s3Config.getS3Bucket(), key);
     }
 
     @Override

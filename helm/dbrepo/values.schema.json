@@ -35,7 +35,8 @@
                             "type": "integer"
                         },
                         "seLinuxOptions": {
-                            "type": "string"
+                            "properties": {},
+                            "type": "object"
                         },
                         "seccompProfile": {
                             "properties": {
@@ -425,9 +426,6 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraFlags": {
-                    "type": "string"
-                },
                 "fullnameOverride": {
                     "type": "string"
                 },
@@ -703,7 +701,8 @@
                             "type": "integer"
                         },
                         "seLinuxOptions": {
-                            "type": "string"
+                            "properties": {},
+                            "type": "object"
                         },
                         "seccompProfile": {
                             "properties": {
@@ -732,6 +731,9 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
                 },
                 "grant": {
                     "properties": {
@@ -820,15 +822,7 @@
                             "type": "object"
                         },
                         "bucket": {
-                            "properties": {
-                                "export": {
-                                    "type": "string"
-                                },
-                                "import": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
+                            "type": "string"
                         },
                         "endpoint": {
                             "type": "string"
@@ -1037,21 +1031,9 @@
         },
         "metadatadb": {
             "properties": {
-                "auth": {
+                "db": {
                     "properties": {
-                        "database": {
-                            "type": "string"
-                        },
-                        "replicationPassword": {
-                            "type": "string"
-                        },
-                        "replicationUser": {
-                            "type": "string"
-                        },
-                        "root": {
-                            "type": "string"
-                        },
-                        "rootPassword": {
+                        "name": {
                             "type": "string"
                         }
                     },
@@ -1060,15 +1042,31 @@
                 "enabled": {
                     "type": "boolean"
                 },
-                "extraInitDbScripts": {
-                    "properties": {},
-                    "type": "object"
-                },
                 "fullnameOverride": {
                     "type": "string"
                 },
+                "galera": {
+                    "properties": {
+                        "mariabackup": {
+                            "properties": {
+                                "password": {
+                                    "type": "string"
+                                },
+                                "user": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "host": {
                     "type": "string"
+                },
+                "initdbScripts": {
+                    "properties": {},
+                    "type": "object"
                 },
                 "initdbScriptsConfigMap": {
                     "type": "string"
@@ -1084,10 +1082,24 @@
                     },
                     "type": "object"
                 },
-                "secondary": {
+                "persistence": {
                     "properties": {
-                        "replicaCount": {
-                            "type": "integer"
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "rootUser": {
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -1137,7 +1149,8 @@
                             "type": "integer"
                         },
                         "seLinuxOptions": {
-                            "type": "string"
+                            "properties": {},
+                            "type": "object"
                         },
                         "seccompProfile": {
                             "properties": {
@@ -1146,6 +1159,14 @@
                                 }
                             },
                             "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "crossref": {
+                    "properties": {
+                        "endpoint": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -1249,6 +1270,14 @@
                     },
                     "type": "object"
                 },
+                "ror": {
+                    "properties": {
+                        "endpoint": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
                 "s3": {
                     "properties": {
                         "auth": {
@@ -1263,15 +1292,7 @@
                             "type": "object"
                         },
                         "bucket": {
-                            "properties": {
-                                "export": {
-                                    "type": "string"
-                                },
-                                "import": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
+                            "type": "string"
                         },
                         "endpoint": {
                             "type": "string"
@@ -1364,7 +1385,8 @@
                             "type": "integer"
                         },
                         "seLinuxOptions": {
-                            "type": "string"
+                            "properties": {},
+                            "type": "object"
                         },
                         "seccompProfile": {
                             "properties": {
@@ -1379,6 +1401,9 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string"
                 },
                 "image": {
                     "properties": {
@@ -1470,43 +1495,14 @@
                 },
                 "filer": {
                     "properties": {
-                        "enablePVC": {
-                            "type": "boolean"
-                        },
                         "enabled": {
                             "type": "boolean"
-                        },
-                        "replicas": {
-                            "type": "integer"
-                        },
-                        "s3": {
-                            "properties": {
-                                "allowEmptyFolder": {
-                                    "type": "boolean"
-                                },
-                                "enableAuth": {
-                                    "type": "boolean"
-                                },
-                                "enabled": {
-                                    "type": "boolean"
-                                },
-                                "existingConfigSecret": {
-                                    "type": "string"
-                                },
-                                "port": {
-                                    "type": "integer"
-                                },
-                                "skipAuthSecretCreation": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "storage": {
-                            "type": "string"
                         }
                     },
                     "type": "object"
+                },
+                "fullnameOverride": {
+                    "type": "string"
                 },
                 "init": {
                     "properties": {
@@ -1514,6 +1510,17 @@
                             "type": "string"
                         },
                         "pullPolicy": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "mariadb": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "fullnameOverride": {
                             "type": "string"
                         }
                     },
@@ -1531,46 +1538,26 @@
                     "properties": {
                         "auth": {
                             "properties": {
-                                "password": {
+                                "adminAccessKeyId": {
                                     "type": "string"
                                 },
-                                "username": {
+                                "adminSecretAccessKey": {
                                     "type": "string"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
                                 }
                             },
                             "type": "object"
                         },
                         "bucket": {
-                            "properties": {
-                                "export": {
-                                    "type": "string"
-                                },
-                                "import": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "enableAuth": {
-                            "type": "boolean"
+                            "type": "string"
                         },
                         "enabled": {
                             "type": "boolean"
                         },
-                        "existingConfigSecret": {
-                            "type": "string"
-                        },
-                        "metricsPort": {
+                        "replicaCount": {
                             "type": "integer"
-                        },
-                        "port": {
-                            "type": "integer"
-                        },
-                        "replicas": {
-                            "type": "integer"
-                        },
-                        "skipAuthSecretCreation": {
-                            "type": "boolean"
                         }
                     },
                     "type": "object"
@@ -1579,9 +1566,6 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
-                        },
-                        "replicas": {
-                            "type": "integer"
                         }
                     },
                     "type": "object"
@@ -1626,7 +1610,8 @@
                             "type": "integer"
                         },
                         "seLinuxOptions": {
-                            "type": "string"
+                            "properties": {},
+                            "type": "object"
                         },
                         "seccompProfile": {
                             "properties": {
@@ -1787,6 +1772,14 @@
                         },
                         "touch": {
                             "type": "string"
+                        },
+                        "upload": {
+                            "properties": {
+                                "client": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"
