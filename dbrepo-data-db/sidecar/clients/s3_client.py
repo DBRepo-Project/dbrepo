@@ -17,8 +17,7 @@ class S3Client:
             f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden)")
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
-        self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
-        self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
+        self.bucket_exists_or_exit(current_app.config['S3_BUCKET'])
 
     def upload_file(self, filename, path, bucket) -> bool:
         """

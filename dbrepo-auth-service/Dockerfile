@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM keycloak/keycloak:21.0 as config
+FROM keycloak/keycloak:24.0 as config
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 # Enable health and metrics support

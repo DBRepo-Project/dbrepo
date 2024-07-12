@@ -3,8 +3,8 @@ import * as tus from 'tus-js-client'
 export const useUploadService = (): any => {
   function create (data: File) {
     const config = useRuntimeConfig()
+    const endpoint = config.public.upload.client
     return new Promise<string>((resolve, reject) => {
-      const endpoint = `${config.public.api.client}/api/upload/files`
       if (!tus.isSupported) {
         console.error('Your browser does not support uploads!')
         return
@@ -12,10 +12,6 @@ export const useUploadService = (): any => {
       const uploadClient: tus.Upload = new tus.Upload(data, {
         endpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
-        metadata: {
-          filename: data.name,
-          filetype: data.type
-        },
         onError (error) {
           console.error('Failed to upload:', error)
           reject(error)

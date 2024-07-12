@@ -174,7 +174,7 @@
           <v-row>
             <v-col cols="8">
               <v-file-input
-                v-model="fileModel"
+                v-model="file"
                 accept=".csv,.tsv"
                 :show-size="1000"
                 counter
@@ -279,8 +279,7 @@ export default {
       step: 1,
       validStep1: false,
       validStep2: false,
-      fileModel: null,
-      previousFile: null,
+      file: null,
       loading: false,
       rowCount: null,
       suggestedAnalyseSeparator: null,
@@ -328,10 +327,10 @@ export default {
       return this.cacheStore.getTable
     },
     isAnalyseAllowed () {
-      if (!this.fileModel || this.fileModel.length === 0) {
-        return true
+      if (!this.file || this.file.length === 0) {
+        return false
       }
-      return this.previousFile !== this.fileModel[0]
+      return true
     },
     hasCompatibleSchema () {
       if (this.create) {
@@ -422,15 +421,16 @@ export default {
     },
     uploadAndAnalyse() {
       this.loading = true
-      this.previousFile = this.fileModel[0]
+      console.debug('upload file', this.file)
       const uploadService = useUploadService()
-      return uploadService.create(this.previousFile)
+      return uploadService.create(this.file)
         .then((s3key) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.upload.dataset'))
           this.analyse(s3key)
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Failed to upload dataset', error)
           const toast = useToastInstance()
           toast.error(this.$t('error.upload.dataset'))
           this.loading = false

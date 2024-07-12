@@ -14,9 +14,6 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZonedDateTime;
-import java.util.LinkedList;
-import java.util.List;
 
 @Log4j2
 @Service
@@ -50,7 +47,7 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public byte[] getBytes(String key) throws StorageNotFoundException, StorageUnavailableException {
-        return getBytes(s3Config.getS3ImportBucket(), key);
+        return getBytes(s3Config.getS3Bucket(), key);
     }
 
     @Override
@@ -66,7 +63,7 @@ public class StorageServiceS3Impl implements StorageService {
 
     @Override
     public ExportResourceDto getResource(String key) throws StorageNotFoundException, StorageUnavailableException {
-        return getResource(s3Config.getS3ExportBucket(), key);
+        return getResource(s3Config.getS3Bucket(), key);
     }
 
     @Override

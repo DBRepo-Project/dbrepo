@@ -76,6 +76,9 @@ export default defineNuxtConfig({
         client: 'http://localhost',
         server: 'http://gateway-service',
       },
+      upload: {
+        client: 'http://localhost/api/upload/files'
+      },
       database: {
         unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
         image: {
@@ -101,12 +104,6 @@ export default defineNuxtConfig({
         keycloak: {
           text: 'Keycloak Admin',
           href: '/api/auth/'
-        }
-      },
-      keycloak: {
-        client: {
-          id: 'dbrepo-client',
-          secret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
         }
       }
     }

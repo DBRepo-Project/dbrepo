@@ -27,6 +27,12 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.searchService}")
     private String searchEndpoint;
 
+    @Value("${dbrepo.endpoints.rorService}")
+    private String rorEndpoint;
+
+    @Value("${dbrepo.endpoints.crossRefService}")
+    private String crossRefEndpoint;
+
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 

@@ -39,9 +39,8 @@ services:
     hostname: data-db
     image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
     volumes:
-      - ./dbrepo-data-db/enable_history_insert.cnf:/opt/bitnami/mariadb/conf.default/enable_history_insert.cnf
-      - "${SHARED_VOLUME:-/tmp}:/tmp"
       - data-db-data:/bitnami/mariadb
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
     ports:
       - "3307:3306"
     environment:
@@ -68,7 +67,7 @@ services:
       MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 12
     logging:
@@ -86,7 +85,7 @@ services:
       network: host
     healthcheck:
       test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 12
     environment:
@@ -132,6 +131,7 @@ services:
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
       BROKER_USERNAME: ${BROKER_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
+      CROSSREF_ENDPOINT: "${CROSSREF_ENDPOINT:-http://data.crossref.org}"
       DATA_SERVICE_ENDPOINT: ${DATA_SERVICE_ENDPOINT:-http://data-service:8080}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
@@ -144,11 +144,11 @@ services:
       METADATA_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
       PID_BASE: ${PID_BASE:-http://localhost/pid/}
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
+      ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
       SEARCH_SERVICE_ENDPOINT: "${SEARCH_SERVICE_ENDPOINT:-http://gateway-service}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
-      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       SPARQL_CONNECTION_TIMEOUT: "${SPARQL_CONNECTION_TIMEOUT:-10000}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
@@ -187,9 +187,8 @@ services:
       GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
-      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
@@ -287,10 +286,9 @@ services:
       - "3305:8080"
     environment:
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
       S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
-      S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
@@ -439,7 +437,8 @@ services:
       context: ./dbrepo-storage-service/init
       network: host
     environment:
-      SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
+      WEED_CLUSTER_SW_MASTER: "${STORAGE_SERVICE_MASTER_ENDPOINT:-storage-service:9333}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -452,9 +451,11 @@ services:
     hostname: upload-service
     image: docker.io/tusproject/tusd:v2.4.0
     command:
-      - "--base-path=/api/upload/files/"
+      - "-behind-proxy"
+      - "-max-size=2000000000"
+      - "-base-path=/api/upload/files/"
       - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      - "-s3-bucket=dbrepo-upload"
+      - "-s3-bucket=dbrepo"
     environment:
       AWS_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
       AWS_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
@@ -509,8 +510,8 @@ services:
       REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_EXPORT_BUCKET: "${S3_EXPORT_BUCKET:-dbrepo-download}"
       S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"

@@ -56,8 +56,7 @@ dbrepo:
   s3:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
-    importBucket: "${S3_IMPORT_BUCKET:dbrepo-upload}"
-    exportBucket: "${S3_EXPORT_BUCKET:dbrepo-download}"
+    bucket: "${S3_BUCKET:dbrepo}"
     filePath: "${S3_FILE_PATH:/tmp}"
   system:
     username: "${SYSTEM_USERNAME:admin}"

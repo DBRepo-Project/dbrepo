@@ -43,17 +43,17 @@ class S3ClientTest(unittest.TestCase):
     def test_download_file_succeeds(self):
 
         # mock
-        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
+        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo")
 
         # test
-        S3Client().download_file(filename="testdt01.csv", bucket="dbrepo-upload")
+        S3Client().download_file(filename="testdt01.csv", bucket="dbrepo")
 
     # @Test
     def test_download_file_notFound_fails(self):
 
         # test
         try:
-            S3Client().download_file(filename="testdt01.csv", bucket="dbrepo-upload")
+            S3Client().download_file(filename="testdt01.csv", bucket="dbrepo")
         except ClientError:
             pass
         except Exception:
@@ -78,10 +78,10 @@ class S3ClientTest(unittest.TestCase):
     def test_get_file_succeeds(self):
 
         # mock
-        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
+        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo")
 
         # test
-        response = S3Client().get_file(bucket="dbrepo-upload", filename="testdt01.csv")
+        response = S3Client().get_file(bucket="dbrepo", filename="testdt01.csv")
         self.assertIsNotNone(response)
 
     # @Test
@@ -89,7 +89,7 @@ class S3ClientTest(unittest.TestCase):
 
         # test
         try:
-            S3Client().get_file(bucket="dbrepo-upload", filename="idonotexist.csv")
+            S3Client().get_file(bucket="dbrepo", filename="idonotexist.csv")
         except ClientError:
             pass
         except Exception:
@@ -101,7 +101,7 @@ class S3ClientTest(unittest.TestCase):
     def test_bucket_exists_succeeds(self):
 
         # test
-        response = S3Client().bucket_exists_or_exit("dbrepo-upload")
+        response = S3Client().bucket_exists_or_exit("dbrepo")
         self.assertIsNotNone(response)
 
     # @Test

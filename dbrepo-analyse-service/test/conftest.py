@@ -41,9 +41,8 @@ def session(request, app_context):
     app.config["S3_ENDPOINT"] = endpoint
     client = container.get_client()
     # create buckets
-    logging.debug("[fixture] make buckets dbrepo-upload, dbrepo-download")
-    client.make_bucket("dbrepo-upload")
-    client.make_bucket("dbrepo-download")
+    logging.debug("[fixture] make bucket dbrepo")
+    client.make_bucket("dbrepo")
 
     # destructor
     def stop_minio():
@@ -61,17 +60,15 @@ def cleanup(request, session):
     :param session: /
     :return:
     """
-    logging.info("[fixture] truncate buckets")
-    for bucket in ["dbrepo-upload", "dbrepo-download"]:
-        objects = []
-        for obj in session.get_client().list_objects(bucket):
-            objects.append(DeleteObject(obj.object_name))
-        logging.info(f"request to remove objects {objects}")
-        errors = session.get_client().remove_objects(bucket, objects)
-        for error in errors:
-            raise ConnectionError(
-                f"Failed to delete object with key {error.object_name} of bucket {bucket}"
-            )
+    bucket = "dbrepo"
+    logging.info(f"[fixture] truncate bucket: {bucket}")
+    objects = []
+    for obj in session.get_client().list_objects(bucket):
+        objects.append(DeleteObject(obj.object_name))
+    logging.info(f"request to remove objects {objects}")
+    errors = session.get_client().remove_objects(bucket, objects)
+    for error in errors:
+        raise ConnectionError(f"Failed to delete object with key {error.object_name} of bucket: {bucket}")
 
 
 @pytest.fixture(scope="function")

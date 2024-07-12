@@ -16,6 +16,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.util.UUID;
 
@@ -31,37 +32,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     public KeycloakGatewayImpl(@Qualifier("restTemplate") RestTemplate restTemplate,
                                @Qualifier("keycloakRestTemplate") RestTemplate keycloakRestTemplate,
                                KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(keycloakConfig.getKeycloakEndpoint()));
         this.restTemplate = restTemplate;
         this.keycloakRestTemplate = keycloakRestTemplate;
         this.keycloakConfig = keycloakConfig;
         this.metadataMapper = metadataMapper;
-    }
-
-    public TokenDto obtainToken() throws AuthServiceConnectionException, AuthServiceException,
-            CredentialsInvalidException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
-        payload.add("username", keycloakConfig.getKeycloakUsername());
-        payload.add("password", keycloakConfig.getKeycloakPassword());
-        payload.add("grant_type", "password");
-        payload.add("client_id", "admin-cli");
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/master/protocol/openid-connect/token";
-        log.trace("request admin token from url: {}", url);
-        final ResponseEntity<TokenDto> response;
-        try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
-        } catch (HttpServerErrorException e) {
-            log.error("Failed to obtain admin token: {}", e.getMessage());
-            throw new AuthServiceConnectionException("Service unavailable", e);
-        } catch (HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to obtain admin token: invalid credentials: {}", e.getMessage(), e);
-            throw new CredentialsInvalidException("Invalid credentials: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest e) {
-            log.error("Failed to obtain admin token: unexpected response: {}", e.getMessage(), e);
-            throw new AuthServiceException("Unexpected response: " + e.getMessage(), e);
-        }
-        return response.getBody();
     }
 
     @Override
@@ -76,11 +51,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("scope", "openid roles");
         payload.add("client_id", keycloakConfig.getKeycloakClient());
         payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
-        log.trace("request admin token from url: {}", url);
+        final String path = "/realms/dbrepo/protocol/openid-connect/token";
+        log.trace("obtain user token at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to obtain user token: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -109,11 +84,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("grant_type", "refresh_token");
         payload.add("client_id", keycloakConfig.getKeycloakClient());
         payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
-        log.trace("request user token from url: {}", url);
+        final String path = "/realms/dbrepo/protocol/openid-connect/token";
+        log.trace("refresh user token at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to refresh user token: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -133,15 +108,12 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException, UserExistsException, CredentialsInvalidException {
-        /* obtain admin token */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users";
-        log.debug("create user at url {}", url);
+            EmailExistsException, UserExistsException {
+        final String path = "/admin/realms/dbrepo/users";
+        log.trace("create user at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
+            response = keycloakRestTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -164,16 +136,12 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void deleteUser(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
-            CredentialsInvalidException {
-        /* obtain admin token */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
-        log.debug("delete user at url {}", url);
+    public void deleteUser(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException {
+        final String path = "/admin/realms/dbrepo/users/" + id;
+        log.trace("delete user at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null, headers), Void.class);
+            response = keycloakRestTemplate.exchange(path, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to delete user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -193,16 +161,13 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void updateUserCredentials(UUID id, UserPasswordDto data) throws AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException {
-        /* obtain admin token */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
+            AuthServiceConnectionException {
         final UpdateCredentialsDto payload = metadataMapper.passwordToUpdateCredentialsDto(data.getPassword());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
-        log.debug("update user credentials at url {}", url);
+        final String path = "/admin/realms/dbrepo/users/" + id;
+        log.trace("update user credentials at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<Void> response;
         try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(payload, headers), Void.class);
+            response = keycloakRestTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(payload), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -219,15 +184,12 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException,
-            UserNotFoundException, CredentialsInvalidException {
-        /* obtain admin token */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/?username=" + username;
-        log.debug("find user from url {}", url);
+            UserNotFoundException {
+        final String path = "/admin/realms/dbrepo/users/?username=" + username;
+        log.trace("find user by username at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<UserDto[]> response;
         try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
+            response = keycloakRestTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, UserDto[].class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
@@ -245,15 +207,12 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException,
-            UserNotFoundException, CredentialsInvalidException {
-        /* obtain admin token */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
-        log.debug("find user from url {}", url);
+            UserNotFoundException {
+        final String path = "/admin/realms/dbrepo/users/" + id;
+        log.trace("find user by id at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
         final ResponseEntity<UserDto> response;
         try {
-            response = keycloakRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto.class);
+            response = keycloakRestTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
