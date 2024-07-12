@@ -1102,17 +1102,17 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def import_table_data(self, database_id: int, table_id: int, separator: str,
-                          file_name_or_data_frame: str | DataFrame, quote: str = None, skip_lines: int = 0,
+    def import_table_data(self, database_id: int, table_id: int, file_name_or_data_frame: str | DataFrame,
+                          separator: str = None, quote: str = None, skip_lines: int = 0,
                           false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
-                          line_encoding: str = "\r\n") -> None:
+                          line_encoding: str = "\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param separator: The csv column separator.
         :param file_name_or_data_frame: The path of the file that is imported on the storage service or pandas dataframe.
+        :param separator: The csv column separator. Optional.
         :param quote: The column data quotation character. Optional.
         :param skip_lines: The number of lines to skip. Optional. Default: 0.
         :param false_encoding: The encoding of boolean false. Optional.

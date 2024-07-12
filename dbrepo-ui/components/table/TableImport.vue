@@ -292,7 +292,7 @@ export default {
         true_element: null,
         null_element: '',
         separator: ',',
-        line_termination: '\\r\\n',
+        line_termination: '\\n',
         skip_lines: 1
       },
       separators: [
