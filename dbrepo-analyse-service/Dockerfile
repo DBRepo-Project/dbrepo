@@ -1,5 +1,5 @@
 FROM python:3.11-alpine
-MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add bash curl
 
