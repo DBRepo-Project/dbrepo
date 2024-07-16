@@ -49,6 +49,7 @@ nav:
     - Hazard Data: examples/hazard.md
     - Industry 4.0 Power Data: examples/power.md
     - Survey Data: examples/survey.md
+    - Lute Data: examples/lute-data.md
     - Music-ML Data: examples/music.md
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md

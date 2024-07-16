@@ -1,10 +1,10 @@
 ###### FIRST STAGE ######
-FROM dbrepo-metadata-service:build as dependency
-MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+FROM dbrepo-metadata-service:build AS dependency
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ###### SECOND STAGE ######
-FROM maven:3-openjdk-17 as build
-MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+FROM maven:3-openjdk-17 AS build
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
 
@@ -21,8 +21,8 @@ COPY ./services ./services
 RUN mvn clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM amazoncorretto:17-alpine3.19 as runtime
-MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+FROM amazoncorretto:17-alpine3.19 AS runtime
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add --no-cache curl bash jq
 
