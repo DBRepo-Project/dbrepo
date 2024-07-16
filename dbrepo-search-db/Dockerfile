@@ -1,4 +1,4 @@
-FROM opensearchproject/opensearch:2.10.0 as runtime
+FROM opensearchproject/opensearch:2.10.0 AS runtime
 
 USER root
 

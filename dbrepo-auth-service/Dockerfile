@@ -1,6 +1,6 @@
 ###### FIRST STAGE ######
-FROM keycloak/keycloak:24.0 as config
-MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+FROM keycloak/keycloak:24.0 AS config
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 # Enable health and metrics support
 ENV KC_HEALTH_ENABLED=true
@@ -17,12 +17,12 @@ COPY ./server.keystore ./conf/server.keystore
 RUN /opt/keycloak/bin/kc.sh build
 
 ###### SECOND STAGE ######
-FROM redhat/ubi9-minimal as binary
+FROM redhat/ubi9-minimal AS binary
 
 RUN microdnf update -y && microdnf install -y curl-minimal libcurl-minimal
 
 ###### THIRD STAGE ######
-FROM keycloak/keycloak:21.0 as runtime
+FROM keycloak/keycloak:21.0 AS runtime
 
 COPY --from=config /opt/keycloak/ /opt/keycloak/
 COPY --from=binary /usr/lib64 /usr/lib64

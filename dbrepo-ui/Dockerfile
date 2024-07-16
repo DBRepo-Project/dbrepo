@@ -24,7 +24,7 @@ COPY ./nuxt.config.ts ./nuxt.config.ts
 
 RUN bun run build
 
-FROM oven/bun:1.0.26-alpine as runtime
+FROM oven/bun:1.0.26-alpine AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
