@@ -94,6 +94,8 @@ services:
       KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-admin}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-admin}"
+    volumes:
+      - identity-service-data:/bitnami/openldap
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy

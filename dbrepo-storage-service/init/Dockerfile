@@ -1,4 +1,4 @@
-FROM chrislusf/seaweedfs:3.59 as runtime
+FROM chrislusf/seaweedfs:3.59 AS runtime
 
 WORKDIR /app
 
