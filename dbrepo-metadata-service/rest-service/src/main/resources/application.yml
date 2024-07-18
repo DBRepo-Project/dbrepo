@@ -6,7 +6,7 @@ spring:
     url: "jdbc:mariadb://${METADATA_HOST:metadata-db}:3306/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS}"
     driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME:root}"
-    password: "${METADATA_PASSWORD:dbrepo}"
+    password: "${METADATA_DB_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect

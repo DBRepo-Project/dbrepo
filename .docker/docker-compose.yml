@@ -26,7 +26,7 @@ services:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
+      test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -431,10 +431,8 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
-      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}

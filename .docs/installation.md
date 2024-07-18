@@ -36,66 +36,55 @@ SSL/TLS certificate is recommended. Follow the [secure install](#secure-install)
 
 ## Secure Installation
 
-Execute the install script to download only the environment and save it to `dist`.
+1. Execute the install script to download only the environment and save it to `dist`.
 
-```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | DOWNLOAD_ONLY=1 bash
-```
+    ```shell
+    curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | DOWNLOAD_ONLY=1 bash
+    ```
 
-To secure your deployment traffic with **SSL/TLS**, tell the Gateway Service to use your certificate secret (e.g. from 
-Let's Encrypt):
+2. Call the helper script to regenerate the client secret of the `dbrepo-client` and set it as value of the
+   `AUTH_SERVICE_CLIENT_SECRET` variable in the `.env` file.
 
-```yaml title="docker-compose.yml"
-services:
-  ...
-  dbrepo-gateway-service:
-    ...
-    volumes:
-      - /path/to/cert.crt:/app/cert.crt
-      - /path/to/cert.key:/app/cert.key
-    ...
-```
+    ```bash
+    curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.scripts/reg-client-secret.sh" | bash
+    ```
 
-Now redirect all non-HTTPS routes to HTTPS in the Gateway Service:
+3. Finally, update the rest of the default secrets in the `.env` file to secure passwords. You can use `openssl` for
+   that, e.g. `openssl rand -hex 16`. 
 
-```config title="dist/dbrepo.conf"
-server {
-    listen 80 default_server;
-    server_name _;
-    return 301 https://$host$request_uri;
-}
+    Set `auth_ldap.dn_lookup_bind.password` in `dist/rabbitmq.conf` to the value of `SYSTEM_PASSWORD`.
 
-server {
-    listen 443 ssl default_server;
-    server_name my_hostname;
-    ssl_certificate /app/cert.crt;
-    ssl_certificate_key /app/cert.key;
-    ...
-}
-```
+4. To secure your deployment traffic with SSL/TLS, tell the Gateway Service to use your certificate secret (e.g.
+   from Let's Encrypt):
 
-Afterwards, briefly start DBRepo with `docker compose up -d` and change the client secret of the `dbrepo-client` of the
-Auth Service by calling [https://localhost/api/auth](https://localhost/api/auth) and logging into the Auth Service.
-
-Change the realm :material-numeric-1-circle-outline: to "dbrepo" and navigate to :material-numeric-2-circle-outline:
-"Clients". In the list, select the "dbrepo-client" client and then select the "Credentials" tab 
-:material-numeric-3-circle-outline:. Finally, open the generation confirmation dialog by clicking the "Regenerate" 
-button :material-numeric-4-circle-outline: (c.f. Figure 1).
-
-<figure markdown>
-![](../images/screenshots/secure-auth-service-1.png){ .img-border }
-<figcaption>Figure 1: Page to open the client secret regeneration.</figcaption>
-</figure>
-
-Finally, confirm the secret recreation by clicking the "Yes" button :material-numeric-1-circle-outline: (c.f. Figure 2).
-
-<figure markdown>
-![](../images/screenshots/secure-auth-service-2.png){ .img-border }
-<figcaption>Figure 2: Regeneration confirmation dialog.</figcaption>
-</figure>
-
-Set the `AUTH_SERVICE_CLIENT_SECRET` variable to the newly generated secret in your `.env` file. Finally, update the
-**default secrets** in `.env` to secure passwords. You can use `openssl` for that, e.g. `openssl rand -hex 16`.
+    ```yaml title="docker-compose.yml"
+    services:
+      ...
+      dbrepo-gateway-service:
+        ...
+        volumes:
+          - /path/to/cert.crt:/app/cert.crt
+          - /path/to/cert.key:/app/cert.key
+        ...
+    ```
+    
+    Now redirect all non-HTTPS routes to HTTPS in the Gateway Service:
+    
+    ```config title="dist/dbrepo.conf"
+    server {
+        listen 80 default_server;
+        server_name _;
+        return 301 https://$host$request_uri;
+    }
+    
+    server {
+        listen 443 ssl default_server;
+        server_name my_hostname;
+        ssl_certificate /app/cert.crt;
+        ssl_certificate_key /app/cert.key;
+        ...
+    }
+    ```
 
 ## Troubleshooting
 
