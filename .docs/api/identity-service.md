@@ -34,6 +34,7 @@ Auth Service and can be empty `""`.
 * Limited support for scaling in Kubernetes, see the
   [guide](https://github.com/jp-gouin/helm-openldap?tab=readme-ov-file#scaling-your-cluster) of the chart developers.
 * Currently no support for LDAP in the Data Database.
+* Currently no support for LDAP in the Search Database.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

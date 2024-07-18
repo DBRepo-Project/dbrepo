@@ -11,7 +11,7 @@ WORKDIR /usr/share/opensearch
 RUN chmod 0700 ./config
 COPY --chown=opensearch:opensearch ./opensearch.yml ./config/opensearch.yml
 COPY --chown=opensearch:opensearch ./config.yml ./config/opensearch-security/config.yml
-#COPY --chown=opensearch:opensearch ./internal_users.yml ./config/opensearch-security/internal_users.yml
+
 RUN chmod 0600 ./config/opensearch.yml
 RUN chmod 0600 ./config/opensearch-security/config.yml
 
