@@ -26,7 +26,7 @@ services:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
+      test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
