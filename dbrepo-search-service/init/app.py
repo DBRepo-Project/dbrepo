@@ -2,6 +2,7 @@ import json
 import os
 import logging
 from typing import List
+from flask import current_app
 
 import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
@@ -40,7 +41,7 @@ class App:
     """
     The client to communicate with the OpenSearch database.
     """
-    gateway_endpoint: str = None
+    metadata_service_endpoint: str = None
     search_host: str = None
     search_port: int = None
     search_username: str = None
@@ -48,11 +49,11 @@ class App:
     search_instance: OpenSearch = None
 
     def __init__(self):
-        self.gateway_endpoint = os.getenv("GATEWAY_SERVICE_ENDPOINT", "http://localhost")
-        self.search_host = os.getenv("OPENSEARCH_HOST", "localhost")
-        self.search_port = int(os.getenv("OPENSEARCH_PORT", "9200"))
-        self.search_username = os.getenv("OPENSEARCH_USERNAME", "admin")
-        self.search_password = os.getenv("OPENSEARCH_PASSWORD", "admin")
+        self.metadata_service_endpoint = current_app.config["METADATA_SERVICE_ENDPOINT"]
+        self.search_host = current_app.config["OPENSEARCH_HOST"]
+        self.search_port = int(current_app.config["OPENSEARCH_PORT"])
+        self.search_username = current_app.config["OPENSEARCH_USERNAME"]
+        self.search_password = current_app.config["OPENSEARCH_PASSWORD"]
 
     def _instance(self) -> OpenSearch:
         """
@@ -101,7 +102,7 @@ class App:
         return True
 
     def fetch_databases(self) -> List[Database]:
-        client = RestClient(endpoint=self.gateway_endpoint)
+        client = RestClient(endpoint=self.metadata_service_endpoint)
         databases = []
         for database in client.get_databases():
             databases.append(client.get_database(database_id=database.id))

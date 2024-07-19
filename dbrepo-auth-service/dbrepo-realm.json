@@ -2174,7 +2174,7 @@
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
       "id" : "c109d473-5ce1-4032-af7b-02e5442f5c07",
-      "name" : "openldap",
+      "name" : "Identity Service",
       "providerId" : "ldap",
       "subComponents" : {
         "org.keycloak.storage.ldap.mappers.LDAPStorageMapper" : [ {
