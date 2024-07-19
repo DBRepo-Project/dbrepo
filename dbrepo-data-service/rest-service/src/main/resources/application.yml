@@ -50,9 +50,9 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
   endpoints:
-    metadataService: "${METADATA_SERVICE_ENDPOINT:http://gateway-service}"
-    storageService: "${S3_ENDPOINT:http://gateway-service/api/storage}"
-    authService: "${AUTH_SERVICE_ENDPOINT:http://gateway-service/api/auth}"
+    metadataService: "${METADATA_SERVICE_ENDPOINT:http://metadata-service:8080}"
+    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
   s3:
     accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"

@@ -6,9 +6,10 @@ MIN_CPU=8
 MIN_RAM=8
 MIN_MAP_COUNT=262144
 SKIP_CHECKS=${SKIP_CHECKS:-0}
+DOWNLOAD_ONLY=${DOWNLOAD_ONLY:-0}
 
 # checks
-if [[ $SKIP_CHECKS -eq 0 ]]; then
+if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
   echo "[✨] Startup check ..."
   docker info > /dev/null
   if [[ $? -ne 0 ]]; then
@@ -56,9 +57,10 @@ else
 fi
 
 # environment
-echo "[🚀] Gathering environment ..."
+echo "[🚀] Gathering environment for version ${VERSION} ..."
 mkdir -p ./dist
 curl -sSL -o ./docker-compose.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/docker-compose.yml"
+curl -sSL -o ./.env "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/.env"
 curl -sSL -o ./dist/1_setup-schema.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-schema.sql"
 curl -sSL -o ./dist/2_setup-data.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-data.sql"
 curl -sSL -o ./dist/rabbitmq.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/rabbitmq.conf"
@@ -66,9 +68,12 @@ curl -sSL -o ./dist/enabled_plugins "https://gitlab.phaidra.org/fair-data-austri
 curl -sSL -o ./dist/definitions.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/definitions.json"
 curl -sSL -o ./dist/advanced.config "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/advanced.config"
 curl -sSL -o ./dist/dbrepo.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-gateway-service/dbrepo.conf"
-curl -sSL -o ./dist/opensearch_dashboards.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-search-db/opensearch_dashboards.yml"
-curl -sSL -o ./dist/dbrepo.config.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-ui/dbrepo.config.json"
 curl -sSL -o ./dist/s3_config.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-storage-service/s3_config.json"
+
+if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
+  echo "[🎉] Successfully downloaded environment!"
+  exit 0
+fi
 
 echo "[📦] Pulling images for version ${VERSION} ..."
 docker compose pull

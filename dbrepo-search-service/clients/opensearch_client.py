@@ -3,7 +3,6 @@ The opensearch_client.py is used by the different API endpoints in routes.py to 
 """
 from json import dumps, load
 import logging
-import re
 
 from dbrepo.api.dto import Database
 from flask import current_app
@@ -12,7 +11,7 @@ from collections.abc import MutableMapping
 from opensearchpy import OpenSearch, TransportError, RequestError
 
 from omlib.measure import om
-from omlib.constants import SI, OM_IDS
+from omlib.constants import OM_IDS
 from omlib.omconstants import OM
 from omlib.unit import Unit
 
