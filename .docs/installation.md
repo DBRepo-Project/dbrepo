@@ -14,109 +14,119 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | bash
 ```
 
-Or perform a [custom install](#custom-install).
+!!! bug "Default installation security disclaimer"
+
+    This quick default installation should **not be considered secure**. It is intended for **local testing** and
+    demonstration and should not be used in public deployments or in production. It is a quick installation method and
+    is intended for a quick look at DBRepo.
 
 ## Requirements
 
-### Hardware
-
-For this small, local, test deployment any modern hardware would suffice, we recommend a dedicated virtual machine with
-the following settings.
+We only support the Debian 12 operating system officially. In theory, any DEB-based operating system (e.g. Ubuntu)
+should be compatible. Any modern hardware suffices, we recommend a dedicated virtual machine with the following
+settings.
 
 - min. 8 vCPU cores
 - min. 8GB free RAM memory
 - min. 200GB free SSD storage
 - min. 100Mbit/s connection
 
-*Optional*: public IP-address if you want to secure the deployment with a (free) TLS-certificate from Let's Encrypt.
+Since DBRepo is intended to be a publicly available repository, an optional fixed/static IP-address with optional
+SSL/TLS certificate is recommended. Follow the [secure install](#secure-install) guide.
 
-!!! info "Resource Consumption"
+## Secure Installation
 
-    Note that most of the vCPU and RAM resources will be needed for starting the infrastructure, this is because of
-    Docker. During operation and especially idle times, the deployment will use significantly less resources.
+Execute the install script to download only the environment and save it to `dist`.
 
-### Software
-
-We only test the Docker Compose deployment with the 
-official [Docker Engine](https://docs.docker.com/engine/install/debian/) installed on 
-a [Debian](https://www.debian.org/)-based operating system. Other software deployments (e.g. Docker Desktop on Windows)
-are *not* recommended and not tested.
-
-## Custom Install
-
-In case you prefer a customized install, start by downloading the `docker-compose.yml` file used to define the services:
-
-```bash
-curl -O docker-compose.yml -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.docker/docker-compose.yml
+```shell
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | DOWNLOAD_ONLY=1 bash
 ```
 
-Create the folder `dist/` that hold necessary configuration files and download the Metadata Database schema and initial 
-data to display the created Data Database container:
+### Static Configuration
+
+Call the helper script to regenerate the client secret of the `dbrepo-client` and set it as value of the 
+`AUTH_SERVICE_CLIENT_SECRET` variable in the `.env` file.
 
 ```bash
-mkdir -p dist
-curl -O dist/setup-schema.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-metadata-db/setup-schema.sql
-curl -O dist/setup-data.sql -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-metadata-db/setup-data.sql
+curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.scripts/reg-client-secret.sh" | bash
 ```
 
-Download the Broker Service configuration files:
+Update the rest of the default secrets in the `.env` file to secure passwords. You can use `openssl` for that, e.g. 
+`openssl rand -hex 16`. Set `auth_ldap.dn_lookup_bind.password` in `dist/rabbitmq.conf` to the value of
+`SYSTEM_PASSWORD`.
 
-```bash
-curl -O dist/rabbitmq.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/rabbitmq.conf
-curl -O dist/enabled_plugins -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/enabled_plugins
-curl -O dist/definitions.json -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-broker-service/definitions.json
+### Runtime Configuration
+
+The [Auth Service](../api/auth-service) can be configured easily when DBRepo is running. Start DBRepo temporarily:
+
+```shell
+docker compose up -d
 ```
 
-!!! warning "Default admin user credentials"
-
-    Note that you need to change the default user credentials `fda:fda` of the Broker Service by setting `users.0.name`
-    and `users.0.password_hash` of the `definitions.json` file. The `password_hash` can be created by executing 
-    `./helm/dbrepo/hack/generate-rabbitmq-pw.sh <your_password>`.
-
-Download the Gateway Service configuration file (or integrate it into your existing NGINX reverse proxy config):
-
-```bash
-curl -O dist/dbrepo.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-gateway-service/dbrepo.conf
-```
-
-Download the S3 configuration for the Storage Service:
-
-```bash
-curl -O dist/s3_config.conf -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/dbrepo-storage-service/s3_config.conf
-```
-
-Continue the custom install by customizing the [User Interface](../api/ui).
-
-## Architecture
-
-The repository is designed as a service-based architecture to ensure scalability and the utilization of various
-technologies. The conceptualized microservices operate the basic database operations, data versioning as well as
-*findability*, *accessability*, *interoperability* and *reuseability* (FAIR).
+Log into the Auth Service with the default credentials `admin` and the value of `AUTH_SERVICE_ADMIN_PASSWORD` 
+(c.f. Figure 1) and select the "dbrepo" realm :material-numeric-1-circle-outline:. In the sidebar, select the 
+"User federation" :material-numeric-2-circle-outline: and from the provider list, select the "Identity Service" provider
+:material-numeric-3-circle-outline:.
 
 <figure markdown>
-![DBRepo architecture](images/architecture-docker-compose.svg)
-<figcaption>Architecture of the services deployed via Docker Compose</figcaption>
+![](images/screenshots/auth-service-ldap-1.png){ .img-border }
+<figcaption>Figure 1: Select the Identity Service provider.</figcaption>
 </figure>
 
-Please note that we only save the state of the databases as well as the [Broker Service](../broker-service)
-since RabbitMQ maintains state inside the container.
+If you plan to change the default admin username (c.f. Figure 2), modify the Bind DN :material-numeric-1-circle-outline:
+but this is optional. Change the Bind credentials to the desired password :material-numeric-2-circle-outline: from
+the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
-## Deployment
+<figure markdown>
+![](images/screenshots/auth-service-ldap-2.png){ .img-border }
+<figcaption>Figure 2: Update the Identity Service admin user credentials.</figcaption>
+</figure>
+   
+Also, update the JWT key according to the 
+[Keycloak documentation](https://www.keycloak.org/docs/24.0.1/server_admin/index.html#rotating-keys). To secure your
+deployment traffic with SSL/TLS, tell the Gateway Service to use your certificate secret (e.g. from Let's Encrypt):
 
-We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 and newer). This deployment creates the
-core infrastructure and a single Docker container for all user-generated databases.
+```yaml title="docker-compose.yml"
+services:
+  ...
+  dbrepo-gateway-service:
+    ...
+    volumes:
+      - /path/to/cert.crt:/app/cert.crt
+      - /path/to/cert.key:/app/cert.key
+    ...
+```
 
-View the logs:
+Now redirect all non-HTTPS routes to HTTPS in the Gateway Service:
 
-    docker compose logs -f
+```config title="dist/dbrepo.conf"
+server {
+    listen 80 default_server;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
 
-You should now be able to view the front end at [http://localhost](http://localhost).
+server {
+    listen 443 ssl default_server;
+    server_name my_hostname;
+    ssl_certificate /app/cert.crt;
+    ssl_certificate_key /app/cert.key;
+    ...
+}
+```
 
-Please be warned that the default configuration is not intended for public deployments. It is only intended to have a
-running system within minutes to play around within the system and explore features. It is strongly advised to change 
-the default `.env` environment variables.
+### Apply the Configuration
 
-### Troubleshooting
+Restart the configured DBRepo system to apply the static and runtime configuration:
+
+```shell
+docker compose down
+docker compose up -d
+```
+
+The secure installation is now finished!
+
+## Troubleshooting
 
 In case the deployment is unsuccessful, we have explanations on their origin and solutions to the most common errors:
 

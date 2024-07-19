@@ -24,9 +24,9 @@ services:
       - "3306:3306"
     environment:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
-      MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
+      MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
+      test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -44,9 +44,9 @@ services:
     ports:
       - "3307:3306"
     environment:
-      MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
+      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
+      test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -63,10 +63,10 @@ services:
     ports:
       - "3308:3306"
     environment:
-      MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
-      MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
+      MARIADB_DATABASE: "${AUTH_DB_NAME:-keycloak}"
+      MARIADB_ROOT_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
+      test: mysqladmin ping --user=root --password="${AUTH_DB_PASSWORD:-dbrepo}" --silent
       interval: 15s
       timeout: 5s
       retries: 12
@@ -85,10 +85,10 @@ services:
       retries: 12
     environment:
       AUTH_DB: "${AUTH_DB:-keycloak}"
-      KC_DB_USERNAME: "${AUTH_USERNAME:-root}"
-      KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
-      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-admin}"
-      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-admin}"
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      KEYCLOAK_ADMIN: "${AUTH_SERVICE_ADMIN_USERNAME:-admin}"
+      KEYCLOAK_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -110,7 +110,7 @@ services:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
-      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://gateway-service/api/auth}
       BASE_URL: "${BASE_URL:-http://localhost}"
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
@@ -130,8 +130,8 @@ services:
       METADATA_DB: "${METADATA_DB:-dbrepo}"
       METADATA_HOST: "${METADATA_HOST:-metadata-db}"
       METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
-      METADATA_USERNAME: "${METADATA_USERNAME:-root}"
-      METADATA_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
+      METADATA_USERNAME: root
+      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       PID_BASE: ${PID_BASE:-http://localhost/pid/}
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Database Repository}"
       ROR_ENDPOINT: "${ROR_ENDPOINT:-https://api.ror.org}"
@@ -166,8 +166,6 @@ services:
     hostname: analyse-service
     image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.5
     environment:
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-admin}"
-      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
@@ -177,6 +175,8 @@ services:
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
       S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -242,14 +242,14 @@ services:
     image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.5
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
-      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
       GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-info}
 
   dbrepo-data-db-sidecar:
@@ -317,7 +317,28 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-db-init:
+  dbrepo-identity-service:
+    restart: "no"
+    container_name: dbrepo-identity-service
+    hostname: identity-service
+    image: bitnami/openldap:2.6.8-debian-12-r1
+    environment:
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_USERS: "${SYSTEM_USERNAME:-admin}"
+      LDAP_PASSWORDS: "${SYSTEM_PASSWORD:-admin}"
+      LDAP_GROUP: "${ADMIN_GROUP:-system}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+      LDAP_ADMIN_DN: "${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at}"
+    volumes:
+      - identity-service-data:/bitnami/openldap
+    healthcheck:
+      test: "ldapwhoami -H ldap://localhost:1389 -D ${IDENTITY_SERVICE_ADMIN_DN:-cn=admin,dc=dbrepo,dc=at} -w ${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin} || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  dbrepo-search-service-init:
     restart: "no"
     container_name: dbrepo-search-service-init
     hostname: search-service-init
@@ -326,8 +347,8 @@ services:
       GATEWAY_SERVICE_ENDPOINT: ${GATEWAY_SERVICE_ENDPOINT:-http://gateway-service}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
-      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
-      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD:-admin}
+      OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       dbrepo-search-db:
@@ -410,10 +431,10 @@ services:
       BROKER_EXCHANGE_NAME: ${BROKER_EXCHANGE_NAME:-dbrepo}
       BROKER_QUEUE_NAME: ${BROKER_QUEUE_NAME:-dbrepo}
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
-      BROKER_PASSWORD: ${BROKER_PASSWORD:-admin}
+      BROKER_PASSWORD: ${SYSTEM_USERNAME:-admin}
       BROKER_PORT: ${BROKER_PORT:-5672}
       BROKER_SERVICE_ENDPOINT: ${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}
-      BROKER_USERNAME: ${BROKER_USERNAME:-admin}
+      BROKER_USERNAME: ${SYSTEM_PASSWORD:-admin}
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
