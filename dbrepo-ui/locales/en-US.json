@@ -19,7 +19,7 @@
     "persist": "Persist",
     "cancel": "Cancel",
     "user": "User",
-    "import": "Import",
+    "import": "Import Data",
     "delete": "Delete",
     "recommend": "Recommend",
     "now": "Now",
@@ -30,7 +30,8 @@
     "yes": "Yes",
     "no": "No",
     "mine": "(mine)",
-    "loading": "Loading"
+    "loading": "Loading",
+    "view": "View"
   },
   "pages": {
     "identifier": {
@@ -276,6 +277,19 @@
       "broker": {
         "title": "Broker"
       },
+      "connection": {
+        "title": "Connection Details",
+        "secure": "secure",
+        "insecure": "insecure",
+        "permissions": {
+          "write": "You can write to this table",
+          "read": "You can read all contents of this table"
+        }
+      },
+      "description": {
+        "title": "Description",
+        "empty": "(no description)"
+      },
       "exchange": {
         "title": "Exchange"
       },
@@ -285,14 +299,8 @@
       "routing-key": {
         "title": "Routing Key"
       },
-      "connection": {
-        "title": "Connection Details",
-        "secure": "secure",
-        "insecure": "insecure",
-        "permissions": {
-          "write": "You can write to this table",
-          "read": "You can read all contents of this table"
-        }
+      "name": {
+        "title": "Internal Name"
       },
       "protocol": {
         "title": "Protocol",
@@ -303,10 +311,6 @@
       },
       "result-rows": {
         "title": "Rows"
-      },
-      "description": {
-        "title": "Description",
-        "empty": "(no description)"
       },
       "owner": {
         "title": "Owner"
@@ -323,9 +327,14 @@
           "metadata": {
             "title": "Table Metadata"
           },
-          "dataset": {
+          "schema": {
             "title": "Dataset Structure",
-            "warn": "The dataset schema does not match the target table schema. You can still force the import but it is not recommended"
+            "text": "the table schema manually."
+          },
+          "dataset": {
+            "title": "Import Dataset",
+            "text": "Creates a table schema from a given .csv dataset. Alternatively you can create",
+            "warn": "The dataset schema (likely) does not match the target table schema. You can still force the import but it is not recommended"
           },
           "name": {
             "label": "Name",
@@ -351,6 +360,9 @@
           "skip": {
             "label": "Skip Rows",
             "hint": "Optional. Number of rows to skip, e.g. when the first one contains header and no data"
+          },
+          "storage": {
+            "text": "Dataset from Storage Service"
           },
           "quote": {
             "label": "Quote Encoding",
@@ -378,7 +390,7 @@
             "hint": "Optional. Character sequence that represents boolean false, e.g. 0, false, no"
           },
           "file": {
-            "title": "Dataset Upload",
+            "title": "Dataset Analysis",
             "label": "Dataset File",
             "hint": "Required. Needs to be in .csv/.tsv file format"
           },
@@ -399,6 +411,12 @@
           "information": {
             "title": "Information"
           },
+          "simple": {
+            "text": "From Schema"
+          },
+          "from-csv": {
+            "text": "From CSV"
+          },
           "name": {
             "label": "Table Name",
             "hint": "Required"
@@ -408,8 +426,7 @@
             "hint": ""
           },
           "summary": {
-            "prefix": "Created table with name",
-            "suffix": "and imported dataset successfully"
+            "text": "Created table with internal name:"
           }
         },
         "drop": {
@@ -913,7 +930,6 @@
       "subpages": {
         "create": {
           "title": "Create Subset",
-          "generated": "The following query will be executed (readonly)",
           "subtitle": "The following query will be executed",
           "simple": {
             "text": "Simple"
@@ -1036,6 +1052,10 @@
     "auth": {
       "connection": "Failed to contact auth service",
       "invalid": "Failed to authenticate in auth service"
+    },
+    "analyse": {
+      "invalid": "Failed to analyse dataset",
+      "missing": "Failed to find dataset"
     },
     "access": {
       "missing": "Failed to find access in metadata database"
@@ -1399,14 +1419,11 @@
     "integer": "Greater or equal to zero",
     "max-length": "Maximum length is: ",
     "day": "Invalid day",
+    "matching": "Not matching!",
     "doi": {
       "invalid": "Invalid DOI. Must start with 10.xyz"
     },
     "month": "Invalid month",
-    "schema": {
-      "id": "Column needs to be declared as primary key",
-      "primary-key": "We create a column named id with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior"
-    },
     "uri": {
       "pattern": "Invalid URI",
       "exists": "URI exists"

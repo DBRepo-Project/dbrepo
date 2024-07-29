@@ -47,7 +47,9 @@
                 autocomplete="off"
                 required
                 name="password"
-                :rules="[v => !!v || $t('validation.required')]"
+                :rules="[
+                  v => !!v || $t('validation.required')
+                ]"
                 type="password"
                 persistent-hint
                 :label="$t('pages.signup.password.label')"
@@ -61,7 +63,10 @@
                 autocomplete="off"
                 required
                 name="password-confirm"
-                :rules="[v => !!v || $t('validation.required'), v => (!!v && v) === createAccount.password || $t('Not matching!')]"
+                :rules="[
+                  v => !!v || $t('validation.required')
+                ]"
+                :error-messages="password2 && password2 !== this.createAccount.password ? [this.$t('validation.matching')] : []"
                 type="password"
                 persistent-hint
                 :label="$t('pages.signup.confirm.label')"

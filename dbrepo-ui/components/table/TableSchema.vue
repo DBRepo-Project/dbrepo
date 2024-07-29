@@ -4,33 +4,24 @@
       ref="form"
       v-model="valid"
       :disabled="disabled">
-      <v-row>
-        <v-col md="8">
-          <v-alert
-            v-if="needsSequence"
-            class="mb-6"
-            border="start"
-            :text="$t('validation.schema.primary-key')"
-            color="info" />
-        </v-col>
-      </v-row>
       <v-row
         v-for="(c, idx) in columns"
         :key="`r-${idx}`"
         class="column pa-2 ml-1 mr-1 mb-2"
         dense>
-        <v-col cols="2">
+        <v-col
+          cols="2">
           <v-text-field
             v-model="c.name"
             required
             :rules="[v => !!v || $t('validation.required')]"
-            :error-messages="needsSequence && c.name.toLowerCase() === 'id' ? [$t('validation.schema.id')] : []"
             persistent-hint
             :variant="inputVariant"
             :label="$t('pages.table.subpages.schema.name.label')"
             :hint="$t('pages.table.subpages.schema.name.hint')" />
         </v-col>
-        <v-col cols="2">
+        <v-col
+          cols="1">
           <v-select
             v-model="c.type"
             :items="columnTypes"
@@ -44,7 +35,9 @@
             :hint="$t('pages.table.subpages.schema.type.hint')"
             @update:modelValue="setDefaultSizeAndD(c)" />
         </v-col>
-        <v-col cols="2" :hidden="c.type !== 'set'">
+        <v-col
+          v-if="c.type === 'set'"
+          cols="2">
           <v-text-field
             v-model="c.sets_values"
             required
@@ -57,7 +50,9 @@
             :label="$t('pages.table.subpages.schema.set.label')"
             @focusout="formatValues(c)" />
         </v-col>
-        <v-col cols="2" :hidden="c.type !== 'enum'">
+        <v-col
+          v-if="c.type === 'enum'"
+          cols="2">
           <v-text-field
             v-model="c.enums_values"
             required
@@ -66,11 +61,15 @@
             :variant="inputVariant"
             :counter-value="() => c.enums.length"
             :hint="$t('pages.table.subpages.schema.enum.hint')"
-            :rules="[v => !!v || $t('validation.required')]"
+            :rules="[
+              v => !!v || $t('validation.required')
+            ]"
             :label="$t('pages.table.subpages.schema.enum.label')"
             @focusout="formatValues(c)" />
         </v-col>
-        <v-col cols="1" :hidden="defaultSize(c) === false">
+        <v-col
+          v-if="defaultSize(c) !== false"
+          cols="1">
           <v-text-field
             v-model.number="c.size"
             type="number"
@@ -80,7 +79,9 @@
             :error-messages="sizeErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
-        <v-col cols="1" :hidden="defaultD(c) === false">
+        <v-col
+          v-if="defaultD(c) !== false"
+          cols="1">
           <v-text-field
             v-model.number="c.d"
             type="number"
@@ -90,49 +91,48 @@
             :error-messages="dErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.d.label')" />
         </v-col>
-        <v-col v-if="hasDate(c)" cols="2">
+        <v-col
+          cols="2"
+          v-if="hasDate(c)">
           <v-select
             v-model="c.dfid"
             required
             :variant="inputVariant"
+            :disabled="disabled"
             :rules="[v => !!v || $t('validation.required')]"
             :items="filterDateFormats(c)"
             item-title="unix_format"
             item-value="id"
             :label="$t('pages.table.subpages.schema.fsp.label')" />
         </v-col>
-        <v-col v-if="shift(c)" :cols="shift(c)" />
-        <v-col cols="auto" class="pl-2">
+        <v-col
+          v-if="shift(c)"
+          :cols="shift(c)" />
+        <v-col
+          cols="auto"
+          class="pl-2">
           <v-checkbox
             v-model="c.primary_key"
+            :disabled="disabled"
             :label="$t('pages.table.subpages.schema.primary-key.label')"
             @click="setOthers(c)" />
         </v-col>
-        <v-col cols="auto" class="pl-10">
+        <v-col
+          cols="auto"
+          class="pl-10">
           <v-checkbox
             v-model="c.null_allowed"
-            :disabled="c.primary_key"
+            :disabled="c.primary_key || disabled"
             :label="$t('pages.table.subpages.schema.null.label')" />
         </v-col>
-        <v-col cols="auto" class="pl-10">
+        <v-col
+          cols="auto"
+          class="pl-10">
           <v-checkbox
             v-model="c.unique"
+            :disabled="disabled"
             :hidden="c.primary_key"
             :label="$t('pages.table.subpages.schema.unique.label')" />
-        </v-col>
-        <v-col v-if="false" cols="auto" class="pl-10">
-          <v-text-field
-            v-model="c.foreign_key"
-            :variant="inputVariant"
-            required
-            :label="$t('pages.table.subpages.schema.foreign-key.label')" />
-        </v-col>
-        <v-col v-if="false" cols="auto" class="pl-10">
-          <v-text-field
-            v-model="c.references"
-            :variant="inputVariant"
-            required
-            :label="$t('pages.table.subpages.schema.references.label')" />
         </v-col>
         <v-col
           v-if="canRemove(idx)"
@@ -161,20 +161,11 @@
       <v-row>
         <v-col>
           <v-btn
-            v-if="back"
-            :color="disabled ? '' : 'tertiary'"
-            :variant="buttonVariant"
-            size="small"
-            class="mr-2"
-            :disabled="disabled"
-            :text="$t('navigation.back')"
-            @click="goBack" />
-          <v-btn
             color="secondary"
             variant="flat"
             size="small"
             :loading="loading"
-            :disabled="disabled"
+            :disabled="disabled || !valid || this.columns.length === 0"
             :text="submitText"
             @click="submit" />
         </v-col>
@@ -192,12 +183,6 @@ export default {
       type: Array,
       default () {
         return []
-      }
-    },
-    back: {
-      type: Boolean,
-      default () {
-        return false
       }
     },
     disabled: {
@@ -262,7 +247,10 @@ export default {
         return false
       }
       let shift = 0
-      if (this.hasDate(column) === false && this.columns.filter(c => this.hasDate(c) !== false).length > 0 && this.defaultSize(column) === false && this.columns.filter(c => this.defaultSize(c) !== false).length > 0) {
+      if (this.hasDate(column) === false && this.columns.filter(c => this.hasDate(c) !== false).length > 0) {
+        shift++
+      }
+      if (this.defaultSize(column) === false && this.columns.filter(c => this.defaultSize(c) !== false).length > 0) {
         shift++
       }
       if (this.defaultD(column) === false && this.columns.filter(c => this.defaultD(c) !== false).length > 0) {
@@ -280,9 +268,6 @@ export default {
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
-    },
-    goBack () {
-      this.$emit('back', { success: false })
     },
     canRemove (idx) {
       if (idx > 0) {

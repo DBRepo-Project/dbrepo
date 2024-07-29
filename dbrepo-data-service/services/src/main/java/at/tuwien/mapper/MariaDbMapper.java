@@ -234,9 +234,7 @@ public interface MariaDbMapper {
                     /* data type */
                     .append(columnTypeDtoToDataType(column))
                     /* null expressions */
-                    .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
-                    /* default expressions */
-                    .append(data.getNeedSequence() && column.getName().equals("id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
+                    .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL");
             if (column.getDescription() != null && !column.getDescription().isEmpty()) {
                 /* comments */
                 stringBuilder.append(" COMMENT \"")
@@ -565,10 +563,10 @@ public interface MariaDbMapper {
         final int[] jdx = new int[]{0};
         data.getKeys()
                 .forEach((key, value) -> {
-                    statement.append(jdx[0] == 0 ? "" : ", ")
+                    statement.append(jdx[0] == 0 ? "" : " AND ")
                             .append("`")
                             .append(key)
-                            .append("` ");
+                            .append("`");
                     if (value == null) {
                         statement.append(" IS NULL");
                     } else {

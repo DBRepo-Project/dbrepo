@@ -32,10 +32,10 @@ public interface TableService {
      * @return The table statistic, if successful.
      * @throws SQLException Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The table statistic generation was unsuccessful, likely due to a bug in the mapping.
-     * @throws QueryMalformedException The inspection query is malformed.
+     * @throws TableNotFoundException The table could not be inspected in the data database.
      */
     TableStatisticDto getStatistics(PrivilegedTableDto table) throws SQLException, TableMalformedException,
-            QueryMalformedException;
+            TableNotFoundException;
 
     /**
      * Finds a table with given data database and table name.

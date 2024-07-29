@@ -27,9 +27,6 @@ public class TableCreateDto {
     @Schema(example = "Air Quality")
     private String name;
 
-    @JsonProperty("need_sequence")
-    private transient boolean needSequence;
-
     @Size(max = 180)
     @Schema(example = "Air Quality in Austria")
     private String description;

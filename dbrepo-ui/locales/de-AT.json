@@ -30,11 +30,15 @@
     "yes": "Ja",
     "no": "Nein",
     "mine": "(Meine)",
-    "loading": "Lade"
+    "loading": "Lade",
+    "view": "Ansicht"
   },
   "pages": {
     "identifier": {
       "title": "Kennung",
+      "export": {
+        "text": "Metadatenexport"
+      },
       "pid": {
         "title": "Persistenter Bezeichner"
       },
@@ -273,6 +277,19 @@
       "broker": {
         "title": "Broker"
       },
+      "connection": {
+        "title": "Verbindungsdetails",
+        "secure": "sicher",
+        "insecure": "unsicher",
+        "permissions": {
+          "write": "Sie können in diese Tabelle schreiben",
+          "read": "Sie können den gesamten Inhalt dieser Tabelle lesen"
+        }
+      },
+      "description": {
+        "title": "Beschreibung",
+        "empty": "(Keine Beschreibung)"
+      },
       "exchange": {
         "title": "Exchange"
       },
@@ -282,14 +299,8 @@
       "routing-key": {
         "title": "Routing-Schlüssel"
       },
-      "connection": {
-        "title": "Verbindungsdetails",
-        "secure": "sicher",
-        "insecure": "unsicher",
-        "permissions": {
-          "write": "Sie können in diese Tabelle schreiben",
-          "read": "Sie können den gesamten Inhalt dieser Tabelle lesen"
-        }
+      "name": {
+        "title": "Interner Name"
       },
       "protocol": {
         "title": "Protokoll",
@@ -300,10 +311,6 @@
       },
       "result-rows": {
         "title": "Reihen"
-      },
-      "description": {
-        "title": "Beschreibung",
-        "empty": "(Keine Beschreibung)"
       },
       "owner": {
         "title": "Eigentümer"
@@ -320,9 +327,14 @@
           "metadata": {
             "title": "Tabellenmetadaten"
           },
-          "dataset": {
+          "schema": {
             "title": "Datensatzstruktur",
-            "warn": "Das Datensatzschema stimmt nicht mit dem Zieltabellenschema überein. "
+            "text": "das Tabellenschema manuell."
+          },
+          "dataset": {
+            "title": "Datensatz importieren",
+            "text": "Erstellt ein Tabellenschema aus einem bestimmten CSV-Datensatz. ",
+            "warn": "Das Datensatzschema stimmt (wahrscheinlich) nicht mit dem Schema der Zieltabelle überein. "
           },
           "name": {
             "label": "Name",
@@ -349,12 +361,15 @@
             "label": "Zeilen überspringen",
             "hint": "Optional. "
           },
+          "storage": {
+            "text": "Datensatz vom Speicherdienst"
+          },
           "quote": {
             "label": "Angebotskodierung",
             "hint": "Optional. "
           },
           "terminator": {
-            "label": "Kodierung des Leitungsabschlusses",
+            "label": "Codierung des Leitungsabschlusses",
             "hint": "Optional. ",
             "warn": {
               "prefix": "Wir haben Ihren .csv/.tsv-Datensatz analysiert und festgestellt, dass die von Ihnen angegebene Leitungsabschlusscodierung vorliegt",
@@ -375,7 +390,7 @@
             "hint": "Optional. "
           },
           "file": {
-            "title": "Datensatz-Upload",
+            "title": "Datensatzanalyse",
             "label": "Datensatzdatei",
             "hint": "Erforderlich. "
           },
@@ -396,6 +411,12 @@
           "information": {
             "title": "Information"
           },
+          "simple": {
+            "text": "Aus Schema"
+          },
+          "from-csv": {
+            "text": "Von CSV"
+          },
           "name": {
             "label": "Tabellenname",
             "hint": "Erforderlich"
@@ -405,8 +426,7 @@
             "hint": ""
           },
           "summary": {
-            "prefix": "Tabelle mit Namen erstellt",
-            "suffix": "und importierter Datensatz erfolgreich"
+            "text": "Erstellte Tabelle mit internem Namen:"
           }
         },
         "drop": {
@@ -421,7 +441,7 @@
           }
         },
         "schema": {
-          "title": "System Versioniert",
+          "title": "Systemversioniert",
           "subtitle": "Tabellenbeschränkungen",
           "bullet": "●",
           "assign": "Zuordnen",
@@ -447,7 +467,7 @@
             "title": "Nullbar"
           },
           "sequence": {
-            "title": "Sequenz"
+            "title": "Reihenfolge"
           },
           "description": {
             "title": "Beschreibung"
@@ -501,7 +521,7 @@
           }
         },
         "semantics": {
-          "title": "Semantische Instanz für Tabellenspalte zuweisen",
+          "title": "Weisen Sie der Tabellenspalte eine semantische Instanz zu",
           "subtitle": "Semantische Instanzen helfen Maschinen dabei, den richtigen Kontext Ihres Datensatzes zu ermitteln",
           "recommended": "Empfohlene semantische Instanzen",
           "bullet": "●",
@@ -534,7 +554,7 @@
             "hint": "Der Wert ist ein Primärschlüssel"
           },
           "format": {
-            "hint": "Der Wert muss folgendes Format haben"
+            "hint": "Der Wert muss im Format vorliegen"
           },
           "required": {
             "hint": "Erforderlich. "
@@ -561,7 +581,7 @@
         "title": "Interner Name"
       },
       "visibility": {
-        "title": "Sichtbarkeit"
+        "title": "Sichtweite"
       },
       "size": {
         "title": "Größe"
@@ -618,7 +638,7 @@
           }
         },
         "tables": {
-          "empty": "(keine Tabellen)"
+          "empty": "(keine Tische)"
         },
         "tuple": {
           "create": {
@@ -650,9 +670,9 @@
           },
           "scheme": {
             "title": "Schema",
-            "subtitle": "Aktualisiert die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen",
+            "subtitle": "Aktualisieren Sie die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen",
             "submit": {
-              "text": "Aktualisieren"
+              "text": "Aktualisierung"
             }
           },
           "ownership": {
@@ -665,7 +685,7 @@
             }
           },
           "visibility": {
-            "title": "Sichtbarkeit",
+            "title": "Sichtweite",
             "subtitle": "Private Datenbanken verbergen die Daten, während Metadaten weiterhin sichtbar sind. ",
             "visibility": {
               "label": "Datenbanksichtbarkeit",
@@ -723,7 +743,7 @@
           "title": "Information",
           "subtitle": "Allgemeine Benutzermetadaten",
           "id": {
-            "label": "ID"
+            "label": "AUSWEIS"
           },
           "username": {
             "label": "Nutzername"
@@ -754,13 +774,13 @@
           "de": "Deutsch (DE)"
         },
         "theme": {
-          "title": "Theme",
+          "title": "Thema",
           "subtitle": "Aktualisieren Sie das Benutzerdesign, wenn Sie angemeldet sind",
           "label": "Thema",
           "dark": "Dunkel",
           "dark-contrast": "Dunkel – hoher Kontrast",
           "light": "Licht",
-          "light-contrast": "Hell – hoher Kontrast",
+          "light-contrast": "Licht – hoher Kontrast",
           "submit": {
             "text": "Aktualisieren"
           }
@@ -836,25 +856,25 @@
       }
     },
     "view": {
-      "title": "Ansicht",
+      "title": "Sicht",
       "tabs": {
-        "info": "Info",
+        "info": "Die Info",
         "data": "Daten"
       },
       "name": {
         "title": "Name"
       },
       "query": {
-        "title": "Abfrage"
+        "title": "Stellungnahme"
       },
       "creator": {
-        "title": "Ersteller"
+        "title": "Schöpfer"
       },
       "creation": {
-        "title": "Erstellt"
+        "title": "Schaffung"
       },
       "visibility": {
-        "title": "Sichtbarkeit"
+        "title": "Sichtweite"
       },
       "subpages": {
         "create": {
@@ -885,7 +905,7 @@
         "title": "Sichtweite"
       },
       "creator": {
-        "title": "Ersteller"
+        "title": "Schöpfer"
       },
       "query": {
         "title": "Abfrage"
@@ -904,13 +924,12 @@
         "title": "Ergebniszeilen"
       },
       "tabs": {
-        "info": "Info",
+        "info": "Die Info",
         "data": "Daten"
       },
       "subpages": {
         "create": {
           "title": "Teilmenge erstellen",
-          "generated": "Die folgende Abfrage wird ausgeführt (schreibgeschützt)",
           "subtitle": "Die folgende Abfrage wird ausgeführt",
           "simple": {
             "text": "Einfach"
@@ -952,20 +971,20 @@
     "search": {
       "types": {
         "database": "Datenbank",
-        "table": "Tabelle",
+        "table": "Tisch",
         "column": "Spalte",
         "user": "Benutzer",
         "identifier": "Kennung",
         "concept": "Konzept",
         "unit": "Einheit",
-        "view": "View"
+        "view": "Sicht"
       },
       "type": {
         "label": "Typ",
         "hint": ""
       },
       "id": {
-        "label": "ID",
+        "label": "AUSWEIS",
         "hint": ""
       },
       "name": {
@@ -977,7 +996,7 @@
         "hint": ""
       },
       "publication-range": {
-        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahrbereich an"
+        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahresbereich an"
       },
       "start-year": {
         "label": "Startjahr",
@@ -1031,14 +1050,18 @@
   },
   "error": {
     "auth": {
-      "connection": "Kontakt zum Authentifizierungsdienst fehlgeschlagen",
-      "invalid": "Authentifizierung im Authentifizierungsdienst fehlgeschlagen"
+      "connection": "Der Authentifizierungsdienst konnte nicht kontaktiert werden",
+      "invalid": "Die Authentifizierung im Authentifizierungsdienst ist fehlgeschlagen"
+    },
+    "analyse": {
+      "invalid": "Der Datensatz konnte nicht analysiert werden",
+      "missing": "Datensatz konnte nicht gefunden werden"
     },
     "access": {
       "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden"
     },
     "axios": {
-      "connection": "Es konnte keine Verbindung hergestellt werden",
+      "connection": "Kontakt zum Backend fehlgeschlagen",
       "timeout": "Zeitüberschreitung der Verbindung"
     },
     "concept": {
@@ -1049,17 +1072,17 @@
       "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "data": {
+      "connection": "Kontaktaufnahme zum Datendienst fehlgeschlagen",
       "invalid": "Die Kommunikation mit dem Datendienst ist fehlgeschlagen",
-      "connection": "Es konnte keine Verbindung zum Datendienst hergestellt werden",
       "value": "Spaltenwert konnte nicht festgelegt werden",
-      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um Folgendes eingestellt zu sein"
+      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um 16:00 Uhr verschoben zu sein"
     },
     "database": {
-      "connection": "Es konnte keine Verbindung zur Datenbank hergestellt werden",
+      "connection": "Kontakt zur Datenbank konnte nicht hergestellt werden",
+      "create": "Datenbank konnte im Datendienst nicht erstellt werden",
       "invalid": "Aktion in der Datenbank konnte nicht ausgeführt werden",
       "querystore": "Die Abfrage konnte nicht in den Abfragespeicher eingefügt werden",
-      "missing": "Die Datenbank konnte nicht in der Metadatendatenbank gefunden werden",
-      "create":  "Es konnte keine Verbindung zum Metadatendienst hergestellt werden"
+      "missing": "Die Datenbank konnte nicht in der Metadatendatenbank gefunden werden"
     },
     "doi": {
       "missing": "DOI konnte in der Metadatendatenbank nicht gefunden werden"
@@ -1107,7 +1130,7 @@
     "query": {
       "missing": "Die Abfrage konnte im Datendienst nicht gefunden werden",
       "invalid": "Die Abfrage ist ungültig",
-      "type.exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp",
+      "type.exists": "Abfrage konnte nicht erstellt werden: Kein solcher Spaltentyp",
       "type.build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp",
       "column.exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen"
     },
@@ -1118,9 +1141,9 @@
       "persist": "Die Abfrage konnte nicht im Abfragespeicher der Datenbank gespeichert werden"
     },
     "metadata": {
-      "privileged": "Das Abrufen privilegierter Metadaten im Datendienst ist fehlgeschlagen",
-      "connection": "Es konnte keine Verbindung zum Metadatendienst hergestellt werden",
-      "invalid": "Es konnten keine Authentifizierungsmetadaten im Datendienst abgerufen werden"
+      "connection": "Es konnte kein Kontakt zum Metadatendienst hergestellt werden",
+      "invalid": "Es konnten keine Authentifizierungsmetadaten im Datendienst abgerufen werden",
+      "privileged": "Das Abrufen privilegierter Metadaten im Datendienst ist fehlgeschlagen"
     },
     "sidecar": {
       "export": "Der Datensatz konnte nicht in den Datenbank-Sidecar exportiert werden",
@@ -1165,12 +1188,12 @@
       "malformed": "Ungültige Paginierungsanforderung"
     },
     "table": {
+      "connection": "Kontakt zur Datenbank konnte nicht hergestellt werden",
+      "create": "Tabelle konnte nicht erstellt werden",
       "missing": "Die Tabelle konnte in der Metadatendatenbank nicht gefunden werden",
       "exists": "Die Tabelle mit diesem Namen existiert bereits",
       "invalid": "Die Spalten im Datendienst konnten nicht analysiert werden",
-      "malformed": "Eintrag konnte nicht eingefügt werden",
-      "create": "Tabelle konnte nicht erstellt werden",
-      "connection": "Das Laden der Tabellendaten ist fehlgeschlagen, da die Datenbank nicht erreichbar ist"
+      "malformed": "Eintrag konnte nicht eingefügt werden"
     },
     "unit": {
       "missing": "Die semantische Einheit konnte in der Metadatendatenbank nicht gefunden werden"
@@ -1181,11 +1204,11 @@
       "invalid": "Die Ansichtsabfrage konnte den Spalten im Datendienst nicht zugeordnet werden"
     },
     "broker": {
-      "connection": "Es konnte keine Verbindung zum Vermittlungsdienst hergestellt werden",
-      "invalid": "Es konnten keine Metadaten im Metadatendienst abgerufen werden"
+      "connection": "Kontakt zum Broker-Service fehlgeschlagen",
+      "invalid": "Es konnten keine Metadaten im Brokerdienst abgerufen werden"
     },
     "external": {
-      "invalid": "Metadaten konnten nicht aus dem Datacite-System abgerufen werden"
+      "invalid": "Es konnten keine Metadaten vom Datacite-System abgerufen werden"
     }
   },
   "success": {
@@ -1221,10 +1244,6 @@
       "semantics": "Semantische Instanz erfolgreich zugewiesen"
     },
     "schema": {
-      "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert",
-      "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert"
-    },
-    "schema": {
       "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert.",
       "views": "Metadaten der Datenbankansichten wurden erfolgreich aktualisiert."
     },
@@ -1240,14 +1259,14 @@
     "pid": {
       "saved": "Kennung erfolgreich gespeichert",
       "created": "Kennung erfolgreich erstellt",
-      "published": "Identifikator erfolgreich veröffentlicht",
+      "published": "Erfolgreich veröffentlichte Kennung",
       "updated": "Kennung erfolgreich aktualisiert",
       "deleted": "Kennung erfolgreich gelöscht"
     },
     "user": {
       "info": "Benutzerinformationen erfolgreich aktualisiert",
       "theme": "Benutzerthema erfolgreich aktualisiert",
-      "password": "Benutzerkennwort erfolgreich aktualisiert",
+      "password": "Benutzerpasswort erfolgreich aktualisiert",
       "login": "Erfolgreich angemeldet"
     },
     "view": {
@@ -1260,7 +1279,7 @@
   },
   "toolbars": {
     "user": {
-      "info": "Info",
+      "info": "Die Info",
       "authentication": "Authentifizierung",
       "developer": "Entwickler"
     },
@@ -1294,30 +1313,30 @@
         "xl": "CSV"
       },
       "dashboard": {
-        "permanent": "Visualisiere",
+        "permanent": "Visualisieren",
         "xl": "Daten"
       },
       "create-subset": {
         "permanent": "Teilmenge",
-        "xl": "Erstelle"
+        "xl": "Erstellen"
       },
       "create-view": {
-        "permanent": "Ansicht",
-        "xl": "Erstelle"
+        "permanent": "Sicht",
+        "xl": "Erstellen"
       },
       "create-table": {
-        "permanent": "Tabelle",
-        "xl": "Erstelle"
+        "permanent": "Tisch",
+        "xl": "Erstellen"
       },
       "create-pid": {
         "permanent": "PID",
         "xl": "Erhalten"
       },
       "info": {
-        "tab": "Info"
+        "tab": "Die Info"
       },
       "tables": {
-        "tab": "Tabellen"
+        "tab": "Tische"
       },
       "subsets": {
         "tab": "Teilmengen"
@@ -1400,14 +1419,11 @@
     "integer": "Größer oder gleich Null",
     "max-length": "Die maximale Länge beträgt: ",
     "day": "Ungültiger Tag",
+    "matching": "Nicht passend!",
     "doi": {
       "invalid": "Ungültiger DOI. "
     },
     "month": "Ungültiger Monat",
-    "schema": {
-      "id": "Die Spalte muss als Primärschlüssel deklariert werden",
-      "primary-key": "Wir erstellen eine Spalte mit dem Namen „id“ mit einer automatisch ansteigenden Sequenz, die bei 1 beginnt. Bitte geben Sie eine Spalte mit Primärschlüssel an, wenn Sie dieses Verhalten nicht wünschen"
-    },
     "uri": {
       "pattern": "Ungültiger URI",
       "exists": "URI existiert"
@@ -1420,7 +1436,7 @@
       "exists": "Der Ansichtsname existiert bereits"
     },
     "table": {
-      "exists": "Tabellenname existiert bereits"
+      "exists": "Der Tabellenname existiert bereits"
     },
     "prefix": {
       "pattern": "Ungültiges Präfixmuster",

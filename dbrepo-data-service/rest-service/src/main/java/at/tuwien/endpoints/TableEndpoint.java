@@ -646,7 +646,7 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Failed to find table in metadata database",
+                    description = "Failed to find table or database in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -659,9 +659,10 @@ public class TableEndpoint {
     public ResponseEntity<TableStatisticDto> statistic(@NotBlank @PathVariable("databaseId") Long databaseId,
                                                        @NotBlank @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, TableMalformedException, QueryMalformedException {
+            MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
+        table.setDatabase(metadataServiceGateway.getDatabaseById(databaseId));
         try {
             final TableStatisticDto dto = tableService.getStatistics(table);
             return ResponseEntity.ok(dto);

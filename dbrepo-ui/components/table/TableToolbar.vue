@@ -22,7 +22,7 @@
         color="tertiary"
         :variant="buttonVariant"
         :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
-        class="ml-2"
+        class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
       <v-btn
         v-if="canExecuteQuery"
@@ -30,7 +30,7 @@
         color="secondary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
-        class="ml-2"
+        class="mr-2"
         :to="`/database/${$route.params.database_id}/subset/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canCreateView"
@@ -38,7 +38,7 @@
         color="secondary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
-        class="ml-2"
+        class="mr-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canDropTable"
@@ -46,7 +46,7 @@
         color="error"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? 'Drop ' : '') + 'Table'"
-        class="ml-2"
+        class="mr-2"
         @click="dropTableDialog = true" />
       <v-btn
         v-if="canGetPid"
@@ -54,7 +54,7 @@
         color="primary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? 'Get ' : '') + 'PID'"
-        class="ml-2"
+        class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`" />
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
