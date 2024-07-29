@@ -41,7 +41,7 @@ if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
   else
     echo "RAM ${RAM}GB OK"
   fi
-  MAX_MAP_COUNT=$(cat /etc/sysctl.conf | grep -oP "vm.max_map_count=.*" | grep -oP "[0-9]+")
+  MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
   if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
     echo "You do not have enough max. map counts:"
     echo ""
@@ -58,17 +58,8 @@ fi
 
 # environment
 echo "[🚀] Gathering environment for version ${VERSION} ..."
-mkdir -p ./dist
-curl -sSL -o ./docker-compose.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/docker-compose.yml"
-curl -sSL -o ./.env "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/.env"
-curl -sSL -o ./dist/1_setup-schema.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-schema.sql"
-curl -sSL -o ./dist/2_setup-data.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-data.sql"
-curl -sSL -o ./dist/rabbitmq.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/rabbitmq.conf"
-curl -sSL -o ./dist/enabled_plugins "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/enabled_plugins"
-curl -sSL -o ./dist/definitions.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/definitions.json"
-curl -sSL -o ./dist/advanced.config "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/advanced.config"
-curl -sSL -o ./dist/dbrepo.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-gateway-service/dbrepo.conf"
-curl -sSL -o ./dist/s3_config.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-storage-service/s3_config.json"
+curl -sSL -o ./dist.tar.gz "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/dist.tar.gz"
+tar xzfv ./dist.tar.gz
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then
   echo "[🎉] Successfully downloaded environment!"

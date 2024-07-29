@@ -2,7 +2,6 @@ import json
 import os
 import logging
 from typing import List
-from flask import current_app
 
 import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
@@ -49,11 +48,11 @@ class App:
     search_instance: OpenSearch = None
 
     def __init__(self):
-        self.metadata_service_endpoint = current_app.config["METADATA_SERVICE_ENDPOINT"]
-        self.search_host = current_app.config["OPENSEARCH_HOST"]
-        self.search_port = int(current_app.config["OPENSEARCH_PORT"])
-        self.search_username = current_app.config["OPENSEARCH_USERNAME"]
-        self.search_password = current_app.config["OPENSEARCH_PASSWORD"]
+        self.metadata_service_endpoint = os.getenv("METADATA_SERVICE_ENDPOINT")
+        self.search_host = os.getenv("OPENSEARCH_HOST")
+        self.search_port = int(os.getenv("OPENSEARCH_PORT"))
+        self.search_username = os.getenv("OPENSEARCH_USERNAME")
+        self.search_password = os.getenv("OPENSEARCH_PASSWORD")
 
     def _instance(self) -> OpenSearch:
         """
