@@ -33,6 +33,10 @@
             {{ table.id }}
           </v-list-item>
           <v-list-item
+            :title="$t('pages.table.name.title')">
+            {{ table.internal_name }}
+          </v-list-item>
+          <v-list-item
             :title="$t('pages.table.size.title')">
             {{ sizeToHumanLabel(table.data_length) }}
           </v-list-item>
@@ -71,7 +75,8 @@
         </v-list>
       </v-card-text>
     </v-card>
-    <v-divider />
+    <v-divider
+      v-if="canWrite && canWriteQueues" />
     <v-card
       v-if="canWrite && canWriteQueues"
       variant="flat"
@@ -86,25 +91,11 @@
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.exchange.title')">
-            <span>
-              <v-badge
-                inline
-                color="code"
-                :content="database.exchange_type">
-                <span v-text="database.exchange_name" />
-              </v-badge>
-            </span>
+            {{ database.exchange_name }}
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.queue.title')">
-            <span>
-              <v-badge
-                inline
-                color="code"
-                :content="table.queue_type" >
-                <span v-text="table.queue_name" />
-              </v-badge>
-            </span>
+            {{ table.queue_name }}
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.routing-key.title')">
@@ -261,7 +252,7 @@ export default {
       return this.userStore.getAccess
     },
     hasDescription () {
-      return this.table && this.table.description !== null
+      return this.table && this.table.description
     },
     canWriteQueues () {
       if (!this.roles) {
@@ -306,7 +297,7 @@ export default {
       if (!this.$config.public.broker.port) {
         return []
       }
-      Object.keys(this.$config.public.broker.port).map(key => {
+      return Object.keys(this.$config.public.broker.port).map(key => {
         return {
           port: key,
           secure: this.$config.public.broker.port[key]
@@ -325,7 +316,6 @@ export default {
     }
   },
   methods: {
-    sizeToHumanLabel,
     amqpString (port) {
       if (!this.user) {
         return null

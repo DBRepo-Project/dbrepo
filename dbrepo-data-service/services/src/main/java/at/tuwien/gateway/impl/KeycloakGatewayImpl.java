@@ -41,9 +41,17 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
         log.trace("request user token from url: {}", url);
         log.trace("request username: {}", username);
-        log.trace("request password: {}", password != null ? "(set)" : "(not set)");
+        if (password.isEmpty() || password.isBlank()) {
+            log.warn("request password: (empty)");
+        } else {
+            log.trace("request password: (set)");
+        }
         log.trace("request client_id: {}", keycloakConfig.getKeycloakClient());
-        log.trace("request client_secret: {}", keycloakConfig.getKeycloakClientSecret());
+        if (keycloakConfig.getKeycloakClientSecret().isEmpty() || keycloakConfig.getKeycloakClientSecret().isBlank()) {
+            log.warn("request client_secret: (empty)");
+        } else {
+            log.trace("request client_secret: (set)");
+        }
         final ResponseEntity<TokenDto> response;
         try {
             response = new RestTemplate()

@@ -2,15 +2,16 @@
   <div>
     <v-stepper-header>
       <v-stepper-item
-        :title="$t('pages.table.subpages.import.dataset.title')"
+        :title="$t('pages.table.subpages.import.schema.title')"
         :complete="validStep1"
-        :value="stepStart"/>
+        :value="1"/>
     </v-stepper-header>
     <v-stepper-window
       direction="vertical">
       <v-form
         ref="form"
         v-model="validStep1"
+        :disabled="disabled"
         @submit.prevent="submit">
         <v-container>
           <v-row dense>
@@ -122,102 +123,149 @@
       <v-stepper-item
         :title="$t('pages.table.subpages.import.file.title')"
         :complete="validStep2"
-        :value="stepStart+1"/>
+        :value="2" />
     </v-stepper-header>
     <v-stepper-window
       direction="vertical">
-      <v-form
-        ref="form"
-        v-model="validStep2"
-        @submit.prevent="submit">
-        <v-container>
-          <v-row
-            v-if="step > 1 && suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
-            dense>
-            <v-col>
-              <v-alert
-                border="start"
-                color="warning">
-                {{ $t('pages.table.subpages.import.separator.warn.prefix') }}
-                <strong v-text="tableImport.separator"/>
-                {{ $t('pages.table.subpages.import.separator.warn.middle') }}
-                <strong v-text="suggestedAnalyseSeparator"/>
-                {{ $t('pages.table.subpages.import.separator.warn.suffix') }}
-              </v-alert>
-            </v-col>
-          </v-row>
-          <v-row
-            v-if="step > 1 && suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
-            dense>
-            <v-col>
-              <v-alert
-                border="start"
-                color="warning">
-                {{ $t('pages.table.subpages.import.terminator.warn.prefix') }}
-                <strong>{{ JSON.stringify(tableImport.line_termination).replaceAll('"', '') }}</strong>
-                {{ $t('pages.table.subpages.import.terminator.warn.middle') }}
-                <strong>{{ JSON.stringify(suggestedAnalyseLineTerminator).replaceAll('"', '') }}</strong>
-                {{ $t('pages.table.subpages.import.terminator.warn.suffix') }}
-              </v-alert>
-            </v-col>
-          </v-row>
-          <v-row
-            v-if="!hasCompatibleSchema"
-            dense>
-            <v-col>
-              <v-alert
-                border="start"
-                color="warning"
-                :text="$t('pages.table.subpages.import.dataset.warn')"/>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="8">
-              <v-file-input
-                v-model="file"
-                accept=".csv,.tsv"
-                :show-size="1000"
-                counter
-                required
-                :rules="[
-                          v => notFile(v) || $t('validation.required'),
-                        ]"
-                :prepend-icon="validStep1 ? 'mdi-database-check-outline' : 'mdi-database-arrow-up-outline'"
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.file.hint')"
-                :label="$t('pages.table.subpages.import.file.label')" />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="8">
-              <v-btn
-                :disabled="!isAnalyseAllowed || !validStep1 || !validStep2"
-                :loading="loading"
-                :variant="buttonVariant"
-                color="secondary"
-                size="small"
-                :text="$t('pages.table.subpages.import.analyse.text')"
-                @click="uploadAndAnalyse"/>
-            </v-col>
-          </v-row>
+      <v-container>
+        <v-row
+          v-if="$route.query.location"
+          dense>
+          <v-col>
+            <p
+              v-text="$t('pages.table.subpages.import.storage.text')" />
+            <v-chip
+              prepend-icon="mdi-cloud-upload"
+              label>
+              {{ $route.query.location }}
+            </v-chip>
+          </v-col>
+        </v-row>
+        <v-form
+          v-if="!$route.query.location"
+          ref="form"
+          v-model="validStep2"
+          :disabled="disabled"
+          @submit.prevent="submit">
+            <v-row
+              v-if="step > 1 && suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
+              dense>
+              <v-col>
+                <v-alert
+                  border="start"
+                  color="warning">
+                  {{ $t('pages.table.subpages.import.separator.warn.prefix') }}
+                  <strong v-text="tableImport.separator"/>
+                  {{ $t('pages.table.subpages.import.separator.warn.middle') }}
+                  <strong v-text="suggestedAnalyseSeparator"/>
+                  {{ $t('pages.table.subpages.import.separator.warn.suffix') }}
+                </v-alert>
+              </v-col>
+            </v-row>
+            <v-row
+              v-if="step > 1 && suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
+              dense>
+              <v-col>
+                <v-alert
+                  border="start"
+                  color="warning">
+                  {{ $t('pages.table.subpages.import.terminator.warn.prefix') }}
+                  <strong>{{ JSON.stringify(tableImport.line_termination).replaceAll('"', '') }}</strong>
+                  {{ $t('pages.table.subpages.import.terminator.warn.middle') }}
+                  <strong>{{ JSON.stringify(suggestedAnalyseLineTerminator).replaceAll('"', '') }}</strong>
+                  {{ $t('pages.table.subpages.import.terminator.warn.suffix') }}
+                </v-alert>
+              </v-col>
+            </v-row>
+            <v-row
+              v-if="!hasCompatibleSchema"
+              dense>
+              <v-col
+                md="8">
+                <v-alert
+                  border="start"
+                  color="warning"
+                  :text="$t('pages.table.subpages.import.dataset.warn')"/>
+              </v-col>
+            </v-row>
+            <v-row
+              v-if="!$route.query.location"
+              dense>
+              <v-col cols="8">
+                <v-file-input
+                  v-model="file"
+                  accept=".csv,.tsv"
+                  :show-size="1000"
+                  counter
+                  required
+                  :rules="[
+                    v => notFile(v) || $t('validation.required'),
+                  ]"
+                  :prepend-icon="validStep1 ? 'mdi-database-check-outline' : 'mdi-database-arrow-up-outline'"
+                  persistent-hint
+                  :variant="inputVariant"
+                  :hint="$t('pages.table.subpages.import.file.hint')"
+                  :label="$t('pages.table.subpages.import.file.label')" />
+              </v-col>
+            </v-row>
+            <v-row
+              dense>
+              <v-col
+                cols="8">
+                <v-btn
+                  :disabled="!isAnalyseAllowed || !validStep1 || !validStep2 || disabled"
+                  :loading="loading"
+                  :variant="buttonVariant"
+                  color="secondary"
+                  size="small"
+                  :text="$t('pages.table.subpages.import.analyse.text')"
+                  @click="uploadAndAnalyse"/>
+              </v-col>
+            </v-row>
+          </v-form>
         </v-container>
-      </v-form>
     </v-stepper-window>
     <v-stepper-header
       v-if="!create">
       <v-stepper-item
-        :title="$t('pages.table.subpages.import.summary.title')"
-        :value="stepStart+2"/>
+        :title="$t('pages.table.subpages.import.dataset.title')"
+        :complete="validStep3"
+        :value="3" />
     </v-stepper-header>
     <v-stepper-window
       v-if="!create"
       direction="vertical">
       <v-container>
         <v-row
-          v-if="rowCount"
           dense>
           <v-col>
+            <v-btn
+              color="secondary"
+              :disabled="step !== 3 || disabled"
+              size="small"
+              variant="flat"
+              :loading="loadingImport"
+              :text="$t('navigation.import')"
+              @click="importCsv"/>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-stepper-window>
+    <v-stepper-header
+      v-if="!create">
+      <v-stepper-item
+        :title="$t('pages.table.subpages.import.summary.title')"
+        :value="4"/>
+    </v-stepper-header>
+    <v-stepper-window
+      v-if="!create && step === 4"
+      direction="vertical">
+      <v-container>
+        <v-row
+          v-if="rowCount"
+          dense>
+          <v-col
+            md="8">
             <v-alert
               border="start"
               color="success">
@@ -232,19 +280,11 @@
             <v-btn
               v-if="rowCount !== null"
               color="secondary"
-              :disabled="step !== stepStart + 2"
+              :disabled="step !== 4 || disabled"
               size="small"
               variant="flat"
               :text="$t('navigation.data')"
               :to="`/database/${$route.params.database_id}/table/${tableId}/data`" />
-            <v-btn
-              v-else
-              color="secondary"
-              :disabled="step !== stepStart + 2"
-              size="small"
-              variant="flat"
-              :text="$t('navigation.import')"
-              @click="importCsv"/>
           </v-col>
         </v-row>
       </v-container>
@@ -253,7 +293,7 @@
 </template>
 
 <script>
-import {isNonNegativeInteger} from '@/utils'
+import { isNonNegativeInteger } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -263,12 +303,12 @@ export default {
         return null
       }
     },
-    stepStart: {
+    create: {
       default: () => {
-        return 1
+        return false
       }
     },
-    create: {
+    disabled: {
       default: () => {
         return false
       }
@@ -276,11 +316,13 @@ export default {
   },
   data() {
     return {
-      step: 1,
+      step: 2,
       validStep1: false,
       validStep2: false,
+      validStep3: false,
       file: null,
       loading: false,
+      loadingImport: false,
       rowCount: null,
       suggestedAnalyseSeparator: null,
       suggestedAnalyseLineTerminator: null,
@@ -312,15 +354,19 @@ export default {
       cacheStore: useCacheStore()
     }
   },
-  watch: {
-    stepStart: {
-      handler() {
-        this.step = this.stepStart
-      }
-    }
-  },
   mounted() {
-    this.step = this.stepStart
+    this.setQueryParamSafely('location')
+    this.setQueryParamSafely('quote')
+    this.setQueryParamSafely('false_element')
+    this.setQueryParamSafely('true_element')
+    this.setQueryParamSafely('null_element')
+    this.setQueryParamSafely('separator')
+    this.setQueryParamSafely('line_termination')
+    this.setQueryParamSafely('skip_lines')
+    if (this.$route.query.location) {
+      this.step = 3
+      this.validStep2 = true
+    }
   },
   computed: {
     table() {
@@ -339,11 +385,11 @@ export default {
       if (!this.columns || !this.table) {
         return false
       }
-      const schema = this.table.columns.map(c => c.internal_name)
+      const schema = this.table.columns.map(c => c.name)
       let pass = true
       this.columns.forEach(c => {
         if (!schema.includes(c.name)) {
-          console.error('Failed to find column with id', c.name, 'in schema')
+          console.error('Failed to find column', c.name, 'in schema')
           pass = false
         }
       })
@@ -395,8 +441,13 @@ export default {
     submit() {
       this.$refs.form.validate()
     },
+    setQueryParamSafely(name) {
+      if (this.$route.query[name]) {
+        this.tableImport[name] = this.$route.query[name]
+      }
+    },
     importCsv() {
-      this.loading = true
+      this.loadingImport = true
       const tableService = useTableService()
       tableService.importCsv(this.$route.params.database_id, this.tableId, this.tableImport)
         .then(() => {
@@ -407,16 +458,18 @@ export default {
             .then((rowCount) => {
               this.rowCount = rowCount
             })
-          this.step = this.stepStart + 2
-          this.loading = false
+          this.step = 4
+          this.validStep3 = true
+          this.loadingImport = false
         })
-        .catch(() => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t('error.import.dataset'))
-          this.loading = false
+          console.error(code, message)
+          toast.error(`${this.$t(code)}: ${message}`)
+          this.loadingImport = false
         })
         .finally(() => {
-          this.loading = false
+          this.loadingImport = false
         })
     },
     uploadAndAnalyse() {
@@ -464,19 +517,21 @@ export default {
           this.suggestedAnalyseSeparator = separator
           this.suggestedAnalyseLineTerminator = line_termination
           this.tableImport.location = filename
-          this.step = this.stepStart + 2
+          this.step = 3
           const toast = useToastInstance()
           toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
           this.loading = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
+            /* fallback default error message */
+            toast.error(this.$t('error.analyse.invalid'))
             return
           }
-          toast.error(this.$t(code))
+          toast.error(`${this.$t(code)}: ${message}`)
         })
     }
   }

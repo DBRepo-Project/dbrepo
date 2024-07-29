@@ -1,7 +1,6 @@
-import {format} from 'date-fns'
+import { format } from 'date-fns'
 import moment from 'moment'
 import type {AxiosError} from 'axios'
-import type {Api} from "@vitejs/plugin-vue";
 
 
 export function notEmpty(str: string) {
@@ -1086,7 +1085,7 @@ export function timestampsToHumanDifference(date1: string, date2: string) {
 export function sizeToHumanLabel(num: number) {
   let number = Number(num)
   if (!number) {
-    return '0'
+    return '0 B'
   }
   if (number < 1000) {
     return `${Math.floor(number)} B`

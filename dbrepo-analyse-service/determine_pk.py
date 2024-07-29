@@ -8,7 +8,7 @@ from determine_dt import determine_datatypes
 from clients.s3_client import S3Client
 
 
-def determine_pk(filename, separator=","):
+def determine_pk(filename: str, separator: str = ','):
     dt = json.loads(determine_datatypes(filename=filename, separator=separator))
     dt = {k.lower(): v for k, v in dt["columns"].items()}
     # {k.lower(): v for k, v in dt['columns'].items() if v != 'Numeric'}
