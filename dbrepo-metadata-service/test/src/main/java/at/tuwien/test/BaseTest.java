@@ -1842,11 +1842,11 @@ public abstract class BaseTest {
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
-            .uniques(List.of(List.of("id")))
+            .uniques(new LinkedList<>())
             .build();
 
     public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = ConstraintsCreateDto.builder()
-            .uniques(List.of(List.of("id")))
+            .uniques(new LinkedList<>())
             .foreignKeys(List.of(ForeignKeyCreateDto.builder()
                     .referencedTable("weather_location")
                     .columns(List.of("fahrzeug"))
@@ -2186,7 +2186,6 @@ public abstract class BaseTest {
             .description(TABLE_4_DESCRIPTION)
             .columns(TABLE_4_COLUMNS_CREATE_DTO)
             .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
-            .needSequence(false)
             .build();
 
     public final static List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2889,7 +2888,6 @@ public abstract class BaseTest {
             .description(TABLE_1_DESCRIPTION)
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CONSTRAINTS_CREATE_DTO)
-            .needSequence(true)
             .build();
 
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()

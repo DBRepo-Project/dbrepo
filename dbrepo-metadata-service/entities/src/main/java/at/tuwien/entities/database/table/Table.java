@@ -88,6 +88,7 @@ public class Table {
     })
     private Database database;
 
+    @ToString.Exclude
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
@@ -104,6 +105,7 @@ public class Table {
     @OrderBy("id DESC")
     private List<Identifier> identifiers;
 
+    @ToString.Exclude
     @Embedded
     private Constraints constraints;
 
