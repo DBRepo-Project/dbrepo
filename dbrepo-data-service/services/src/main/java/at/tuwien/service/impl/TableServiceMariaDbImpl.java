@@ -86,7 +86,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
 
     @Override
     public TableStatisticDto getStatistics(PrivilegedTableDto table) throws SQLException, TableMalformedException,
-            QueryMalformedException {
+            TableNotFoundException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         final TableStatisticDto statistic;
@@ -95,7 +95,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName()))
                     .executeQuery();
             statistic = dataMapper.resultSetToTableStatistic(resultSet);
-            statistic.setRows(getCount(table, null));
+            final TableDto tmpTable = schemaService.inspectTable(table.getDatabase(), table.getInternalName());
+            statistic.setAvgRowLength(tmpTable.getAvgRowLength());
+            statistic.setDataLength(tmpTable.getDataLength());
+            statistic.setMaxDataLength(tmpTable.getMaxDataLength());
+            statistic.setRows(tmpTable.getNumRows());
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to obtain column statistics: {}", e.getMessage());
@@ -107,7 +111,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
                 .stream()
                 .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
                 .forEach(column -> statistic.getColumns().put(column.getInternalName(), new ColumnStatisticDto()));
-        log.info("Obtained column statistics for table: {}", table.getInternalName());
+        log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
+        log.trace("obtained statistics: {}", statistic);
         return statistic;
     }
 
@@ -123,12 +128,6 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
-            if (data.getNeedSequence()) {
-                /* create table sequence if not exists */
-                connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateSequenceRawQuery(data))
-                        .execute();
-                log.info("Created sequence as primary key");
-            }
             /* create table if not exists */
             connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(data))
                     .execute();

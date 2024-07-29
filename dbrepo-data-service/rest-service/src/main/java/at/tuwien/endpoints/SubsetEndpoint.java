@@ -261,12 +261,12 @@ public class SubsetEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
             QueryNotSupportedException, NotAllowedException, UserNotFoundException, MetadataServiceException {
-        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, page={}, " +
-                "size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size, timestamp);
+        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, " +
+                "page={}, size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size,
+                timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateForbiddenStatements(data.getStatement());
-        metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         /* parameters */
         if (page == null) {
             page = 0L;

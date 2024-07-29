@@ -9,11 +9,12 @@ import pandas
 
 from numpy import dtype, max, min
 from flask import current_app
+from pandas.errors import EmptyDataError
 
 from clients.s3_client import S3Client
 
 
-def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -> {}:
+def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') -> {}:
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
@@ -35,10 +36,22 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
             line_terminator = "\r"
         elif b"\r\n" in line:
             line_terminator = "\r\n"
-        logging.info("Analysing corpus with separator: %s", separator)
+        logging.info(f"Analysing corpus with separator: {separator}")
 
         # index_col=False -> prevent shared index & count length correct
-        df = pandas.read_csv(fh, delimiter=separator, nrows=100, lineterminator=line_terminator, index_col=False)
+        df = None
+        for encoding in ['utf-8', 'cp1252', 'latin1', 'iso-8859-1']:
+            try:
+                logging.debug(f"attempt parsing .csv using encoding {encoding}")
+                df = pandas.read_csv(fh, delimiter=separator, nrows=100, lineterminator=line_terminator,
+                                     index_col=False, encoding=encoding)
+                logging.debug(f"parsing .csv using encoding {encoding} was successful")
+                break
+            except (UnicodeDecodeError, EmptyDataError) as error:
+                logging.warning(f"Failed to parse .csv using encoding {encoding}: {error}")
+        if df is None:
+            raise IOError(
+                f"Failed to parse .csv: no supported encoding found (one of: utf-8, cp1252, latin1, iso-8859-1)")
 
         if b"," in line:
             separator = ","
@@ -51,31 +64,44 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
 
         for name, dataType in df.dtypes.items():
             if dataType == dtype('float64'):
-                r[name] = 'decimal'
+                if pandas.to_numeric(df[name], errors='coerce').notnull().all():
+                    logging.debug(f"mapped column {name} from float64 to decimal")
+                    r[name] = 'decimal'
+                else:
+                    logging.debug(f"mapped column {name} from float64 to text")
+                    r[name] = 'text'
             elif dataType == dtype('int64'):
                 min_val = min(df[name])
                 max_val = max(df[name])
                 if 0 <= min_val <= 1 and 0 <= max_val <= 1:
+                    logging.debug(f"mapped column {name} from int64 to bool")
                     r[name] = 'bool'
                     continue
+                logging.debug(f"mapped column {name} from int64 to bigint")
                 r[name] = 'bigint'
             elif dataType == dtype('O'):
                 try:
                     pandas.to_datetime(df[name], format='mixed')
+                    logging.debug(f"mapped column {name} from O to timestamp")
                     r[name] = 'timestamp'
                     continue
                 except ValueError:
                     pass
                 max_size = max(df[name].astype(str).map(len))
                 if max_size <= 1:
+                    logging.debug(f"mapped column {name} from O to char")
                     r[name] = 'char'
                 if 0 <= max_size <= 255:
+                    logging.debug(f"mapped column {name} from O to varchar")
                     r[name] = 'varchar'
                 else:
+                    logging.debug(f"mapped column {name} from O to text")
                     r[name] = 'text'
             elif dataType == dtype('bool'):
+                logging.debug(f"mapped column {name} from bool to bool")
                 r[name] = 'bool'
             elif dataType == dtype('datetime64'):
+                logging.debug(f"mapped column {name} from datetime64 to datetime")
                 r[name] = 'datetime'
             else:
                 logging.warning(f'default to \'text\' for column {name} and type {dtype}')

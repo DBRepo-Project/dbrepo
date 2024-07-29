@@ -313,6 +313,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             RemoteUnavailableException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId;
+        log.trace("mapped url: {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, HttpEntity.EMPTY, Void.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {

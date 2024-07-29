@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canInsertTableData">
+  <div
+    v-if="canInsertTableData">
     <v-toolbar flat>
       <v-btn
         class="mr-2"
@@ -18,8 +19,7 @@
           vertical
           variant="flat">
           <TableImport
-            :table-id="$route.params.table_id"
-            @analyse="onAnalyse" />
+            :table-id="$route.params.table_id" />
         </v-stepper>
       </v-card-text>
     </v-card>
@@ -93,11 +93,6 @@ export default {
         return false
       }
       return this.roles.includes('insert-table-data')
-    }
-  },
-  methods: {
-    onAnalyse (event) {
-      const { columns } = event
     }
   }
 }

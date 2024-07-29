@@ -254,10 +254,10 @@ def analyse_datatypes():
         return Response(res, mimetype="application/json"), 202
     except OSError as e:
         logging.error(f"Failed to determine data types: {e}")
-        return ApiError(status='BAD_REQUEST', message=str(e), code='analyse.csv.invalid'), 400
+        return ApiError(status='BAD_REQUEST', message=str(e), code='error.analyse.invalid').model_dump_json(), 400
     except ClientError as e:
         logging.error(f"Failed to determine separator: {e}")
-        return ApiError(status='NOT_FOUND', message='Failed to find csv', code='analyse.csv.missing'), 404
+        return ApiError(status='NOT_FOUND', message='Failed to find csv', code='error.analyse.missing').model_dump_json(), 404
 
 
 @app.route("/api/analyse/keys", methods=["GET"], endpoint="analyse_analyse_keys")
@@ -269,7 +269,7 @@ def analyse_keys():
     logging.debug(f"Analyse keys from filename '{filename}' with separator {separator}")
     if filename is None or separator is None:
         return ApiError(status='BAD_REQUEST', message="Missing required query parameters 'filename' and 'separator'",
-                        code='analyse.csv.invalid'), 400
+                        code='analyse.csv.invalid').model_dump_json(), 400
     try:
         res = {
             'keys': determine_pk(filename, separator)
@@ -278,4 +278,4 @@ def analyse_keys():
         return Response(dumps(res), mimetype="application/json"), 202
     except OSError as e:
         logging.error(f"Failed to determine primary key: {e}")
-        return ApiError(status='BAD_REQUEST', message=str(e), code='analyse.database.invalid'), 400
+        return ApiError(status='BAD_REQUEST', message=str(e), code='analyse.database.invalid').model_dump_json(), 400
