@@ -451,7 +451,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getStatistics_succeeds() throws TableMalformedException, SQLException, QueryMalformedException {
+    public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
         final TableStatisticDto response = tableService.getStatistics(TABLE_1_PRIVILEGED_DTO);
@@ -493,13 +493,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     @Test
     public void create_malformed_fails() {
         final at.tuwien.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
-                .needSequence(false)
                 .name("missing_foreign_key")
-                .columns(List.of(ColumnCreateDto.builder()
-                        .name("id")
-                        .type(ColumnTypeDto.BIGINT)
-                        .nullAllowed(false)
-                        .build()))
+                .columns(List.of())
                 .constraints(ConstraintsCreateDto.builder()
                         .foreignKeys(List.of(ForeignKeyCreateDto.builder()
                                 .columns(List.of("i_do_not_exist"))
