@@ -169,6 +169,7 @@ export default {
     return {
       valid: false,
       loading: false,
+      oldTuple: null,
       error: false,
       menu: false,
       bools: [
@@ -176,6 +177,9 @@ export default {
         { title: 'false', value: false }
       ]
     }
+  },
+  mounted() {
+    this.oldTuple = Object.assign({}, this.tuple)
   },
   computed: {
     title () {
@@ -272,10 +276,19 @@ export default {
     },
     updateTuple () {
       const constraints = {}
-      this.table.constraints.primary_key
-        .forEach((pk) => {
-          constraints[pk] = this.tuple[pk]
-        })
+      if (this.table.constraints.primary_key.length > 0) {
+        this.table.constraints.primary_key
+          .forEach((pk) => {
+            constraints[pk.column.internal_name] = this.oldTuple[pk.column.internal_name]
+          })
+        console.debug('table has primary key: set update tuple constraints', constraints)
+      } else {
+        this.table.columns
+          .forEach((column) => {
+            constraints[column.internal_name] = this.oldTuple[column.internal_name]
+          })
+        console.debug('table does not have a primary key: set update tuple constraints', constraints)
+      }
       const tupleService = useTupleService()
       this.loading = true
       tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })

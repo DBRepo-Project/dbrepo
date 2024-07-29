@@ -10,10 +10,10 @@
         :text="title" />
       <v-spacer />
       <v-btn
-        v-if="user"
         :disabled="!canExecute"
         color="secondary"
         variant="flat"
+        class="mr-2"
         :loading="loadingQuery"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-run' : null"
         :text="$t('navigation.create')"
@@ -52,11 +52,13 @@
                 clearable
                 persistent-hint
                 :variant="inputVariant"
+                required
+                :rules="[
+                  v => !!v || $t('validation.required'),
+                  v => !validViewName(v) || $t('validation.view.exists')
+                ]"
                 :label="$t('pages.view.subpages.create.name.label')"
-                :hint="$t('pages.view.subpages.create.name.hint')"
-                :rules="[v => !!v || $t('validation.required'),
-                     v => !validViewName(v) || $t('validation.view.exists')]"
-                required />
+                :hint="$t('pages.view.subpages.create.name.hint')" />
             </v-col>
           </v-row>
           <v-row
@@ -80,9 +82,11 @@
                 :variant="inputVariant"
                 required
                 clearable
+                :rules="[
+                  v => !!v || $t('validation.required')
+                ]"
                 :label="$t('pages.view.subpages.create.visibility.label')"
-                :hint="$t('pages.view.subpages.create.visibility.hint')"
-                :rules="[v => !!v || $t('validation.required')]" />
+                :hint="$t('pages.view.subpages.create.visibility.hint')" />
             </v-col>
           </v-row>
           <v-window
@@ -219,21 +223,6 @@
                   </div>
                 </div>
               </div>
-              <v-row
-                dense>
-                <v-col
-                  v-text="$t('pages.subset.subpages.create.generated')" />
-              </v-row>
-              <v-row
-                id="query-raw"
-                dense>
-                <v-col>
-                  <Raw
-                    :value="query.formatted"
-                    disabled
-                    class="mt-2" />
-                </v-col>
-              </v-row>
             </v-window-item>
             <v-window-item
               value="1">

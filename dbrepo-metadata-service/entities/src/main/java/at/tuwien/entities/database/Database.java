@@ -117,6 +117,7 @@ public class Database implements Serializable {
     private List<Identifier> subsets;
 
     @ToString.Exclude
+    @OrderBy("id DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<Table> tables;
 

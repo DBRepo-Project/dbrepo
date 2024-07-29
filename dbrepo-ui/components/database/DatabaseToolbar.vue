@@ -15,7 +15,7 @@
           bottom>
           <template v-slot:activator="{ props }">
             <v-icon
-              class="ml-2"
+              class="mr-2"
               size="small"
               right
               :color="database.is_public ? 'success' : 'chip'"
@@ -34,19 +34,12 @@
         :variant="buttonVariant"
         :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
       <v-btn
-        v-if="canImportCsv"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
-        color="tertiary"
-        :variant="buttonVariant"
-        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
-        :to="`/database/${$route.params.database_id}/table/import`" />
-      <v-btn
         v-if="canCreateSubset"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
-        class="ml-2 white--text"
+        class="mr-2 white--text"
         :to="`/database/${$route.params.database_id}/subset/create`" />
       <v-btn
         v-if="canCreateView"
@@ -54,7 +47,7 @@
         color="secondary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
-        class="ml-2 white--text"
+        class="mr-2 white--text"
         :to="`/database/${$route.params.database_id}/view/create`" />
       <v-btn
         v-if="canCreateTable"
@@ -62,15 +55,15 @@
         color="secondary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
-        class="ml-2"
-        :to="`/database/${$route.params.database_id}/table/create`" />
+        class="mr-2"
+        :to="`/database/${$route.params.database_id}/table/create/dataset`" />
       <v-btn
         v-if="canCreateIdentifier"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
-        class="ml-2"
+        class="mr-2"
         :to="`/database/${$route.params.database_id}/persist`" />
       <template v-slot:extension>
         <v-tabs

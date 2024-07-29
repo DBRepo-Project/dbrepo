@@ -167,7 +167,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-    public void create_succeeds() throws UserNotFoundException, QueryStoreInsertException, TableMalformedException,
+    public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException, TableMalformedException,
             NotAllowedException, SidecarExportException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
@@ -177,8 +177,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
-                .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(queryService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_1_ID), eq(0L), eq(10L), eq(null), eq(null)))
@@ -213,8 +211,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
-                .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(queryService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_1_ID), eq(0L), eq(10L), eq(null), eq(null)))
@@ -226,15 +222,13 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-    public void create_databaseNotFound_fails() throws NotAllowedException, RemoteUnavailableException,
+    public void create_databaseNotFound_fails() throws RemoteUnavailableException,
             DatabaseNotFoundException, MetadataServiceException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_5_STATEMENT)
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
-                .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         doThrow(DatabaseNotFoundException.class)
                 .when(metadataServiceGateway)
                 .getDatabaseById(DATABASE_3_ID);
@@ -254,24 +248,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            subsetEndpoint.create(DATABASE_3_ID, request, USER_4_PRINCIPAL, null, null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {"execute-query"})
-    public void create_noAccess_fails() throws NotAllowedException, RemoteUnavailableException, MetadataServiceException {
-        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement(QUERY_5_STATEMENT)
-                .build();
-
-        /* mock */
-        doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
-                .getAccess(DATABASE_3_ID, USER_4_ID);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
             subsetEndpoint.create(DATABASE_3_ID, request, USER_4_PRINCIPAL, null, null, null);
         });
     }
