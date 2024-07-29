@@ -14,6 +14,21 @@
       variant="flat"
       rounded="0">
       <v-card-text>
+        <v-row>
+          <v-col
+            md="8">
+            <v-alert
+              border="start"
+              color="info">
+              {{ $t('pages.table.subpages.import.dataset.text') }}
+              <NuxtLink
+                :href="`/database/${$route.params.database_id}/table/create/schema`"
+                v-text="$t('pages.table.subpages.import.schema.text')" />
+            </v-alert>
+          </v-col>
+        </v-row>
+      </v-card-text>
+      <v-card-text>
         <v-stepper
           vertical
           variant="flat">
@@ -28,10 +43,11 @@
             <v-form
               ref="form"
               v-model="validStep1"
+              :disabled="step > 4"
               @submit.prevent="submit">
               <v-container>
                 <v-row dense>
-                  <v-col md="8">
+                  <v-col md="4">
                     <v-text-field
                       v-model="tableCreate.name"
                       :rules="[
@@ -46,9 +62,7 @@
                       :hint="$t('pages.table.subpages.import.name.hint')"
                       :label="$t('pages.table.subpages.import.name.label')"/>
                   </v-col>
-                </v-row>
-                <v-row dense>
-                  <v-col md="8">
+                  <v-col md="4">
                     <v-text-field
                       v-model="generatedTableName"
                       :rules="[
@@ -86,8 +100,8 @@
             </v-form>
           </v-stepper-window>
           <TableImport
-            :step-start="2"
             :create="true"
+            :disabled="!validStep1 || step > 4"
             :table="table"
             @analyse="onAnalyse"/>
           <v-stepper-header>
@@ -103,6 +117,7 @@
               <TableSchema
                 ref="schema"
                 :back="false"
+                :disabled="step > 4"
                 :loading="loading"
                 :submit-text="$t('navigation.continue')"
                 :columns="tableCreate.columns"
@@ -119,25 +134,33 @@
             direction="vertical">
             <v-container>
               <v-row dense>
-                <v-col>
+                <v-col
+                  md="8">
                   <v-alert
                     border="start"
                     color="success">
-                    {{ $t('pages.table.subpages.create.summary.prefix') }}
+                    {{ $t('pages.table.subpages.create.summary.text') }}
                     <strong v-text="table.internal_name"/>
-                    {{ $t('pages.table.subpages.create.summary.suffix') }}
                   </v-alert>
                 </v-col>
               </v-row>
               <v-row>
                 <v-col>
                   <v-btn
+                    class="mb-1 mr-2"
+                    color="tertiary"
+                    size="small"
+                    variant="flat"
+                    :loading="loadingImport"
+                    :text="$t('navigation.import')"
+                    @click="onImport"/>
+                  <v-btn
                     class="mb-1"
                     color="secondary"
                     size="small"
                     variant="flat"
                     :loading="loadingContinue"
-                    :text="$t('navigation.data')"
+                    :text="$t('navigation.view')"
                     @click="onContinue"/>
                 </v-col>
               </v-row>
@@ -169,6 +192,7 @@ export default {
       validStep4: false,
       error: false,
       loadingContinue: false,
+      loadingImport: false,
       fileModel: null,
       rowCount: null,
       file: {
@@ -306,53 +330,24 @@ export default {
       if (!success) {
         return
       }
-      const payload = Object.assign({}, this.tableCreate)
-      payload.columns = columns
-      payload.constraints = constraints
-      this.createTable(payload)
-        .then(table => this.import(table))
-    },
-    createTable(payload) {
+      const schema = Object.assign({}, this.tableCreate)
+      schema.columns = columns
+      schema.constraints = constraints
       this.loading = true
       const tableService = useTableService()
-      return new Promise((resolve, reject) => {
-        if (this.table) {
-          resolve(this.table)
-          return
-        }
-        tableService.create(this.$route.params.database_id, payload)
+      tableService.create(this.$route.params.database_id, schema)
         .then((table) => {
           this.table = table
-          resolve(table)
-        })
-        .catch((error) => {
-          this.loading = false
           const toast = useToastInstance()
-          if (typeof error.code !== 'string' || typeof error.message !== 'string') {
-            reject(error)
-          }
-          toast.error(`${this.$t(error.code)}: ${error.message}`)
-          reject(error)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-      })
-    },
-    import(table) {
-      this.loading = true
-      const tableService = useTableService()
-      tableService.importCsv(this.$route.params.database_id, table.id, this.tableImport)
-        .then(() => {
+          toast.success(this.$t('success.table.created'))
           this.step = 5
-          const toast = useToastInstance()
-          toast.success(this.$t('success.import.dataset'))
-          this.cacheStore.reloadDatabase()
         })
         .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string' || typeof message !== 'string') {
+            /* fallback */
+            toast.error(`${this.$t('error.table.create')}: ${message}`)
             return
           }
           toast.error(`${this.$t(code)}: ${message}`)
@@ -360,10 +355,6 @@ export default {
         .finally(() => {
           this.loading = false
         })
-    },
-    schemaValidity(event) {
-      const {valid} = event
-      this.validStep4 = valid
     },
     onAnalyse({columns, filename, line_termination}) {
       console.debug('analysed', columns)
@@ -373,6 +364,10 @@ export default {
       if (filename) {
         this.step = 4
       }
+    },
+    async onImport () {
+      this.loadingImport = true
+      await this.$router.push({ path: `/database/${this.$route.params.database_id}/table/${this.table.id}/import`, query: this.tableImport })
     },
     async onContinue () {
       this.loadingContinue = true

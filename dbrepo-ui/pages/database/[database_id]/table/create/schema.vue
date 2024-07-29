@@ -31,7 +31,7 @@
               @submit.prevent="submit">
               <v-container>
                 <v-row dense>
-                  <v-col md="8">
+                  <v-col md="4">
                     <v-text-field
                       v-model="tableCreate.name"
                       :rules="[
@@ -46,9 +46,7 @@
                       :hint="$t('pages.table.subpages.import.name.hint')"
                       :label="$t('pages.table.subpages.import.name.label')" />
                   </v-col>
-                </v-row>
-                <v-row dense>
-                  <v-col md="8">
+                  <v-col md="4">
                     <v-text-field
                       v-model="generatedTableName"
                       :rules="[
@@ -96,7 +94,7 @@
             <v-container>
               <TableSchema
                 submit-text="Create"
-                :disabled="!tableCreate.name || table"
+                :disabled="!valid || table"
                 :columns="tableCreate.columns"
                 :loading="loading"
                 @close="schemaClose" />
@@ -109,8 +107,9 @@
               :value="3" />
           </v-stepper-header>
           <v-stepper-window
+            v-if="table"
             direction="vertical">
-            <v-container v-if="table">
+            <v-container>
               <v-row
                 dense>
                 <v-col md="8">
@@ -122,6 +121,14 @@
               </v-row>
               <v-row>
                 <v-col>
+                  <v-btn
+                    color="tertiary"
+                    class="mr-2"
+                    variant="flat"
+                    size="small"
+                    :loading="loadingImport"
+                    :text="$t('navigation.import')"
+                    @click="onImport" />
                   <v-btn
                     color="secondary"
                     variant="flat"
@@ -157,6 +164,7 @@ export default {
       valid: false,
       description: null,
       loading: false,
+      loadingImport: false,
       loadingContinue: false,
       step: 1,
       table: null,
@@ -278,6 +286,10 @@ export default {
         return
       }
       this.createTable(columns, constraints)
+    },
+    async onImport () {
+      this.loadingImport = true
+      await this.$router.push(`/database/${this.$route.params.database_id}/table/${this.table.id}/import`)
     },
     async onContinue () {
       this.loadingContinue = true
