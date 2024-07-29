@@ -13,6 +13,7 @@ build/
 tmp.yaml
 .docs/.swagger/api-*
 .scannerwork/
+.docker/config/*
 
 # docs
 .docs/.swagger/dist/
