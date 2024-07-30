@@ -43,7 +43,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
             CredentialsInvalidException {
-        keycloakGateway.deleteUser(user.getId());
+        final UserDto keycloakUser = findByUsername(user.getUsername());
+        keycloakGateway.deleteUser(keycloakUser.getId());
     }
 
     @Override
@@ -72,8 +73,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void updatePassword(User user, UserPasswordDto data) throws AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException {
-        keycloakGateway.updateUserCredentials(user.getId(), data);
+            AuthServiceConnectionException, CredentialsInvalidException, UserNotFoundException {
+        final UserDto keycloakUser = findByUsername(user.getUsername());
+        keycloakGateway.updateUserCredentials(keycloakUser.getId(), data);
     }
 
 }
