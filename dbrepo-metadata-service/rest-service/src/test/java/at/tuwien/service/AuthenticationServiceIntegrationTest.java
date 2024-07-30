@@ -57,6 +57,7 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
         keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         final User request = User.builder()
                 .id(keycloakGateway.findByUsername(USER_1_USERNAME).getId())
+                .username(USER_1_USERNAME)
                 .build();
 
         /* test */
