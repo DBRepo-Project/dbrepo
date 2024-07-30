@@ -356,11 +356,17 @@ export default {
           this.loading = false
         })
     },
-    onAnalyse({columns, filename, line_termination}) {
+    onAnalyse({columns, filename, line_termination, separator, skip_lines, quote, null_element, true_element, false_element}) {
       console.debug('analysed', columns)
       this.tableCreate.columns = columns
       this.tableImport.location = filename
       this.tableImport.line_termination = line_termination
+      this.tableImport.separator = separator
+      this.tableImport.skip_lines = skip_lines
+      this.tableImport.quote = quote
+      this.tableImport.null_element = null_element
+      this.tableImport.true_element = true_element
+      this.tableImport.false_element = false_element
       if (filename) {
         this.step = 4
       }

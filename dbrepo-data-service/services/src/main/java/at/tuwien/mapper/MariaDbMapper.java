@@ -753,7 +753,6 @@ public interface MariaDbMapper {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
@@ -762,7 +761,6 @@ public interface MariaDbMapper {
                     try (ObjectOutputStream ois = new ObjectOutputStream(boas)) {
                         ois.writeObject(value);
                         statement.setBlob(idx, new ByteArrayInputStream(boas.toByteArray()));
-                        log.trace("prepare statement idx {} = {} blob", idx, columnName);
                     }
 
                 } catch (IOException e) {
@@ -772,128 +770,100 @@ public interface MariaDbMapper {
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.VARCHAR);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} text/char/varchar/tinytext/mediumtext/longtext/enum/set: {}", idx, columnName, value);
                 statement.setString(idx, String.valueOf(value));
                 break;
             case DATE:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DATE);
                     break;
                 }
-                log.trace("prepare statement idx {} date: {}", idx, value);
                 statement.setDate(idx, Date.valueOf(String.valueOf(value)));
                 break;
             case BIGINT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BIGINT);
                     break;
                 }
-                log.trace("prepare statement idx {} bigint: {}", idx, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case INT, MEDIUMINT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.INTEGER);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} int/mediumint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case TINYINT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TINYINT);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} tinyint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case SMALLINT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.SMALLINT);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} smallint: {}", idx, columnName, value);
                 statement.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case DECIMAL:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DECIMAL);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} decimal: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case FLOAT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.FLOAT);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} float: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case DOUBLE:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DOUBLE);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} double: {}", idx, columnName, value);
                 statement.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case BINARY, VARBINARY, BIT:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.DECIMAL);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} binary/varbinary/bit", idx, columnName);
                 statement.setBinaryStream(idx, (InputStream) value);
                 break;
             case BOOL:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.BOOLEAN);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} bool: {}", idx, columnName, value);
                 statement.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
             case TIMESTAMP, DATETIME:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIMESTAMP);
                     break;
                 }
-                log.trace("prepare statement idx {} timestamp/datetime: {}", idx, value);
                 statement.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
                 break;
             case TIME:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIME);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} time: {}", idx, columnName, value);
                 statement.setTime(idx, Time.valueOf(String.valueOf(value)));
                 break;
             case YEAR:
                 if (value == null) {
-                    log.trace("idx {} = {} is null, prepare with null value", idx, columnName);
                     statement.setNull(idx, Types.TIME);
                     break;
                 }
-                log.trace("prepare statement idx {} = {} year: {}", idx, columnName, value);
                 statement.setString(idx, String.valueOf(value));
                 break;
             default:

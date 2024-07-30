@@ -85,8 +85,8 @@ export default defineNuxtConfig({
      database: {
        unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
        image: {
-         width: 400,
-         height: 400
+         width: 200,
+         height: 200
        },
        extra: ''
      },

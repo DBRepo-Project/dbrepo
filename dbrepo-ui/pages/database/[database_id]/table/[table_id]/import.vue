@@ -19,6 +19,7 @@
           vertical
           variant="flat">
           <TableImport
+            :create="false"
             :table-id="$route.params.table_id" />
         </v-stepper>
       </v-card-text>

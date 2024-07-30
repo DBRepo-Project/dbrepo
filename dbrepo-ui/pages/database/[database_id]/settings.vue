@@ -366,10 +366,13 @@ export default {
       return this.roles.includes('modify-database-image')
     },
     databaseImage () {
-      if (!this.file) {
+      if (this.file) {
+        return URL.createObjectURL(this.file)
+      }
+      if (!this.database || !this.database.image) {
         return null
       }
-      return URL.createObjectURL(this.file[0])
+      return `data:image/webp;base64,${this.database.image}`
     },
     maxWidth () {
       return this.$config.public.database.image.width
