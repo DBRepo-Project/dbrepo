@@ -40,7 +40,7 @@ public interface KeycloakGateway {
      * @param password The user credential.
      */
     void updateUserCredentials(UUID id, UserPasswordDto password) throws AuthServiceException,
-            AuthServiceConnectionException;
+            AuthServiceConnectionException, UserNotFoundException;
 
     /**
      * Finds a user in the metadata database by given username.

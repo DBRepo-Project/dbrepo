@@ -346,7 +346,6 @@ services:
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       dbrepo-search-db:
         condition: service_healthy

@@ -161,7 +161,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void updateUserCredentials(UUID id, UserPasswordDto data) throws AuthServiceException,
-            AuthServiceConnectionException {
+            AuthServiceConnectionException, UserNotFoundException {
         final UpdateCredentialsDto payload = metadataMapper.passwordToUpdateCredentialsDto(data.getPassword());
         final String path = "/admin/realms/dbrepo/users/" + id;
         log.trace("update user credentials at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
@@ -171,6 +171,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         } catch (HttpServerErrorException e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new AuthServiceConnectionException("Service unavailable", e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to update user credentials: user not found: {}", e.getMessage());
+            throw new UserNotFoundException("User not found", e);
         } catch (Exception e) {
             log.error("Failed to update user: unexpected response: {}", e.getMessage());
             throw new AuthServiceException("Unexpected result", e);

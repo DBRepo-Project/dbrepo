@@ -19,10 +19,37 @@ of immutable properties (id, username) is mirrored in the [Metadata Database](..
 
 ## Identities
 
-:octicons-tag-16:{ title="Minimum version" } 1.4.4
+:octicons-tag-16:{ title="Minimum version" } 1.4.5
 
-Identities can also be added in Keycloak directly. When requesting a JWT token from the `/api/user` endpoint, the
-immutable properties mentioned in c.f. [Overview](#overview) are copied transparent to the user on first login.
+Identities are managed via LDAP through the [Identity Service](../identity-service). The normal workflow is that the
+[Metadata Service](../metadata-service) adds identities when user register. In some cases, where this is not possible
+(e.g. in workshop-scenarios where accounts are created before the workshop starts), identities need to be created
+manually in Keycloak. The recommended workflow is:
+
+1. Login to the Auth Service as **Admin** and in the dbrepo realm navigate to **Users**
+2. Click the **Add user** button and fill out the Username field and assign the group `researchers` by clicking 
+   the **Join Groups** and selecting it. Click **Join** and **Create**.
+3. Click the **Credentials** tab above and **Set password**. In the popup window assign a secure password to the user
+   and set **Temporary** to `Off`.
+
+    !!! example "Create user with specific id"
+
+        The user id is created automatically. In case you need to create a user with specific id such as in migration
+        scenarios, you need to change the `entryUUID` in the [Identity Service](../identity-service) by modifying this
+        protected attribute in `relax` mode:
+
+        ```bash
+        echo "dn: uid=<username>,ou=users,dc=dbrepo,dc=at
+        changetype: modify
+        replace: entryUUID
+        entryUUID: 506ae590-11a2-4d2d-82b8-45121c6b4dab" | \
+        ldapmodify -h localhost -p 1389 -D cn=admin,dc=dbrepo,dc=at -c -x -e relax \
+        -w<adminpassword> 
+        ```
+
+4. Finally you need to query the user info once by navigating again to **Users**
+   and search for the **Username** and click :arrow_right: to search. Click the username and ensure that the 
+   **User metadata** contains the entry **LDAP_ID**.
 
 ## Groups
 

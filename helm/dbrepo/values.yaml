@@ -306,7 +306,7 @@ brokerservice:
     ## @param brokerservice.ldap.uidField The field containing the user id.
     uidField: uid
     ## @param brokerservice.ldap.basedn The base domain name containing the users.
-    basedn: ou=users,dc=dbrepo,dc=at
+    basedn: dc=dbrepo,dc=at
     ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
     userDnPattern: ${username}
   auth:

@@ -372,11 +372,11 @@ public class UserEndpoint {
             log.error("Failed to modify user password: not current user");
             throw new NotAllowedException("Failed to modify user password: not current user");
         }
-        userService.updatePassword(user, data);
         authenticationService.updatePassword(user, data);
         for (Database database : databaseService.findAllAccess(userId)) {
             databaseService.updatePassword(database, user);
         }
+        userService.updatePassword(user, data);
         return ResponseEntity.accepted()
                 .build();
     }
