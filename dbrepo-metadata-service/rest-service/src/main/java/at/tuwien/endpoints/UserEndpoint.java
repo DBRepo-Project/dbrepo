@@ -326,7 +326,7 @@ public class UserEndpoint {
     }
 
     @PutMapping("/{userId}/password")
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class})
     @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbrepo_user_password_modify")
     @Operation(summary = "Update user password",
@@ -367,17 +367,16 @@ public class UserEndpoint {
             AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
             DataServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint modify a user password, userId={}, data.password=(hidden)", userId);
-        User user = userService.findById(userId);
+        final User user = userService.findById(userId);
         if (!user.equals(principal)) {
             log.error("Failed to modify user password: not current user");
             throw new NotAllowedException("Failed to modify user password: not current user");
         }
-        user = userService.findByUsername(principal.getName());
-        userService.updatePassword(user, data);
         authenticationService.updatePassword(user, data);
         for (Database database : databaseService.findAllAccess(userId)) {
             databaseService.updatePassword(database, user);
         }
+        userService.updatePassword(user, data);
         return ResponseEntity.accepted()
                 .build();
     }

@@ -191,7 +191,8 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateUserCredentials_succeeds() throws AuthServiceException, AuthServiceConnectionException {
+    public void updateUserCredentials_succeeds() throws AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))

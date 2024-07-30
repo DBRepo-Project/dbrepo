@@ -60,5 +60,6 @@ public interface AuthenticationService {
      * @throws AuthServiceException           The auth service responded with unexpected behavior.
      * @throws AuthServiceConnectionException The connection with the auth service could not be established.
      */
-    void updatePassword(User user, UserPasswordDto data) throws AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException;
+    void updatePassword(User user, UserPasswordDto data) throws AuthServiceException, AuthServiceConnectionException,
+            CredentialsInvalidException, UserNotFoundException;
 }

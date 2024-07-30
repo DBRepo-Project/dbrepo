@@ -109,7 +109,7 @@ public class UserServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void updatePassword_succeeds() throws AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
+            UserNotFoundException {
 
         /* mock */
         doNothing()
