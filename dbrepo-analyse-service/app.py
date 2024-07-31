@@ -77,10 +77,17 @@ template = {
     "openapi": "3.0.0",
     "components": {
         "schemas": {
-            "DataTypesDto": {
+            "AnalysisDto": {
                 "properties": {
                     "columns": {
-                        "$ref": "#/components/schemas/SuggestedColumnDto"
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "column_name": {
+                                    "$ref": "#/components/schemas/ColumnAnalysisDto"
+                                }
+                            }
+                        }
                     },
                     "line_termination": {
                         "example": "\r\n",
@@ -125,10 +132,40 @@ template = {
                 ],
                 "type": "object"
             },
-            "SuggestedColumnDto": {
+            "ColumnAnalysisDto": {
                 "properties": {
-                    "column_name": {
-                        "type": "string"
+                    "type": {
+                        "type": "string",
+                        "example": "decimal"
+                    },
+                    "null_allowed": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "d": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "dfid": {
+                        "type": "integer",
+                        "example": None
+                    },
+                    "enums": {
+                        "type": "array",
+                        "example": None,
+                        "properties": {
+                            "type": "string"
+                        }
+                    },
+                    "sets": {
+                        "type": "array",
+                        "example": None,
+                        "properties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "type": "object"

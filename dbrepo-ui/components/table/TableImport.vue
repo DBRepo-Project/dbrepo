@@ -509,19 +509,17 @@ export default {
       analyseService.suggest(payload)
         .then((analysis) => {
           const {columns, separator, line_termination} = analysis
-          const queryService = useQueryService()
-          const dataTypes = queryService.mySql8DataTypes()
           this.columns = Object.entries(columns)
-            .map(([key, val]) => {
+            .map(([name, analyse]) => {
               return {
-                name: key,
-                type: val,
-                null_allowed: true,
+                name: name,
+                type: analyse.type,
+                null_allowed: analyse.null_allowed,
                 primary_key: false,
-                size: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultSize : null,
-                d: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultD : null,
-                enums: [],
-                sets: []
+                size: analyse.size,
+                d: analyse.d,
+                enums: analyse.enums,
+                sets: analyse.sets
               }
             })
           this.suggestedAnalyseSeparator = separator

@@ -373,10 +373,14 @@ export default {
     },
     async onImport () {
       this.loadingImport = true
+      const cacheStore = useCacheStore()
+      cacheStore.reloadDatabase()
       await this.$router.push({ path: `/database/${this.$route.params.database_id}/table/${this.table.id}/import`, query: this.tableImport })
     },
     async onContinue () {
       this.loadingContinue = true
+      const cacheStore = useCacheStore()
+      cacheStore.reloadDatabase()
       await this.$router.push(`/database/${this.$route.params.database_id}/table/${this.table.id}/data`)
     }
   }

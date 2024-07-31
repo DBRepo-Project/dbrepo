@@ -9,8 +9,10 @@ import pandas
 
 from numpy import dtype, max, min
 from flask import current_app
+from pandas import DataFrame
 from pandas.errors import EmptyDataError
 
+from api.dto import ColumnAnalysisDto, DataTypeDto, AnalysisDto
 from clients.s3_client import S3Client
 
 
@@ -63,52 +65,58 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
         r = {}
 
         for name, dataType in df.dtypes.items():
+            col = ColumnAnalysisDto(type=DataTypeDto.TEXT, null_allowed=contains_null(df[name]))
             if dataType == dtype('float64'):
                 if pandas.to_numeric(df[name], errors='coerce').notnull().all():
                     logging.debug(f"mapped column {name} from float64 to decimal")
-                    r[name] = 'decimal'
+                    col.type = DataTypeDto.DECIMAL
+                    col.size = 10
+                    col.d = 4
                 else:
                     logging.debug(f"mapped column {name} from float64 to text")
-                    r[name] = 'text'
+                    col.type = DataTypeDto.TEXT
             elif dataType == dtype('int64'):
                 min_val = min(df[name])
                 max_val = max(df[name])
                 if 0 <= min_val <= 1 and 0 <= max_val <= 1:
                     logging.debug(f"mapped column {name} from int64 to bool")
-                    r[name] = 'bool'
+                    col.type = DataTypeDto.BOOL
                     continue
                 logging.debug(f"mapped column {name} from int64 to bigint")
-                r[name] = 'bigint'
+                col.type = DataTypeDto.BIGINT
+                col.size = 255
             elif dataType == dtype('O'):
                 try:
                     pandas.to_datetime(df[name], format='mixed')
                     logging.debug(f"mapped column {name} from O to timestamp")
-                    r[name] = 'timestamp'
+                    col.type = DataTypeDto.TIMESTAMP
                     continue
                 except ValueError:
                     pass
                 max_size = max(df[name].astype(str).map(len))
                 if max_size <= 1:
                     logging.debug(f"mapped column {name} from O to char")
-                    r[name] = 'char'
+                    col.type = DataTypeDto.CHAR
+                    col.size = 1
                 if 0 <= max_size <= 255:
                     logging.debug(f"mapped column {name} from O to varchar")
-                    r[name] = 'varchar'
+                    col.type = DataTypeDto.VARCHAR
+                    col.size = 255
                 else:
                     logging.debug(f"mapped column {name} from O to text")
-                    r[name] = 'text'
+                    col.type = DataTypeDto.TEXT
             elif dataType == dtype('bool'):
                 logging.debug(f"mapped column {name} from bool to bool")
-                r[name] = 'bool'
+                col.type = DataTypeDto.BOOL
             elif dataType == dtype('datetime64'):
                 logging.debug(f"mapped column {name} from datetime64 to datetime")
-                r[name] = 'datetime'
+                col.type = DataTypeDto.DATETIME
             else:
                 logging.warning(f'default to \'text\' for column {name} and type {dtype}')
-                r[name] = 'text'
-        s = {"columns": r, "separator": separator, "line_termination": line_terminator}
+            r[name] = col
+        s = AnalysisDto(columns=r, separator=separator, line_termination=line_terminator)
         logging.info("Determined data types %s", s)
-    return json.dumps(s)
+    return s.model_dump_json()
 
 
 def peek_line(f) -> bytes:
@@ -116,3 +124,9 @@ def peek_line(f) -> bytes:
     line: bytes = f.readline()
     f.seek(pos)
     return line
+
+
+def contains_null(df: DataFrame) -> bool:
+    if '\\N' in df.values:
+        return True
+    return df.isnull().values.any()
