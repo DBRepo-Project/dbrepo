@@ -16,7 +16,7 @@ from api.dto import ColumnAnalysisDto, DataTypeDto, AnalysisDto
 from clients.s3_client import S3Client
 
 
-def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') -> {}:
+def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') -> AnalysisDto:
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
@@ -26,7 +26,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine data types: file {filename} has empty body')
-        return json.dumps({'columns': [], 'separator': ','})
+        return AnalysisDto(columns=dict(), separator=",", line_termination="\n")
 
     with io.BytesIO(stream.read()) as fh:
         line_terminator = None
@@ -66,6 +66,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
 
         for name, dataType in df.dtypes.items():
             col = ColumnAnalysisDto(type=DataTypeDto.TEXT, null_allowed=contains_null(df[name]))
+            r[name] = col
             if dataType == dtype('float64'):
                 if pandas.to_numeric(df[name], errors='coerce').notnull().all():
                     logging.debug(f"mapped column {name} from float64 to decimal")
@@ -113,10 +114,9 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
                 col.type = DataTypeDto.DATETIME
             else:
                 logging.warning(f'default to \'text\' for column {name} and type {dtype}')
-            r[name] = col
         s = AnalysisDto(columns=r, separator=separator, line_termination=line_terminator)
         logging.info("Determined data types %s", s)
-    return s.model_dump_json()
+    return s
 
 
 def peek_line(f) -> bytes:

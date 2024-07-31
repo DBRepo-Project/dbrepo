@@ -288,7 +288,7 @@ def analyse_datatypes():
     try:
         res = determine_datatypes(filename, enum, enum_tol, separator)
         logging.debug("determine datatype resulted in datatypes %s", res)
-        return Response(res, mimetype="application/json"), 202
+        return Response(res.model_dump_json(), mimetype="application/json"), 202
     except OSError as e:
         logging.error(f"Failed to determine data types: {e}")
         return ApiError(status='BAD_REQUEST', message=str(e), code='error.analyse.invalid').model_dump_json(), 400
