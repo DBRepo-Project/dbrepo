@@ -9,3 +9,14 @@ start-dev: build-images ## Start the development deployment.
 stop-dev: ## Stop the development deployment and remove all data.
 	docker compose down
 
+.PHONY: package-config
+package-config: ## Package the config files
+	cp ./dbrepo-metadata-db/1_setup-schema.sql ./.docker/config
+	cp ./dbrepo-metadata-db/2_setup-data.sql ./.docker/config
+	cp ./dbrepo-broker-service/rabbitmq.conf ./.docker/config
+	cp ./dbrepo-broker-service/enabled_plugins ./.docker/config
+	cp ./dbrepo-broker-service/definitions.json ./.docker/config
+	cp ./dbrepo-broker-service/advanced.config ./.docker/config
+	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
+	cp ./dbrepo-gateway-service/dbrepo.conf ./.docker/config
+	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
