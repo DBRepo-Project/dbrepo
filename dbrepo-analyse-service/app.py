@@ -77,10 +77,17 @@ template = {
     "openapi": "3.0.0",
     "components": {
         "schemas": {
-            "DataTypesDto": {
+            "AnalysisDto": {
                 "properties": {
                     "columns": {
-                        "$ref": "#/components/schemas/SuggestedColumnDto"
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "column_name": {
+                                    "$ref": "#/components/schemas/ColumnAnalysisDto"
+                                }
+                            }
+                        }
                     },
                     "line_termination": {
                         "example": "\r\n",
@@ -125,10 +132,40 @@ template = {
                 ],
                 "type": "object"
             },
-            "SuggestedColumnDto": {
+            "ColumnAnalysisDto": {
                 "properties": {
-                    "column_name": {
-                        "type": "string"
+                    "type": {
+                        "type": "string",
+                        "example": "decimal"
+                    },
+                    "null_allowed": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "d": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "dfid": {
+                        "type": "integer",
+                        "example": None
+                    },
+                    "enums": {
+                        "type": "array",
+                        "example": None,
+                        "properties": {
+                            "type": "string"
+                        }
+                    },
+                    "sets": {
+                        "type": "array",
+                        "example": None,
+                        "properties": {
+                            "type": "string"
+                        }
                     }
                 },
                 "type": "object"
@@ -251,7 +288,7 @@ def analyse_datatypes():
     try:
         res = determine_datatypes(filename, enum, enum_tol, separator)
         logging.debug("determine datatype resulted in datatypes %s", res)
-        return Response(res, mimetype="application/json"), 202
+        return Response(res.model_dump_json(), mimetype="application/json"), 202
     except OSError as e:
         logging.error(f"Failed to determine data types: {e}")
         return ApiError(status='BAD_REQUEST', message=str(e), code='error.analyse.invalid').model_dump_json(), 400

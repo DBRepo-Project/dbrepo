@@ -1103,7 +1103,7 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def import_table_data(self, database_id: int, table_id: int, file_name_or_data_frame: str | DataFrame,
-                          separator: str = None, quote: str = None, skip_lines: int = 0,
+                          separator: str = ",", quote: str = "\"", skip_lines: int = 0,
                           false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
                           line_encoding: str = "\n") -> None:
         """

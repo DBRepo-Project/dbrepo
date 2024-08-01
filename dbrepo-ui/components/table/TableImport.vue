@@ -142,7 +142,6 @@
           </v-col>
         </v-row>
         <v-form
-          v-if="!$route.query.location"
           ref="form"
           v-model="validStep2"
           :disabled="disabled"
@@ -213,6 +212,7 @@
               <v-col
                 cols="8">
                 <v-btn
+                  v-if="create && !$route.query.location"
                   :disabled="!isAnalyseAllowed || !validStep1 || !validStep2 || disabled"
                   :loading="loading"
                   :variant="buttonVariant"
@@ -220,6 +220,25 @@
                   size="small"
                   :text="$t('pages.table.subpages.import.analyse.text')"
                   @click="uploadAndAnalyse"/>
+                <v-btn
+                  v-if="!create && !$route.query.location"
+                  :disabled="!isAnalyseAllowed || !validStep1 || !validStep2 || disabled"
+                  :loading="loading || loadingImport"
+                  :variant="buttonVariant"
+                  color="secondary"
+                  size="small"
+                  :text="$t('pages.table.subpages.import.upload.text')"
+                  @click="uploadAndImport"/>
+                <v-btn
+                  v-if="!create && $route.query.location"
+                  :disabled="step > 2 || disabled"
+                  :loading="loading || loadingImport"
+                  :variant="buttonVariant"
+                  color="secondary"
+                  size="small"
+                  class="mt-2"
+                  :text="$t('pages.table.subpages.import.text')"
+                  @click="importCsv"/>
               </v-col>
             </v-row>
           </v-form>
@@ -228,37 +247,11 @@
     <v-stepper-header
       v-if="!create">
       <v-stepper-item
-        :title="$t('pages.table.subpages.import.dataset.title')"
-        :complete="validStep3"
-        :value="3" />
-    </v-stepper-header>
-    <v-stepper-window
-      v-if="!create"
-      direction="vertical">
-      <v-container>
-        <v-row
-          dense>
-          <v-col>
-            <v-btn
-              color="secondary"
-              :disabled="step !== 3 || disabled"
-              size="small"
-              variant="flat"
-              :loading="loadingImport"
-              :text="$t('navigation.import')"
-              @click="importCsv"/>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-stepper-window>
-    <v-stepper-header
-      v-if="!create">
-      <v-stepper-item
         :title="$t('pages.table.subpages.import.summary.title')"
-        :value="4"/>
+        :value="3"/>
     </v-stepper-header>
     <v-stepper-window
-      v-if="!create && step === 4"
+      v-if="!create && step === 3"
       direction="vertical">
       <v-container>
         <v-row
@@ -280,7 +273,7 @@
             <v-btn
               v-if="rowCount !== null"
               color="secondary"
-              :disabled="step !== 4 || disabled"
+              :disabled="step !== 3 || disabled"
               size="small"
               variant="flat"
               :text="$t('navigation.data')"
@@ -364,7 +357,7 @@ export default {
     this.setQueryParamSafely('line_termination')
     this.setQueryParamSafely('skip_lines')
     if (this.$route.query.location) {
-      this.step = 3
+      this.step = 2
       this.validStep2 = true
     }
   },
@@ -458,7 +451,7 @@ export default {
             .then((rowCount) => {
               this.rowCount = rowCount
             })
-          this.step = 4
+          this.step = 3
           this.validStep3 = true
           this.loadingImport = false
         })
@@ -473,21 +466,38 @@ export default {
         })
     },
     uploadAndAnalyse() {
+      this.upload()
+        .then((s3key) => {
+          this.analyse(s3key)
+        })
+    },
+    uploadAndImport() {
+      this.upload()
+        .then((s3key) => {
+          this.tableImport.location = s3key
+          this.importCsv()
+        })
+    },
+    upload() {
       this.loading = true
       console.debug('upload file', this.file)
       const uploadService = useUploadService()
-      return uploadService.create(this.file)
-        .then((s3key) => {
-          const toast = useToastInstance()
-          toast.success(this.$t('success.upload.dataset'))
-          this.analyse(s3key)
-        })
-        .catch((error) => {
-          console.error('Failed to upload dataset', error)
-          const toast = useToastInstance()
-          toast.error(this.$t('error.upload.dataset'))
-          this.loading = false
-        })
+      return new Promise((resolve, reject) => {
+        return uploadService.create(this.file)
+          .then((s3key) => {
+            const toast = useToastInstance()
+            toast.success(this.$t('success.upload.dataset'))
+            this.loading = false
+            resolve(s3key)
+          })
+          .catch((error) => {
+            console.error('Failed to upload dataset', error)
+            const toast = useToastInstance()
+            toast.error(this.$t('error.upload.dataset'))
+            this.loading = false
+            reject(error)
+          })
+      })
     },
     analyse(filename) {
       const analyseService = useAnalyseService()
@@ -499,19 +509,17 @@ export default {
       analyseService.suggest(payload)
         .then((analysis) => {
           const {columns, separator, line_termination} = analysis
-          const queryService = useQueryService()
-          const dataTypes = queryService.mySql8DataTypes()
           this.columns = Object.entries(columns)
-            .map(([key, val]) => {
+            .map(([name, analyse]) => {
               return {
-                name: key,
-                type: val,
-                null_allowed: true,
+                name: name,
+                type: analyse.type,
+                null_allowed: analyse.null_allowed,
                 primary_key: false,
-                size: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultSize : null,
-                d: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultD : null,
-                enums: [],
-                sets: []
+                size: analyse.size,
+                d: analyse.d,
+                enums: analyse.enums,
+                sets: analyse.sets
               }
             })
           this.suggestedAnalyseSeparator = separator
@@ -520,7 +528,17 @@ export default {
           this.step = 3
           const toast = useToastInstance()
           toast.success(this.$t('success.analyse.dataset'))
-          this.$emit('analyse', {columns: this.columns, filename, line_termination})
+          this.$emit('analyse', {
+            columns: this.columns,
+            filename,
+            line_termination,
+            separator: this.tableImport.separator,
+            skip_lines: this.tableImport.skip_lines,
+            quote: this.tableImport.quote,
+            null_element: this.tableImport.null_element,
+            true_element: this.tableImport.true_element,
+            false_element: this.tableImport.false_element
+          })
           this.loading = false
         })
         .catch(({code, message}) => {

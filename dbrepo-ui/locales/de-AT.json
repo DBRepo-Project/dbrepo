@@ -324,6 +324,7 @@
       "subpages": {
         "import": {
           "title": "Erstellen Sie eine Tabelle aus einem CSV-/TSV-Datensatz",
+          "text": "Importieren",
           "metadata": {
             "title": "Tabellenmetadaten"
           },
@@ -404,6 +405,9 @@
           },
           "analyse": {
             "text": "Hochladen und analysieren"
+          },
+          "upload": {
+            "text": "Hochladen und importieren"
           }
         },
         "create": {
@@ -571,7 +575,7 @@
     "database": {
       "title": "Datenbank",
       "image": {
-        "title": "Teaser-Bild",
+        "title": "Datenbankbild",
         "alt": "Datenbanklogo/Standardbild"
       },
       "name": {

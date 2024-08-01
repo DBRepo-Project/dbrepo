@@ -66,7 +66,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DataTypesDto'
+                $ref: '#/components/schemas/AnalysisDto'
           description: Determined data types successfully
         '400':
           content:
@@ -335,7 +335,6 @@ paths:
         user needs to have at least *READ* access to the associated database.
         Requests with HTTP method **GET** return the full dataset, requests with
         HTTP method **HEAD** only the number of tuples in the `X-Count` header.
-        Requires role `view-table-data`.
       operationId: getData_2
       parameters:
         - name: databaseId
@@ -596,7 +595,6 @@ paths:
         user needs to have at least *READ* access to the associated database.
         Requests with HTTP method **GET** return the full dataset, requests with
         HTTP method **HEAD** only the number of tuples in the `X-Count` header.
-        Requires role `view-table-data`.
       operationId: getData_3
       parameters:
         - name: databaseId
@@ -1140,7 +1138,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
-          description: Failed to find table in metadata database
+          description: Failed to find table or database in metadata database
           content:
             application/json:
               schema:
@@ -1491,7 +1489,7 @@ paths:
         id. Requests with HTTP method **GET** return the access object, requests
         with HTTP method **HEAD** only the status. When the user has at least
         *READ* access, the status 200 is returned, 403 otherwise. Requires role
-        `check-database-access` or `admin`.
+        `check-database-access` or `check-foreign-database-access`.
       operationId: find
       parameters:
         - name: databaseId
@@ -1728,7 +1726,7 @@ paths:
         id. Requests with HTTP method **GET** return the access object, requests
         with HTTP method **HEAD** only the status. When the user has at least
         *READ* access, the status 200 is returned, 403 otherwise. Requires role
-        `check-database-access` or `admin`.
+        `check-database-access` or `check-foreign-database-access`.
       operationId: find_1
       parameters:
         - name: databaseId
@@ -3066,8 +3064,14 @@ paths:
           description: Parameters are not well-formed (likely email)
           content:
             application/json: {}
+        '403':
+          description: Internal authentication to the auth service is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '404':
-          description: default role not found
+          description: Default role not found
           content:
             application/json:
               schema:
@@ -4364,15 +4368,46 @@ components:
       scheme: bearer
       type: http
   schemas:
-    DataTypesDto:
+    AnalysisDto:
       properties:
         columns:
-          $ref: '#/components/schemas/SuggestedColumnDto'
+          items:
+            properties:
+              column_name:
+                $ref: '#/components/schemas/ColumnAnalysisDto'
+          type: array
         line_termination:
           example: "\r\n"
           type: string
         separator:
           example: ','
+          type: string
+      type: object
+    ColumnAnalysisDto:
+      properties:
+        d:
+          example: 4
+          type: integer
+        dfid:
+          example: null
+          type: integer
+        enums:
+          example: null
+          properties:
+            type: string
+          type: array
+        null_allowed:
+          type: boolean
+        sets:
+          example: null
+          properties:
+            type: string
+          type: array
+        size:
+          example: 10
+          type: integer
+        type:
+          example: decimal
           type: string
       type: object
     ErrorDto:
@@ -4395,11 +4430,6 @@ components:
           type: array
       required:
         - keys
-      type: object
-    SuggestedColumnDto:
-      properties:
-        column_name:
-          type: string
       type: object
     ApiErrorDto:
       required:
@@ -5622,7 +5652,6 @@ components:
     TableStatisticDto:
       required:
         - columns
-        - rows
       type: object
       properties:
         columns:
@@ -5632,6 +5661,22 @@ components:
         rows:
           type: integer
           format: int64
+          example: 5
+        data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 16384
+        max_data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 0
+        avg_row_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 3276
     TableHistoryDto:
       required:
         - event
@@ -8232,8 +8277,6 @@ components:
             $ref: '#/components/schemas/ColumnCreateDto'
         constraints:
           $ref: '#/components/schemas/ConstraintsCreateDto'
-        need_sequence:
-          type: boolean
     ContainerCreateDto:
       required:
         - host

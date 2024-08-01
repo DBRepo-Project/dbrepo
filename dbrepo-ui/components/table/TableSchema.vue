@@ -147,7 +147,8 @@
             @click="removeColumn(idx)" />
         </v-col>
       </v-row>
-      <v-row dense>
+      <v-row
+        dense>
         <v-col>
           <v-btn
             size="small"
@@ -156,6 +157,16 @@
             :disabled="disabled"
             :text="$t('pages.table.subpages.schema.add.text')"
             @click="addColumn()" />
+        </v-col>
+      </v-row>
+      <v-row
+        v-if="showPrimaryKeyWarning">
+        <v-col md="8">
+          <v-alert
+            border="start"
+            color="warning">
+            {{ $t('pages.table.subpages.import.schema.primary.warn') }}
+          </v-alert>
         </v-col>
       </v-row>
       <v-row>
@@ -216,9 +227,6 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    needsSequence () {
-      return this.columns.filter(c => c.primary_key).length === 0
-    },
     dateFormats () {
       if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
         return []
@@ -232,6 +240,9 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
+    },
+    showPrimaryKeyWarning () {
+      return this.columns.filter(c => c.primary_key).length === 0
     }
   },
   watch: {
@@ -271,9 +282,6 @@ export default {
     },
     canRemove (idx) {
       if (idx > 0) {
-        return true
-      }
-      if (this.needsSequence) {
         return true
       }
       if (this.columns[0].primary_key) {

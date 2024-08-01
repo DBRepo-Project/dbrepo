@@ -1,6 +1,6 @@
-import json
 import unittest
 
+from api.dto import AnalysisDto
 from clients.s3_client import S3Client
 from botocore.exceptions import ClientError
 from determine_dt import determine_datatypes
@@ -9,96 +9,196 @@ from determine_dt import determine_datatypes
 class DetermineDatatypesTest(unittest.TestCase):
     # @Test
     def test_determine_datatypesDateTime_succeeds(self):
-        exp = {
-            "columns": {
-                "Datum": "timestamp",
-                "Standort": "varchar",
-                "Parameter": "varchar",
-                "Intervall": "varchar",
-                "Einheit": "varchar",
-                "Wert": "decimal",
-                "Status": "varchar",
+        exp = AnalysisDto(separator=",", line_termination="\n", columns={
+            "Datum": {
+                "type": "timestamp",
+                "null_allowed": False,
             },
-            "separator": ",",
-            "line_termination": "\n"
-        }
+            "Standort": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Parameter": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Intervall": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Einheit": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Wert": {
+                "type": "decimal",
+                "size": 10,
+                "d": 4,
+                "null_allowed": False,
+            },
+            "Status": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+        })
 
         # mock
         S3Client().upload_file("datetime.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime.csv", separator=",")
-        self.assertEqual(response, json.dumps(exp))
+        self.assertEqual(exp, response)
 
-    # @Test
+        # @Test
+
     def test_determine_datatypesDateTimeWithTimezone_succeeds(self):
-        exp = {
-            "columns": {
-                "Datum": "timestamp",
-                "Standort": "varchar",
-                "Parameter": "varchar",
-                "Intervall": "varchar",
-                "Einheit": "varchar",
-                "Wert": "decimal",
-                "Status": "varchar",
+        exp = AnalysisDto(separator=",", line_termination="\n", columns={
+            "Datum": {
+                "type": "timestamp",
+                "null_allowed": False,
             },
-            "separator": ",",
-            "line_termination": "\n"
-        }
+            "Standort": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Parameter": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Intervall": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Einheit": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Wert": {
+                "type": "decimal",
+                "size": 10,
+                "d": 4,
+                "null_allowed": False,
+            },
+            "Status": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+        })
 
         # mock
         S3Client().upload_file("datetime_tz.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_tz.csv", separator=",")
-        self.assertEqual(response, json.dumps(exp))
+        self.assertEqual(exp, response)
 
-    # @Test
+        # @Test
+
     def test_determine_datatypesDateTimeWithT_succeeds(self):
-        exp = {
-            "columns": {
-                "Datum": "timestamp",
-                "Standort": "varchar",
-                "Parameter": "varchar",
-                "Intervall": "varchar",
-                "Einheit": "varchar",
-                "Wert": "decimal",
-                "Status": "varchar",
+        exp = AnalysisDto(separator=",", line_termination="\n", columns={
+            "Datum": {
+                "type": "timestamp",
+                "null_allowed": False,
             },
-            "separator": ",",
-            "line_termination": "\n"
-        }
+            "Standort": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Parameter": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Intervall": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Einheit": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "Wert": {
+                "type": "decimal",
+                "size": 10,
+                "d": 4,
+                "null_allowed": False,
+            },
+            "Status": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+        })
 
         # mock
         S3Client().upload_file("datetime_t.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime_t.csv", separator=",")
-        self.assertEqual(response, json.dumps(exp))
+        self.assertEqual(exp, response)
 
     # @Test
     def test_determine_datatypes_succeeds(self):
-        exp = {
-            "columns": {
-                "int": "bigint",
-                "float": "decimal",
-                "string": "varchar",
-                "boolean": "bool",
-                "bool": "bool",
-                "date": "timestamp",
-                "time": "timestamp",
-                "enum": "varchar",  # currently not used
+        exp = AnalysisDto(separator=",", line_termination="\n", columns={
+            "int": {
+                "type": "bigint",
+                "size": 255,
+                "null_allowed": False,
             },
-            "separator": ",",
-            "line_termination": "\n"
-        }
+            "float": {
+                "type": "decimal",
+                "size": 10,
+                "d": 4,
+                "null_allowed": False,
+            },
+            "string": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+            "boolean": {
+                "type": "bool",
+                "size": None,
+                "null_allowed": False,
+            },
+            "bool": {
+                "type": "bool",
+                "null_allowed": False,
+            },
+            "date": {
+                "type": "timestamp",
+                "null_allowed": False,
+            },
+            "time": {
+                "type": "timestamp",
+                "null_allowed": False,
+            },
+            "enum": {  # currently not used
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False,
+            },
+        })
 
         # mock
         S3Client().upload_file("datatypes.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datatypes.csv", separator=",")
-        self.assertEqual(response, json.dumps(exp))
+        self.assertEqual(exp, response)
 
     # @Test
     def test_determine_datatypes_fileDoesNotExist_fails(self):
@@ -121,9 +221,8 @@ class DetermineDatatypesTest(unittest.TestCase):
 
         # test
         response = determine_datatypes("empty.csv")
-        data = json.loads(response)
-        self.assertEqual([], data["columns"])
-        self.assertEqual(",", data["separator"])
+        self.assertEqual({}, response.columns)
+        self.assertEqual(",", response.separator)
 
     # @Test
     def test_determine_datatypes_separatorSemicolon_succeeds(self):
@@ -133,8 +232,7 @@ class DetermineDatatypesTest(unittest.TestCase):
 
         # test
         response = determine_datatypes(filename="separator.csv", separator=";")
-        data = json.loads(response)
-        self.assertEqual(";", data["separator"])
+        self.assertEqual(";", response.separator)
 
     # @Test
     def test_determine_datatypes_separatorGuess_succeeds(self):
@@ -144,8 +242,7 @@ class DetermineDatatypesTest(unittest.TestCase):
 
         # test
         response = determine_datatypes(filename="separator.csv")
-        data = json.loads(response)
-        self.assertEqual(";", data["separator"])
+        self.assertEqual(";", response.separator)
 
     # @Test
     def test_determine_datatypes_separatorGuessLargeDataset_succeeds(self):
@@ -155,27 +252,33 @@ class DetermineDatatypesTest(unittest.TestCase):
 
         # test
         response = determine_datatypes(filename="large.csv")
-        data = json.loads(response)
-        self.assertEqual(",", data["separator"])
+        self.assertEqual(",", response.separator)
 
     # @Test
     def test_determine_datatypes_separatorGuessText_succeeds(self):
-        exp = {
-            "columns": {
-                "id": "bigint",
-                "author": "varchar",
-                "abstract": "text"
+        exp = AnalysisDto(separator=";", line_termination="\n", columns={
+            "id": {
+                "type": "bigint",
+                "size": 255,
+                "null_allowed": False
             },
-            "separator": ";",
-            "line_termination": "\n"
-        }
+            "author": {
+                "type": "varchar",
+                "size": 255,
+                "null_allowed": False
+            },
+            "abstract": {
+                "type": "text",
+                "null_allowed": False
+            },
+        })
 
         # mock
         S3Client().upload_file("novel.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="novel.csv", separator=";")
-        self.assertEqual(response, json.dumps(exp))
+        self.assertEqual(exp, response)
 
 
 if __name__ == "__main__":

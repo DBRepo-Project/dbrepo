@@ -324,12 +324,16 @@
       "subpages": {
         "import": {
           "title": "Create table from .csv/.tsv dataset",
+          "text": "Import",
           "metadata": {
             "title": "Table Metadata"
           },
           "schema": {
             "title": "Dataset Structure",
-            "text": "the table schema manually."
+            "text": "the table schema manually.",
+            "primary": {
+              "warn": "No primary key column(s) selected. Please select a column that uniquely identifies data entries."
+            }
           },
           "dataset": {
             "title": "Import Dataset",
@@ -404,6 +408,9 @@
           },
           "analyse": {
             "text": "Upload & Analyse"
+          },
+          "upload": {
+            "text": "Upload & Import"
           }
         },
         "create": {
@@ -571,7 +578,7 @@
     "database": {
       "title": "Database",
       "image": {
-        "title": "Teaser Image",
+        "title": "Database Image",
         "alt": "Database logo/default image"
       },
       "name": {

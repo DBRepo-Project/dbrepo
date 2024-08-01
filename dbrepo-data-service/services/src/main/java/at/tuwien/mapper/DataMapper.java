@@ -553,7 +553,6 @@ public interface DataMapper {
         }
         /* boolean encoding fix */
         if (column.getColumnType().equals(ColumnTypeDto.TINYINT) && column.getSize() == 1) {
-            log.trace("column {} is of type tinyint with size {}: map to boolean", column.getInternalName(), column.getSize());
             column.setColumnType(ColumnTypeDto.BOOL);
         }
         switch (column.getColumnType()) {
@@ -562,10 +561,9 @@ public interface DataMapper {
                     log.error("Missing date format for column {}", column.getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
-                log.trace("mapping {} to date with format '{}'", data, column.getDateFormat());
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                         .parseCaseInsensitive() /* case insensitive to parse JAN and FEB */
-                        .appendPattern(column.getDateFormat().getUnixFormat())
+                        .appendPattern("yyyy-MM-dd")
                         .toFormatter(Locale.ENGLISH);
                 final LocalDate date = LocalDate.parse(String.valueOf(data), formatter);
                 return date.atStartOfDay(ZoneId.of("UTC"))
@@ -576,41 +574,32 @@ public interface DataMapper {
                     log.error("Missing date format for column {}", column.getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
-                log.trace("mapping {} to timestamp with format '{}'", data, column.getDateFormat());
                 return Timestamp.valueOf(data.toString())
                         .toInstant();
             }
             case BINARY, VARBINARY, BIT -> {
-                log.trace("mapping {} -> binary", data);
                 return Long.parseLong(String.valueOf(data), 2);
             }
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> {
-                log.trace("mapping {} -> string", data);
                 return String.valueOf(data);
             }
             case BIGINT -> {
-                log.trace("mapping {} -> biginteger", data);
                 return new BigInteger(String.valueOf(data));
             }
             case INT, SMALLINT, MEDIUMINT, TINYINT -> {
-                log.trace("mapping {} -> integer", data);
                 return Integer.parseInt(String.valueOf(data));
             }
             case DECIMAL, FLOAT, DOUBLE -> {
-                log.trace("mapping {} -> double", data);
                 return Double.valueOf(String.valueOf(data));
             }
             case BOOL -> {
-                log.trace("mapping {} -> boolean", data);
                 return Boolean.valueOf(String.valueOf(data));
             }
             case TIME -> {
-                log.trace("mapping {} -> time", data);
                 return String.valueOf(data);
             }
             case YEAR -> {
                 final String date = String.valueOf(data);
-                log.trace("mapping {} -> year", date);
                 return Short.valueOf(date.substring(0, date.indexOf('-')));
             }
         }
@@ -641,9 +630,6 @@ public interface DataMapper {
                     continue;
                 }
                 final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
-                if (object == null) {
-                    log.warn("result set for column {} is empty (=null)", column.getInternalName());
-                }
                 map.put(columnOrAlias, object);
             }
             resultList.add(map);
@@ -664,7 +650,6 @@ public interface DataMapper {
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
-                log.trace("prepare statement idx {} blob", idx);
                 if (value == null) {
                     ps.setNull(idx, Types.BLOB);
                     break;
@@ -677,135 +662,105 @@ public interface DataMapper {
                 }
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
-                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.VARCHAR);
                     break;
                 }
                 ps.setString(idx, String.valueOf(value));
                 break;
             case DATE:
-                log.trace("prepare statement idx {} date {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DATE);
                     break;
                 }
                 ps.setDate(idx, Date.valueOf(String.valueOf(value)));
                 break;
             case BIGINT:
-                log.trace("prepare statement idx {} bigint {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BIGINT);
                     break;
                 }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case INT, MEDIUMINT:
-                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.INTEGER);
                     break;
                 }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case TINYINT:
-                log.trace("prepare statement idx {} tinyint {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TINYINT);
                     break;
                 }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case SMALLINT:
-                log.trace("prepare statement idx {} smallint {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.SMALLINT);
                     break;
                 }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
                 break;
             case DECIMAL:
-                log.trace("prepare statement idx {} decimal {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DECIMAL);
                     break;
                 }
                 ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case FLOAT:
-                log.trace("prepare statement idx {} float {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.FLOAT);
                     break;
                 }
                 ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case DOUBLE:
-                log.trace("prepare statement idx {} double {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DOUBLE);
                     break;
                 }
                 ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
             case BINARY, VARBINARY, BIT:
-                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DECIMAL);
                     break;
                 }
                 ps.setBinaryStream(idx, (InputStream) value);
                 break;
             case BOOL:
-                log.trace("prepare statement idx {} boolean {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BOOLEAN);
                     break;
                 }
                 ps.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
             case TIMESTAMP:
-                log.trace("prepare statement idx {} timestamp {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIMESTAMP);
                     break;
                 }
                 ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
                 break;
             case DATETIME:
-                log.trace("prepare statement idx {} datetime {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIMESTAMP);
                     break;
                 }
                 ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
                 break;
             case TIME:
-                log.trace("prepare statement idx {} time {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIME);
                     break;
                 }
                 ps.setTime(idx, Time.valueOf(String.valueOf(value)));
                 break;
             case YEAR:
-                log.trace("prepare statement idx {} year {}", idx, value);
                 if (value == null) {
-                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIME);
                     break;
                 }

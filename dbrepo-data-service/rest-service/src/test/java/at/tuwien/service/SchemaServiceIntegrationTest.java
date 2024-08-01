@@ -59,7 +59,10 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void inspectTable_succeeds() throws TableNotFoundException, SQLException {
+    public void inspectTable_sameNameDifferentDb_succeeds() throws TableNotFoundException, SQLException {
+
+        /* mock */
+        MariaDbConfig.execute(DATABASE_2_PRIVILEGED_DTO, "CREATE TABLE not_in_metadata_db (wrong_id BIGINT NOT NULL PRIMARY KEY, given_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), family_name VARCHAR(255) NOT NULL, age INT NOT NULL) WITH SYSTEM VERSIONING;");
 
         /* test */
         final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db");

@@ -19,4 +19,4 @@ package-config: ## Package the config files
 	cp ./dbrepo-broker-service/advanced.config ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
 	cp ./dbrepo-gateway-service/dbrepo.conf ./.docker/config
-	cd ./.docker && tar czfv ./dist.tar.gz ./docker-compose.yml ./.env ./config
+	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config

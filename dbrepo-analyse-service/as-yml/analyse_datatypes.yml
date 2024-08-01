@@ -38,7 +38,7 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/DataTypesDto'
+          $ref: '#/components/schemas/AnalysisDto'
   400:
     description: "Failed to determine data types"
     content:

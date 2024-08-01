@@ -9,8 +9,8 @@ from clients.s3_client import S3Client
 
 
 def determine_pk(filename: str, separator: str = ','):
-    dt = json.loads(determine_datatypes(filename=filename, separator=separator))
-    dt = {k.lower(): v for k, v in dt["columns"].items()}
+    dt = determine_datatypes(filename=filename, separator=separator)
+    dt = {k.lower(): v for k, v in dt.columns.items()}
     # {k.lower(): v for k, v in dt['columns'].items() if v != 'Numeric'}
     colnames = dt.keys()
     colindex = list(range(0, len(colnames)))
