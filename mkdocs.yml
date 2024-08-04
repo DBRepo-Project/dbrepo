@@ -51,6 +51,7 @@ nav:
     - Survey Data: examples/survey.md
     - Lute Data: examples/lute-data.md
     - Music-ML Data: examples/music.md
+    - Theater Data: examples/theater.md
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md
   - publications.md

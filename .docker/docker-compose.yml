@@ -275,6 +275,9 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
+    environment:
+      NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
+      NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
     depends_on:
       dbrepo-search-service:
         condition: service_started
@@ -397,8 +400,8 @@ services:
       - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
       - "-s3-bucket=dbrepo"
     environment:
-      AWS_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
-      AWS_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      AWS_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
+      AWS_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       AWS_REGION: "${STORAGE_REGION_NAME:-default}"
     depends_on:
       dbrepo-storage-service:

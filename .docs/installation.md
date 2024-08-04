@@ -47,10 +47,6 @@ curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 Call the helper script to regenerate the client secret of the `dbrepo-client` and set it as value of the 
 `AUTH_SERVICE_CLIENT_SECRET` variable in the `.env` file.
 
-```bash
-curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.scripts/reg-client-secret.sh" | bash
-```
-
 Update the rest of the default secrets in the `.env` file to secure passwords. You can use `openssl` for that, e.g. 
 `openssl rand -hex 16`. Set `auth_ldap.dn_lookup_bind.password` in `dist/rabbitmq.conf` to the value of
 `SYSTEM_PASSWORD`.
@@ -69,7 +65,7 @@ Log into the Auth Service with the default credentials `admin` and the value of 
 :material-numeric-3-circle-outline:.
 
 <figure markdown>
-![](images/screenshots/auth-service-ldap-1.png){ .img-border }
+![Keycloka identitiy provider list](images/screenshots/auth-service-ldap-1.png){ .img-border }
 <figcaption>Figure 1: Select the Identity Service provider.</figcaption>
 </figure>
 
@@ -78,9 +74,15 @@ but this is optional. Change the Bind credentials to the desired password :mater
 the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 
 <figure markdown>
-![](images/screenshots/auth-service-ldap-2.png){ .img-border }
+![Keycloak identity provider settings](images/screenshots/auth-service-ldap-2.png){ .img-border }
 <figcaption>Figure 2: Update the Identity Service admin user credentials.</figcaption>
 </figure>
+
+Update the client secret of the `dbrepo-client`:
+
+```bash
+curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.scripts/reg-client-secret.sh" | bash
+```
    
 Also, update the JWT key according to the 
 [Keycloak documentation](https://www.keycloak.org/docs/24.0.1/server_admin/index.html#rotating-keys). To secure your
