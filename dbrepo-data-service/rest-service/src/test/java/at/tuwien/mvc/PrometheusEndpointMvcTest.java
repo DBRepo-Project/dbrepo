@@ -171,7 +171,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, null);
         } catch (Exception e) {
             /* ignore */
         }

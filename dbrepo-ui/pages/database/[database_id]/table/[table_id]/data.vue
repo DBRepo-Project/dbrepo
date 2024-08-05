@@ -292,7 +292,6 @@ export default {
     }
   },
   mounted () {
-    this.reload()
     this.loadProperties()
   },
   methods: {
@@ -429,7 +428,6 @@ export default {
     reload () {
       this.lastReload = new Date()
       this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
-      this.loadCount()
     },
     loadData ({ page, itemsPerPage, sortBy }) {
       this.options.page = page
@@ -438,6 +436,7 @@ export default {
       this.loadingData = true
       tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (page - 1), itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
         .then((data) => {
+          this.total = data.count
           this.rows = data.result.map((row) => {
             for (const col in row) {
               const column = this.table.columns.filter(c => c.internal_name === col)[0]
@@ -457,23 +456,6 @@ export default {
         .catch(({code, message}) => {
           this.error = true
           this.loadingData = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string' || typeof message !== 'string') {
-            return
-          }
-          toast.error(this.$t(code) + ": " + message)
-        })
-    },
-    loadCount () {
-      const tableService = useTableService()
-      this.loadingCount = true
-      tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
-        .then((count) => {
-          this.total = count
-          this.loadingCount = false
-        })
-        .catch(({code, message}) => {
-          this.loadingCount = false
           const toast = useToastInstance()
           if (typeof code !== 'string' || typeof message !== 'string') {
             return

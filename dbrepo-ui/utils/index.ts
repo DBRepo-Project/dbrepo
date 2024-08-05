@@ -1082,28 +1082,30 @@ export function timestampsToHumanDifference(date1: string, date2: string) {
   return moment.duration(other.diff(date)).humanize(true)
 }
 
-export function sizeToHumanLabel(num: number) {
+export function sizeToHumanLabel(num: number): string {
   let number = Number(num)
   if (!number) {
     return '0 B'
   }
   if (number < 1000) {
-    return `${Math.floor(number)} B`
+    return `${roundTwoDecimals(number)} B`
   }
   number = number / 1000
   if (number < 1000) {
-    return `${Math.floor(number)} kB`
+    return `${roundTwoDecimals(number)} kB`
   }
   number = number / 1000
   if (number < 1000) {
-    return `${Math.floor(number)} MB`
+    return `${roundTwoDecimals(number)} MB`
   }
   number = number / 1000
   if (number < 1000) {
-    return `${number} GB`
+    return `${roundTwoDecimals(number)} GB`
   }
   number = number / 1000
-  if (number < 1000) {
-    return `${number} TB`
-  }
+  return `${roundTwoDecimals(number)} TB`
+}
+
+export function roundTwoDecimals(num: number): number {
+  return Math.round((num + Number.EPSILON) * 100) / 100
 }
