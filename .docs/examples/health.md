@@ -4,7 +4,7 @@ author: Martin Weise
 
 ## tl;dr
 
-[:fontawesome-solid-database: &nbsp;Dataset](https://dbrepo1.ec.tuwien.ac.at/pid/52){ .md-button .md-button--primary target="_blank" }
+[:fontawesome-solid-database: &nbsp;Dataset](https://dbrepo1.ec.tuwien.ac.at/database/32/info){ .md-button .md-button--primary target="_blank" }
 
 ## Description
 
@@ -14,11 +14,12 @@ pressure. The original dataset is available on [Kaggle](https://doi.org/10.34740
 
 ## Solution
 
-TBD
+Importing the original dataset from Kaggle into DBRepo allows for exploratory analysis and increased value for secondary
+use, e.g. with our [`pandas`](https://pypi.org/project/pandas/)-compatible [Python Library](../../api/python).
 
 ## DBRepo Features
 
 - [x] System versioning
 - [x] Subset exploration
-- [x] Large dataset (3 tables, largest contains >35 million rows)
+- [x] Large dataset (3 tables, around 6GB)
 - [x] External data access for analysis
