@@ -24,6 +24,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -63,7 +64,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
 
     @Override
     public List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
-            ViewMalformedException, ViewNotFoundException, ViewSchemaException {
+            ViewNotFoundException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         final List<ViewDto> views = new LinkedList<>();
@@ -71,7 +72,9 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             /* inspect tables before views */
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseViewsSelectRawQuery());
             statement.setString(1, database.getInternalName());
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet1 = statement.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet1.next()) {
                 final String viewName = resultSet1.getString(1);
                 if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
@@ -117,8 +120,10 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                 .build();
         try {
             /* create view if not exists */
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), data.getQuery()))
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             /* select view columns */
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
@@ -151,10 +156,12 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                     .stream()
                     .map(metadataMapper::viewColumnDtoToColumnDto)
                     .toList();
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(
                             mariaDbMapper.selectDatasetRawQuery(view.getDatabase().getInternalName(),
                                     view.getInternalName(), mappedColumns, timestamp, size, page))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = dataMapper.resultListToQueryResultDto(mappedColumns, resultSet);
             queryResult.setId(view.getId());
             connection.commit();
@@ -174,8 +181,10 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         final Connection connection = dataSource.getConnection();
         try {
             /* drop view if exists */
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(view.getInternalName()))
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -196,9 +205,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         final Long queryResult;
         try {
             /* find view data */
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
                             view.getDatabase().getInternalName(), view.getInternalName(), timestamp))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
@@ -217,7 +228,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
             RemoteUnavailableException, SidecarExportException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
-        final String filePath = s3Config.getS3FilePath() + "/" + fileName;
+        final String filePath = s3Config.getS3FilePath() + File.separator + fileName;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -226,9 +237,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                     .stream()
                     .map(metadataMapper::viewColumnDtoToColumnDto)
                     .toList();
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(database.getInternalName(),
                             view.getInternalName(), columns, timestamp, filePath))
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
