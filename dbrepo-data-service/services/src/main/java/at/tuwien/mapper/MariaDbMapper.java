@@ -73,6 +73,30 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String databaseRevokePrivilegesQuery(String username) {
+        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* FROM `")
+                .append(username)
+                .append("`@`%`;");
+        log.trace("mapped revoke privileges statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String databaseGrantProcedureQuery(String username, String procedure) {
+        final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `")
+                .append(procedure)
+                .append("` TO `")
+                .append(username)
+                .append("`@`%`;");
+        log.trace("mapped revoke privileges statement: {}", statement);
+        return statement.toString();
+    }
+
+    default String databaseFlushPrivilegesQuery() {
+        final String statement = "FLUSH PRIVILEGES;";
+        log.trace("mapped flush privileges statement: {}", statement);
+        return statement;
+    }
+
     @Named("createDatabase")
     default String databaseCreateDatabaseQuery(String database) {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
@@ -80,6 +104,60 @@ public interface MariaDbMapper {
                 .append("`");
         log.trace("mapped create database statement: {}", statement);
         return statement.toString();
+    }
+
+    default String queryStoreCreateSequenceRawQuery() {
+        final String statement = "CREATE SEQUENCE `qs_queries_seq` NOCACHE;";
+        log.trace("mapped create query store sequence statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreCreateTableRawQuery() {
+        final String statement = "CREATE TABLE `qs_queries` ( `id` bigint not null primary key default nextval(`qs_queries_seq`), `created` datetime not null default now(), `executed` datetime not null default now(), `created_by` varchar(36) not null, `query` text not null, `query_normalized` text not null, `is_persisted` boolean not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint);";
+        log.trace("mapped create query store table statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreCreateHashTableProcedureRawQuery() {
+        final String statement = "CREATE PROCEDURE hash_table(IN name VARCHAR(255), OUT hash VARCHAR(255), OUT count BIGINT) BEGIN DECLARE _sql TEXT; SELECT CONCAT('SELECT SHA2(GROUP_CONCAT(CONCAT_WS(\\'\\',', GROUP_CONCAT(CONCAT('`', column_name, '`') ORDER BY column_name), ') SEPARATOR \\',\\'), 256) AS hash, COUNT(*) AS count FROM `', name, '` INTO @hash, @count;') FROM `information_schema`.`columns` WHERE `table_schema` = DATABASE() AND `table_name` = name INTO _sql; PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash; SET count = @count; END;";
+        log.trace("mapped create query store hash_table procedure statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreCreateStoreQueryProcedureRawQuery() {
+        final String statement = "CREATE PROCEDURE store_query(IN query TEXT, IN executed DATETIME, OUT queryId BIGINT) BEGIN DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256); DECLARE _username varchar(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', ''); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        log.trace("mapped create query store store_query procedure statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreCreateInternalStoreQueryProcedureRawQuery() {
+        final String statement = "CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN executed DATETIME, OUT queryId BIGINT) BEGIN DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;";
+        log.trace("mapped create query store _store_query procedure statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreStoreQueryRawQuery() {
+        final String statement = "{call _store_query(?, ?, ?, ?)}";
+        log.trace("mapped store query statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreUpdateQueryRawQuery() {
+        final String statement = "UPDATE `qs_queries` SET `is_persisted` = ? WHERE `id` = ?";
+        log.trace("mapped update query statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreDeleteStaleQueriesRawQuery() {
+        final String statement = "DELETE FROM `qs_queries` WHERE `is_persisted` = false AND ABS(DATEDIFF(`created`, NOW())) >= 1";
+        log.trace("mapped delete stale queries statement: {}", statement);
+        return statement;
+    }
+
+    default String queryStoreFindQueryRawQuery() {
+        final String statement = "SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries` q WHERE q.`id` = ?";
+        log.trace("mapped find query statement: {}", statement);
+        return statement;
     }
 
     default String databaseTablesSelectRawQuery() {

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -60,9 +61,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final List<TableDto> tables = new LinkedList<>();
         try {
             /* inspect tables before views */
+            final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
             statement.setString(1, database.getInternalName());
             final ResultSet resultSet1 = statement.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet1.next()) {
                 final String tableName = resultSet1.getString(1);
                 if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
@@ -92,8 +95,10 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final TableStatisticDto statistic;
         try {
             /* obtain statistic */
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName()))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             statistic = dataMapper.resultSetToTableStatistic(resultSet);
             final TableDto tmpTable = schemaService.inspectTable(table.getDatabase(), table.getInternalName());
             statistic.setAvgRowLength(tmpTable.getAvgRowLength());
@@ -129,8 +134,10 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(data))
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -156,8 +163,10 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropTableRawQuery(tableName))
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -177,10 +186,12 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final QueryResultDto queryResult;
         try {
             /* find table data */
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectDatasetRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), table.getColumns(),
                             timestamp, size, page))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
             queryResult = dataMapper.resultListToQueryResultDto(table.getColumns(), resultSet);
         } catch (SQLException e) {
@@ -203,9 +214,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final List<TableHistoryDto> history;
         try {
             /* find table data */
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectHistoryRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), size))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             history = dataMapper.resultSetToTableHistory(resultSet);
             connection.commit();
         } catch (SQLException e) {
@@ -227,9 +240,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Long queryResult;
         try {
             /* find table data */
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), timestamp))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
@@ -253,9 +268,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Connection connection = dataSource.getConnection();
         try {
             /* import tuple */
-            data.setLocation(s3Config.getS3FilePath() + "/" + data.getLocation());
+            data.setLocation(s3Config.getS3FilePath() + File.separator + data.getLocation());
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.datasetToRawInsertQuery(table.getDatabase().getInternalName(), table, data))
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -283,7 +300,9 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
                         getColumnType(table.getColumns(), column), idx[0], column, data.getKeys().get(column));
                 idx[0]++;
             }
+            final long start = System.currentTimeMillis();
             statement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -325,7 +344,9 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
+            final long start = System.currentTimeMillis();
             statement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -359,7 +380,9 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
                         getColumnType(table.getColumns(), entry.getKey()), idx[0], entry.getKey(), entry.getValue());
                 idx[0]++;
             }
+            final long start = System.currentTimeMillis();
             statement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -392,9 +415,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
+            final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(table.getDatabase().getInternalName(),
                             table.getInternalName(), table.getColumns(), timestamp, filePath))
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

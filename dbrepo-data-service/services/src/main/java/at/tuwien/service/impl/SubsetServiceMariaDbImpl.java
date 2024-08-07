@@ -68,16 +68,26 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final Connection connection = dataSource.getConnection();
         try {
             /* create query store */
-            connection.prepareStatement("CREATE SEQUENCE `qs_queries_seq` NOCACHE;")
+            long start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateSequenceRawQuery())
                     .execute();
-            connection.prepareStatement("CREATE TABLE `qs_queries` ( `id` bigint not null primary key default nextval(`qs_queries_seq`), `created` datetime not null default now(), `executed` datetime not null default now(), `created_by` varchar(36) not null, `query` text not null, `query_normalized` text not null, `is_persisted` boolean not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint );")
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
                     .execute();
-            connection.prepareStatement("CREATE PROCEDURE hash_table(IN name VARCHAR(255), OUT hash VARCHAR(255), OUT count BIGINT) BEGIN DECLARE _sql TEXT; SELECT CONCAT('SELECT SHA2(GROUP_CONCAT(CONCAT_WS(\\'\\',', GROUP_CONCAT(CONCAT('`', column_name, '`') ORDER BY column_name), ') SEPARATOR \\',\\'), 256) AS hash, COUNT(*) AS count FROM `', name, '` INTO @hash, @count;') FROM `information_schema`.`columns` WHERE `table_schema` = DATABASE() AND `table_name` = name INTO _sql; PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash; SET count = @count; END;")
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
                     .execute();
-            connection.prepareStatement("CREATE PROCEDURE store_query(IN query TEXT, IN executed DATETIME, OUT queryId BIGINT) BEGIN DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256); DECLARE _username varchar(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', ''); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;")
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
                     .execute();
-            connection.prepareStatement("CREATE DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, IN executed DATETIME, OUT queryId BIGINT) BEGIN DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256); DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')'); PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`; IF @hash IS NULL THEN INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` IS NULL); ELSE INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`, `result_number`, `executed`) SELECT _username, query, query, false, _queryhash, @hash, @count, executed WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash); END IF; END;")
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
                     .execute();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -130,12 +140,14 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.filterToGetQueriesRawQuery(filterPersisted));
             if (filterPersisted != null) {
                 statement.setBoolean(1, filterPersisted);
                 log.trace("filter persisted only {}", filterPersisted);
             }
             final ResultSet resultSet = statement.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             final List<QueryDto> queries = new LinkedList<>();
             while (resultSet.next()) {
                 final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
@@ -168,12 +180,18 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
+            long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.subsetToRawTemporaryViewQuery(viewName, query.getQuery()))
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(viewName, timestamp, filePath))
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(viewName))
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -191,8 +209,10 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            final long start = System.currentTimeMillis();
             final PreparedStatement preparedStatement = connection.prepareStatement(statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             return dataMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
@@ -208,8 +228,10 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
+            final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement, timestamp))
                     .executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             return mariaDbMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
@@ -225,9 +247,11 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
-            final PreparedStatement preparedStatement = connection.prepareStatement("SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries` q WHERE q.`id` = ?");
+            final long start = System.currentTimeMillis();
+            final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreFindQueryRawQuery());
             preparedStatement.setLong(1, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             if (!resultSet.next()) {
                 throw new QueryNotFoundException("Failed to find query");
             }
@@ -255,12 +279,14 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final Connection connection = dataSource.getConnection();
         try {
             /* insert query into query store */
-            final CallableStatement callableStatement = connection.prepareCall("{call _store_query(?, ?, ?, ?)}");
+            final long start = System.currentTimeMillis();
+            final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
             callableStatement.setString(1, String.valueOf(userId));
             callableStatement.setString(2, query);
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
             callableStatement.registerOutParameter(4, Types.BIGINT);
             callableStatement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             queryId = callableStatement.getLong(4);
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
@@ -282,10 +308,12 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final Connection connection = dataSource.getConnection();
         try {
             /* update query */
-            final PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `qs_queries` SET `is_persisted` = ? WHERE `id` = ?");
+            final long start = System.currentTimeMillis();
+            final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreUpdateQueryRawQuery());
             preparedStatement.setBoolean(1, persist);
             preparedStatement.setLong(2, queryId);
             preparedStatement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
         } catch (SQLException e) {
             log.error("Failed to (un-)persist query: {}", e.getMessage());
             throw new QueryStorePersistException("Failed to (un-)persist query", e);
@@ -300,8 +328,10 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
-            connection.prepareStatement("DELETE FROM `qs_queries` WHERE `is_persisted` = false AND ABS(DATEDIFF(`created`, NOW())) >= 1")
+            final long start = System.currentTimeMillis();
+            connection.prepareStatement(mariaDbMapper.queryStoreDeleteStaleQueriesRawQuery())
                     .executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
         } catch (SQLException e) {
             log.error("Failed to delete stale queries: {}", e.getMessage());
             throw new QueryStoreGCException("Failed to delete stale queries: " + e.getMessage(), e);

@@ -20,12 +20,10 @@ public interface ViewService {
      * @return The list of view metadata.
      * @throws SQLException
      * @throws DatabaseMalformedException
-     * @throws ViewMalformedException
      * @throws ViewNotFoundException
-     * @throws ViewSchemaException
      */
     List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
-            ViewMalformedException, ViewNotFoundException, ViewSchemaException;
+            ViewNotFoundException;
 
     /**
      * Creates a view in the given data database.

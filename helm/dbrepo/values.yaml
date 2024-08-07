@@ -56,8 +56,8 @@ metadatadb:
     enabled: false
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
-  ## @param metadatadb.initdbScripts Additional init.db scripts that are executed on the first start.
-  initdbScripts: { }
+  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
+  extraInitDbScripts: { }
   #    03-additional-data.sql: |
   #      BEGIN;
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)

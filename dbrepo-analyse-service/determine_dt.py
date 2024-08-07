@@ -10,7 +10,7 @@ import pandas
 from numpy import dtype, max, min
 from flask import current_app
 from pandas import DataFrame
-from pandas.errors import EmptyDataError
+from pandas.errors import EmptyDataError, ParserError
 
 from api.dto import ColumnAnalysisDto, DataTypeDto, AnalysisDto
 from clients.s3_client import S3Client
@@ -45,12 +45,14 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
         for encoding in ['utf-8', 'cp1252', 'latin1', 'iso-8859-1']:
             try:
                 logging.debug(f"attempt parsing .csv using encoding {encoding}")
-                df = pandas.read_csv(fh, delimiter=separator, nrows=100, lineterminator=line_terminator,
-                                     index_col=False, encoding=encoding)
+                df = pandas.read_csv(fh, delimiter=separator, nrows=current_app.config['ANALYSE_NROWS'],
+                                     lineterminator=line_terminator, index_col=False, encoding=encoding)
                 logging.debug(f"parsing .csv using encoding {encoding} was successful")
                 break
+            except ParserError as error:
+                raise IOError(f"Failed to parse .csv using separator {separator}: {error}")
             except (UnicodeDecodeError, EmptyDataError) as error:
-                logging.warning(f"Failed to parse .csv using encoding {encoding}: {error}")
+                raise IOError(f"Failed to parse .csv using encoding {encoding}: {error}")
         if df is None:
             raise IOError(
                 f"Failed to parse .csv: no supported encoding found (one of: utf-8, cp1252, latin1, iso-8859-1)")
