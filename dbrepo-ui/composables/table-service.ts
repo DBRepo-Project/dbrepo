@@ -71,9 +71,8 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size), timeout: 60_000 })
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
         .then((response) => {
-          response.data.count = Number(response.headers['x-count'])
           console.info('Got data for table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)
         })
@@ -88,7 +87,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null), timeout: 60_000 })
+      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null) })
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)
@@ -192,7 +191,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
-      axios.get<TableColumnEntityDto[]>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`, {timeout: 60_000})
+      axios.get<TableColumnEntityDto[]>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`)
         .then((response) => {
           console.info('Suggested semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
           resolve(response.data)

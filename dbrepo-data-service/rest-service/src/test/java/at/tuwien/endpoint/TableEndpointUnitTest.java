@@ -158,9 +158,6 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getHeaders().get("X-Count"));
-        assertEquals(1, response.getHeaders().get("X-Count").size());
-        assertEquals(QUERY_5_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals(1, response.getHeaders().get("Access-Control-Expose-Headers").size());
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));

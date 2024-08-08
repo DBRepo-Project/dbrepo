@@ -224,8 +224,8 @@ public class TableEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Access-Control-Expose-Headers", "X-Count");
         try {
-            headers.set("X-Count", "" + tableService.getCount(table, timestamp));
             if (request.getMethod().equals("HEAD")) {
+                headers.set("X-Count", "" + tableService.getCount(table, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();

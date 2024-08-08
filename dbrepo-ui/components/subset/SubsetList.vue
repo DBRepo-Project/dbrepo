@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card
-      v-if="!loadingSubsets && queries.length === 0"
+      v-if="!loadingSubsets && subsets.length === 0"
       variant="flat"
       rounded="0"
       :text="$t('pages.database.subpages.subsets.empty')" />
@@ -14,7 +14,7 @@
         <Loading />
       </v-list-item>
       <div
-        v-for="(item, i) in queries"
+        v-for="(item, i) in subsets"
         :key="`q-${i}`">
         <v-divider v-if="i !== 0" class="mx-4" />
         <v-list>
@@ -54,9 +54,7 @@ export default {
     return {
       loadingSubsets: false,
       loadingIdentifiers: false,
-      queries: [],
-      identifiers: [],
-      isAuthorizationError: false,
+      subsets: [],
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -77,8 +75,9 @@ export default {
       this.loadingSubsets = true
       const queryService = useQueryService()
       queryService.findAll(this.$route.params.database_id, true)
-        .then((queries) => {
-          this.queries = queries
+        .then((subsets) => {
+          this.loadingSubsets = false
+          this.subsets = subsets
         })
         .catch(({code}) => {
           this.loadingSubsets = false
@@ -87,9 +86,6 @@ export default {
             return
           }
           toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.loadingSubsets = false
         })
     },
     title (query) {

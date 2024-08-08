@@ -21,6 +21,7 @@ import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -402,6 +403,9 @@ public interface DataMapper {
                 .created(LocalDateTime.parse(data.getString(2), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
+                .creator(UserDto.builder()
+                        .id(UUID.fromString(data.getString(3)))
+                        .build())
                 .createdBy(UUID.fromString(data.getString(3)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))

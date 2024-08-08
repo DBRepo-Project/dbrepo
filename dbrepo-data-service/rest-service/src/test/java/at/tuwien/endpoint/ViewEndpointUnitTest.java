@@ -161,17 +161,12 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
-        when(viewService.count(eq(VIEW_1_PRIVILEGED_DTO), any(Instant.class)))
-                .thenReturn(VIEW_1_DATA_COUNT);
         when(viewService.data(eq(VIEW_1_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
                 .thenReturn(VIEW_1_DATA_DTO);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getHeaders().get("X-Count"));
-        assertEquals(1, response.getHeaders().get("X-Count").size());
-        assertEquals(VIEW_1_DATA_COUNT, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals(1, response.getHeaders().get("Access-Control-Expose-Headers").size());
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));

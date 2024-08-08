@@ -37,7 +37,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, { params: {page, size}, timeout: 30_000 })
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, { params: {page, size} })
         .then((response) => {
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)
@@ -53,7 +53,7 @@ export const useViewService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
-      axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`, { timeout: 30_000 })
+      axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found', count, 'tuples for view with id', viewId, 'in database with id', databaseId)
