@@ -1382,7 +1382,7 @@
     },
     "subset": {
       "save": {
-        "permanent": "Save"
+        "permanent": "Star"
       },
       "export": {
         "data": {
@@ -1399,7 +1399,7 @@
         "permanent": "PID"
       },
       "unsave": {
-        "permanent": "Unsave"
+        "permanent": "Unstar"
       }
     },
     "view": {

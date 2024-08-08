@@ -186,14 +186,16 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         final QueryResultDto queryResult;
         try {
             /* find table data */
-            final long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectDatasetRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), table.getColumns(),
                             timestamp, size, page))
                     .executeQuery();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
             connection.commit();
             queryResult = dataMapper.resultListToQueryResultDto(table.getColumns(), resultSet);
+            log.debug("mapped result in {} ms", System.currentTimeMillis() - start);
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to find data from table {}.{}: {}", table.getDatabase().getInternalName(), table.getInternalName(), e.getMessage());

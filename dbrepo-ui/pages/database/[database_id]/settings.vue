@@ -422,7 +422,7 @@ export default {
       databaseService.updateVisibility(this.$route.params.database_id, this.modifyVisibility)
         .then((database) => {
           const toast = useToastInstance()
-          toast.success('success.database.visibility')
+          toast.success(this.$t('success.database.visibility'))
           this.cacheStore.setDatabase(database)
         })
         .catch(() => {

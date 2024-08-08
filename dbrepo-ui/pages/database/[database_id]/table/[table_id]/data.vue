@@ -72,7 +72,7 @@
         :headers="headers"
         :items="rows"
         :items-length="total"
-        :loading="loadingData"
+        :loading="loadingData || loadingCount"
         :options.sync="options"
         :footer-props="footerProps"
         @update:options="loadData">
@@ -192,9 +192,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'error' : 'primary'
-    },
     roles () {
       return this.userStore.getRoles
     },
@@ -283,6 +280,7 @@ export default {
   },
   watch: {
     version () {
+      this.loadCount()
       this.reload()
     },
     table (newTable, oldTable) {
@@ -293,6 +291,7 @@ export default {
   },
   mounted () {
     this.loadProperties()
+    this.loadCount()
   },
   methods: {
     addTuple () {
@@ -429,14 +428,25 @@ export default {
       this.lastReload = new Date()
       this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
     },
-    loadData ({ page, itemsPerPage, sortBy }) {
+    loadCount() {
+      this.loadingCount = true
+      const tableService = useTableService()
+      tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
+        .then((count) => {
+          this.total = count
+          this.loadingCount = false
+        })
+        .catch((error) => {
+          this.loadingCount = false
+        })
+    },
+    loadData({ page, itemsPerPage, sortBy }) {
       this.options.page = page
       this.options.itemsPerPage = itemsPerPage
       const tableService = useTableService()
       this.loadingData = true
       tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (page - 1), itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
         .then((data) => {
-          this.total = data.count
           this.rows = data.result.map((row) => {
             for (const col in row) {
               const column = this.table.columns.filter(c => c.internal_name === col)[0]

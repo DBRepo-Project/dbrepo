@@ -29,7 +29,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.InputStream;
-import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -69,7 +68,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, RemoteUnavailableException, SQLException, MetadataServiceException {
 
         /* test */
-        final List<QueryDto> response = generic_findAllById(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
+        final List<QueryDto> response = generic_findAllById(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO);
         assertEquals(6, response.size());
     }
 
@@ -79,17 +78,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_findAllById(null, null, null);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void findAllById_privateNoAccess_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findAllById(DATABASE_1_ID, DATABASE_1_PRIVILEGED_DTO, null);
+            generic_findAllById(null, null);
         });
     }
 
@@ -105,7 +94,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
 
         /* test */
-        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.APPLICATION_JSON, null, null);
+        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.APPLICATION_JSON, null);
     }
 
     @Test
@@ -126,7 +115,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.parseMediaType("text/csv"), null, null);
+        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.parseMediaType("text/csv"), null);
     }
 
     @Test
@@ -147,7 +136,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.parseMediaType("text/csv"), Instant.now(), null);
+        generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.parseMediaType("text/csv"), Instant.now());
     }
 
     @Test
@@ -161,7 +150,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.APPLICATION_JSON, null, null);
+            generic_findById(QUERY_5_ID, QUERY_5_DTO, MediaType.APPLICATION_JSON, null);
         });
     }
 
@@ -272,9 +261,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<QueryResultDto> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getHeaders().get("X-Count"));
-        assertEquals(1, response.getHeaders().get("X-Count").size());
-        assertEquals(QUERY_5_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals(1, response.getHeaders().get("Access-Control-Expose-Headers").size());
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));
@@ -325,9 +311,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<QueryResultDto> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getHeaders().get("X-Count"));
-        assertEquals(1, response.getHeaders().get("X-Count").size());
-        assertEquals(QUERY_1_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
         assertNotNull(response.getBody());
     }
 
@@ -464,7 +447,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-    protected List<QueryDto> generic_findAllById(Long databaseId, PrivilegedDatabaseDto database, Principal principal)
+    protected List<QueryDto> generic_findAllById(Long databaseId, PrivilegedDatabaseDto database)
             throws DatabaseUnavailableException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, SQLException, MetadataServiceException {
 
@@ -481,16 +464,16 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<List<QueryDto>> response = subsetEndpoint.list(databaseId, null, principal);
+        final ResponseEntity<List<QueryDto>> response = subsetEndpoint.list(databaseId, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         return response.getBody();
     }
 
-    protected void generic_findById(Long subsetId, QueryDto subset, MediaType accept, Instant timestamp,
-                                    Principal principal) throws UserNotFoundException, DatabaseUnavailableException,
-            StorageUnavailableException, NotAllowedException, QueryMalformedException, QueryNotFoundException,
-            DatabaseNotFoundException, SidecarExportException, RemoteUnavailableException, FormatNotAvailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+    protected void generic_findById(Long subsetId, QueryDto subset, MediaType accept, Instant timestamp)
+            throws UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
+            NotAllowedException, QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException,
+            SidecarExportException, RemoteUnavailableException, FormatNotAvailableException, StorageNotFoundException,
+            SQLException, MetadataServiceException {
 
         /* mock */
         when(queryService.findById(DATABASE_3_PRIVILEGED_DTO, subsetId))
@@ -499,7 +482,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(accept.toString());
 
         /* test */
-        final ResponseEntity<?> response = subsetEndpoint.findById(DATABASE_3_ID, subsetId, mockHttpServletRequest, timestamp, principal);
+        final ResponseEntity<?> response = subsetEndpoint.findById(DATABASE_3_ID, subsetId, mockHttpServletRequest, timestamp);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }

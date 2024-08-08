@@ -277,6 +277,7 @@ services:
     image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
+      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
     depends_on:
       dbrepo-search-service:
