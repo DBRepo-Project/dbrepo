@@ -56,8 +56,8 @@ metadatadb:
     enabled: false
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
-  ## @param metadatadb.initdbScripts Additional init.db scripts that are executed on the first start.
-  initdbScripts: { }
+  ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
+  extraInitDbScripts: { }
   #    03-additional-data.sql: |
   #      BEGIN;
   #      INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
@@ -81,11 +81,6 @@ authservice:
     debug: false
   ## @param authservice.endpoint The hostname for the microservices.
   endpoint: http://auth-service
-  auth:
-    ## @param authservice.auth.adminUser The admin username.
-    adminUser: fda
-    ## @param authservice.auth.adminPassword The admin user password.
-    adminPassword: fda
   ## @skip authservice.postgresql
   postgresql:
     enabled: true
@@ -222,8 +217,6 @@ searchdb:
   ## @skip searchdb.security
   security:
     enabled: false
-    adminUsername: admin
-    adminPassword: admin
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
 
@@ -422,7 +415,7 @@ metadataservice:
     ## @param metadataservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
     fsGroup: 1001
   containerSecurityContext:
-    ## @param metadataservice.containerSecurityContext.enabled Enabled containers' Security Context
+    ## @param metadataservice.containerSecurityContext.enabled Enable containers' Security Context
     enabled: true
     ## @param metadataservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
     seLinuxOptions: { }
@@ -812,14 +805,14 @@ ui:
       host: example.com
       port:
         ## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
-        5671: true
+        5671: false
         ## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
-        5672: false
+        5672: true
       ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:
       ## @param ui.public.database.extra Extra metadata displayed.
-      extra: "128.130.0.0/15"
+      extra: ""
     ## @skip ui.public.links
     links:
       rabbitmq:

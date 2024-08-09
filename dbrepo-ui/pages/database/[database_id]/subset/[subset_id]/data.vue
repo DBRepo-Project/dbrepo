@@ -14,6 +14,15 @@
           v-else
           v-text="executionUTC" />
       </v-toolbar-title>
+      <v-spacer />
+      <v-btn
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
+        variant="flat"
+        :text="$t('toolbars.table.data.refresh')"
+        class="mr-2"
+        :disabled="loadingSubset"
+        :loading="loadingSubset"
+        @click="loadSubset" />
     </v-toolbar>
     <v-card tile>
       <QueryResults

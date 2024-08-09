@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public abstract class HibernateConnector {
 
     public static ComboPooledDataSource getPrivilegedDataSource(PrivilegedContainerDto container, String databaseName) {
+        final long start = System.currentTimeMillis();
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(url(container, databaseName));
         dataSource.setUser(container.getUsername());
@@ -21,7 +22,7 @@ public abstract class HibernateConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
-        log.trace("created pooled data source {} (user={}, password=(hidden))", url(container, databaseName), container.getUsername());
+        log.trace("created pooled data source {} in {} ms (user={}, password=(hidden))", url(container, databaseName), System.currentTimeMillis() - start, container.getUsername());
         return dataSource;
     }
 

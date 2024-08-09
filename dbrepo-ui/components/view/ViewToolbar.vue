@@ -11,16 +11,17 @@
     <v-spacer />
     <v-btn
       v-if="canDeleteView"
-      prepend-icon="mdi-delete"
       class="mr-2"
       variant="flat"
-      color="error"
-      :text="$vuetify.display.lgAndUp ? $t('navigation.delete') : ''"
+      :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
       :loading="loadingDelete"
+      color="error"
+      :text="$t('navigation.delete')"
       @click="deleteView" />
     <v-btn
       v-if="canCreatePid"
-      prepend-icon="mdi-content-save-outline"
+      class="mr-2"
+      :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
       variant="flat"
       color="primary"
       :text="($vuetify.display.lgAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
@@ -62,6 +63,10 @@ export default {
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
     view () {
       if (!this.database) {

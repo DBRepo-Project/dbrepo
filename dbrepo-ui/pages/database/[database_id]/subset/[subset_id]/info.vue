@@ -103,7 +103,12 @@
 <script setup>
 const config = useRuntimeConfig()
 const { database_id, subset_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`)
+const requestConfig = { timeout: 90_000, headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
+const userStore = useUserStore()
+if (userStore.getToken) {
+  requestConfig.headers.Authorization = `Bearer ${userStore.getToken}`
+}
+const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`, requestConfig)
 if (data.value) {
   const identifierService = useIdentifierService()
   useServerHead(identifierService.subsetToServerHead(data.value))
