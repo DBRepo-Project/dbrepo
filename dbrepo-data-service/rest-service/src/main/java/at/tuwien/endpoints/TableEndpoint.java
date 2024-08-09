@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -189,6 +191,7 @@ public class TableEndpoint {
                                                   @RequestParam(required = false) Instant timestamp,
                                                   @RequestParam(required = false) Long page,
                                                   @RequestParam(required = false) Long size,
+                                                  @NotNull HttpServletRequest request,
                                                   Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, PaginationException, QueryMalformedException, MetadataServiceException,
@@ -221,7 +224,12 @@ public class TableEndpoint {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Access-Control-Expose-Headers", "X-Count");
         try {
-            headers.set("X-Count", "" + tableService.getCount(table, timestamp));
+            if (request.getMethod().equals("HEAD")) {
+                headers.set("X-Count", "" + tableService.getCount(table, timestamp));
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .build();
+            }
             final QueryResultDto dto = tableService.getData(table, timestamp, page, size);
             return ResponseEntity.ok()
                     .headers(headers)

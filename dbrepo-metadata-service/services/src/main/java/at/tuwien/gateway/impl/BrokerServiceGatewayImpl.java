@@ -38,9 +38,9 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant topic permissions: {}", e.getMessage());
-            throw new BrokerServiceConnectionException("Failed to grant topic permissions: " + e.getMessage());
+            throw new BrokerServiceConnectionException("Failed to grant topic permissions: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Failed to grant topic permissions: unexpected response: {}", e.getMessage());
+            log.error("Failed to grant topic permissions: unexpected response: {}", e.getMessage(), e);
             throw new BrokerServiceException("Failed to grant topic permissions: unexpected response: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
@@ -59,7 +59,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant virtual host permissions: {}", e.getMessage());
-            throw new BrokerServiceConnectionException("Failed to grant virtual host permissions: " + e.getMessage());
+            throw new BrokerServiceConnectionException("Failed to grant virtual host permissions: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Failed to grant virtual host permissions: unexpected response: {}", e.getMessage());
             throw new BrokerServiceException("Failed to grant virtual host permissions: unexpected response: " + e.getMessage(), e);
@@ -80,7 +80,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to grant exchange permissions: {}", e.getMessage());
-            throw new BrokerServiceConnectionException("Failed to grant exchange permissions: " + e.getMessage());
+            throw new BrokerServiceConnectionException("Failed to grant exchange permissions: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Failed to grant exchange permissions: unexpected response: {}", e.getMessage());
             throw new BrokerServiceException("Failed to grant exchange permissions: unexpected response: " + e.getMessage(), e);

@@ -334,7 +334,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         final List<TableDto> response = tableService.getSchemas(DATABASE_1_PRIVILEGED_DTO);
-        assertEquals(3, response.size());
+        assertEquals(4, response.size());
         final TableDto table0 = response.get(0);
         Assertions.assertEquals("complex_foreign_keys", table0.getInternalName());
         Assertions.assertEquals("complex_foreign_keys", table0.getName());
@@ -411,32 +411,53 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(0, constraints1.getUniques().size());
         /* table 2 */
         final TableDto table2 = response.get(2);
-        Assertions.assertEquals("not_in_metadata_db", table2.getInternalName());
-        Assertions.assertEquals("not_in_metadata_db", table2.getName());
+        Assertions.assertEquals("exotic_boolean", table2.getInternalName());
+        Assertions.assertEquals("exotic_boolean", table2.getName());
         Assertions.assertEquals(DATABASE_1_ID, table2.getTdbid());
         assertTrue(table2.getIsVersioned());
         Assertions.assertEquals(DATABASE_1_PUBLIC, table2.getIsPublic());
         final List<ColumnDto> columns2 = table2.getColumns();
         assertNotNull(columns2);
-        Assertions.assertEquals(5, columns2.size());
-        assertColumn(columns2.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns2.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns2.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null, null);
-        assertColumn(columns2.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns2.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null, null);
+        Assertions.assertEquals(3, columns2.size());
+        assertColumn(columns2.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns2.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns2.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null, null);
         final ConstraintsDto constraints2 = table2.getConstraints();
         assertNotNull(constraints2);
         final Set<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
         Assertions.assertEquals(1, primaryKey2.size());
         final Set<String> checks2 = constraints2.getChecks();
-        Assertions.assertEquals(1, checks2.size());
-        Assertions.assertEquals(Set.of("`age` > 0 and `age` < 120"), checks2);
+        Assertions.assertEquals(0, checks2.size());
         final List<UniqueDto> uniques2 = constraints2.getUniques();
-        Assertions.assertEquals(1, uniques2.size());
-        Assertions.assertEquals(2, uniques2.get(0).getColumns().size());
-        Assertions.assertEquals("not_in_metadata_db", uniques2.get(0).getTable().getInternalName());
-        Assertions.assertEquals("given_name", uniques2.get(0).getColumns().get(0).getInternalName());
-        Assertions.assertEquals("family_name", uniques2.get(0).getColumns().get(1).getInternalName());
+        Assertions.assertEquals(0, uniques2.size());
+        /* table 3 */
+        final TableDto table3 = response.get(3);
+        Assertions.assertEquals("not_in_metadata_db", table3.getInternalName());
+        Assertions.assertEquals("not_in_metadata_db", table3.getName());
+        Assertions.assertEquals(DATABASE_1_ID, table3.getTdbid());
+        assertTrue(table3.getIsVersioned());
+        Assertions.assertEquals(DATABASE_1_PUBLIC, table3.getIsPublic());
+        final List<ColumnDto> columns3 = table3.getColumns();
+        assertNotNull(columns3);
+        Assertions.assertEquals(5, columns3.size());
+        assertColumn(columns3.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
+        assertColumn(columns3.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
+        assertColumn(columns3.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null, null);
+        assertColumn(columns3.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
+        assertColumn(columns3.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null, null);
+        final ConstraintsDto constraints3 = table3.getConstraints();
+        assertNotNull(constraints3);
+        final Set<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
+        Assertions.assertEquals(1, primaryKey3.size());
+        final Set<String> checks3 = constraints3.getChecks();
+        Assertions.assertEquals(1, checks3.size());
+        Assertions.assertEquals(Set.of("`age` > 0 and `age` < 120"), checks3);
+        final List<UniqueDto> uniques3 = constraints3.getUniques();
+        Assertions.assertEquals(1, uniques3.size());
+        Assertions.assertEquals(2, uniques3.get(0).getColumns().size());
+        Assertions.assertEquals("not_in_metadata_db", uniques3.get(0).getTable().getInternalName());
+        Assertions.assertEquals("given_name", uniques3.get(0).getColumns().get(0).getInternalName());
+        Assertions.assertEquals("family_name", uniques3.get(0).getColumns().get(1).getInternalName());
     }
 
     @Test

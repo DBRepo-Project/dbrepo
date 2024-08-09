@@ -86,19 +86,11 @@ public class SubsetEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
-                                               Principal principal)
+                                               @RequestParam(name = "persisted", required = false) Boolean filterPersisted)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        if (!database.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to find subsets in database: no access");
-                throw new NotAllowedException("Failed to find subsets in database: no access");
-            }
-            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
-        }
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -151,8 +143,7 @@ public class SubsetEndpoint {
     public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("subsetId") Long subsetId,
                                       @NotNull HttpServletRequest httpServletRequest,
-                                      @RequestParam(required = false) Instant timestamp,
-                                      Principal principal)
+                                      @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, QueryMalformedException,
             SidecarExportException, StorageNotFoundException, NotAllowedException, UserNotFoundException,
@@ -161,13 +152,6 @@ public class SubsetEndpoint {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        if (!database.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to find subsets in database: no access");
-                throw new NotAllowedException("Failed to find subsets in database: no access");
-            }
-            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
-        }
         final QueryDto query;
         try {
             query = subsetService.findById(database, subsetId);
@@ -262,7 +246,7 @@ public class SubsetEndpoint {
             StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
             QueryNotSupportedException, NotAllowedException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, " +
-                "page={}, size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size,
+                        "page={}, size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size,
                 timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
@@ -360,21 +344,21 @@ public class SubsetEndpoint {
         }
         try {
             final QueryDto query = subsetService.findById(database, subsetId);
-            final Long count = subsetService.reExecuteCount(database, query);
             final HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Count", "" + count);
             headers.set("Access-Control-Expose-Headers", "X-Count");
-            if (request.getMethod().equals("GET")) {
-                final QueryResultDto result = subsetService.reExecute(database, query, page, size, null, null);
-                result.setId(subsetId);
-                log.trace("re-execute query resulted in result {}", result);
+            if (request.getMethod().equals("HEAD")) {
+                final Long count = subsetService.reExecuteCount(database, query);
+                headers.set("X-Count", "" + count);
                 return ResponseEntity.ok()
                         .headers(headers)
-                        .body(result);
+                        .build();
             }
+            final QueryResultDto result = subsetService.reExecute(database, query, page, size, null, null);
+            result.setId(subsetId);
+            log.trace("re-execute query resulted in result {}", result);
             return ResponseEntity.ok()
                     .headers(headers)
-                    .build();
+                    .body(result);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

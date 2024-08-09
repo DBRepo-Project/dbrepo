@@ -2,7 +2,7 @@ import type {AxiosError, AxiosRequestConfig} from 'axios'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useIdentifierService = (): any => {
-  async function findOne(id: number, accept: string | null): Promise<IdentifierDto> {
+  async function findOne(id: number, accept: string): Promise<IdentifierDto> {
     const axios = useAxiosInstance()
     console.debug('find identifier with id', id)
     const config: AxiosRequestConfig = {

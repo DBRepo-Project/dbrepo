@@ -332,12 +332,39 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals("other_id", pk1.getColumn().getName());
         assertEquals("other_id", pk1.getColumn().getInternalName());
         assertEquals(ColumnTypeDto.BIGINT, pk1.getColumn().getColumnType());
-
     }
 
     @Test
-    public void inspectView_succeeds() throws ViewMalformedException, SQLException, ViewNotFoundException,
-            ViewSchemaException {
+    public void inspectTable_exoticBoolean_succeeds() throws TableNotFoundException, SQLException {
+
+        /* test */
+        final TableDto response = schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "exotic_boolean");
+        final ConstraintsDto constraints = response.getConstraints();
+        final List<PrimaryKeyDto> primaryKey = new LinkedList<>(constraints.getPrimaryKey());
+        assertEquals(1, primaryKey.size());
+        final PrimaryKeyDto pk0 = primaryKey.get(0);
+        assertNull(pk0.getId());
+        assertNotNull(pk0.getTable());
+        assertNull(pk0.getTable().getId());
+        assertEquals("exotic_boolean", pk0.getTable().getName());
+        assertEquals("exotic_boolean", pk0.getTable().getInternalName());
+        assertNotNull(pk0.getColumn());
+        assertNull(pk0.getColumn().getId());
+        assertNull(pk0.getColumn().getTableId());
+        assertEquals(DATABASE_1_ID, pk0.getColumn().getDatabaseId());
+        assertNull(pk0.getColumn().getAlias());
+        assertEquals("bool_default", pk0.getColumn().getName());
+        assertEquals("bool_default", pk0.getColumn().getInternalName());
+        assertEquals(ColumnTypeDto.BOOL, pk0.getColumn().getColumnType());
+        final List<ColumnDto> columns = response.getColumns();
+        assertEquals(3, columns.size());
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+    }
+
+    @Test
+    public void inspectView_succeeds() throws SQLException, ViewNotFoundException {
 
         /* test */
         final ViewDto response = schemaService.inspectView(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db2");

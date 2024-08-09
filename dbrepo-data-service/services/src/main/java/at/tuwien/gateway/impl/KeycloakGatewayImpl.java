@@ -58,20 +58,20 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
                     .exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to obtain user token: {}", e.getMessage());
-            throw new AuthServiceConnectionException("Service unavailable", e);
+            throw new AuthServiceConnectionException("Failed to obtain user token: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest e) {
             if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
                 final KeycloakErrorDto error = e.getResponseBodyAs(KeycloakErrorDto.class);
                 if (error != null && error.getError().equals("invalid_grant")) {
                     log.error("Failed to obtain user token: {}", error.getErrorDescription());
-                    throw new AccountNotSetupException(error.getErrorDescription());
+                    throw new AccountNotSetupException("Failed to obtain user token: " + error.getErrorDescription(), e);
                 }
             }
             log.error("Failed to obtain user token: bad request");
             throw new CredentialsInvalidException("Bad request", e);
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to obtain user token: invalid credentials");
-            throw new CredentialsInvalidException("Invalid credentials", e);
+            throw new CredentialsInvalidException("Invalid credentials: " + e.getMessage(), e);
         }
         return response.getBody();
     }
