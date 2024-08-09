@@ -32,7 +32,7 @@ CREATE TABLE complex_foreign_keys
 (
     id         BIGINT NOT NULL PRIMARY KEY,
     weather_id BIGINT NOT NULL,
-    other_id   BIGINT   NOT NULL,
+    other_id   BIGINT NOT NULL,
     FOREIGN KEY (weather_id, other_id) REFERENCES complex_primary_key (id, `other_id`)
 ) WITH SYSTEM VERSIONING;
 
@@ -40,6 +40,13 @@ CREATE TABLE sensor
 (
     `timestamp` TIMESTAMP NOT NULL PRIMARY KEY,
     `value`     DECIMAL
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE exotic_boolean
+(
+    `bool_default`          BOOLEAN             NOT NULL PRIMARY KEY,
+    `bool_tinyint`          TINYINT(1)          NOT NULL,
+    `bool_tinyint_unsigned` TINYINT(1) UNSIGNED NOT NULL
 ) WITH SYSTEM VERSIONING;
 
 INSERT INTO weather_location (location, lat, lng)

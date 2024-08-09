@@ -4,11 +4,20 @@
     :to="`/database/${database.id}/info`"
     variant="flat"
     rounded="0"
-    :href="`/database/${database.id}`">
+    :href="`/database/${database.id}`"
+    @click="loading = true">
     <v-divider class="mx-4" />
-    <v-card-title
-      class="text-primary text-decoration-underline"
-      v-text="formatTitle(database)" />
+    <v-card-title>
+      <span
+        class="text-primary text-decoration-underline"
+        v-text="formatTitle(database)" />
+      <v-progress-circular
+        v-if="loading"
+        color="primary"
+        size="24"
+        class="ml-1"
+        indeterminate />
+    </v-card-title>
     <v-card-subtitle
       v-text="formatCreators(database)" />
     <v-card-text>
@@ -68,6 +77,11 @@
 import { formatLanguage } from '@/utils'
 
 export default {
+  data() {
+    return {
+      loading: false
+    }
+  },
   props: {
     database: {
       default: () => {

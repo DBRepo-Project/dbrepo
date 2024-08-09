@@ -225,6 +225,7 @@ app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
 app.config["S3_BUCKET"] = os.getenv('S3_BUCKET', 'dbrepo')
 app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
 app.config["S3_SECRET_ACCESS_KEY"] = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+app.config["ANALYSE_NROWS"] = int(os.getenv('ANALYSE_NROWS', '10000'))
 
 app.json_encoder = LazyJSONEncoder
 

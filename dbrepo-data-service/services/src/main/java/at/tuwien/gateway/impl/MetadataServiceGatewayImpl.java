@@ -7,7 +7,6 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.PrivilegedUserDto;
@@ -56,7 +55,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find container: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find container with id {}: {}", containerId, e.getMessage());
-            throw new ContainerNotFoundException("Failed to find container: " + e.getMessage());
+            throw new ContainerNotFoundException("Failed to find container: " + e.getMessage(), e);
         }
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to find container with id {}: service responded unsuccessful: {}", containerId, response.getStatusCode());
@@ -88,7 +87,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find database with id {}: body is null", id);
-            throw new DatabaseNotFoundException("Failed to find database: body is null", e);
+            throw new DatabaseNotFoundException("Failed to find database: body is null: " + e.getMessage(), e);
         }
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
@@ -141,7 +140,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find table: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find table with id {}: not found: {}", id, e.getMessage());
-            throw new TableNotFoundException("Failed to find table: " + e.getMessage());
+            throw new TableNotFoundException("Failed to find table: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
@@ -179,7 +178,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find view: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find view with id {}: not found: {}", id, e.getMessage());
-            throw new ViewNotFoundException("Failed to find view: " + e.getMessage());
+            throw new ViewNotFoundException("Failed to find view: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
@@ -214,7 +213,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
-            throw new UserNotFoundException("Failed to find user: " + e.getMessage());
+            throw new UserNotFoundException("Failed to find user: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
@@ -238,7 +237,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Failed to find user with id {}: not found: {}", userId, e.getMessage());
-            throw new UserNotFoundException("Failed to find user: " + e.getMessage());
+            throw new UserNotFoundException("Failed to find user: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());

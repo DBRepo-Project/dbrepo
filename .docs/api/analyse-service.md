@@ -31,8 +31,11 @@ the [Storage Service](../storage-service), analysis for data types and primary k
    with [`csv.Sniff().sniff(...)`](https://docs.python.org/3/library/csv.html#csv.Sniffer). This step is optional when
    the separator was provided via HTTP-payload: `{"separator": ";", ...}`
 3. With the separator known (either from step 2 or via HTTP-payload), the [`Pandas`](https://pypi.org/project/pandas/)
-   guesses the headers and column types and enums, if the HTTP-payload contains `{"enum": true, ...}`. The data type
-   is guessed by a combination of Pandas and heuristics.
+   guesses the headers and column types and enums by analysing the first 10.000 rows, if the HTTP-payload contains 
+   `{"enum": true, ...}`. The data type is guessed by a combination of Pandas and heuristics.
+
+If your datasets are larger than 10.000 rows, increase the number of lines analysed by setting the `ANALYSE_NROWS`
+variable to the desired integer.
 
 ### Examples
 

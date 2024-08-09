@@ -92,8 +92,7 @@ public class ViewEndpoint {
     })
     public ResponseEntity<List<ViewDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            ViewMalformedException, ViewNotFoundException, DatabaseMalformedException, ViewSchemaException,
-            MetadataServiceException {
+            ViewNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
@@ -265,20 +264,19 @@ public class ViewEndpoint {
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
-            final Long count = viewService.count(view, timestamp);
             final HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Count", "" + count);
             headers.set("Access-Control-Expose-Headers", "X-Count");
-            if (request.getMethod().equals("GET")) {
-                final QueryResultDto result = viewService.data(view, timestamp, page, size);
-                log.trace("get view data resulted in result {}", result);
+            if (request.getMethod().equals("HEAD")) {
+                headers.set("X-Count", "" + viewService.count(view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
-                        .body(result);
+                        .build();
             }
+            final QueryResultDto result = viewService.data(view, timestamp, page, size);
+            log.trace("get view data resulted in result {}", result);
             return ResponseEntity.ok()
                     .headers(headers)
-                    .build();
+                    .body(result);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

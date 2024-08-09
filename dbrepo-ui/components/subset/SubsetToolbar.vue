@@ -1,6 +1,7 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar
+      flat>
       <v-btn
         class="mr-2"
         variant="plain"
@@ -27,16 +28,16 @@
         color="secondary"
         variant="flat"
         class="mb-1 ml-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-star' : null"
         :text="$t('toolbars.subset.save.permanent')"
         @click.stop="save" />
       <v-btn
         v-if="canForgetQuery"
         :loading="loadingSave"
-        color="error"
+        color="warning"
         variant="flat"
         class="mb-1 ml-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-trash-can-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-star-off' : null"
         :text="$t('toolbars.subset.unsave.permanent')"
         @click.stop="forget" />
       <v-btn
@@ -116,7 +117,10 @@ export default {
       if (!this.database) {
         return false
       }
-      return this.database.is_public
+      if (this.database.is_public) {
+        return true
+      }
+      return this.access
     },
     identifier () {
       /* mount pid */
@@ -154,7 +158,7 @@ export default {
       return formatTimestampUTCLabel(this.subset.created)
     },
     result_visibility () {
-      if (!this.database) {
+      if (!this.database || !this.subset) {
         return false
       }
       if (this.database.is_public) {

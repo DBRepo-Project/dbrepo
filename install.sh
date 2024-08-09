@@ -69,15 +69,15 @@ fi
 echo "[📦] Pulling images for version ${VERSION} ..."
 docker compose pull
 
-echo "[✨] Starting DBRepo ..."
-docker compose up -d
-
-if [ $? -eq 0 ]; then
-  echo "[🎉] Successfully started!"
-  echo ""
-  echo "You can now inspect the logs with:"
-  echo ""
-  echo "  docker compose logs -f"
-  echo ""
-  echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/installation/#next-steps"
-fi
+echo "[🎉] Success!"
+echo ""
+echo "You can now:"
+echo ""
+echo "  1) Either start the deployment running on http://localhost, or"
+echo "  2) Edit the BASE_URL variable in .env to set your hostname"
+echo ""
+echo "Then start the local deployment with:"
+echo ""
+echo "  docker compose up -d"
+echo ""
+echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/installation/#next-steps"

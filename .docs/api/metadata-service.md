@@ -23,9 +23,21 @@ types), semantic concepts (i.e. ontologies) and relational metadata (databases, 
 
 ## Generation
 
-Most of the metadata available in DBRepo is generated automatically, leveraging the available information and taking
-the burden away from researchers, data stewards, etc. For example, the schema (names, constraints, data length) of
-generated tables and views is obtained from the `information_schema` database maintained by MariaDB internally.
+DBRepo generates metadata for managed tables automatically by querying MariaDB's internal structures 
+(e.g. `information_schema`). 
+
+!!! info "Managed Tables"
+
+    DBRepo only manages system-versioned tables, other tables are not supported. These other tables are ignored by
+    DBRepo and thus can co-exist in the same database. If you want a non-system-versioned table `my_table` to be managed
+    by DBRepo, make it system-versioned:
+
+    ```sql
+    ALTER TABLE `my_table` ADD SYSTEM VERSIONING;
+    ```
+
+    Then, refresh the managed table index by navigating to your database > Settings > Schema > Refresh. This action can
+    only be performed by the database owner.
 
 ## Identifiers
 

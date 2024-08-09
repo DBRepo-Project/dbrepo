@@ -49,26 +49,32 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
         final Connection connection = dataSource.getConnection();
         try {
             /* obtain only table metadata */
+            long start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseTableSelectRawQuery());
             statement1.setString(1, database.getInternalName());
             statement1.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             TableDto table = dataMapper.schemaResultSetToTable(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database), statement1.executeQuery());
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             /* obtain columns metadata */
+            start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
             statement2.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet2 = statement2.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet2.next()) {
                 table = dataMapper.resultSetToTable(resultSet2, table, queryConfig);
             }
             /* obtain check constraints metadata */
+            start = System.currentTimeMillis();
             final PreparedStatement statement3 = connection.prepareStatement(mariaDbMapper.columnsCheckConstraintSelectRawQuery());
             statement3.setString(1, database.getInternalName());
             statement3.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet3 = statement3.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet3.next()) {
                 final String clause = resultSet3.getString(1);
                 table.getConstraints()
@@ -77,11 +83,13 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                 log.trace("found check clause: {}", clause);
             }
             /* obtain column constraints metadata */
+            start = System.currentTimeMillis();
             final PreparedStatement statement4 = connection.prepareStatement(mariaDbMapper.databaseTableConstraintsSelectRawQuery());
             statement4.setString(1, database.getInternalName());
             statement4.setString(2, tableName);
             log.trace("1={}, 2={}", database.getInternalName(), tableName);
             final ResultSet resultSet4 = statement4.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet4.next()) {
                 table = dataMapper.resultSetToConstraint(resultSet4, table);
                 for (UniqueDto uk : table.getConstraints().getUniques()) {
@@ -122,11 +130,13 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
         final DatabaseDto database = metadataMapper.privilegedDatabaseDtoToDatabaseDto(privilegedDatabase);
         try {
             /* obtain only view metadata */
+            long start = System.currentTimeMillis();
             final PreparedStatement statement1 = connection.prepareStatement(mariaDbMapper.databaseViewSelectRawQuery());
             statement1.setString(1, database.getInternalName());
             statement1.setString(2, viewName);
             log.trace("1={}, 2={}", database.getInternalName(), viewName);
             final ResultSet resultSet1 = statement1.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             if (!resultSet1.next()) {
                 throw new ViewNotFoundException("Failed to find view in the information schema");
             }
@@ -136,11 +146,13 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
             view.setCreator(database.getCreator());
             view.setCreatedBy(database.getCreator().getId());
             /* obtain view columns */
+            start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
             statement2.setString(2, viewName);
             log.trace("1={}, 2={}", database.getInternalName(), viewName);
             final ResultSet resultSet2 = statement2.executeQuery();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             TableDto tmp = TableDto.builder()
                     .columns(new LinkedList<>())
                     .build();

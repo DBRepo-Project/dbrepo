@@ -10,21 +10,21 @@
         <span
           v-if="database && $vuetify.display.lgAndUp"
           v-text="database.name" />
-        <v-tooltip
-          v-if="database"
-          bottom>
-          <template v-slot:activator="{ props }">
-            <v-icon
-              class="mr-2"
-              size="small"
-              right
-              :color="database.is_public ? 'success' : 'chip'"
-              v-bind="props">
-              {{ database.is_public ? 'mdi-lock-open-outline' : 'mdi-lock-outline' }}
-            </v-icon>
-          </template>
-          <span>{{ $t('toolbars.database.' + (database.is_public ? 'public' : 'private')) }}</span>
-        </v-tooltip>
+        <v-chip
+          v-if="database && database.is_public"
+          size="small"
+          class="ml-2"
+          color="success"
+          :text="$t('toolbars.database.public')"
+          variant="outlined" />
+        <v-chip
+          v-if="database && !database.is_public"
+          size="small"
+          class="ml-2"
+          :color="colorVariant"
+          variant="outlined"
+          :text="$t('toolbars.database.private')"
+          flat />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
@@ -33,6 +33,14 @@
         color="tertiary"
         :variant="buttonVariant"
         :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
+      <v-btn
+        v-if="canCreateTable"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-large-plus' : null"
+        color="secondary"
+        variant="flat"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
+        class="mr-2"
+        :to="`/database/${$route.params.database_id}/table/create/dataset`" />
       <v-btn
         v-if="canCreateSubset"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
@@ -49,14 +57,6 @@
         :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2 white--text"
         :to="`/database/${$route.params.database_id}/view/create`" />
-      <v-btn
-        v-if="canCreateTable"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-large-plus' : null"
-        color="secondary"
-        variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
-        class="mr-2"
-        :to="`/database/${$route.params.database_id}/table/create/dataset`" />
       <v-btn
         v-if="canCreateIdentifier"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
@@ -116,6 +116,9 @@ export default {
     },
     roles () {
       return this.userStore.getRoles
+    },
+    colorVariant () {
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     },
     canCreateIdentifier () {
       if (!this.roles) {

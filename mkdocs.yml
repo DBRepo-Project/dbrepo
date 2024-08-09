@@ -47,10 +47,12 @@ nav:
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
     - Hazard Data: examples/hazard.md
+    - Health Data: examples/health.md
     - Industry 4.0 Power Data: examples/power.md
     - Survey Data: examples/survey.md
     - Lute Data: examples/lute-data.md
     - Music-ML Data: examples/music.md
+    - Theater Data: examples/theater.md
     - Transportation Data: examples/transportation.md
     - XPS Data: examples/xps-data.md
   - publications.md
