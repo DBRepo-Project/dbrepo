@@ -37,7 +37,7 @@ public class CrossrefGatewayImpl implements CrossrefGateway {
             response = restTemplate.exchange(gatewayConfig.getCrossRefEndpoint() + path, HttpMethod.GET, HttpEntity.EMPTY, CrossrefDto.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to retrieve crossref metadata: {}", e.getMessage());
-            throw new DoiNotFoundException("Failed to retrieve crossref metadata: " + e.getMessage());
+            throw new DoiNotFoundException("Failed to retrieve crossref metadata: " + e.getMessage(), e);
         }
         return response.getBody();
     }

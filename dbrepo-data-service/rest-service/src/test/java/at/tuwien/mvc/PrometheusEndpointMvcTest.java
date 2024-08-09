@@ -126,12 +126,12 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"dbrepo_subset_list", "execute-query", "persist-query"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query", "persist-query"})
     public void prometheusSubsetEndpoint_succeeds() {
 
         /* mock */
         try {
-            subsetEndpoint.list(DATABASE_1_ID, null, USER_1_PRINCIPAL);
+            subsetEndpoint.list(DATABASE_1_ID, null);
         } catch (Exception e) {
             /* ignore */
         }
@@ -151,7 +151,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, new MockHttpServletRequest(), null, USER_1_PRINCIPAL);
+            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, new MockHttpServletRequest(), null);
         } catch (Exception e) {
             /* ignore */
         }
@@ -171,7 +171,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, null);
+            tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, null);
         } catch (Exception e) {
             /* ignore */
         }

@@ -47,6 +47,7 @@ nav:
     - Air Quality Data: examples/air.md
     - COVID-19 Data: examples/covid-19.md
     - Hazard Data: examples/hazard.md
+    - Health Data: examples/health.md
     - Industry 4.0 Power Data: examples/power.md
     - Survey Data: examples/survey.md
     - Lute Data: examples/lute-data.md

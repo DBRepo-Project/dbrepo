@@ -72,7 +72,7 @@
         :headers="headers"
         :items="rows"
         :items-length="total"
-        :loading="loadingData"
+        :loading="loadingData || loadingCount"
         :options.sync="options"
         :footer-props="footerProps"
         @update:options="loadData">
@@ -192,9 +192,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'error' : 'primary'
-    },
     roles () {
       return this.userStore.getRoles
     },
@@ -283,6 +280,7 @@ export default {
   },
   watch: {
     version () {
+      this.loadCount()
       this.reload()
     },
     table (newTable, oldTable) {
@@ -292,8 +290,8 @@ export default {
     }
   },
   mounted () {
-    this.reload()
     this.loadProperties()
+    this.loadCount()
   },
   methods: {
     addTuple () {
@@ -429,9 +427,20 @@ export default {
     reload () {
       this.lastReload = new Date()
       this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
-      this.loadCount()
     },
-    loadData ({ page, itemsPerPage, sortBy }) {
+    loadCount() {
+      this.loadingCount = true
+      const tableService = useTableService()
+      tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
+        .then((count) => {
+          this.total = count
+          this.loadingCount = false
+        })
+        .catch((error) => {
+          this.loadingCount = false
+        })
+    },
+    loadData({ page, itemsPerPage, sortBy }) {
       this.options.page = page
       this.options.itemsPerPage = itemsPerPage
       const tableService = useTableService()
@@ -457,23 +466,6 @@ export default {
         .catch(({code, message}) => {
           this.error = true
           this.loadingData = false
-          const toast = useToastInstance()
-          if (typeof code !== 'string' || typeof message !== 'string') {
-            return
-          }
-          toast.error(this.$t(code) + ": " + message)
-        })
-    },
-    loadCount () {
-      const tableService = useTableService()
-      this.loadingCount = true
-      tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
-        .then((count) => {
-          this.total = count
-          this.loadingCount = false
-        })
-        .catch(({code, message}) => {
-          this.loadingCount = false
           const toast = useToastInstance()
           if (typeof code !== 'string' || typeof message !== 'string') {
             return

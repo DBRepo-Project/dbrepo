@@ -10,8 +10,8 @@
       <v-select
         v-model="style"
         :items="styles"
-        item-title="style"
-        item-value="accept"
+        item-title="title"
+        item-value="value"
         dense
         variant="outlined"
         single-line />
@@ -33,39 +33,38 @@ export default {
     return {
       loading: false,
       styles: [
-        { style: 'APA', accept: 'text/bibliography;style=apa' },
-        { style: 'IEEE', accept: 'text/bibliography;style=ieee' },
-        { style: 'BibTeX', accept: 'text/bibliography;style=bibtex' }
+        { title: 'APA', value: 'text/bibliography;style=apa' },
+        { title: 'IEEE', value: 'text/bibliography;style=ieee' },
+        { title: 'BibTeX', value: 'text/bibliography;style=bibtex' }
       ],
-      style: null,
+      style: 'text/bibliography;style=apa',
       citation: null
     }
   },
   watch: {
     style () {
-      this.loadCitation(this.style)
+      this.loadCitation()
     },
     pid () {
-      this.loadCitation(this.style)
+      this.loadCitation()
     }
   },
   mounted () {
-    this.style = this.styles[0].accept
-    this.loadCitation(null)
+    this.loadCitation()
   },
   methods: {
-    loadCitation (accept) {
-      if (!this.identifier || !accept) {
+    loadCitation () {
+      if (!this.identifier || !this.style) {
         return
       }
       this.loading = true
       const identifierService = useIdentifierService()
-      identifierService.findOne(this.identifier.id, accept)
+      identifierService.findOne(this.identifier.id, this.style)
         .then((citation) => {
           this.citation = citation
           this.loading = false
         })
-        .error(({code, message}) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
           toast.error(this.$t(`${code}: ${message}`))
           this.loading = false

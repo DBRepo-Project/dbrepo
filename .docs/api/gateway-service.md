@@ -39,6 +39,12 @@ services:
 
 If your TLS private key as a password, you need to specify it in the `dbrepo.conf` file.
 
+### Connection Timeouts
+
+The reverse proxy has a defined timeout of 90 seconds on all requests (these are also enforced in the 
+[User Interface](../ui) using the [`axios`](https://www.npmjs.com/package/axios) module). For large databases these
+timeouts may need to be increased, e.g. the timeout for creating subsets is by default already increased to 600 seconds.
+
 ### User Interface
 
 To serve the [User Interface](../ui/) under different port than `80`, change the port mapping in

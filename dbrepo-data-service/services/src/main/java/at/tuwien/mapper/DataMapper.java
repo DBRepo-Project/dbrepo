@@ -21,6 +21,7 @@ import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -97,7 +98,8 @@ public interface DataMapper {
 
     /**
      * Map the inspected schema to either an existing view/table and append e.g. column or (if not existing) create a new view/table.
-     * @param database The database.
+     *
+     * @param database  The database.
      * @param resultSet The inspected schema.
      * @return The database containing the updated view/table.
      * @throws SQLException
@@ -152,31 +154,23 @@ public interface DataMapper {
                 .databaseId(table.getTdbid())
                 .description(resultSet.getString(11))
                 .build();
+        final String dataType = resultSet.getString(8);
         if (column.getColumnType().equals(ColumnTypeDto.ENUM)) {
-            column.setEnums(Arrays.stream(resultSet.getString(8)
-                            .substring(0, resultSet.getString(8).length() - 1)
+            column.setEnums(Arrays.stream(dataType.substring(0, resultSet.getString(8).length() - 1)
                             .replace("enum(", "")
                             .split(","))
                     .map(value -> value.replace("'", ""))
                     .toList());
         }
         if (column.getColumnType().equals(ColumnTypeDto.SET)) {
-            column.setSets(Arrays.stream(resultSet.getString(8)
-                            .substring(0, resultSet.getString(8).length() - 1)
+            column.setSets(Arrays.stream(dataType.substring(0, dataType.length() - 1)
                             .replace("set(", "")
                             .split(","))
                     .map(value -> value.replace("'", ""))
                     .toList());
         }
-        /* constraints */
-        if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
-            table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
-                    .table(tableDtoToTableBriefDto(table))
-                    .column(columnDtoToColumnBriefDto(column))
-                    .build());
-        }
         /* fix boolean and set size for others */
-        if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
+        if (dataType.startsWith("tinyint(1)")) {
             column.setColumnType(ColumnTypeDto.BOOL);
         } else if (resultSet.getString(5) != null) {
             column.setSize(resultSet.getLong(5));
@@ -194,6 +188,13 @@ public interface DataMapper {
         } else if (column.getColumnType().equals(ColumnTypeDto.TIME)) {
             column.setDateFormat(ImageDateDto.builder()
                     .id(queryConfig.getDefaultTimeFormatId())
+                    .build());
+        }
+        /* constraints */
+        if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
+            table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
+                    .table(tableDtoToTableBriefDto(table))
+                    .column(columnDtoToColumnBriefDto(column))
                     .build());
         }
         table.getColumns()
@@ -241,8 +242,9 @@ public interface DataMapper {
 
     /**
      * Parse columns from a SQL statement of a known database.
+     *
      * @param database The database.
-     * @param query The SQL statement.
+     * @param query    The SQL statement.
      * @return The list of columns.
      * @throws JSQLParserException The table/view or column was not found in the database.
      */
@@ -401,6 +403,9 @@ public interface DataMapper {
                 .created(LocalDateTime.parse(data.getString(2), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
+                .creator(UserDto.builder()
+                        .id(UUID.fromString(data.getString(3)))
+                        .build())
                 .createdBy(UUID.fromString(data.getString(3)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))

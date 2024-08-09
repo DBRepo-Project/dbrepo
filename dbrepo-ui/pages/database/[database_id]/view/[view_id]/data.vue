@@ -10,7 +10,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
-        class="mb-1 ml-2"
+        class="mb-1 mr-2"
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
