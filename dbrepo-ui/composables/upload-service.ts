@@ -1,6 +1,8 @@
 import * as tus from 'tus-js-client'
+import {useCacheStore} from '@/stores/cache'
 
 export const useUploadService = (): any => {
+
   function create (data: File) {
     const config = useRuntimeConfig()
     const endpoint = config.public.upload.client
@@ -19,6 +21,8 @@ export const useUploadService = (): any => {
         onProgress (bytesUploaded, bytesTotal) {
           const percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2)
           console.debug(bytesUploaded, bytesTotal, percentage + '%')
+          const cacheStore = useCacheStore()
+          cacheStore.setUploadProgress(percentage)
         },
         onSuccess () {
           if (uploadClient.file) {
