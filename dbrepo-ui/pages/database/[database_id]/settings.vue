@@ -42,7 +42,13 @@
                     :show-size="1000"
                     counter
                     :label="$t('pages.database.subpages.settings.image.label')"
-                    @update:modelValue="uploadFile" />
+                    @update:modelValue="uploadFile">
+                    <template
+                      v-if="uploadProgress"
+                      v-slot:append>
+                      <span>{{ uploadProgress }}%</span>
+                    </template>
+                  </v-file-input>
                 </v-col>
               </v-row>
               <v-row
@@ -308,6 +314,9 @@ export default {
     user () {
       return this.userStore.getUser
     },
+    uploadProgress () {
+      return this.cacheStore.getUploadProgress
+    },
     isOwner () {
       if (!this.database || !this.user) {
         return false
@@ -439,6 +448,8 @@ export default {
       uploadService.create(this.file)
         .then((s3key) => {
           console.debug('uploaded image', s3key)
+          const cacheStore = useCacheStore()
+          cacheStore.setUploadProgress(null)
           const toast = useToastInstance()
           toast.success(this.$t('success.database.upload'))
           this.modifyImage.key = s3key

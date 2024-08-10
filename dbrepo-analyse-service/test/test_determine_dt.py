@@ -36,8 +36,8 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 10,
-                "d": 4,
+                "size": 40,
+                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -84,8 +84,8 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 10,
-                "d": 4,
+                "size": 40,
+                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -132,8 +132,8 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 10,
-                "d": 4,
+                "size": 40,
+                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -160,8 +160,8 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "float": {
                 "type": "decimal",
-                "size": 10,
-                "d": 4,
+                "size": 40,
+                "d": 10,
                 "null_allowed": False,
             },
             "string": {
