@@ -73,8 +73,8 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
                 if pandas.to_numeric(df[name], errors='coerce').notnull().all():
                     logging.debug(f"mapped column {name} from float64 to decimal")
                     col.type = DataTypeDto.DECIMAL
-                    col.size = 10
-                    col.d = 4
+                    col.size = 40
+                    col.d = 10
                 else:
                     logging.debug(f"mapped column {name} from float64 to text")
                     col.type = DataTypeDto.TEXT

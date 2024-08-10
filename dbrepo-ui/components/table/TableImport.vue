@@ -204,7 +204,13 @@
                   persistent-hint
                   :variant="inputVariant"
                   :hint="$t('pages.table.subpages.import.file.hint')"
-                  :label="$t('pages.table.subpages.import.file.label')" />
+                  :label="$t('pages.table.subpages.import.file.label')">
+                  <template
+                    v-if="uploadProgress"
+                    v-slot:append>
+                    <span>{{ uploadProgress }}%</span>
+                  </template>
+                </v-file-input>
               </v-col>
             </v-row>
             <v-row
@@ -348,6 +354,7 @@ export default {
     }
   },
   mounted() {
+    this.cacheStore.setUploadProgress(null)
     this.setQueryParamSafely('location')
     this.setQueryParamSafely('quote')
     this.setQueryParamSafely('false_element')
@@ -364,6 +371,9 @@ export default {
   computed: {
     table() {
       return this.cacheStore.getTable
+    },
+    uploadProgress () {
+      return this.cacheStore.getUploadProgress
     },
     isAnalyseAllowed () {
       if (!this.file || this.file.length === 0) {
@@ -526,6 +536,7 @@ export default {
           this.suggestedAnalyseLineTerminator = line_termination
           this.tableImport.location = filename
           this.step = 3
+          this.cacheStore.setUploadProgress(null)
           const toast = useToastInstance()
           toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {

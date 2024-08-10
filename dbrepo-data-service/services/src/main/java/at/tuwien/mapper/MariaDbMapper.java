@@ -113,7 +113,7 @@ public interface MariaDbMapper {
     }
 
     default String queryStoreCreateTableRawQuery() {
-        final String statement = "CREATE TABLE `qs_queries` ( `id` bigint not null primary key default nextval(`qs_queries_seq`), `created` datetime not null default now(), `executed` datetime not null default now(), `created_by` varchar(36) not null, `query` text not null, `query_normalized` text not null, `is_persisted` boolean not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint);";
+        final String statement = "CREATE TABLE `qs_queries` ( `id` bigint not null primary key default nextval(`qs_queries_seq`), `created` datetime not null default now(), `executed` datetime not null default now(), `created_by` varchar(36) not null, `query` text not null, `query_normalized` text not null, `is_persisted` boolean not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint) WITH SYSTEM VERSIONING;";
         log.trace("mapped create query store table statement: {}", statement);
         return statement;
     }

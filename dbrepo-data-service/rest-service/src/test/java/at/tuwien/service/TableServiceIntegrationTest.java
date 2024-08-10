@@ -477,6 +477,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final TableStatisticDto response = tableService.getStatistics(TABLE_1_PRIVILEGED_DTO);
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
+        log.trace("response rows: {}", response.getRows());
         assertEquals(3L, response.getRows());
         assertEquals(Set.of("id", "date", "location", "mintemp", "rainfall"), response.getColumns().keySet());
         final ColumnStatisticDto column0 = response.getColumns().get("id");
