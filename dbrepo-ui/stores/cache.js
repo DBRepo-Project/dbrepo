@@ -8,6 +8,7 @@ export const useCacheStore = defineStore('cache', {
       table: null,
       ontologies: [],
       messages: [],
+      uploadProgress: null
     }
   },
   getters: {
@@ -15,6 +16,7 @@ export const useCacheStore = defineStore('cache', {
     getTable: (state) => state.table,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
+    getUploadProgress: (state) => state.uploadProgress,
   },
   actions: {
     setDatabase (database) {
@@ -25,6 +27,9 @@ export const useCacheStore = defineStore('cache', {
     },
     setOntologies (ontologies) {
       this.ontologies = ontologies
+    },
+    setUploadProgress (uploadProgress) {
+      this.uploadProgress = uploadProgress
     },
     reloadMessages () {
       const messageService = useMessageService()
