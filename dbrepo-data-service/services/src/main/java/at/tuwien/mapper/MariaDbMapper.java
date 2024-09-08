@@ -293,6 +293,9 @@ public interface MariaDbMapper {
                         .append(column.getInternalName())
                         .append("`) as std_dev FROM ")
                         .append(table));
+        if (statement.isEmpty()) {
+            return null;
+        }
         statement.append(";");
         log.trace("mapped select column statistic statement: {}", statement);
         return statement.toString();

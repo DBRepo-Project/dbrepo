@@ -22,6 +22,7 @@ site/
 final/
 
 .$*
+dbrepo-somapper/
 
 # Notebooks
 .pytest_cache/
