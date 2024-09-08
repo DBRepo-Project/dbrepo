@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import time
+import datetime
 
 import requests
 from pydantic import TypeAdapter
@@ -1556,7 +1557,7 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10,
-                      df: bool = False) -> Result | DataFrame:
+                      timestamp: datetime.datetime = None, df: bool = False) -> Result | DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
         result set can be paginated with setting page and size (both). Historic data can be queried by setting
@@ -1566,6 +1567,7 @@ class RestClient:
         :param query: The query statement.
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
+        :param timestamp: The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
         :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result set, if successful.
@@ -1581,6 +1583,11 @@ class RestClient:
         url = f'/api/database/{database_id}/subset'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
+            if timestamp is not None:
+                url += f'&timestamp={timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")}'
+        else:
+            if timestamp is not None:
+                url += f'?timestamp={timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")}'
         response = self._wrapper(method="post", url=url, force_auth=True, headers={"Accept": "application/json"},
                                  payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
