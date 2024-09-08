@@ -1,7 +1,6 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;

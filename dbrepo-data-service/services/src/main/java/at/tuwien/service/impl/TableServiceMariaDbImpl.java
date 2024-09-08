@@ -30,6 +30,8 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 
+import static org.apache.jena.sparql.util.QueryExecUtils.executeQuery;
+
 @Log4j2
 @Service
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {
@@ -96,15 +98,28 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         try {
             /* obtain statistic */
             final long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName()))
-                    .executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
-            statistic = dataMapper.resultSetToTableStatistic(resultSet);
-            final TableDto tmpTable = schemaService.inspectTable(table.getDatabase(), table.getInternalName());
-            statistic.setAvgRowLength(tmpTable.getAvgRowLength());
-            statistic.setDataLength(tmpTable.getDataLength());
-            statistic.setMaxDataLength(tmpTable.getMaxDataLength());
-            statistic.setRows(tmpTable.getNumRows());
+            final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName());
+            if (query == null) {
+                log.debug("table {}.{} does not have columns that can be analysed for statistical properties (i.e. no numeric columns)", table.getDatabase().getInternalName(), table.getInternalName());
+                statistic = null;
+            } else {
+                final ResultSet resultSet = connection.prepareStatement(query)
+                        .executeQuery();
+                log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+                statistic = dataMapper.resultSetToTableStatistic(resultSet);
+                final TableDto tmpTable = schemaService.inspectTable(table.getDatabase(), table.getInternalName());
+                statistic.setAvgRowLength(tmpTable.getAvgRowLength());
+                statistic.setDataLength(tmpTable.getDataLength());
+                statistic.setMaxDataLength(tmpTable.getMaxDataLength());
+                statistic.setRows(tmpTable.getNumRows());
+                /* add to statistic dto */
+                table.getColumns()
+                        .stream()
+                        .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
+                        .forEach(column -> statistic.getColumns().put(column.getInternalName(), new ColumnStatisticDto()));
+                log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
+                log.trace("obtained statistics: {}", statistic);
+            }
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to obtain column statistics: {}", e.getMessage());
@@ -112,12 +127,6 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
         } finally {
             dataSource.close();
         }
-        table.getColumns()
-                .stream()
-                .filter(column -> !MariaDbUtil.numericDataTypes.contains(column.getColumnType()))
-                .forEach(column -> statistic.getColumns().put(column.getInternalName(), new ColumnStatisticDto()));
-        log.info("Obtained statistics for the table and {} column(s)", statistic.getColumns().size());
-        log.trace("obtained statistics: {}", statistic);
         return statistic;
     }
 
