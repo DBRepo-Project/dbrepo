@@ -30,7 +30,12 @@ Installing DBRepo is very easy or
 
 ## Who is using DBRepo?
 
-![Logos of DBRepo adopters](images/logos.png)
+- [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
+- TU Darmstadt
+- [Universität Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
+- [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
+- University of the Philippines
+- [Universiti Sains Malaysia](https://dbrepo.wrfexpress.com/)
 
 ## How can I try DBRepo
 
