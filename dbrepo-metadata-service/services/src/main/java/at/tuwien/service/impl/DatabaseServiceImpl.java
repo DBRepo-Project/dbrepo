@@ -84,10 +84,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(DatabaseCreateDto data, User user) throws UserNotFoundException,
+    public Database create(Container container, DatabaseCreateDto data, User user) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        final Container container = containerService.find(data.getCid());
         Database database = Database.builder()
                 .isPublic(data.getIsPublic())
                 .name(data.getName())

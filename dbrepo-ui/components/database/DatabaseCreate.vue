@@ -106,7 +106,7 @@ export default {
       this.loadingContainers = true
       containerService.findAll()
         .then((containers) => {
-          this.engines = containers
+          this.engines = containers.filter(c => c.count < c.quota)
           if (this.engines.length > 0) {
             this.engine = this.engines[0]
           }

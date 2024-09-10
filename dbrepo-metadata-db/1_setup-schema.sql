@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     last_modified       timestamp,
     privileged_username character varying(255) NOT NULL,
     privileged_password character varying(255) NOT NULL,
+    quota               integer                NOT NULL DEFAULT 50,
     PRIMARY KEY (id),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;

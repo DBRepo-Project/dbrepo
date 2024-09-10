@@ -2,6 +2,7 @@
   "navigation": {
     "information": "Information",
     "search": "Search",
+    "container": "Containers",
     "ontologies": "Ontologies",
     "logout": "Logout",
     "login": "Login",
@@ -1033,7 +1034,7 @@
       }
     },
     "container": {
-      "title": "Container",
+      "title": "Containers",
       "name": {
         "title": "Name"
       },

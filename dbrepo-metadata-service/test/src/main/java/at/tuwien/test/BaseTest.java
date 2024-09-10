@@ -1056,7 +1056,8 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_UI_HOST = "localhost";
     public final static Integer CONTAINER_1_UI_PORT = 3306;
     public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
-    public final static Boolean CONTAINER_1_RUNNING = true;
+    public final static Integer CONTAINER_1_QUOTA = 4;
+    public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
     public final static String CONTAINER_1_SIDECAR_HOST = "localhost";
@@ -1097,7 +1098,8 @@ public abstract class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
             .created(CONTAINER_1_CREATED)
-            .running(CONTAINER_1_RUNNING)
+            .quota(CONTAINER_1_QUOTA)
+            .count(CONTAINER_1_COUNT)
             .build();
 
     public final static PrivilegedContainerDto CONTAINER_1_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
@@ -1124,7 +1126,8 @@ public abstract class BaseTest {
     public final static Integer CONTAINER_2_PORT = 3309;
     public final static String CONTAINER_2_SIDECAR_HOST = "localhost";
     public final static Integer CONTAINER_2_SIDECAR_PORT = 33091;
-    public final static Boolean CONTAINER_2_RUNNING = true;
+    public final static Integer CONTAINER_2_QUOTA = 3;
+    public final static Integer CONTAINER_2_COUNT = 3;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655L) /* 2023-02-26 08:20:55 (UTC) */;
@@ -1156,7 +1159,7 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .created(CONTAINER_2_CREATED)
-            .running(CONTAINER_2_RUNNING)
+            .quota(CONTAINER_2_QUOTA)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -2638,8 +2641,6 @@ public abstract class BaseTest {
     public final static Long QUERY_2_ID = 2L;
     public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
     public final static Long QUERY_2_RESULT_NUMBER = 2L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
     public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
@@ -2651,7 +2652,7 @@ public abstract class BaseTest {
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
-            .databaseId(QUERY_2_DATABASE_ID)
+            .databaseId(DATABASE_2_ID)
             .query(QUERY_2_STATEMENT)
             .queryNormalized(QUERY_2_STATEMENT)
             .resultNumber(QUERY_2_RESULT_NUMBER)
@@ -2817,8 +2818,6 @@ public abstract class BaseTest {
     public final static Long QUERY_6_ID = 6L;
     public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
     public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
-    public final static Long QUERY_6_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_6_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
     public final static Instant QUERY_6_CREATED = Instant.now().minus(5, MINUTES);
     public final static Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
@@ -2830,7 +2829,7 @@ public abstract class BaseTest {
 
     public final static QueryDto QUERY_6_DTO = QueryDto.builder()
             .id(QUERY_6_ID)
-            .databaseId(QUERY_6_DATABASE_ID)
+            .databaseId(DATABASE_2_ID)
             .query(QUERY_6_STATEMENT)
             .queryNormalized(QUERY_6_STATEMENT)
             .resultNumber(QUERY_6_RESULT_NUMBER)

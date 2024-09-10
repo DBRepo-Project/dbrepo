@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -45,15 +46,18 @@ public class DatabaseEndpoint {
     private final MetadataMapper databaseMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
+    private final ContainerService containerService;
 
     @Autowired
     public DatabaseEndpoint(UserService userService, AccessService accessService, MetadataMapper databaseMapper,
-                            StorageService storageService, DatabaseService databaseService) {
+                            StorageService storageService, DatabaseService databaseService,
+                            ContainerService containerService) {
         this.userService = userService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
+        this.containerService = containerService;
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -127,6 +131,11 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "423",
+                    description = "Database quota exceeded",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to search service failed",
                     content = {@Content(
@@ -141,10 +150,15 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody DatabaseCreateDto data,
                                               @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, ContainerQuotaException {
         log.debug("endpoint create database, data.name={}", data.getName());
+        final Container container = containerService.find(data.getCid());
+        if (container.getDatabases().size() + 1 > container.getQuota()) {
+            log.error("Failed to create database: quota of {} exceeded", container.getQuota());
+            throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
+        }
         final User user = userService.findByUsername(principal.getName());
-        final Database database = databaseService.create(data, user);
+        final Database database = databaseService.create(container, data, user);
         final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);

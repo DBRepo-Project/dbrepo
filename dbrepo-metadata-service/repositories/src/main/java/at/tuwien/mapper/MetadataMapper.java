@@ -104,7 +104,8 @@ public interface MetadataMapper {
     ContainerDto containerToContainerDto(Container data);
 
     @Mappings({
-            @Mapping(target = "id", source = "id")
+            @Mapping(target = "id", source = "id"),
+            @Mapping(target = "count", expression = "java(data.getDatabases().size())"),
     })
     ContainerBriefDto containerToDatabaseContainerBriefDto(Container data);
 

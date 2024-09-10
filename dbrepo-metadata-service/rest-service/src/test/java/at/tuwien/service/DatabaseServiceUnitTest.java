@@ -105,7 +105,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(request, USER_1);
+            databaseService.create(CONTAINER_1, request, USER_1);
         });
     }
 
@@ -315,7 +315,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(database);
 
         /* test */
-        final Database response = databaseService.create(createDto, USER_1);
+        final Database response = databaseService.create(CONTAINER_1, createDto, USER_1);
         assertEquals(database.getName(), response.getName());
         assertEquals(database.getIsPublic(), response.getIsPublic());
         assertTrue(response.getInternalName().startsWith(database.getInternalName()));

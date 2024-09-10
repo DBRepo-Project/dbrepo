@@ -35,6 +35,11 @@
           to="/semantic"
           prepend-icon="mdi-share-variant"
           :title="$t('navigation.semantics')" />
+        <v-list-item
+          v-if="canListContainers"
+          to="/container"
+          prepend-icon="mdi-docker"
+          :title="$t('navigation.container')" />
       </v-list>
       <template v-slot:append>
         <v-alert
@@ -215,6 +220,12 @@ export default {
         return false
       }
       return this.roles.includes('list-ontologies')
+    },
+    canListContainers () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('list-containers')
     },
     logo () {
       return this.$config.public.logo
