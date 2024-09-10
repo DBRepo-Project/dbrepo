@@ -372,7 +372,8 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException, TableNotFoundException {
+    public TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException,
+            DataServiceException, TableNotFoundException {
         final ResponseEntity<TableStatisticDto> response;
         final String path = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
         log.trace("get table statistics at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
@@ -391,10 +392,6 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to analyse table statistic: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to analyse table statistic: wrong http code: " + response.getStatusCode());
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to analyse table statistic: empty body: {}", response.getStatusCode());
-            throw new DataServiceException("Failed to analyse table statistic: empty body: " + response.getStatusCode());
         }
         return response.getBody();
     }

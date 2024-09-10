@@ -20,26 +20,67 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
 <figcaption>Figure 1: Architecture of the UI microservice</figcaption>
 </figure>
 
-Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
-configured as well via the Nuxt runtime configuration through single environment variables or `.env` files
+=== "Docker Compose"
 
-```yaml title=".env"
-NUXT_PUBLIC_TITLE="My overriden title"
-NUXT_PUBLIC_LOGO="/app/.output/public/my_logo.png"
-...
-```
+    Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
+    configured as well via the Nuxt runtime configuration through single environment variables or `.env` files.
+    
+    ```yaml title=".env"
+    NUXT_PUBLIC_TITLE="My overriden title"
+    NUXT_PUBLIC_LOGO="/my_logo.png"
+    NUXT_PUBLIC_ICON="/favicon.ico"
+    ...
+    ```
 
-To work, you need to mount the `my_logo.png` file into the `dbrepo-ui` container via the `docker-compose.yml` file (or
-if you use a Kubernetes deployment via ConfigMap and Volumes).
+    To work, you need to mount the `my_logo.png` file into the `dbrepo-ui` container via the `docker-compose.yml` file.
 
-```yaml title="docker-compose.yml"
-services:
-  dbrepo-ui:
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
-    volumes:
-      - ./my_logo.png:/app/.output/public/my_logo.png
-  ...
-```
+    ```yaml title="docker-compose.yml"
+    services:
+      dbrepo-ui:
+        image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
+        volumes:
+          - ./my_logo.png:/app/.output/public/my_logo.png
+          - ./favicon.ico:/app/.output/public/favicon.ico
+        environment:
+          ...
+      ...
+    ```
+
+    If you want to override more environment variables, extend the dictionary in `environment:`
+
+=== "Kubernetes"
+
+    Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
+    configured as well via the Nuxt runtime configuration through setting the variables in the `values.yaml` file.
+
+    ```yaml title="values.yaml"
+    ui:
+      public:
+        logo: "/my_logo.png"
+        icon: "/favicon.ico"
+      extraVolumes:
+        - name: images-map
+          configMap:
+            name: ui-config
+      extraVolumeMounts:
+        - name: images-map
+          mountPath: /static/
+    ```
+
+    To work, you need to mount the `my_logo.png` file into the dbrepo-ui deployment via a ConfigMap and Volumes. For this,
+    encode the files in base64 with `cat my_logo.png | base64`.
+
+    ```yaml title="dbrepo-ui-custom.yaml"
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: ui-config
+    binaryData:
+      my_logo.png: |
+        <base64>
+      favicon.ico: |
+        <base64>
+    ```
 
 ### Architecture
 

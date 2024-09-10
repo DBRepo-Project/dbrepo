@@ -105,6 +105,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     public String getMariaDbPassword(String password) {
         final byte[] utf8 = password.getBytes(StandardCharsets.UTF_8);
         return "*" + DigestUtils.sha1Hex(DigestUtils.sha1(utf8)).toUpperCase();

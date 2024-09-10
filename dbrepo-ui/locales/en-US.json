@@ -332,7 +332,7 @@
             "title": "Dataset Structure",
             "text": "the table schema manually.",
             "primary": {
-              "warn": "No primary key column(s) selected. Please select a column that uniquely identifies data entries."
+              "warn": "No primary key column(s) selected. Please select one or more column(s) that uniquely identify data entries."
             }
           },
           "dataset": {
@@ -403,8 +403,7 @@
           },
           "summary": {
             "title": "Summary",
-            "prefix": "Imported",
-            "suffix": "rows from dataset"
+            "text": "Successfully imported dataset"
           },
           "analyse": {
             "text": "Upload & Analyse"
@@ -448,7 +447,7 @@
           }
         },
         "schema": {
-          "title": "System Versioned",
+          "title": "Schema",
           "subtitle": "Table Constraints",
           "bullet": "●",
           "assign": "Assign",

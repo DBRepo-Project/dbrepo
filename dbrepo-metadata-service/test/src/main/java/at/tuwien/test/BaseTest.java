@@ -90,6 +90,8 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -380,6 +382,7 @@ public abstract class BaseTest {
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";
 
+    public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
 
@@ -1679,6 +1682,40 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final static Long TABLE_1_DATA_COUNT = 3L;
+    public final static QueryResultDto TABLE_1_DATA_DTO = QueryResultDto.builder()
+            .headers(new LinkedList<>(List.of(new HashMap<>() {{
+                put("id", 0);
+                put("date", 1);
+                put("location", 2);
+                put("mintemp", 3);
+                put("rainfall", 4);
+            }})))
+            .result(new LinkedList<>(List.of(
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(1L));
+                        put("date", LocalDate.of(2008, 12, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 13.4);
+                        put("rainfall", 0.6);
+                    }},
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(2L));
+                        put("date", LocalDate.of(2008, 12, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 7.4);
+                        put("rainfall", 0);
+                    }},
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(3L));
+                        put("date", LocalDate.of(2008, 12, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 12.9);
+                        put("rainfall", 0);
+                    }}
+            )))
+            .build();
+
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
@@ -1846,6 +1883,8 @@ public abstract class BaseTest {
             .build();
 
     public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>()) // <<<<
             .uniques(new LinkedList<>())
             .foreignKeys(List.of(ForeignKeyCreateDto.builder()
                     .referencedTable("weather_location")
@@ -2169,7 +2208,7 @@ public abstract class BaseTest {
 
     public final static ConstraintsCreateDto TABLE_4_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>(Set.of("Timestamp")))
             .foreignKeys(new LinkedList<>())
             .uniques(List.of(List.of("Timestamp")))
             .build();
@@ -2404,37 +2443,32 @@ public abstract class BaseTest {
 
     public final static Long COLUMN_8_1_ID = 72L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
-    public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
     public final static String COLUMN_8_1_INTERNAL_NAME = "id";
     public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
     public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
-    public final static Long COLUMN_8_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_1_NULL = false;
     public final static Boolean COLUMN_8_1_AUTO_GENERATED = true;
-    public final static String COLUMN_8_1_FOREIGN_KEY = null;
-    public final static String COLUMN_8_1_CHECK = null;
-    public final static List<String> COLUMN_8_1_ENUM_VALUES = null;
-    public final static List<String> COLUMN_8_1_ENUM_VALUES_DTO = null;
-    public final static List<String> COLUMN_8_1_SET_VALUES = null;
-    public final static List<String> COLUMN_8_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_8_2_ID = 73L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
-    public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
     public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.INT;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.INT;
-    public final static Long COLUMN_8_2_DATE_FORMAT = null;
-    public final static Boolean COLUMN_8_2_NULL = true;
+    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
+    public final static Long COLUMN_8_2_SIZE = 10L;
+    public final static Long COLUMN_8_2_D = 10L;
+    public final static Boolean COLUMN_8_2_NULL = false;
     public final static Boolean COLUMN_8_2_AUTO_GENERATED = false;
-    public final static String COLUMN_8_2_FOREIGN_KEY = null;
-    public final static String COLUMN_8_2_CHECK = null;
-    public final static List<String> COLUMN_8_2_ENUM_VALUES = null;
-    public final static List<String> COLUMN_8_2_ENUM_VALUES_DTO = null;
-    public final static List<String> COLUMN_8_2_SET_VALUES = null;
-    public final static List<String> COLUMN_8_2_SET_VALUES_DTO = null;
+
+    public final static Long COLUMN_8_3_ID = 74L;
+    public final static Integer COLUMN_8_3_ORDINALPOS = 2;
+    public final static String COLUMN_8_3_NAME = "raw";
+    public final static String COLUMN_8_3_INTERNAL_NAME = "raw";
+    public final static TableColumnType COLUMN_8_3_TYPE = TableColumnType.LONGBLOB;
+    public final static ColumnTypeDto COLUMN_8_3_TYPE_DTO = ColumnTypeDto.LONGBLOB;
+    public final static Boolean COLUMN_8_3_NULL = true;
+    public final static Boolean COLUMN_8_3_AUTO_GENERATED = false;
 
     public final static ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_8_1_ID)
@@ -2462,6 +2496,18 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_2_TYPE)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
+                    .size(COLUMN_8_2_SIZE)
+                    .d(COLUMN_8_2_D)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_8_3_ID)
+                    .ordinalPosition(COLUMN_8_3_ORDINALPOS)
+                    .table(TABLE_8)
+                    .name(COLUMN_8_3_NAME)
+                    .internalName(COLUMN_8_3_INTERNAL_NAME)
+                    .columnType(COLUMN_8_3_TYPE)
+                    .isNullAllowed(COLUMN_8_3_NULL)
+                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2483,6 +2529,16 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_2_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_8_3_ID)
+                    .ordinalPosition(COLUMN_8_3_ORDINALPOS)
+                    .table(TABLE_8_DTO)
+                    .name(COLUMN_8_3_NAME)
+                    .internalName(COLUMN_8_3_INTERNAL_NAME)
+                    .columnType(COLUMN_8_3_TYPE_DTO)
+                    .isNullAllowed(COLUMN_8_3_NULL)
+                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
@@ -2492,12 +2548,36 @@ public abstract class BaseTest {
                 put(COLUMN_8_2_INTERNAL_NAME, 1);
             }})))
             .result(new LinkedList<>(List.of(
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L), COLUMN_8_2_INTERNAL_NAME, 11.2),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L), COLUMN_8_2_INTERNAL_NAME, 11.3),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L), COLUMN_8_2_INTERNAL_NAME, 11.4),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L), COLUMN_8_2_INTERNAL_NAME, 11.9),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L), COLUMN_8_2_INTERNAL_NAME, 12.3),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L), COLUMN_8_2_INTERNAL_NAME, 23.1)
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.2);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.3);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.4);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.9);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 12.3);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 23.1);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }}
             )))
             .build();
 
@@ -2876,6 +2956,13 @@ public abstract class BaseTest {
             .uniques(List.of(List.of("date")))
             .build();
 
+    public final static ConstraintsCreateDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .uniques(List.of(List.of("date")))
+            .build();
+
     public final static TableCreateDto TABLE_1_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_1_NAME)
             .description(TABLE_1_DESCRIPTION)
@@ -2888,6 +2975,13 @@ public abstract class BaseTest {
             .description(TABLE_1_DESCRIPTION)
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CONSTRAINTS_CREATE_DTO)
+            .build();
+
+    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+            .name(TABLE_1_NAME)
+            .description(TABLE_1_DESCRIPTION)
+            .columns(TABLE_1_COLUMNS_CREATE_DTO)
+            .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO)
             .build();
 
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
@@ -5105,6 +5199,8 @@ public abstract class BaseTest {
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
     public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
+    public final static Long VIEW_3_DATA_COUNT = 3L;
+
     public final static List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(8L)
@@ -7118,6 +7214,13 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
@@ -7139,6 +7242,13 @@ public abstract class BaseTest {
             .database(DATABASE_1)
             .huserid(USER_2_ID)
             .user(USER_2)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()

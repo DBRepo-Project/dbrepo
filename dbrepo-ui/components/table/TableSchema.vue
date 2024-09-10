@@ -176,7 +176,7 @@
             variant="flat"
             size="small"
             :loading="loading"
-            :disabled="disabled || !valid || this.columns.length === 0"
+            :disabled="disabled || !valid || showPrimaryKeyWarning || this.columns.length === 0"
             :text="submitText"
             @click="submit" />
         </v-col>

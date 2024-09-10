@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.AccessTypeDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
@@ -16,11 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,10 +58,24 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
-            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException, MetadataServiceException {
+            QueryStoreCreateException, ContainerNotFoundException, DatabaseMalformedException,
+            MetadataServiceException, SQLException {
+
+        /* mock */
+        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+        when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        doNothing()
+                .when(queryService)
+                .createQueryStore(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        doNothing()
+                .when(accessService)
+                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(PrivilegedUserDto.class), any(AccessTypeDto.class));
 
         /* test */
-        databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test
@@ -79,6 +97,24 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void create_unavailable_fails() throws RemoteUnavailableException, ContainerNotFoundException,
+            SQLException, DatabaseMalformedException, MetadataServiceException {
+
+        /* mock */
+        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+        doThrow(SQLException.class)
+                .when(databaseService)
+                .create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
             databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
         });
     }
@@ -125,8 +161,30 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void update_succeeds() throws DatabaseUnavailableException, RemoteUnavailableException,
             DatabaseMalformedException, DatabaseNotFoundException, MetadataServiceException {
 
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+
         /* test */
         databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void update_unavailable_fails() throws RemoteUnavailableException, DatabaseMalformedException,
+            DatabaseNotFoundException, MetadataServiceException, SQLException {
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        doThrow(SQLException.class)
+                .when(databaseService)
+                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
+        });
     }
 
     @Test

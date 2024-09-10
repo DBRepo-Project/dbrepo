@@ -149,7 +149,8 @@
             <v-row
               v-if="step > 1 && suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
               dense>
-              <v-col>
+              <v-col
+                md="8">
                 <v-alert
                   border="start"
                   color="warning">
@@ -164,7 +165,8 @@
             <v-row
               v-if="step > 1 && suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
               dense>
-              <v-col>
+              <v-col
+                md="8">
                 <v-alert
                   border="start"
                   color="warning">
@@ -261,23 +263,20 @@
       direction="vertical">
       <v-container>
         <v-row
-          v-if="rowCount"
           dense>
           <v-col
             md="8">
             <v-alert
               border="start"
               color="success">
-              <span v-text="$t(`pages.table.subpages.import.summary.prefix`)"/>
-              <strong>&nbsp;{{ rowCount }}&nbsp;</strong>
-              <span v-text="$t('pages.table.subpages.import.summary.suffix')"/>
+              <span v-text="$t(`pages.table.subpages.import.summary.text`)"/>
             </v-alert>
           </v-col>
         </v-row>
         <v-row>
           <v-col>
             <v-btn
-              v-if="rowCount !== null"
+              v-if="step === 3"
               color="secondary"
               :disabled="step !== 3 || disabled"
               size="small"
@@ -457,10 +456,6 @@ export default {
           const toast = useToastInstance()
           toast.success(this.$t('success.import.dataset'))
           this.cacheStore.reloadDatabase()
-          tableService.getCount(this.$route.params.database_id, this.tableId, null)
-            .then((rowCount) => {
-              this.rowCount = rowCount
-            })
           this.step = 3
           this.validStep3 = true
           this.loadingImport = false
@@ -542,7 +537,7 @@ export default {
           this.$emit('analyse', {
             columns: this.columns,
             filename,
-            line_termination,
+            line_termination: line_termination === '\\n' ? '\n' : JSON.stringify(line_termination).replaceAll('"', ''),
             separator: this.tableImport.separator,
             skip_lines: this.tableImport.skip_lines,
             quote: this.tableImport.quote,
