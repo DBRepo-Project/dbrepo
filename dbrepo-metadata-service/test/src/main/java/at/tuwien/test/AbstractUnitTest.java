@@ -83,6 +83,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_5.setColumns(new LinkedList<>(TABLE_5_COLUMNS));
         TABLE_5.setConstraints(TABLE_5_CONSTRAINTS);
         TABLE_5_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_5_COLUMNS_DTO));
+        TABLE_5_PRIVILEGED_DTO.setConstraints(TABLE_5_CONSTRAINTS_DTO);
         TABLE_5_PRIVILEGED_DTO.setDatabase(DATABASE_2_PRIVILEGED_DTO);
         TABLE_5_DTO.setColumns(TABLE_5_COLUMNS_DTO);
         TABLE_5_DTO.setConstraints(TABLE_5_CONSTRAINTS_DTO);
@@ -113,6 +114,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_8_DTO.setConstraints(TABLE_8_CONSTRAINTS_DTO);
         TABLE_8_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_8_COLUMNS_DTO));
         TABLE_8_PRIVILEGED_DTO.setConstraints(TABLE_8_CONSTRAINTS_DTO);
+        TABLE_8_PRIVILEGED_DTO.setDatabase(DATABASE_3_PRIVILEGED_DTO);
         VIEW_5.setDatabase(DATABASE_3);
         VIEW_5.setColumns(VIEW_5_COLUMNS);
         IDENTIFIER_6.setDatabase(DATABASE_3);

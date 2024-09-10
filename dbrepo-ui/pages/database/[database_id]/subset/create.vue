@@ -1,5 +1,5 @@
 <template>
-  <div v-if="canExecuteQuery">
+  <div v-if="canCreateSubset">
     <Builder />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -8,6 +8,7 @@
 <script>
 import { useUserStore } from '@/stores/user'
 import Builder from '@/components/subset/Builder.vue'
+import {useCacheStore} from "~/stores/cache.js";
 
 export default {
   components: {
@@ -34,6 +35,7 @@ export default {
           disabled: true
         }
       ],
+      cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
   },
@@ -44,14 +46,26 @@ export default {
     roles () {
       return this.userStore.getRoles
     },
+    database () {
+      return this.cacheStore.getDatabase
+    },
     access () {
       return this.userStore.getAccess
     },
-    canExecuteQuery () {
-      if (!this.roles) {
+    hasReadAccess () {
+      if (!this.access) {
         return false
       }
-      return this.roles.includes('execute-query')
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
+    canCreateSubset () {
+      if (!this.database) {
+        return false
+      }
+      if (this.database.is_public) {
+        return true
+      }
+      return this.hasReadAccess
     }
   }
 }

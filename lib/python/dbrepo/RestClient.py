@@ -1588,7 +1588,7 @@ class RestClient:
         else:
             if timestamp is not None:
                 url += f'?timestamp={timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")}'
-        response = self._wrapper(method="post", url=url, force_auth=True, headers={"Accept": "application/json"},
+        response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"},
                                  payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
             body = response.json()

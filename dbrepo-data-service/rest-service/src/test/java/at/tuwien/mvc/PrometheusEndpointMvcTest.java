@@ -196,12 +196,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.exportData(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            tableEndpoint.exportData(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
+            tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

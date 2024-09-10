@@ -320,6 +320,27 @@ public class MariaDbConfig {
         return rows;
     }
 
+    public static List<Map<String, byte[]>> selectQueryByteArr(PrivilegedDatabaseDto database, String query, Set<String> columns)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        final List<Map<String, byte[]>> rows = new LinkedList<>();
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
+            final Statement statement = connection.createStatement();
+            log.trace("execute query: {}", query);
+            final ResultSet result = statement.executeQuery(query);
+            log.trace("map result set to columns: {}", columns);
+            while (result.next()) {
+                final Map<String, byte[]> row = new HashMap<>();
+                for (String column : columns) {
+                    row.put(column, result.getBytes(column));
+                }
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
     public static void execute(PrivilegedDatabaseDto database, String query)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();

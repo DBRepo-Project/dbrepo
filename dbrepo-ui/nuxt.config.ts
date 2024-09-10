@@ -2,6 +2,7 @@ import { transformAssetUrls } from 'vite-plugin-vuetify'
 
 const proxy : any = {}
 
+/* proxies the backend calls, >>NOT<< the frontend calls (clicking) */
 if (process.env.NODE_ENV === 'development') {
   const api = 'http://localhost'
   proxy['/api'] = api
@@ -12,7 +13,7 @@ if (process.env.NODE_ENV === 'development') {
       '^/pid': '/pid'
     }
   }
-  process.env.NUXT_PUBLIC_API_SERVER = 'http://localhost'
+  process.env.NUXT_PUBLIC_API_SERVER = api
 }
 
 /**

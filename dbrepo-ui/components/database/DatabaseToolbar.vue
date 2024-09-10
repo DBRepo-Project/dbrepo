@@ -135,6 +135,12 @@ export default {
       }
       return this.access.type === 'write_all' || this.access.type === 'write_own'
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     canImportCsv () {
       if (!this.user || !this.hasWriteAccess) {
         return false
@@ -142,10 +148,13 @@ export default {
       return this.roles.includes('insert-table-data')
     },
     canCreateSubset () {
-      if (!this.user) {
+      if (!this.database) {
         return false
       }
-      return this.roles.includes('execute-query')
+      if (this.database.is_public) {
+        return true
+      }
+      return this.hasReadAccess
     },
     canCreateView () {
       if (!this.user || !this.isOwner) {

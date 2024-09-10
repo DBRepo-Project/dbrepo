@@ -99,6 +99,12 @@ public class TableEndpoint {
             RemoteUnavailableException, TableMalformedException, DatabaseUnavailableException, TableExistsException,
             TableNotFoundException, QueryMalformedException, MetadataServiceException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
+        /* check */
+        if (data.getConstraints().getPrimaryKey().isEmpty()) {
+            log.error("Table must have a primary key");
+            throw new TableMalformedException("Table must have a primary key");
+        }
+        /* create */
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -218,13 +224,12 @@ public class TableEndpoint {
                 log.error("Failed find table data: authentication required");
                 throw new NotAllowedException("Failed to find table data: authentication required");
             }
-            final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
-            endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
+            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Access-Control-Expose-Headers", "X-Count");
         try {
             if (request.getMethod().equals("HEAD")) {
+                final HttpHeaders headers = new HttpHeaders();
+                headers.set("Access-Control-Expose-Headers", "X-Count");
                 headers.set("X-Count", "" + tableService.getCount(table, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
@@ -232,7 +237,6 @@ public class TableEndpoint {
             }
             final QueryResultDto dto = tableService.getData(table, timestamp, page, size);
             return ResponseEntity.ok()
-                    .headers(headers)
                     .body(dto);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -542,10 +546,10 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<InputStreamResource> exportData(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                          @NotBlank @PathVariable("tableId") Long tableId,
-                                                          @RequestParam(required = false) Instant timestamp,
-                                                          Principal principal)
+    public ResponseEntity<InputStreamResource> exportDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                                             @NotBlank @PathVariable("tableId") Long tableId,
+                                                             @RequestParam(required = false) Instant timestamp,
+                                                             Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             NotAllowedException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, MetadataServiceException {
@@ -672,8 +676,7 @@ public class TableEndpoint {
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         table.setDatabase(metadataServiceGateway.getDatabaseById(databaseId));
         try {
-            final TableStatisticDto dto = tableService.getStatistics(table);
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(tableService.getStatistics(table));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

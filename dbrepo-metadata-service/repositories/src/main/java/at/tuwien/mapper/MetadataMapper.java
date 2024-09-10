@@ -749,6 +749,8 @@ public interface MetadataMapper {
     })
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
+    User userDtoToUser(at.tuwien.api.keycloak.UserDto data);
+
     /* keep */
     @Mappings({
             @Mapping(target = "name", expression = "java(userToFullName(data))"),

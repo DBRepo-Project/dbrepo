@@ -566,7 +566,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            userEndpoint.findAll();
+            userEndpoint.findAll(null);
         } catch (Exception e) {
             /* ignore */
         }

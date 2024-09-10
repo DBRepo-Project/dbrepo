@@ -15,6 +15,7 @@ public interface StorageService {
      * @param key    The object key.
      * @return The input stream, if successful.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     InputStream getObject(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
 
@@ -24,6 +25,7 @@ public interface StorageService {
      * @param key The object key.
      * @return The byte array.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     byte[] getBytes(String key) throws StorageUnavailableException, StorageNotFoundException;
 
@@ -34,6 +36,7 @@ public interface StorageService {
      * @param key    The object key.
      * @return The byte array.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     byte[] getBytes(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
 
@@ -43,6 +46,7 @@ public interface StorageService {
      * @param key The object key.
      * @return The export resource, if successful.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     ExportResourceDto getResource(String key) throws StorageUnavailableException, StorageNotFoundException;
 
@@ -53,6 +57,7 @@ public interface StorageService {
      * @param key    The object key.
      * @return The export resource, if successful.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws StorageNotFoundException    The key was not found in the Storage Service.
      */
     ExportResourceDto getResource(String bucket, String key) throws StorageUnavailableException, StorageNotFoundException;
 

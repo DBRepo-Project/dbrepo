@@ -225,25 +225,21 @@ export default {
     },
   },
   watch: {
-    '$route.params.database_id': {
-      handler (newId, oldId) {
-        if (newId === oldId) {
+    '$route.params': {
+      handler (newObj, oldObj) {
+        if (!newObj.database_id) {
           return
         }
-        this.cacheStore.setRouteDatabase(newId)
+        /* load database and optional access */
+        this.cacheStore.setRouteDatabase(newObj.database_id)
         if (this.user) {
-          this.userStore.setRouteAccess(newId)
+          this.userStore.setRouteAccess(newObj.database_id)
         }
-      },
-      deep: true,
-      immediate: true
-    },
-    '$route.params.table_id': {
-      handler (newId, oldId) {
-        if (newId === oldId) {
+        if (!newObj.table_id) {
           return
         }
-        this.cacheStore.setRouteTable(this.$route.params.database_id, newId)
+        /* load table */
+        this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
       },
       deep: true,
       immediate: true

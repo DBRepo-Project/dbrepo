@@ -21,7 +21,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorDto> handle(AccessDeniedException e) {
-        return generic_handle(e.getClass(), e.getLocalizedMessage());
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/problem+json");
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .code("error.access.denied")
+                .message(e.getLocalizedMessage())
+                .status(HttpStatus.UNAUTHORIZED)
+                .build();
+        return new ResponseEntity<>(response, headers, HttpStatus.UNAUTHORIZED);
     }
 
     @Hidden
@@ -472,7 +479,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 
-    private ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message) {
+    public ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message) {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/problem+json");
         final ResponseStatus annotation = exceptionClass.getAnnotation(ResponseStatus.class);

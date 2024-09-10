@@ -38,6 +38,7 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -193,9 +194,8 @@ public class SubsetEndpoint {
 
     @PostMapping
     @Observed(name = "dbrepo_subset_create")
-    @PreAuthorize("hasAuthority('execute-query')")
     @Operation(summary = "Create subset",
-            description = "Creates a subset in the query store of the data database. Requires role `execute-query`",
+            description = "Creates a subset in the query store of the data database. Requires role `execute-query` for private databases.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -236,7 +236,7 @@ public class SubsetEndpoint {
     })
     public ResponseEntity<QueryResultDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                  @Valid @RequestBody ExecuteStatementDto data,
-                                                 @NotNull Principal principal,
+                                                 Principal principal,
                                                  @RequestParam(required = false) Long page,
                                                  @RequestParam(required = false) Long size,
                                                  @RequestParam(required = false) Instant timestamp)
@@ -244,13 +244,19 @@ public class SubsetEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
             QueryNotSupportedException, NotAllowedException, UserNotFoundException, MetadataServiceException {
-        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, principal.name={}, " +
-                        "page={}, size={}, timestamp={}", databaseId, data.getStatement(), principal.getName(), page, size,
+        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, page={}, size={}, " +
+                        "timestamp={}", databaseId, data.getStatement(), page, size,
                 timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateForbiddenStatements(data.getStatement());
         /* parameters */
+        final UUID userId;
+        if (principal == null) {
+            userId = metadataServiceGateway.getSystemUserId();
+        } else {
+            userId = UserUtil.getId(principal);
+        }
         if (page == null) {
             page = 0L;
             log.debug("page not set: default to {}", page);
@@ -267,8 +273,8 @@ public class SubsetEndpoint {
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         final QueryResultDto queryResult;
         try {
-            queryResult = subsetService.execute(database, data.getStatement(), timestamp, UserUtil.getId(principal),
-                    page, size, null, null);
+            queryResult = subsetService.execute(database, data.getStatement(), timestamp, userId, page, size, null,
+                    null);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -343,9 +349,9 @@ public class SubsetEndpoint {
         }
         try {
             final QueryDto query = subsetService.findById(database, subsetId);
-            final HttpHeaders headers = new HttpHeaders();
-            headers.set("Access-Control-Expose-Headers", "X-Count");
             if (request.getMethod().equals("HEAD")) {
+                final HttpHeaders headers = new HttpHeaders();
+                headers.set("Access-Control-Expose-Headers", "X-Count");
                 final Long count = subsetService.reExecuteCount(database, query);
                 headers.set("X-Count", "" + count);
                 return ResponseEntity.ok()
@@ -356,7 +362,6 @@ public class SubsetEndpoint {
             result.setId(subsetId);
             log.trace("re-execute query resulted in result {}", result);
             return ResponseEntity.ok()
-                    .headers(headers)
                     .body(result);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -410,8 +415,8 @@ public class SubsetEndpoint {
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
-        metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         try {
             subsetService.persist(database, queryId, data.getPersist());
             final QueryDto dto = subsetService.findById(database, queryId);

@@ -54,7 +54,8 @@ public class WebSecurityConfig {
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/**", "GET"),
-                new AntPathRequestMatcher("/api/**", "HEAD")
+                new AntPathRequestMatcher("/api/**", "HEAD"),
+                new AntPathRequestMatcher("/api/database/**/subset", "POST")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

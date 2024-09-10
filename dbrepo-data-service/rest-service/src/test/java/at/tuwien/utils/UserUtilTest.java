@@ -9,6 +9,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserUtilTest extends BaseTest {
 
     @Test
+    public void constructor_succeeds() {
+
+        /* test */
+        new UserUtil();
+    }
+
+    @Test
     public void hasRole_succeeds() {
         assertTrue(UserUtil.hasRole(USER_1_PRINCIPAL, "find-container"));
     }
