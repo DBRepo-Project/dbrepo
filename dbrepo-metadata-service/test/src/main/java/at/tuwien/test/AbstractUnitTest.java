@@ -9,6 +9,8 @@ import java.util.List;
 public abstract class AbstractUnitTest extends BaseTest {
 
     public void genesis() {
+        CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
+        CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* USER_1 */
         USER_1.setAccesses(new LinkedList<>());
         /* USER_2 */

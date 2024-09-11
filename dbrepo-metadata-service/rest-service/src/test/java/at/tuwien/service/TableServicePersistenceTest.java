@@ -71,8 +71,8 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        containerRepository.save(CONTAINER_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
+        containerRepository.save(CONTAINER_1);
         databaseRepository.saveAll(List.of(DATABASE_1));
     }
 

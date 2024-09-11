@@ -416,6 +416,9 @@ public interface MetadataMapper {
         };
     }
 
+    @Mappings({
+            @Mapping(target = "isDefault", source = "isDefault")
+    })
     ContainerImage createImageDtoToContainerImage(ImageCreateDto data);
 
     ImageBriefDto containerImageToImageBriefDto(ContainerImage data);

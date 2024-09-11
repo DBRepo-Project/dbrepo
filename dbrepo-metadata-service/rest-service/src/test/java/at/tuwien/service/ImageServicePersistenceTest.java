@@ -1,12 +1,12 @@
 package at.tuwien.service;
 
+import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.ImageRepository;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,7 +40,7 @@ public class ImageServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws ImageAlreadyExistsException {
+    public void create_succeeds() throws ImageAlreadyExistsException, ImageInvalidException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .name(IMAGE_1_NAME)
                 .version("11.1.4") // new tag
@@ -51,11 +49,11 @@ public class ImageServicePersistenceTest extends AbstractUnitTest {
                 .dialect(IMAGE_1_DIALECT)
                 .driverClass(IMAGE_1_DRIVER)
                 .defaultPort(IMAGE_1_PORT)
+                .isDefault(false)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        imageService.create(request, principal);
+        imageService.create(request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -67,12 +65,31 @@ public class ImageServicePersistenceTest extends AbstractUnitTest {
                 .driverClass(IMAGE_1_DRIVER)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .dialect(IMAGE_1_DIALECT)
+                .isDefault(IMAGE_1_IS_DEFAULT)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageService.create(request, principal);
+            imageService.create(request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void create_multipleDefaultImages_fails() {
+        final ImageCreateDto request = ImageCreateDto.builder()
+                .name("mariadb")
+                .version("10.5")
+                .registry(IMAGE_1_REGISTRY)
+                .defaultPort(IMAGE_1_PORT)
+                .driverClass(IMAGE_1_DRIVER)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .isDefault(true) // <<<<
+                .build();
+
+        /* test */
+        assertThrows(ImageInvalidException.class, () -> {
+            imageService.create(request, USER_1_PRINCIPAL);
         });
     }
 

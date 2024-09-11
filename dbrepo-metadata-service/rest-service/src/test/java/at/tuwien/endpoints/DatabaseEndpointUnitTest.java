@@ -13,6 +13,7 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.BrokerService;
 import at.tuwien.service.impl.DatabaseServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,11 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser

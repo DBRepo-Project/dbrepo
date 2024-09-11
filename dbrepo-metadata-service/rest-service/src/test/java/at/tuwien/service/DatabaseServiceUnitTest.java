@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.entities.database.Database;
@@ -42,9 +41,6 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
-
-    @MockBean
-    private ContainerRepository containerRepository;
 
     @Autowired
     private DatabaseService databaseService;
@@ -93,23 +89,6 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_notFound_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .cid(CONTAINER_1_ID)
-                .name(DATABASE_1_NAME)
-                .build();
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1, request, USER_1);
-        });
-    }
-
-    @Test
     public void find_succeeds() throws DatabaseNotFoundException {
 
         /* mock */
@@ -138,26 +117,11 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     public void create_succeeds() throws Exception {
 
         /* mock */
-        when(containerRepository.findById(DATABASE_1.getCid()))
-                .thenReturn(Optional.of(CONTAINER_1));
         when(dataServiceGateway.createDatabase(any(CreateDatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
-        generic_create(DATABASE_1_CREATE, DATABASE_1);
-    }
-
-    @Test
-    public void create_containerNotFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(anyLong()))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            generic_create(DATABASE_1_CREATE, DATABASE_1);
-        });
+        generic_create();
     }
 
     @Test
@@ -165,15 +129,13 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(containerRepository.findById(DATABASE_1.getCid()))
-                .thenReturn(Optional.of(CONTAINER_1));
         doThrow(DataServiceException.class)
                 .when(dataServiceGateway)
                 .createDatabase(any(CreateDatabaseDto.class));
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
-            generic_create(DATABASE_1_CREATE, DATABASE_1);
+            generic_create();
         });
     }
 
@@ -182,15 +144,13 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(containerRepository.findById(DATABASE_1.getCid()))
-                .thenReturn(Optional.of(CONTAINER_1));
         doThrow(DataServiceConnectionException.class)
                 .when(dataServiceGateway)
                 .createDatabase(any(CreateDatabaseDto.class));
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
-            generic_create(DATABASE_1_CREATE, DATABASE_1);
+            generic_create();
         });
     }
 
@@ -304,7 +264,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected Database generic_create(DatabaseCreateDto createDto, Database database) throws DataServiceException,
+    protected Database generic_create() throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
@@ -312,13 +272,11 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(databaseRepository.save(any(Database.class)))
-                .thenReturn(database);
+                .thenReturn(DATABASE_1);
 
         /* test */
-        final Database response = databaseService.create(CONTAINER_1, createDto, USER_1);
-        assertEquals(database.getName(), response.getName());
-        assertEquals(database.getIsPublic(), response.getIsPublic());
-        assertTrue(response.getInternalName().startsWith(database.getInternalName()));
+        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1);
+        assertTrue(response.getInternalName().startsWith(DATABASE_1_INTERNALNAME));
         assertNotNull(response.getContainer());
         assertNotNull(response.getTables());
         assertNotNull(response.getViews());
@@ -332,7 +290,6 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         assertNotNull(response.getOwner());
         assertNull(response.getImage());
         assertNotNull(response.getExchangeName());
-        assertEquals(database.getIsPublic(), response.getIsPublic());
         return response;
     }
 

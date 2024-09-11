@@ -46,6 +46,10 @@ public class ContainerCreateDto {
     @JsonProperty("ui_port")
     private Integer uiPort;
 
+    @NotNull
+    @Schema(example = "50")
+    private Long quota;
+
     @NotBlank
     @JsonProperty("privileged_username")
     @Schema(description = "Username of privileged user", example = "root")

@@ -1082,7 +1082,8 @@
     },
     "container": {
       "exists": "Container already exists in metadata database",
-      "missing": "Failed to find container in metadata database"
+      "missing": "Failed to find container in metadata database",
+      "quota": "Database quota exceeded in engine"
     },
     "data": {
       "connection": "Failed to contact data service",

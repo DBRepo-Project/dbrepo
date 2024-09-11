@@ -54,7 +54,7 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(nullable = false, unique = true, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDefault = false;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")

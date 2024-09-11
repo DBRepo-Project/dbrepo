@@ -4,6 +4,7 @@ import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.exception.ImageNotFoundException;
 
 import java.security.Principal;
@@ -32,8 +33,11 @@ public interface ImageService {
      * @param createDto The new image.
      * @param principal The user principal.
      * @return The container image, if successful.
+     * @throws ImageAlreadyExistsException The image already exists.
+     * @throws ImageInvalidException       The default image cannot be created as a default image already exists.
      */
-    ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException;
+    ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException,
+            ImageInvalidException;
 
     /**
      * Updates a container image with given id in the metadata database.

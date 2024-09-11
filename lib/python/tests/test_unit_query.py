@@ -1,6 +1,4 @@
 import unittest
-from json import dumps
-from typing import Any
 
 import requests_mock
 import datetime

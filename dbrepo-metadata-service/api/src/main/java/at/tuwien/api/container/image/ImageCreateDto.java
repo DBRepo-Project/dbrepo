@@ -27,6 +27,11 @@ public class ImageCreateDto {
     @Schema(example = "mariadb")
     private String name;
 
+    @NotNull
+    @JsonProperty("is_default")
+    @Schema(example = "false")
+    private Boolean isDefault;
+
     @NotBlank
     @Parameter(example = "10.5")
     private String version;
