@@ -1,6 +1,8 @@
 volumes:
   metadata-db-data:
   data-db-data:
+  data2-db-data:
+  data3-db-data:
   auth-db-data:
   broker-service-data:
   upload-service-data:
@@ -41,6 +43,42 @@ services:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     ports:
       - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-data2-db:
+    restart: "no"
+    container_name: dbrepo-data2-db
+    hostname: data2-db
+    image: docker.io/bitnami/mariadb:10.5.26-debian-12-r2
+    volumes:
+      - data2-db-data:/bitnami/mariadb
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
+    environment:
+      MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-data3-db:
+    restart: "no"
+    container_name: dbrepo-data3-db
+    hostname: data3-db
+    image: docker.io/bitnami/mariadb:11.4.3-debian-12-r1
+    volumes:
+      - data3-db-data:/bitnami/mariadb
+      - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
     healthcheck:

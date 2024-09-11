@@ -38,7 +38,7 @@
         <v-list-item
           v-if="canListContainers"
           to="/container"
-          prepend-icon="mdi-docker"
+          prepend-icon="mdi-database-settings"
           :title="$t('navigation.container')" />
       </v-list>
       <template v-slot:append>

@@ -6,7 +6,7 @@
     <v-divider class="mx-4" />
     <v-card-title
       v-text="container.name" />
-    <v-card-subtitle>Container</v-card-subtitle>
+    <v-card-subtitle v-text="$t('pages.container.subtitle.text')" />
     <v-card-text>
       <v-progress-linear
         v-model="utilization"

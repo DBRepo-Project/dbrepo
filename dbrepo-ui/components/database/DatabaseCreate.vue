@@ -40,7 +40,17 @@
                 item-value="id"
                 :rules="[v => !!v || $t('validation.required')]"
                 return-object
-                required />
+                required>
+                <template
+                  v-slot:selection>
+                  <span>{{ engine.name }}</span>
+                </template>
+                <template
+                  v-if="engine"
+                  v-slot:details>
+                  {{ $t('pages.database.subpages.create.utilization.label') }} {{ engine.count }}/{{ engine.quota }}
+                </template>
+              </v-select>
             </v-col>
           </v-row>
         </v-card-text>
@@ -106,7 +116,13 @@ export default {
       this.loadingContainers = true
       containerService.findAll()
         .then((containers) => {
-          this.engines = containers.filter(c => c.count < c.quota)
+          const freeContainers = containers.filter(c => c.count < c.quota)
+          const defaultContainers = freeContainers.filter(c => c.image.default)
+          defaultContainers.sort(this.compareContainerUtilization)
+          this.engines = defaultContainers
+          const other = freeContainers.filter(c => !c.image.default)
+          other.sort(this.compareContainerUtilization)
+          other.forEach(c => this.engines.push(c))
           if (this.engines.length > 0) {
             this.engine = this.engines[0]
           }
@@ -138,6 +154,9 @@ export default {
           }
           toast.error(this.$t(code))
         })
+    },
+    compareContainerUtilization (container, other) {
+      return Math.round(container.count / container.quota) < Math.round(other.count / other.quota)
     },
     notEmpty
   }

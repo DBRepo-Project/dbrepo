@@ -2,7 +2,7 @@
   "navigation": {
     "information": "Information",
     "search": "Search",
-    "container": "Containers",
+    "container": "Engines",
     "ontologies": "Ontologies",
     "logout": "Logout",
     "login": "Login",
@@ -642,6 +642,9 @@
           },
           "submit": {
             "text": "Create"
+          },
+          "utilization": {
+            "label": "Utilization"
           }
         },
         "tables": {
@@ -1034,9 +1037,12 @@
       }
     },
     "container": {
-      "title": "Containers",
+      "title": "Engines",
       "name": {
         "title": "Name"
+      },
+      "subtitle": {
+        "text": "Engine"
       },
       "internal-name": {
         "title": "Internal Name"

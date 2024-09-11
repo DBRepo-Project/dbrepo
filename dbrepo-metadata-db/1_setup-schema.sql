@@ -27,10 +27,12 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     dialect       character varying(255) NOT NULL,
     driver_class  character varying(255) NOT NULL,
     jdbc_method   character varying(255) NOT NULL,
+    is_default    BOOLEAN                NOT NULL DEFAULT FALSE,
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
     PRIMARY KEY (id),
-    UNIQUE (name, version)
+    UNIQUE (name, version),
+    UNIQUE (is_default)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_images_date`

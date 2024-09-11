@@ -530,7 +530,7 @@
       "description" : "${default-container-handling}",
       "composite" : true,
       "composites" : {
-        "realm" : [ "find-container", "list-containers" ]
+        "realm" : [ "find-container" ]
       },
       "clientRole" : false,
       "containerId" : "82c39861-d877-4667-a0f3-4daa2ee230e0",
@@ -2143,7 +2143,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
       }
     }, {
       "id" : "1849e52a-b8c9-44a8-af3d-ee19376a1ed1",
@@ -2169,7 +2169,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper" ]
       }
     } ],
     "org.keycloak.storage.UserStorageProvider" : [ {
@@ -2185,8 +2185,8 @@
           "config" : {
             "ldap.attribute" : [ "createTimestamp" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "createTimestamp" ]
           }
         }, {
@@ -2221,8 +2221,8 @@
           "config" : {
             "ldap.attribute" : [ "mail" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "read.only" : [ "false" ],
             "always.read.value.from.ldap" : [ "false" ],
+            "read.only" : [ "false" ],
             "user.model.attribute" : [ "email" ]
           }
         }, {
@@ -2233,17 +2233,17 @@
           "config" : {
             "membership.attribute.type" : [ "DN" ],
             "group.name.ldap.attribute" : [ "cn" ],
-            "membership.user.ldap.attribute" : [ "uid" ],
             "preserve.group.inheritance" : [ "false" ],
+            "membership.user.ldap.attribute" : [ "uid" ],
             "groups.dn" : [ "ou=users,dc=dbrepo,dc=at" ],
             "mode" : [ "LDAP_ONLY" ],
             "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
             "ignore.missing.groups" : [ "false" ],
             "membership.ldap.attribute" : [ "member" ],
-            "group.object.classes" : [ "groupOfNames" ],
             "memberof.ldap.attribute" : [ "memberOf" ],
-            "drop.non.existing.groups.during.sync" : [ "false" ],
-            "groups.path" : [ "/" ]
+            "group.object.classes" : [ "groupOfNames" ],
+            "groups.path" : [ "/" ],
+            "drop.non.existing.groups.during.sync" : [ "false" ]
           }
         }, {
           "id" : "b6ff3285-35af-4e86-8bb4-d94b8e0d70bb",
@@ -2253,8 +2253,8 @@
           "config" : {
             "ldap.attribute" : [ "modifyTimestamp" ],
             "is.mandatory.in.ldap" : [ "false" ],
-            "always.read.value.from.ldap" : [ "true" ],
             "read.only" : [ "true" ],
+            "always.read.value.from.ldap" : [ "true" ],
             "user.model.attribute" : [ "modifyTimestamp" ]
           }
         }, {
@@ -2277,21 +2277,21 @@
         "fullSyncPeriod" : [ "-1" ],
         "pagination" : [ "false" ],
         "startTls" : [ "false" ],
-        "connectionPooling" : [ "true" ],
         "usersDn" : [ "ou=users,dc=dbrepo,dc=at" ],
+        "connectionPooling" : [ "true" ],
         "cachePolicy" : [ "DEFAULT" ],
         "useKerberosForPasswordAuthentication" : [ "false" ],
         "importEnabled" : [ "true" ],
         "enabled" : [ "true" ],
-        "changedSyncPeriod" : [ "-1" ],
-        "usernameLDAPAttribute" : [ "uid" ],
         "bindDn" : [ "cn=admin,dc=dbrepo,dc=at" ],
         "bindCredential" : [ "admin" ],
+        "usernameLDAPAttribute" : [ "uid" ],
+        "changedSyncPeriod" : [ "-1" ],
         "lastSync" : [ "1719252666" ],
         "vendor" : [ "other" ],
         "uuidLDAPAttribute" : [ "entryUUID" ],
-        "allowKerberosAuthentication" : [ "false" ],
         "connectionUrl" : [ "ldap://identity-service:1389" ],
+        "allowKerberosAuthentication" : [ "false" ],
         "syncRegistrations" : [ "true" ],
         "authType" : [ "simple" ],
         "useTruststoreSpi" : [ "always" ],
