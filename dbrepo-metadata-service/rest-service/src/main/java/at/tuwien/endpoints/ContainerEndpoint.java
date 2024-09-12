@@ -65,11 +65,11 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<List<ContainerBriefDto>> findAll(@RequestParam(required = false) Integer limit) {
         log.debug("endpoint find all containers, limit={}", limit);
-        final List<Container> containers = containerService.getAll(limit);
-        final List<ContainerBriefDto> dtos = containers.stream()
+        final List<ContainerBriefDto> dtos = containerService.getAll(limit)
+                .stream()
                 .map(metadataMapper::containerToDatabaseContainerBriefDto)
                 .collect(Collectors.toList());
-        log.trace("find all containers resulted in containers {}", dtos);
+        log.debug("find all containers resulted in {} container(s)", dtos.size());
         return ResponseEntity.ok()
                 .body(dtos);
     }

@@ -1146,6 +1146,7 @@ public abstract class BaseTest {
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
             .quota(CONTAINER_2_QUOTA)
+            .databases(List.of())
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -1191,6 +1192,7 @@ public abstract class BaseTest {
             .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
             .quota(CONTAINER_3_QUOTA)
+            .databases(List.of())
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();

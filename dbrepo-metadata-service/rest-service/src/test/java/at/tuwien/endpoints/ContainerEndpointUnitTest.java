@@ -8,6 +8,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,11 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private ContainerEndpoint containerEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser
