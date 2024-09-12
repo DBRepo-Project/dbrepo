@@ -1021,7 +1021,7 @@ paths:
       summary: Create subset
       description: >-
         Creates a subset in the query store of the data database. Requires role
-        `execute-query`
+        `execute-query` for private databases.
       operationId: create
       parameters:
         - name: databaseId
@@ -1223,7 +1223,7 @@ paths:
         Gets data from table with id as downloadable file. For tables in private
         databases, the user needs to have at least *READ* access to the
         associated database.
-      operationId: exportData
+      operationId: exportDataset
       parameters:
         - name: databaseId
           in: path
@@ -1427,6 +1427,12 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '409':
           description: Query store could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '423':
+          description: Database quota exceeded
           content:
             application/json:
               schema:
@@ -3030,6 +3036,12 @@ paths:
       summary: List users
       description: Lists users known to the metadata database.
       operationId: findAll
+      parameters:
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: List users
@@ -4431,6 +4443,29 @@ components:
       required:
         - keys
       type: object
+    QueryResultDto:
+      required:
+        - headers
+        - id
+        - result
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+        headers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+        id:
+          type: integer
+          format: int64
     ApiErrorDto:
       required:
         - code
@@ -4517,29 +4552,6 @@ components:
         code:
           type: string
           example: error.service.code
-    QueryResultDto:
-      required:
-        - headers
-        - id
-        - result
-      type: object
-      properties:
-        result:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: object
-        headers:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-        id:
-          type: integer
-          format: int64
     TupleUpdateDto:
       required:
         - data
@@ -5952,12 +5964,14 @@ components:
             $ref: '#/components/schemas/PrimaryKeyDto'
     ContainerDto:
       required:
+        - count
         - created
         - host
         - id
         - image
         - internal_name
         - name
+        - quota
         - sidecar_host
         - sidecar_port
       type: object
@@ -5975,6 +5989,14 @@ components:
           format: int32
         image:
           $ref: '#/components/schemas/ImageDto'
+        quota:
+          type: integer
+          format: int64
+          example: 50
+        count:
+          type: integer
+          format: int64
+          example: 10
         created:
           type: string
           format: date-time
@@ -6169,6 +6191,7 @@ components:
           example: '2021-03-12T15:26:21.000Z'
     ImageDto:
       required:
+        - default
         - default_port
         - dialect
         - driver_class
@@ -6204,6 +6227,9 @@ components:
         jdbc_method:
           type: string
           example: mariadb
+        default:
+          type: boolean
+          example: false
         default_port:
           type: integer
           format: int32
@@ -7742,6 +7768,7 @@ components:
         - default_port
         - dialect
         - driver_class
+        - is_default
         - jdbc_method
         - name
         - registry
@@ -7758,6 +7785,9 @@ components:
           type: string
         dialect:
           type: string
+        is_default:
+          type: boolean
+          example: false
         driver_class:
           type: string
         jdbc_method:
@@ -8284,6 +8314,7 @@ components:
         - name
         - privileged_password
         - privileged_username
+        - quota
         - sidecar_host
         - sidecar_port
       type: object
@@ -8298,6 +8329,10 @@ components:
           type: integer
           description: Port of container
           format: int32
+        quota:
+          type: integer
+          format: int64
+          example: 50
         image_id:
           type: integer
           description: Image ID
@@ -8374,10 +8409,10 @@ components:
           type: string
         resumptionToken:
           type: string
-        untilDate:
+        fromDate:
           type: string
           format: date-time
-        fromDate:
+        untilDate:
           type: string
           format: date-time
         parametersString:
@@ -8417,6 +8452,7 @@ components:
           example: '2021-03-12T15:26:21.000Z'
     ImageBriefDto:
       required:
+        - default
         - id
         - jdbc_method
         - name
@@ -8435,6 +8471,9 @@ components:
         jdbc_method:
           type: string
           example: mariadb
+        default:
+          type: boolean
+          example: false
     LdCreatorDto:
       required:
         - '@type'
@@ -8528,13 +8567,14 @@ components:
           example: 1
     ContainerBriefDto:
       required:
+        - count
         - created
         - hash
         - id
         - image
         - internal_name
         - name
-        - running
+        - quota
       type: object
       properties:
         id:
@@ -8548,9 +8588,14 @@ components:
           example: Air Quality
         image:
           $ref: '#/components/schemas/ImageBriefDto'
-        running:
-          type: boolean
-          example: true
+        quota:
+          type: integer
+          format: int32
+          example: 50
+        count:
+          type: integer
+          format: int32
+          example: 10
         created:
           type: string
           format: date-time
@@ -8603,6 +8648,9 @@ components:
         uiPort:
           type: integer
           format: int32
+        quota:
+          type: integer
+          format: int32
         uiAdditionalFlags:
           type: string
         databases:
@@ -8642,6 +8690,8 @@ components:
         defaultPort:
           type: integer
           format: int32
+        isDefault:
+          type: boolean
         dateFormats:
           type: array
           items:
