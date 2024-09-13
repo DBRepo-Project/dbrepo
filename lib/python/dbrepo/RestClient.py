@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import time
-import datetime
 
 import requests
 from pydantic import TypeAdapter
@@ -15,7 +14,8 @@ from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailE
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, UploadError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
 
-logger = logging.getLogger("RestClient")
+logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
+                    stream=sys.stdout)
 
 
 class RestClient:
@@ -40,8 +40,6 @@ class RestClient:
                  username: str = None,
                  password: str = None,
                  secure: bool = True) -> None:
-        logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
-                            stream=sys.stdout)
         self.endpoint = os.environ.get('REST_API_ENDPOINT', endpoint)
         self.username = os.environ.get('REST_API_USERNAME', username)
         self.password = os.environ.get('REST_API_PASSWORD', password)
@@ -49,7 +47,7 @@ class RestClient:
             self.secure = os.environ.get('REST_API_SECURE') == 'True'
         else:
             self.secure = secure
-        logger.debug(
+        logging.debug(
             f'initialized rest client with endpoint={self.endpoint}, username={username}, verify_ssl={secure}')
 
     def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
@@ -57,27 +55,27 @@ class RestClient:
         if force_auth and (self.username is None and self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
         url = f'{self.endpoint}{url}'
-        logger.debug(f'method: {method}')
-        logger.debug(f'url: {url}')
+        logging.debug(f'method: {method}')
+        logging.debug(f'url: {url}')
         if params is not None:
-            logger.debug(f'params: {params}')
+            logging.debug(f'params: {params}')
         if stream is not None:
-            logger.debug(f'stream: {stream}')
-        logger.debug(f'secure: {self.secure}')
+            logging.debug(f'stream: {stream}')
+        logging.debug(f'secure: {self.secure}')
         if headers is not None:
-            logger.debug(f'headers: {headers}')
+            logging.debug(f'headers: {headers}')
         else:
             headers = dict()
-            logger.debug(f'no headers set')
+            logging.debug(f'no headers set')
         if payload is not None:
             payload = payload.model_dump()
         auth = None
         if self.username is None and self.password is not None:
             headers["Authorization"] = f"Bearer {self.password}"
-            logger.debug(f'configured for oidc/bearer auth')
+            logging.debug(f'configured for oidc/bearer auth')
         elif self.username is not None and self.password is not None:
             auth = (self.username, self.password)
-            logger.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
+            logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
         return requests.request(method=method, url=url, auth=auth, verify=self.secure,
                                 json=payload, headers=headers, params=params, stream=stream)
 

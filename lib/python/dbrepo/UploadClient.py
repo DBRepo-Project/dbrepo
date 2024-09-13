@@ -4,7 +4,8 @@ import re
 import sys
 from tusclient import client
 
-logger = logging.getLogger("UploadClient")
+logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
+                    stream=sys.stdout)
 
 
 class UploadClient:
@@ -18,8 +19,6 @@ class UploadClient:
     endpoint: str = None
 
     def __init__(self, endpoint: str = 'http://gateway-service/api/upload/files') -> None:
-        logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
-                            stream=sys.stdout)
         self.endpoint = os.environ.get('REST_UPLOAD_ENDPOINT', endpoint)
 
     def upload(self, file_path: str) -> str:
@@ -35,5 +34,5 @@ class UploadClient:
         uploader.upload()
         m = re.search('\\/([a-f0-9]+)\\+', uploader.url)
         filename = m.group(0)[1:-1]
-        logger.debug(f'uploaded file {file_path} to storage service with key: {filename}')
+        logging.info(f'Uploaded file {file_path} to storage service with key: {filename}')
         return filename

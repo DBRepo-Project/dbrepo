@@ -4443,29 +4443,6 @@ components:
       required:
         - keys
       type: object
-    QueryResultDto:
-      required:
-        - headers
-        - id
-        - result
-      type: object
-      properties:
-        result:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: object
-        headers:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-        id:
-          type: integer
-          format: int64
     ApiErrorDto:
       required:
         - code
@@ -4552,6 +4529,29 @@ components:
         code:
           type: string
           example: error.service.code
+    QueryResultDto:
+      required:
+        - headers
+        - id
+        - result
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+        headers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+        id:
+          type: integer
+          format: int64
     TupleUpdateDto:
       required:
         - data

@@ -188,7 +188,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "1.4.5",
+        "version": "1.4.6",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -200,7 +200,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.5/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/"
     },
     "servers": [
         {
