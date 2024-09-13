@@ -25,3 +25,7 @@ release-images: tag-images ## Release the docker images.
 	docker push "${REPOSITORY_URL}/search-service:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/search-service-init:${APP_VERSION}"
 	docker push "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}"
+
+.PHONY: release-helm
+release-helm: gen-helm-doc ## Release the Helm chart.
+	helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://registry.datalab.tuwien.ac.at/dbrepo/dbrepo/helm

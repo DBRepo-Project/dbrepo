@@ -649,6 +649,9 @@ storageservice:
     fullnameOverride: storage-service-db
     ## @skip storageservice.mariadb.enabled
     enabled: true
+    auth:
+      ## @param storageservice.mariadb.auth.rootPassword The user password for the root user.
+      rootPassword: seaweedfsdb
   master:
     ## @skip storageservice.master.enabled
     enabled: true

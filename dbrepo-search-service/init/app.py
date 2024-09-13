@@ -6,6 +6,7 @@ from typing import List
 import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
 from logging.config import dictConfig
+from pathlib import Path
 
 from dbrepo.api.dto import Database
 from opensearchpy import OpenSearch
@@ -48,11 +49,11 @@ class App:
     search_instance: OpenSearch = None
 
     def __init__(self):
-        self.metadata_service_endpoint = os.getenv("METADATA_SERVICE_ENDPOINT")
-        self.search_host = os.getenv("OPENSEARCH_HOST")
-        self.search_port = int(os.getenv("OPENSEARCH_PORT"))
-        self.search_username = os.getenv("OPENSEARCH_USERNAME")
-        self.search_password = os.getenv("OPENSEARCH_PASSWORD")
+        self.metadata_service_endpoint = os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080")
+        self.search_host = os.getenv("OPENSEARCH_HOST", "search-db")
+        self.search_port = int(os.getenv("OPENSEARCH_PORT", "9200"))
+        self.search_username = os.getenv("OPENSEARCH_USERNAME", "admin")
+        self.search_password = os.getenv("OPENSEARCH_PASSWORD", "admin")
 
     def _instance(self) -> OpenSearch:
         """
@@ -109,8 +110,7 @@ class App:
         return databases
 
     def save_databases(self, databases: List[Database]):
-        logging.debug(
-            f"save {len(databases)} database(s)")
+        logging.debug(f"save {len(databases)} database(s)")
         for doc in databases:
             doc: Database = doc
             try:

@@ -353,6 +353,8 @@ services:
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
     logging:
       driver: json-file
 

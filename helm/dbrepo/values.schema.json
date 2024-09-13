@@ -132,17 +132,6 @@
         },
         "authservice": {
             "properties": {
-                "auth": {
-                    "properties": {
-                        "adminPassword": {
-                            "type": "string"
-                        },
-                        "adminUser": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
                 "client": {
                     "properties": {
                         "id": {
@@ -1042,6 +1031,10 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "extraInitDbScripts": {
+                    "properties": {},
+                    "type": "object"
+                },
                 "fullnameOverride": {
                     "type": "string"
                 },
@@ -1063,10 +1056,6 @@
                 },
                 "host": {
                     "type": "string"
-                },
-                "initdbScripts": {
-                    "properties": {},
-                    "type": "object"
                 },
                 "initdbScriptsConfigMap": {
                     "type": "string"
@@ -1333,12 +1322,6 @@
                 },
                 "security": {
                     "properties": {
-                        "adminPassword": {
-                            "type": "string"
-                        },
-                        "adminUsername": {
-                            "type": "string"
-                        },
                         "enabled": {
                             "type": "boolean"
                         }
@@ -1517,6 +1500,14 @@
                 },
                 "mariadb": {
                     "properties": {
+                        "auth": {
+                            "properties": {
+                                "rootPassword": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
                         "enabled": {
                             "type": "boolean"
                         },
