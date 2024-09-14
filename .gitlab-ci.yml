@@ -139,7 +139,6 @@ build-docker:
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
     - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
     - "docker compose build --parallel"
