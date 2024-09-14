@@ -540,7 +540,7 @@ data:
           "description" : "${default-container-handling}",
           "composite" : true,
           "composites" : {
-            "realm" : [ "find-container", "list-containers" ]
+            "realm" : [ "find-container" ]
           },
           "clientRole" : false,
           "containerId" : "82c39861-d877-4667-a0f3-4daa2ee230e0",
@@ -2153,7 +2153,7 @@ data:
           "subType" : "anonymous",
           "subComponents" : { },
           "config" : {
-            "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+            "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
           }
         }, {
           "id" : "1849e52a-b8c9-44a8-af3d-ee19376a1ed1",
@@ -2179,7 +2179,7 @@ data:
           "subType" : "authenticated",
           "subComponents" : { },
           "config" : {
-            "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-role-list-mapper", "oidc-address-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-attribute-mapper" ]
+            "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-user-property-mapper", "saml-user-attribute-mapper", "oidc-address-mapper" ]
           }
         } ],
         "org.keycloak.storage.UserStorageProvider" : [ {
@@ -2195,8 +2195,8 @@ data:
               "config" : {
                 "ldap.attribute" : [ "createTimestamp" ],
                 "is.mandatory.in.ldap" : [ "false" ],
-                "always.read.value.from.ldap" : [ "true" ],
                 "read.only" : [ "true" ],
+                "always.read.value.from.ldap" : [ "true" ],
                 "user.model.attribute" : [ "createTimestamp" ]
               }
             }, {
@@ -2219,8 +2219,8 @@ data:
               "config" : {
                 "ldap.attribute" : [ "cn" ],
                 "is.mandatory.in.ldap" : [ "true" ],
-                "read.only" : [ "false" ],
                 "always.read.value.from.ldap" : [ "true" ],
+                "read.only" : [ "false" ],
                 "user.model.attribute" : [ "firstName" ]
               }
             }, {
@@ -2231,8 +2231,8 @@ data:
               "config" : {
                 "ldap.attribute" : [ "mail" ],
                 "is.mandatory.in.ldap" : [ "false" ],
-                "read.only" : [ "false" ],
                 "always.read.value.from.ldap" : [ "false" ],
+                "read.only" : [ "false" ],
                 "user.model.attribute" : [ "email" ]
               }
             }, {
@@ -2245,13 +2245,13 @@ data:
                 "group.name.ldap.attribute" : [ "cn" ],
                 "preserve.group.inheritance" : [ "false" ],
                 "membership.user.ldap.attribute" : [ "uid" ],
-                "groups.dn" : [ "ou=users,{{ .Values.identityservice.global.ldapDomain }}" ],
+                "groups.dn" : [ "ou=users,dc=dbrepo,dc=at" ],
                 "mode" : [ "LDAP_ONLY" ],
                 "user.roles.retrieve.strategy" : [ "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE" ],
-                "membership.ldap.attribute" : [ "member" ],
                 "ignore.missing.groups" : [ "false" ],
-                "group.object.classes" : [ "groupOfNames" ],
+                "membership.ldap.attribute" : [ "member" ],
                 "memberof.ldap.attribute" : [ "memberOf" ],
+                "group.object.classes" : [ "groupOfNames" ],
                 "groups.path" : [ "/" ],
                 "drop.non.existing.groups.during.sync" : [ "false" ]
               }
@@ -2263,8 +2263,8 @@ data:
               "config" : {
                 "ldap.attribute" : [ "modifyTimestamp" ],
                 "is.mandatory.in.ldap" : [ "false" ],
-                "always.read.value.from.ldap" : [ "true" ],
                 "read.only" : [ "true" ],
+                "always.read.value.from.ldap" : [ "true" ],
                 "user.model.attribute" : [ "modifyTimestamp" ]
               }
             }, {
@@ -2277,15 +2277,15 @@ data:
                 "is.mandatory.in.ldap" : [ "true" ],
                 "attribute.force.default" : [ "false" ],
                 "is.binary.attribute" : [ "false" ],
-                "always.read.value.from.ldap" : [ "false" ],
                 "read.only" : [ "false" ],
+                "always.read.value.from.ldap" : [ "false" ],
                 "user.model.attribute" : [ "username" ]
               }
             } ]
           },
           "config" : {
-            "pagination" : [ "false" ],
             "fullSyncPeriod" : [ "-1" ],
+            "pagination" : [ "false" ],
             "startTls" : [ "false" ],
             "usersDn" : [ "ou=users,dc=dbrepo,dc=at" ],
             "connectionPooling" : [ "true" ],
@@ -2293,14 +2293,14 @@ data:
             "useKerberosForPasswordAuthentication" : [ "false" ],
             "importEnabled" : [ "true" ],
             "enabled" : [ "true" ],
+            "bindDn" : [ "cn=admin,dc=dbrepo,dc=at" ],
+            "bindCredential" : [ "admin" ],
             "usernameLDAPAttribute" : [ "uid" ],
-            "bindCredential" : [ "{{ .Values.identityservice.global.adminPassword }}" ],
-            "bindDn" : [ "cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }}" ],
             "changedSyncPeriod" : [ "-1" ],
             "lastSync" : [ "1719252666" ],
             "vendor" : [ "other" ],
             "uuidLDAPAttribute" : [ "entryUUID" ],
-            "connectionUrl" : [ "ldap://identity-service:389" ],
+            "connectionUrl" : [ "ldap://identity-service:1389" ],
             "allowKerberosAuthentication" : [ "false" ],
             "syncRegistrations" : [ "true" ],
             "authType" : [ "simple" ],

@@ -27,5 +27,6 @@ release-images: tag-images ## Release the docker images.
 	docker push "${REPOSITORY_URL}/storage-service-init:${APP_VERSION}"
 
 .PHONY: release-helm
-release-helm: gen-helm-doc ## Release the Helm chart.
+release-helm: gen-helm-doc ## Release the DBRepo and DBRepo MariaDB Galera Helm charts.
 	helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://registry.datalab.tuwien.ac.at/dbrepo/dbrepo/helm
+	helm push ./build/dbrepo-mariadb-galera-${CHART_VERSION}.tgz oci://registry.datalab.tuwien.ac.at/dbrepo/dbrepo/helm

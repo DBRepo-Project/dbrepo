@@ -30,5 +30,10 @@ build-lib: ## Build the Python Library.
 	(cd ./dbrepo-search-service/init && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install)
 
 .PHONY: build-helm
-build-helm: ## Build the Helm Chart.
+build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.
+	./.scripts/check-helm.sh
+	helm package ./helm/dbrepo-mariadb-galera --destination ./build
+	helm schema -input ./helm/dbrepo-mariadb-galera/values.yaml -output ./helm/dbrepo-mariadb-galera/values.schema.json
+	helm dependency update ./helm/dbrepo
 	helm package ./helm/dbrepo --destination ./build
+	helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json

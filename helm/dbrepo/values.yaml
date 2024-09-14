@@ -141,62 +141,6 @@ datadb:
   metrics:
     ## @skip datadb.metrics.enabled
     enabled: true
-  ## @skip datadb.primary
-  primary:
-    service:
-      extraPorts:
-        - name: "sidecar"
-          port: 8080
-          targetPort: 8080
-          protocol: TCP
-    sidecars:
-      - name: sidecar
-        image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.6
-        imagePullPolicy: Always
-        securityContext:
-          runAsUser: 1001
-          runAsGroup: 0
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
-          capabilities:
-            drop:
-              - ALL
-        ports:
-          - name: "sidecar"
-            containerPort: 8080
-            protocol: TCP
-        envFrom:
-          - secretRef:
-              name: data-service-secret
-        livenessProbe:
-          exec:
-            command:
-              - /bin/bash
-              - -ec
-              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-          initialDelaySeconds: 120
-          periodSeconds: 30
-        readinessProbe:
-          exec:
-            command:
-              - /bin/bash
-              - -ec
-              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        volumeMounts:
-          - name: s3
-            mountPath: /s3
-    extraVolumeMounts:
-      - name: s3
-        mountPath: /s3
-    extraVolumes:
-      - name: s3
-        emptyDir: { }
-    persistence:
-      enabled: true
   ## @skip datadb.secondary
   secondary:
     replicaCount: 2

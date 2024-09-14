@@ -102,9 +102,11 @@ class App:
         return True
 
     def fetch_databases(self) -> List[Database]:
+        logging.debug(f"fetching database from endpoint: {self.metadata_service_endpoint}")
         client = RestClient(endpoint=self.metadata_service_endpoint)
         databases = []
-        for database in client.get_databases():
+        for database, index in client.get_databases():
+            logging.debug(f"fetching database {index}/{len(databases)} details for database id: {database.id}")
             databases.append(client.get_database(database_id=database.id))
         logging.debug(f"fetched {len(databases)} database(s)")
         return databases
