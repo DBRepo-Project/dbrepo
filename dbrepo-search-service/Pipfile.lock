@@ -376,7 +376,7 @@
                 "sha256:b0e92f1a6130cd00924b3011c0e9029b292ee7c8faea3eca20f8af5ea9531c1b"
             ],
             "markers": "python_version >= '3.11'",
-            "path": "./lib/dbrepo-1.4.6.tar.gz"
+            "path": "./lib/dbrepo-1.4.5.tar.gz"
         },
         "docker": {
             "hashes": [

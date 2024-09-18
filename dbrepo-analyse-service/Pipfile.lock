@@ -428,7 +428,7 @@
                 "sha256:d5e248e25fb3787d085e3d27c81108408f963ca662d7778bc98288ca0d747940"
             ],
             "markers": "python_version >= '3.11'",
-            "path": "./lib/dbrepo-1.4.6.tar.gz"
+            "path": "./lib/dbrepo-1.4.5.tar.gz"
         },
         "events": {
             "hashes": [
