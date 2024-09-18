@@ -51,6 +51,11 @@ public class ImageDto {
     private String jdbcMethod;
 
     @NotNull
+    @JsonProperty("default")
+    @Schema(example = "false")
+    private Boolean isDefault;
+
+    @NotNull
     @JsonProperty("default_port")
     @Schema(example = "3306")
     private Integer defaultPort;

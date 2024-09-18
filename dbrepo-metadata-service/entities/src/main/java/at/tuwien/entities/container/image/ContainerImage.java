@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -55,6 +53,9 @@ public class ContainerImage {
 
     @Column(nullable = false)
     private Integer defaultPort;
+
+    @Column(nullable = false, unique = true, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDefault = false;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;

@@ -68,13 +68,21 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
     })
-    public ResponseEntity<List<UserBriefDto>> findAll() {
-        log.debug("endpoint find all users");
-        final List<UserBriefDto> users = userService.findAll()
-                .stream()
-                .map(userMapper::userToUserBriefDto)
-                .toList();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username) {
+        log.debug("endpoint find all users, username={}", username);
+        if (username == null) {
+            return ResponseEntity.ok(userService.findAll()
+                    .stream()
+                    .map(userMapper::userToUserBriefDto)
+                    .toList());
+        }
+        try {
+            log.trace("filter by username: {}", username);
+            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(userService.findByUsername(username))));
+        } catch (UserNotFoundException e) {
+            log.trace("filter by username {} failed: return empty list", username);
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     @PostMapping

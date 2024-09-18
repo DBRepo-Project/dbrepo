@@ -1,0 +1,23 @@
+annotations:
+  licenses: Apache-2.0
+apiVersion: v2
+name: dbrepo-mariadb-galera
+description: Helm Chart for installing DBRepo Data Database
+sources:
+  - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+type: application
+version: "1.4.6"
+appVersion: "1.4.6"
+keywords:
+  - dbrepo
+maintainers:
+  - name: Martin Weise
+    email: martin.weise@tuwien.ac.at
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
+dependencies:
+  - name: mariadb-galera
+    alias: database
+    version: 10.1.3  # app version: 11.1.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: database.enabled

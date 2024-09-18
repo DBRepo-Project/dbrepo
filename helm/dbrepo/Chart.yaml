@@ -6,8 +6,8 @@ description: Helm Chart for installing DBRepo
 sources:
   - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
-version: "1.4.5"
-appVersion: "1.4.5"
+version: "1.4.6"
+appVersion: "1.4.6"
 keywords:
   - dbrepo
 maintainers:
@@ -26,10 +26,10 @@ dependencies:
     version: 21.6.1  # app version: 24.0.5
     repository: https://charts.bitnami.com/bitnami
     condition: authservice.enabled
-  - name: mariadb
+  - name: dbrepo-mariadb-galera
     alias: datadb
-    version: 14.1.4  # app version: 11.1.3
-    repository: https://charts.bitnami.com/bitnami
+    version: 1.4.6
+    repository: file://../dbrepo-mariadb-galera
     condition: datadb.enabled
   - name: mariadb-galera
     alias: metadatadb

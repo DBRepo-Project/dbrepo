@@ -55,6 +55,9 @@ public class Container {
     @Column
     private Integer uiPort;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 50")
+    private Integer quota = 50;
+
     @Column
     private String uiAdditionalFlags;
 

@@ -13,7 +13,6 @@ build/
 tmp.yaml
 .docs/.swagger/api-*
 .scannerwork/
-.docker/config/*
 
 # docs
 .docs/.swagger/dist/
@@ -22,6 +21,7 @@ site/
 final/
 
 .$*
+dbrepo-somapper/
 
 # Notebooks
 .pytest_cache/

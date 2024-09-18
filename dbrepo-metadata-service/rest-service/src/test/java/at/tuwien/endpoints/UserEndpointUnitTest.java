@@ -45,18 +45,37 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findAll_anonymous_succeeds() {
+    public void findAll_anonymous_succeeds() throws UserNotFoundException {
 
         /* test */
-        findAll_generic();
+        final List<UserBriefDto> response = findAll_generic(null, null);
+        assertEquals(2, response.size());
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_noRole_succeeds() {
+    public void findAll_noRole_succeeds() throws UserNotFoundException {
 
         /* test */
-        findAll_generic();
+        final List<UserBriefDto> response = findAll_generic(null, null);
+        assertEquals(2, response.size());
+    }
+
+    @Test
+    public void findAll_filterUsername_succeeds() throws UserNotFoundException {
+
+        /* test */
+        final List<UserBriefDto> response = findAll_generic(USER_2_USERNAME, USER_2);
+        assertEquals(1, response.size());
+        assertEquals(USER_2_ID, response.get(0).getId());
+    }
+
+    @Test
+    public void findAll_filterUsername_fails() throws UserNotFoundException {
+
+        /* test */
+        final List<UserBriefDto> response = findAll_generic(USER_5_USERNAME, null);
+        assertEquals(0, response.size());
     }
 
     @Test
@@ -100,7 +119,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void find_self_succeeds() throws NotAllowedException, UserNotFoundException{
+    public void find_self_succeeds() throws NotAllowedException, UserNotFoundException {
 
         /* test */
         find_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL);
@@ -231,18 +250,29 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void findAll_generic() {
+    protected List<UserBriefDto> findAll_generic(String username, User user) throws UserNotFoundException {
 
         /* mock */
-        when(userService.findAll())
-                .thenReturn(List.of(USER_1, USER_2));
+        if (username != null) {
+            if (user != null) {
+                when(userService.findByUsername(username))
+                        .thenReturn(user);
+            } else {
+                doThrow(UserNotFoundException.class)
+                        .when(userService)
+                        .findByUsername(username);
+            }
+        } else {
+            when(userService.findAll())
+                    .thenReturn(List.of(USER_1, USER_2));
+        }
 
         /* test */
-        final ResponseEntity<List<UserBriefDto>> response = userEndpoint.findAll();
+        final ResponseEntity<List<UserBriefDto>> response = userEndpoint.findAll(username);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final List<UserBriefDto> body = response.getBody();
         assertNotNull(body);
-        assertEquals(2, body.size());
+        return response.getBody();
     }
 
     protected void create_generic(SignupRequestDto data, User user, at.tuwien.api.keycloak.UserDto userDto, UUID id)
@@ -265,7 +295,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void find_generic(UUID id, User user, Principal principal) throws NotAllowedException,
-            UserNotFoundException{
+            UserNotFoundException {
 
         /* mock */
         if (user != null) {

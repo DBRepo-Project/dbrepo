@@ -76,4 +76,6 @@ public interface UserService {
      * @throws EmailExistsException The user with this email already exists.
      */
     void validateEmailNotExists(String email) throws EmailExistsException;
+
+    String getMariaDbPassword(String password);
 }

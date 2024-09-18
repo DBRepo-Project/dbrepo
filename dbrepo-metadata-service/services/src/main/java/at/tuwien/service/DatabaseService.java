@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -47,15 +48,17 @@ public interface DatabaseService {
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
+     * @param container The container.
      * @param createDto The metadata.
      * @param user      The user.
      * @return The database, if successful.
-     * @throws UserNotFoundException      If the container/user was not found in the metadata database.
+     * @throws UserNotFoundException          If the container/user was not found in the metadata database.
      * @throws DataServiceException           If the data service returned non-successfully.
      * @throws DataServiceConnectionException If failing to connect to the data service/search service.
      */
-    Database create(DatabaseCreateDto createDto, User user) throws UserNotFoundException, ContainerNotFoundException,
-            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
+    Database create(Container container, DatabaseCreateDto createDto, User user) throws UserNotFoundException,
+            ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Updates the user's password.
@@ -73,7 +76,7 @@ public interface DatabaseService {
      * @param database The database.
      * @param data     The visibility
      * @return The database, if successful.
-     * @throws NotFoundException          The database was not found in the metadata database.
+     * @throws NotFoundException              The database was not found in the metadata database.
      * @throws DataServiceConnectionException If failing to connect to the search service.
      */
     Database modifyVisibility(Database database, DatabaseModifyVisibilityDto data) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;

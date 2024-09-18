@@ -104,7 +104,8 @@ public interface MetadataMapper {
     ContainerDto containerToContainerDto(Container data);
 
     @Mappings({
-            @Mapping(target = "id", source = "id")
+            @Mapping(target = "id", source = "id"),
+            @Mapping(target = "count", expression = "java(data.getDatabases().size())"),
     })
     ContainerBriefDto containerToDatabaseContainerBriefDto(Container data);
 
@@ -415,6 +416,9 @@ public interface MetadataMapper {
         };
     }
 
+    @Mappings({
+            @Mapping(target = "isDefault", source = "isDefault")
+    })
     ContainerImage createImageDtoToContainerImage(ImageCreateDto data);
 
     ImageBriefDto containerImageToImageBriefDto(ContainerImage data);
@@ -748,6 +752,8 @@ public interface MetadataMapper {
             @Mapping(target = "id", expression = "java(data.getId().toString())")
     })
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
+
+    User userDtoToUser(at.tuwien.api.keycloak.UserDto data);
 
     /* keep */
     @Mappings({

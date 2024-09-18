@@ -40,8 +40,12 @@ public class ContainerBriefDto {
     private ImageBriefDto image;
 
     @NotNull
-    @Schema(example = "true")
-    private Boolean running;
+    @Schema(example = "50")
+    private Integer quota;
+
+    @NotNull
+    @Schema(example = "10")
+    private Integer count;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")

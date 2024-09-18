@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface ImageRepository extends JpaRepository<ContainerImage, Long> {
 
-    List<ContainerImage> findAll();
-
     Optional<ContainerImage> findByNameAndVersion(String name, String version);
+
+    Optional<ContainerImage> findByIsDefault(Boolean isDefault);
 
 }

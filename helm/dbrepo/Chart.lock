@@ -5,9 +5,9 @@ dependencies:
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
   version: 21.6.1
-- name: mariadb
-  repository: https://charts.bitnami.com/bitnami
-  version: 14.1.4
+- name: dbrepo-mariadb-galera
+  repository: file://../dbrepo-mariadb-galera
+  version: 1.4.6
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 10.1.3
@@ -23,5 +23,5 @@ dependencies:
 - name: openldap-stack-ha
   repository: https://jp-gouin.github.io/helm-openldap/
   version: 4.2.5
-digest: sha256:bc81f32931159cbea98f6da5f58ff3425a5cd03183506ab218120be136486468
-generated: "2024-07-12T06:33:37.323435643+02:00"
+digest: sha256:b25413b979bd026412ed188968db993c958bc71175b379315d5e24d373f8065f
+generated: "2024-09-14T01:52:39.203839653+04:00"

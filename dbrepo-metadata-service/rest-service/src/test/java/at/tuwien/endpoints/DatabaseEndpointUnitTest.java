@@ -13,6 +13,7 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.BrokerService;
 import at.tuwien.service.impl.DatabaseServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,11 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
+
     @Test
     @WithAnonymousUser
     public void create_anonymous_fails() {
@@ -97,7 +103,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void create_succeeds() throws DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, ContainerNotFoundException, SearchServiceException,
             SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException, BrokerServiceException, BrokerServiceConnectionException {
+            CredentialsInvalidException, BrokerServiceException, BrokerServiceConnectionException, ContainerQuotaException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
@@ -107,7 +113,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(containerService.find(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1);
-        when(databaseService.create(request, USER_1))
+        when(databaseService.create(CONTAINER_1, request, USER_1))
                 .thenReturn(DATABASE_1);
         doNothing()
                 .when(messageQueueService)
@@ -433,7 +439,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void create_generic(DatabaseCreateDto data, Principal principal, User user) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
-            BrokerServiceException, BrokerServiceConnectionException {
+            BrokerServiceException, BrokerServiceConnectionException, ContainerQuotaException {
 
         /* mock */
         doNothing()

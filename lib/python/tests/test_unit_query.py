@@ -1,6 +1,4 @@
 import unittest
-from json import dumps
-from typing import Any
 
 import requests_mock
 import datetime
@@ -64,16 +62,19 @@ class QueryUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_create_subset_not_auth_fails(self):
+    def test_create_subset_not_auth_succeeds(self):
         with requests_mock.Mocker() as mock:
+            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
+                         headers=[{'id': 0, 'username': 1}],
+                         id=None)
             # mock
-            mock.post('/api/database/1/subset', status_code=417)
+            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=201)
             # test
-            try:
-                response = RestClient().create_subset(database_id=1,
-                                                      query="SELECT id, username FROM some_table WHERE id IN (1,2)")
-            except AuthenticationError:
-                pass
+
+            client = RestClient()
+            response = client.create_subset(database_id=1, page=0, size=10,
+                                            query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+            self.assertEqual(exp, response)
 
     def test_find_query_succeeds(self):
         with requests_mock.Mocker() as mock:

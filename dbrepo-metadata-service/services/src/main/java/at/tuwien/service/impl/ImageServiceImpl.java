@@ -4,6 +4,7 @@ import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.ImageRepository;
@@ -51,12 +52,16 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     @Transactional
-    public ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException {
+    public ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException,
+            ImageInvalidException {
         final ContainerImage image = metadataMapper.createImageDtoToContainerImage(createDto);
         if (imageRepository.findByNameAndVersion(createDto.getName(), createDto.getVersion()).isPresent()) {
-            log.error("Failed to create image {}:{}: exists in the metadata database",
-                    createDto.getName(), createDto.getVersion());
+            log.error("Failed to create image {}:{}: exists in the metadata database", createDto.getName(), createDto.getVersion());
             throw new ImageAlreadyExistsException("Failed to create image " + createDto.getName() + ":" + createDto.getVersion() + ": exists in the metadata database");
+        }
+        if (createDto.getIsDefault() && imageRepository.findByIsDefault(true).isPresent()) {
+            log.error("Failed to create image {}:{}: default image exists", createDto.getName(), createDto.getVersion());
+            throw new ImageInvalidException("Failed to create image: default image exists");
         }
         final ContainerImage dto;
         try {

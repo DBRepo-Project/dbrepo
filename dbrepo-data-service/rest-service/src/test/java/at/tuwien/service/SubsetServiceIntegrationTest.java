@@ -11,9 +11,10 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
+import at.tuwien.utils.FileUtils;
 import com.google.common.hash.Hashing;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -387,13 +388,13 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     protected void export_generic() throws StorageUnavailableException, SQLException,
             QueryMalformedException, SidecarExportException, MetadataServiceException, RemoteUnavailableException,
             StorageNotFoundException, IOException, InterruptedException {
-        final String filename = "68b329da9893e34099c7d8ad5cb9c940";
+        final String filename = RandomStringUtils.randomAlphanumeric(40).toLowerCase() + ".tmp";
+        EXPORT_RESOURCE_DTO.setFilename(filename);
 
         /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        FileUtils.deleteQuietly(new File(s3Config.getS3FilePath() + "/" + filename));
         doNothing()
                 .when(dataDatabaseSidecarGateway)
                 .exportFile(anyString(), anyInt(), eq(filename));

@@ -264,9 +264,9 @@ public class ViewEndpoint {
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
-            final HttpHeaders headers = new HttpHeaders();
-            headers.set("Access-Control-Expose-Headers", "X-Count");
             if (request.getMethod().equals("HEAD")) {
+                final HttpHeaders headers = new HttpHeaders();
+                headers.set("Access-Control-Expose-Headers", "X-Count");
                 headers.set("X-Count", "" + viewService.count(view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
@@ -275,7 +275,6 @@ public class ViewEndpoint {
             final QueryResultDto result = viewService.data(view, timestamp, page, size);
             log.trace("get view data resulted in result {}", result);
             return ResponseEntity.ok()
-                    .headers(headers)
                     .body(result);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());

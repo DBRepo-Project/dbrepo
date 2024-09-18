@@ -2,6 +2,7 @@
   "navigation": {
     "information": "Information",
     "search": "Search",
+    "container": "Engines",
     "ontologies": "Ontologies",
     "logout": "Logout",
     "login": "Login",
@@ -332,7 +333,7 @@
             "title": "Dataset Structure",
             "text": "the table schema manually.",
             "primary": {
-              "warn": "No primary key column(s) selected. Please select a column that uniquely identifies data entries."
+              "warn": "No primary key column(s) selected. Please select one or more column(s) that uniquely identify data entries."
             }
           },
           "dataset": {
@@ -403,8 +404,7 @@
           },
           "summary": {
             "title": "Summary",
-            "prefix": "Imported",
-            "suffix": "rows from dataset"
+            "text": "Successfully imported dataset"
           },
           "analyse": {
             "text": "Upload & Analyse"
@@ -448,7 +448,7 @@
           }
         },
         "schema": {
-          "title": "System Versioned",
+          "title": "Schema",
           "subtitle": "Table Constraints",
           "bullet": "●",
           "assign": "Assign",
@@ -642,6 +642,9 @@
           },
           "submit": {
             "text": "Create"
+          },
+          "utilization": {
+            "label": "Utilization"
           }
         },
         "tables": {
@@ -1034,9 +1037,12 @@
       }
     },
     "container": {
-      "title": "Container",
+      "title": "Engines",
       "name": {
         "title": "Name"
+      },
+      "subtitle": {
+        "text": "Engine"
       },
       "internal-name": {
         "title": "Internal Name"
@@ -1076,7 +1082,8 @@
     },
     "container": {
       "exists": "Container already exists in metadata database",
-      "missing": "Failed to find container in metadata database"
+      "missing": "Failed to find container in metadata database",
+      "quota": "Database quota exceeded in engine"
     },
     "data": {
       "connection": "Failed to contact data service",

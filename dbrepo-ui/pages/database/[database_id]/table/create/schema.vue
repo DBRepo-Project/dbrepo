@@ -20,6 +20,7 @@
           <v-stepper-header>
             <v-stepper-item
               :title="$t('pages.table.subpages.create.information.title')"
+              :complete="valid"
               :value="1" />
           </v-stepper-header>
           <v-stepper-window

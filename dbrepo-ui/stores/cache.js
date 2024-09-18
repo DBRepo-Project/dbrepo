@@ -78,6 +78,7 @@ export const useCacheStore = defineStore('cache', {
     setRouteTable (databaseId, tableId) {
       if (!databaseId || !tableId) {
         this.table = null
+        console.error('Cannot set route table: missing database id', databaseId, 'or table id', tableId)
         return
       }
       const tableService = useTableService()

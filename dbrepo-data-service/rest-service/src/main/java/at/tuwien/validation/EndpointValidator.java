@@ -73,7 +73,7 @@ public class EndpointValidator {
             log.error("Failed to create table data: insufficient table write access");
             throw new NotAllowedException("Failed to create table data: insufficient table write access");
         }
-        log.trace("sufficient write access {}", access);
+        log.trace("sufficient write access {} for user {} and owner {}", access, user, owner);
     }
 
 

@@ -32,4 +32,9 @@ public class ImageBriefDto {
     @Schema(example = "mariadb")
     private String jdbcMethod;
 
+    @NotNull
+    @JsonProperty("default")
+    @Schema(example = "false")
+    private Boolean isDefault;
+
 }

@@ -141,62 +141,6 @@ datadb:
   metrics:
     ## @skip datadb.metrics.enabled
     enabled: true
-  ## @skip datadb.primary
-  primary:
-    service:
-      extraPorts:
-        - name: "sidecar"
-          port: 8080
-          targetPort: 8080
-          protocol: TCP
-    sidecars:
-      - name: sidecar
-        image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.5
-        imagePullPolicy: Always
-        securityContext:
-          runAsUser: 1001
-          runAsGroup: 0
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
-          capabilities:
-            drop:
-              - ALL
-        ports:
-          - name: "sidecar"
-            containerPort: 8080
-            protocol: TCP
-        envFrom:
-          - secretRef:
-              name: data-service-secret
-        livenessProbe:
-          exec:
-            command:
-              - /bin/bash
-              - -ec
-              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-          initialDelaySeconds: 120
-          periodSeconds: 30
-        readinessProbe:
-          exec:
-            command:
-              - /bin/bash
-              - -ec
-              - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        volumeMounts:
-          - name: s3
-            mountPath: /s3
-    extraVolumeMounts:
-      - name: s3
-        mountPath: /s3
-    extraVolumes:
-      - name: s3
-        emptyDir: { }
-    persistence:
-      enabled: true
   ## @skip datadb.secondary
   secondary:
     replicaCount: 2
@@ -335,7 +279,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.6
     ## @skip analyseservice.image.pullPolicy
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -397,7 +341,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.6
     ## @skip metadataservice.image.pullPolicy
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -496,7 +440,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.6
     ## @skip dataservice.image.pullPolicy
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -583,7 +527,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.6
     ## @skip searchservice.image.pullPolicy
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -632,7 +576,7 @@ searchservice:
   ## @skip searchservice.init
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.5
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.6
       pullPolicy: Always
   ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
@@ -649,6 +593,9 @@ storageservice:
     fullnameOverride: storage-service-db
     ## @skip storageservice.mariadb.enabled
     enabled: true
+    auth:
+      ## @param storageservice.mariadb.auth.rootPassword The user password for the root user.
+      rootPassword: seaweedfsdb
   master:
     ## @skip storageservice.master.enabled
     enabled: true
@@ -674,7 +621,7 @@ storageservice:
       adminSecretAccessKey: seaweedfsadmin
   ## @skip storageservice.init
   init:
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.5
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.6
     pullPolicy: Always
 
 ## @section Identity Service
@@ -737,7 +684,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
     ## @skip ui.image.pullPolicy
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.

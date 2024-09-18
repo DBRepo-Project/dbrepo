@@ -15,9 +15,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@jakarta.persistence.Table(name = "mdb_view_columns", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"view_id", "internalName"})
-})
+@jakarta.persistence.Table(name = "mdb_view_columns")
 public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id

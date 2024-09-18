@@ -90,6 +90,8 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -134,7 +136,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Identifier 6 (Title=en, Description=en, Query=3)</li>
  * </ul>
  * <p>
- * Database 4 (Public, User 4)
+ * Database 4 (Public, User 4) -> Container 4
  * <li>Identifier 7 (Database=4)</li>
  * <ul>
  * </ul>
@@ -380,6 +382,7 @@ public abstract class BaseTest {
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";
 
+    public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
 
@@ -896,13 +899,14 @@ public abstract class BaseTest {
             USER_6_PASSWORD, USER_6_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
-    public final static String IMAGE_1_REGISTRY = "docker.io/library";
+    public final static String IMAGE_1_REGISTRY = "docker.io";
     public final static String IMAGE_1_NAME = "mariadb";
     public final static String IMAGE_1_VERSION = "11.1.3";
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
     public final static Integer IMAGE_1_PORT = 3306;
+    public final static Boolean IMAGE_1_IS_DEFAULT = true;
 
     public final static Long IMAGE_DATE_1_ID = 1L;
     public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
@@ -1023,6 +1027,7 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
+            .isDefault(IMAGE_1_IS_DEFAULT)
             .dateFormats(new LinkedList<>(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3, IMAGE_DATE_4)))
             .build();
 
@@ -1035,6 +1040,7 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
+            .isDefault(IMAGE_1_IS_DEFAULT)
             .dateFormats(List.of(IMAGE_DATE_1_DTO, IMAGE_DATE_2_DTO, IMAGE_DATE_3_DTO))
             .build();
 
@@ -1042,6 +1048,7 @@ public abstract class BaseTest {
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
             .version(IMAGE_1_VERSION)
+            .isDefault(IMAGE_1_IS_DEFAULT)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;
@@ -1053,7 +1060,8 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_UI_HOST = "localhost";
     public final static Integer CONTAINER_1_UI_PORT = 3306;
     public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
-    public final static Boolean CONTAINER_1_RUNNING = true;
+    public final static Integer CONTAINER_1_QUOTA = 4;
+    public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
     public final static String CONTAINER_1_SIDECAR_HOST = "localhost";
@@ -1072,6 +1080,7 @@ public abstract class BaseTest {
             .port(CONTAINER_1_PORT)
             .uiHost(CONTAINER_1_UI_HOST)
             .uiPort(CONTAINER_1_UI_PORT)
+            .quota(CONTAINER_1_QUOTA)
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
@@ -1094,7 +1103,8 @@ public abstract class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
             .created(CONTAINER_1_CREATED)
-            .running(CONTAINER_1_RUNNING)
+            .quota(CONTAINER_1_QUOTA)
+            .count(CONTAINER_1_COUNT)
             .build();
 
     public final static PrivilegedContainerDto CONTAINER_1_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
@@ -1121,7 +1131,8 @@ public abstract class BaseTest {
     public final static Integer CONTAINER_2_PORT = 3309;
     public final static String CONTAINER_2_SIDECAR_HOST = "localhost";
     public final static Integer CONTAINER_2_SIDECAR_PORT = 33091;
-    public final static Boolean CONTAINER_2_RUNNING = true;
+    public final static Integer CONTAINER_2_QUOTA = 3;
+    public final static Integer CONTAINER_2_COUNT = 3;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655L) /* 2023-02-26 08:20:55 (UTC) */;
@@ -1134,6 +1145,8 @@ public abstract class BaseTest {
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
+            .quota(CONTAINER_2_QUOTA)
+            .databases(List.of())
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -1153,7 +1166,7 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .created(CONTAINER_2_CREATED)
-            .running(CONTAINER_2_RUNNING)
+            .quota(CONTAINER_2_QUOTA)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -1163,6 +1176,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static String CONTAINER_3_HOST = "localhost";
     public final static Integer CONTAINER_3_PORT = 3310;
+    public final static Integer CONTAINER_3_QUOTA = 20;
     public final static String CONTAINER_3_SIDECAR_HOST = "localhost";
     public final static Integer CONTAINER_3_SIDECAR_PORT = 33101;
     public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
@@ -1177,6 +1191,8 @@ public abstract class BaseTest {
             .created(CONTAINER_3_CREATED)
             .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
+            .quota(CONTAINER_3_QUOTA)
+            .databases(List.of())
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
@@ -1188,6 +1204,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_4_IP = "172.30.0.8";
     public final static String CONTAINER_4_HOST = "localhost";
     public final static Integer CONTAINER_4_PORT = 3311;
+    public final static Integer CONTAINER_4_QUOTA = 0;
     public final static String CONTAINER_4_SIDECAR_HOST = "localhost";
     public final static Integer CONTAINER_4_SIDECAR_PORT = 33111;
     public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
@@ -1202,6 +1219,7 @@ public abstract class BaseTest {
             .created(CONTAINER_4_CREATED)
             .host(CONTAINER_4_HOST)
             .port(CONTAINER_4_PORT)
+            .quota(CONTAINER_4_QUOTA)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
@@ -1679,6 +1697,40 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final static Long TABLE_1_DATA_COUNT = 3L;
+    public final static QueryResultDto TABLE_1_DATA_DTO = QueryResultDto.builder()
+            .headers(new LinkedList<>(List.of(new HashMap<>() {{
+                put("id", 0);
+                put("date", 1);
+                put("location", 2);
+                put("mintemp", 3);
+                put("rainfall", 4);
+            }})))
+            .result(new LinkedList<>(List.of(
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(1L));
+                        put("date", LocalDate.of(2008, 12, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 13.4);
+                        put("rainfall", 0.6);
+                    }},
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(2L));
+                        put("date", LocalDate.of(2008, 12, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 7.4);
+                        put("rainfall", 0);
+                    }},
+                    new HashMap<>() {{
+                        put("id", BigInteger.valueOf(3L));
+                        put("date", LocalDate.of(2008, 12, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
+                        put("location", "Albury");
+                        put("mintemp", 12.9);
+                        put("rainfall", 0);
+                    }}
+            )))
+            .build();
+
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
@@ -1846,6 +1898,8 @@ public abstract class BaseTest {
             .build();
 
     public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>()) // <<<<
             .uniques(new LinkedList<>())
             .foreignKeys(List.of(ForeignKeyCreateDto.builder()
                     .referencedTable("weather_location")
@@ -2132,8 +2186,12 @@ public abstract class BaseTest {
             .columnType(ColumnTypeDto.TIMESTAMP)
             .build();
 
+    public final static Long COLUMN_4_1_ID = 44L;
+
+    public final static Long COLUMN_4_2_ID = 45L;
+
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
-                    .id(44L)
+                    .id(COLUMN_4_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_4)
                     .name("Timestamp")
@@ -2143,7 +2201,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(45L)
+                    .id(COLUMN_4_2_ID)
                     .ordinalPosition(1)
                     .table(TABLE_4)
                     .name("Value")
@@ -2169,7 +2227,7 @@ public abstract class BaseTest {
 
     public final static ConstraintsCreateDto TABLE_4_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
             .checks(new LinkedHashSet<>())
-            .primaryKey(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>(Set.of("Timestamp")))
             .foreignKeys(new LinkedList<>())
             .uniques(List.of(List.of("Timestamp")))
             .build();
@@ -2189,7 +2247,7 @@ public abstract class BaseTest {
             .build();
 
     public final static List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(44L)
+                    .id(COLUMN_4_1_ID)
                     .databaseId(DATABASE_1_ID)
                     .tableId(TABLE_4_ID)
                     .name("Timestamp")
@@ -2200,7 +2258,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(45L)
+                    .id(COLUMN_4_2_ID)
                     .databaseId(DATABASE_1_ID)
                     .tableId(TABLE_4_ID)
                     .name("Value")
@@ -2402,39 +2460,34 @@ public abstract class BaseTest {
             .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long COLUMN_8_1_ID = 72L;
+    public final static Long COLUMN_8_1_ID = 75L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
-    public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
     public final static String COLUMN_8_1_INTERNAL_NAME = "id";
     public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
     public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
-    public final static Long COLUMN_8_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_1_NULL = false;
     public final static Boolean COLUMN_8_1_AUTO_GENERATED = true;
-    public final static String COLUMN_8_1_FOREIGN_KEY = null;
-    public final static String COLUMN_8_1_CHECK = null;
-    public final static List<String> COLUMN_8_1_ENUM_VALUES = null;
-    public final static List<String> COLUMN_8_1_ENUM_VALUES_DTO = null;
-    public final static List<String> COLUMN_8_1_SET_VALUES = null;
-    public final static List<String> COLUMN_8_1_SET_VALUES_DTO = null;
 
-    public final static Long COLUMN_8_2_ID = 73L;
+    public final static Long COLUMN_8_2_ID = 76L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
-    public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
     public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.INT;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.INT;
-    public final static Long COLUMN_8_2_DATE_FORMAT = null;
-    public final static Boolean COLUMN_8_2_NULL = true;
+    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
+    public final static Long COLUMN_8_2_SIZE = 10L;
+    public final static Long COLUMN_8_2_D = 10L;
+    public final static Boolean COLUMN_8_2_NULL = false;
     public final static Boolean COLUMN_8_2_AUTO_GENERATED = false;
-    public final static String COLUMN_8_2_FOREIGN_KEY = null;
-    public final static String COLUMN_8_2_CHECK = null;
-    public final static List<String> COLUMN_8_2_ENUM_VALUES = null;
-    public final static List<String> COLUMN_8_2_ENUM_VALUES_DTO = null;
-    public final static List<String> COLUMN_8_2_SET_VALUES = null;
-    public final static List<String> COLUMN_8_2_SET_VALUES_DTO = null;
+
+    public final static Long COLUMN_8_3_ID = 77L;
+    public final static Integer COLUMN_8_3_ORDINALPOS = 2;
+    public final static String COLUMN_8_3_NAME = "raw";
+    public final static String COLUMN_8_3_INTERNAL_NAME = "raw";
+    public final static TableColumnType COLUMN_8_3_TYPE = TableColumnType.LONGBLOB;
+    public final static ColumnTypeDto COLUMN_8_3_TYPE_DTO = ColumnTypeDto.LONGBLOB;
+    public final static Boolean COLUMN_8_3_NULL = true;
+    public final static Boolean COLUMN_8_3_AUTO_GENERATED = false;
 
     public final static ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_8_1_ID)
@@ -2462,6 +2515,18 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_2_TYPE)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
+                    .size(COLUMN_8_2_SIZE)
+                    .d(COLUMN_8_2_D)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_8_3_ID)
+                    .ordinalPosition(COLUMN_8_3_ORDINALPOS)
+                    .table(TABLE_8)
+                    .name(COLUMN_8_3_NAME)
+                    .internalName(COLUMN_8_3_INTERNAL_NAME)
+                    .columnType(COLUMN_8_3_TYPE)
+                    .isNullAllowed(COLUMN_8_3_NULL)
+                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2483,6 +2548,16 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_2_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_8_3_ID)
+                    .ordinalPosition(COLUMN_8_3_ORDINALPOS)
+                    .table(TABLE_8_DTO)
+                    .name(COLUMN_8_3_NAME)
+                    .internalName(COLUMN_8_3_INTERNAL_NAME)
+                    .columnType(COLUMN_8_3_TYPE_DTO)
+                    .isNullAllowed(COLUMN_8_3_NULL)
+                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
@@ -2492,12 +2567,36 @@ public abstract class BaseTest {
                 put(COLUMN_8_2_INTERNAL_NAME, 1);
             }})))
             .result(new LinkedList<>(List.of(
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L), COLUMN_8_2_INTERNAL_NAME, 11.2),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L), COLUMN_8_2_INTERNAL_NAME, 11.3),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L), COLUMN_8_2_INTERNAL_NAME, 11.4),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L), COLUMN_8_2_INTERNAL_NAME, 11.9),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L), COLUMN_8_2_INTERNAL_NAME, 12.3),
-                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L), COLUMN_8_2_INTERNAL_NAME, 23.1)
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.2);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.3);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.4);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 11.9);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 12.3);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }},
+                    new HashMap<>() {{
+                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L));
+                        put(COLUMN_8_2_INTERNAL_NAME, 23.1);
+                        put(COLUMN_8_3_INTERNAL_NAME, null);
+                    }}
             )))
             .build();
 
@@ -2558,8 +2657,6 @@ public abstract class BaseTest {
     public final static Long QUERY_2_ID = 2L;
     public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
     public final static Long QUERY_2_RESULT_NUMBER = 2L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
     public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
@@ -2571,7 +2668,7 @@ public abstract class BaseTest {
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
-            .databaseId(QUERY_2_DATABASE_ID)
+            .databaseId(DATABASE_2_ID)
             .query(QUERY_2_STATEMENT)
             .queryNormalized(QUERY_2_STATEMENT)
             .resultNumber(QUERY_2_RESULT_NUMBER)
@@ -2737,8 +2834,6 @@ public abstract class BaseTest {
     public final static Long QUERY_6_ID = 6L;
     public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
     public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
-    public final static Long QUERY_6_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_6_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
     public final static Instant QUERY_6_CREATED = Instant.now().minus(5, MINUTES);
     public final static Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
@@ -2750,7 +2845,7 @@ public abstract class BaseTest {
 
     public final static QueryDto QUERY_6_DTO = QueryDto.builder()
             .id(QUERY_6_ID)
-            .databaseId(QUERY_6_DATABASE_ID)
+            .databaseId(DATABASE_2_ID)
             .query(QUERY_6_STATEMENT)
             .queryNormalized(QUERY_6_STATEMENT)
             .resultNumber(QUERY_6_RESULT_NUMBER)
@@ -2771,8 +2866,18 @@ public abstract class BaseTest {
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
+    public final static Long COLUMN_1_1_ID = 1L;
+
+    public final static Long COLUMN_1_2_ID = 2L;
+
+    public final static Long COLUMN_1_3_ID = 3L;
+
+    public final static Long COLUMN_1_4_ID = 4L;
+
+    public final static Long COLUMN_1_5_ID = 5L;
+
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
-                    .id(1L)
+                    .id(COLUMN_1_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_1)
                     .name("id")
@@ -2782,7 +2887,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(2L)
+                    .id(COLUMN_1_2_ID)
                     .ordinalPosition(1)
                     .table(TABLE_1)
                     .name("Date")
@@ -2793,7 +2898,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(3L)
+                    .id(COLUMN_1_3_ID)
                     .ordinalPosition(2)
                     .table(TABLE_1)
                     .name("Location")
@@ -2804,7 +2909,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(4L)
+                    .id(COLUMN_1_4_ID)
                     .ordinalPosition(3)
                     .table(TABLE_1)
                     .name("MinTemp")
@@ -2816,7 +2921,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(5L)
+                    .id(COLUMN_1_5_ID)
                     .ordinalPosition(4)
                     .table(TABLE_1)
                     .name("Rainfall")
@@ -2876,6 +2981,13 @@ public abstract class BaseTest {
             .uniques(List.of(List.of("date")))
             .build();
 
+    public final static ConstraintsCreateDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .uniques(List.of(List.of("date")))
+            .build();
+
     public final static TableCreateDto TABLE_1_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_1_NAME)
             .description(TABLE_1_DESCRIPTION)
@@ -2890,8 +3002,21 @@ public abstract class BaseTest {
             .constraints(TABLE_1_CONSTRAINTS_CREATE_DTO)
             .build();
 
+    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+            .name(TABLE_1_NAME)
+            .description(TABLE_1_DESCRIPTION)
+            .columns(TABLE_1_COLUMNS_CREATE_DTO)
+            .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO)
+            .build();
+
+    public final static Long COLUMN_2_1_ID = 6L;
+
+    public final static Long COLUMN_2_2_ID = 7L;
+
+    public final static Long COLUMN_2_3_ID = 8L;
+
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
-                    .id(6L)
+                    .id(COLUMN_2_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_2)
                     .name("location")
@@ -2905,7 +3030,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build(),
             TableColumn.builder()
-                    .id(7L)
+                    .id(COLUMN_2_2_ID)
                     .ordinalPosition(1)
                     .table(TABLE_2)
                     .name("lat")
@@ -2920,7 +3045,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build(),
             TableColumn.builder()
-                    .id(8L)
+                    .id(COLUMN_2_3_ID)
                     .ordinalPosition(2)
                     .table(TABLE_2)
                     .name("lng")
@@ -2936,21 +3061,21 @@ public abstract class BaseTest {
                     .build());
 
     public final static ColumnBriefDto TABLE_2_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
-            .id(6L)
+            .id(COLUMN_2_1_ID)
             .name("location")
             .internalName("location")
             .columnType(ColumnTypeDto.VARCHAR)
             .build();
 
     public final static ColumnBriefDto TABLE_2_COLUMNS_BRIEF_2_DTO = ColumnBriefDto.builder()
-            .id(8L)
+            .id(COLUMN_2_3_ID)
             .name("lng")
             .internalName("lng")
             .columnType(ColumnTypeDto.DECIMAL)
             .build();
 
     public final static List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(6L)
+                    .id(COLUMN_2_1_ID)
                     .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
@@ -2965,7 +3090,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build(),
             ColumnDto.builder()
-                    .id(7L)
+                    .id(COLUMN_2_2_ID)
                     .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
@@ -2980,7 +3105,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build(),
             ColumnDto.builder()
-                    .id(8L)
+                    .id(COLUMN_2_3_ID)
                     .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
@@ -2995,15 +3120,85 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
+    public final static Long COLUMN_3_1_ID = 9L;
+
+    public final static Long COLUMN_3_2_ID = 10L;
+
+    public final static Long COLUMN_3_3_ID = 11L;
+
+    public final static Long COLUMN_3_4_ID = 12L;
+
+    public final static Long COLUMN_3_5_ID = 13L;
+
+    public final static Long COLUMN_3_6_ID = 14L;
+
+    public final static Long COLUMN_3_7_ID = 15L;
+
+    public final static Long COLUMN_3_8_ID = 16L;
+
+    public final static Long COLUMN_3_9_ID = 17L;
+
+    public final static Long COLUMN_3_10_ID = 18L;
+
+    public final static Long COLUMN_3_11_ID = 19L;
+
+    public final static Long COLUMN_3_12_ID = 20L;
+
+    public final static Long COLUMN_3_13_ID = 21L;
+
+    public final static Long COLUMN_3_14_ID = 22L;
+
+    public final static Long COLUMN_3_15_ID = 23L;
+
+    public final static Long COLUMN_3_16_ID = 24L;
+
+    public final static Long COLUMN_3_17_ID = 25L;
+
+    public final static Long COLUMN_3_18_ID = 26L;
+
+    public final static Long COLUMN_3_19_ID = 27L;
+
+    public final static Long COLUMN_3_20_ID = 28L;
+
+    public final static Long COLUMN_3_21_ID = 29L;
+
+    public final static Long COLUMN_3_22_ID = 30L;
+
+    public final static Long COLUMN_3_23_ID = 31L;
+
+    public final static Long COLUMN_3_24_ID = 32L;
+
+    public final static Long COLUMN_3_25_ID = 33L;
+
+    public final static Long COLUMN_3_26_ID = 34L;
+
+    public final static Long COLUMN_3_27_ID = 35L;
+
+    public final static Long COLUMN_3_28_ID = 36L;
+
+    public final static Long COLUMN_3_29_ID = 37L;
+
+    public final static Long COLUMN_3_30_ID = 38L;
+
+    public final static Long COLUMN_3_31_ID = 39L;
+
+    public final static Long COLUMN_3_32_ID = 40L;
+
+    public final static Long COLUMN_3_33_ID = 41L;
+
+    public final static Long COLUMN_3_34_ID = 42L;
+
+    public final static Long COLUMN_3_35_ID = 43L;
+
     public final static ColumnBriefDto TABLE_3_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
-            .id(9L)
+            .id(COLUMN_3_1_ID)
             .columnType(ColumnTypeDto.BIGINT)
             .name("id")
             .internalName("id")
             .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
-                    .id(9L)
+                    .id(COLUMN_3_1_ID)
                     .table(TABLE_3)
                     .ordinalPosition(0)
                     .autoGenerated(true)
@@ -3016,7 +3211,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(10L)
+                    .id(COLUMN_3_2_ID)
                     .table(TABLE_3)
                     .ordinalPosition(1)
                     .autoGenerated(false)
@@ -3029,7 +3224,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(11L)
+                    .id(COLUMN_3_3_ID)
                     .table(TABLE_3)
                     .ordinalPosition(2)
                     .autoGenerated(false)
@@ -3042,7 +3237,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(12L)
+                    .id(COLUMN_3_4_ID)
                     .table(TABLE_3)
                     .ordinalPosition(3)
                     .autoGenerated(false)
@@ -3054,7 +3249,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(13L)
+                    .id(COLUMN_3_5_ID)
                     .table(TABLE_3)
                     .ordinalPosition(4)
                     .autoGenerated(false)
@@ -3067,7 +3262,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(14L)
+                    .id(COLUMN_3_6_ID)
                     .table(TABLE_3)
                     .ordinalPosition(5)
                     .autoGenerated(false)
@@ -3080,7 +3275,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(15L)
+                    .id(COLUMN_3_7_ID)
                     .table(TABLE_3)
                     .ordinalPosition(6)
                     .autoGenerated(false)
@@ -3093,7 +3288,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(16L)
+                    .id(COLUMN_3_8_ID)
                     .table(TABLE_3)
                     .ordinalPosition(7)
                     .autoGenerated(false)
@@ -3106,7 +3301,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(17L)
+                    .id(COLUMN_3_9_ID)
                     .table(TABLE_3)
                     .ordinalPosition(8)
                     .autoGenerated(false)
@@ -3119,7 +3314,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(18L)
+                    .id(COLUMN_3_10_ID)
                     .table(TABLE_3)
                     .ordinalPosition(9)
                     .autoGenerated(false)
@@ -3132,7 +3327,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(19L)
+                    .id(COLUMN_3_11_ID)
                     .table(TABLE_3)
                     .ordinalPosition(10)
                     .autoGenerated(false)
@@ -3144,7 +3339,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(20L)
+                    .id(COLUMN_3_12_ID)
                     .table(TABLE_3)
                     .ordinalPosition(11)
                     .autoGenerated(false)
@@ -3157,7 +3352,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(21L)
+                    .id(COLUMN_3_13_ID)
                     .table(TABLE_3)
                     .ordinalPosition(12)
                     .autoGenerated(false)
@@ -3170,7 +3365,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(22L)
+                    .id(COLUMN_3_14_ID)
                     .table(TABLE_3)
                     .ordinalPosition(13)
                     .autoGenerated(false)
@@ -3183,7 +3378,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(23L)
+                    .id(COLUMN_3_15_ID)
                     .table(TABLE_3)
                     .ordinalPosition(14)
                     .autoGenerated(false)
@@ -3196,7 +3391,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(24L)
+                    .id(COLUMN_3_16_ID)
                     .table(TABLE_3)
                     .ordinalPosition(15)
                     .autoGenerated(false)
@@ -3209,7 +3404,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(25L)
+                    .id(COLUMN_3_17_ID)
                     .table(TABLE_3)
                     .ordinalPosition(16)
                     .autoGenerated(false)
@@ -3222,7 +3417,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(26L)
+                    .id(COLUMN_3_18_ID)
                     .table(TABLE_3)
                     .ordinalPosition(17)
                     .autoGenerated(false)
@@ -3235,7 +3430,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(27L)
+                    .id(COLUMN_3_19_ID)
                     .table(TABLE_3)
                     .ordinalPosition(18)
                     .autoGenerated(false)
@@ -3248,7 +3443,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(28L)
+                    .id(COLUMN_3_20_ID)
                     .table(TABLE_3)
                     .ordinalPosition(19)
                     .autoGenerated(false)
@@ -3260,7 +3455,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(29L)
+                    .id(COLUMN_3_21_ID)
                     .table(TABLE_3)
                     .ordinalPosition(20)
                     .autoGenerated(false)
@@ -3273,7 +3468,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(30L)
+                    .id(COLUMN_3_22_ID)
                     .table(TABLE_3)
                     .ordinalPosition(21)
                     .autoGenerated(false)
@@ -3286,7 +3481,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(31L)
+                    .id(COLUMN_3_23_ID)
                     .table(TABLE_3)
                     .ordinalPosition(22)
                     .autoGenerated(false)
@@ -3299,7 +3494,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(32L)
+                    .id(COLUMN_3_24_ID)
                     .table(TABLE_3)
                     .ordinalPosition(23)
                     .autoGenerated(false)
@@ -3312,7 +3507,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(33L)
+                    .id(COLUMN_3_25_ID)
                     .table(TABLE_3)
                     .ordinalPosition(24)
                     .autoGenerated(false)
@@ -3325,7 +3520,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(34L)
+                    .id(COLUMN_3_26_ID)
                     .table(TABLE_3)
                     .ordinalPosition(25)
                     .autoGenerated(false)
@@ -3338,7 +3533,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(35L)
+                    .id(COLUMN_3_27_ID)
                     .table(TABLE_3)
                     .ordinalPosition(26)
                     .autoGenerated(false)
@@ -3351,7 +3546,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(36L)
+                    .id(COLUMN_3_28_ID)
                     .table(TABLE_3)
                     .ordinalPosition(27)
                     .autoGenerated(false)
@@ -3364,7 +3559,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(37L)
+                    .id(COLUMN_3_29_ID)
                     .table(TABLE_3)
                     .ordinalPosition(28)
                     .autoGenerated(false)
@@ -3377,7 +3572,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(38L)
+                    .id(COLUMN_3_30_ID)
                     .table(TABLE_3)
                     .ordinalPosition(29)
                     .autoGenerated(false)
@@ -3390,7 +3585,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(39L)
+                    .id(COLUMN_3_31_ID)
                     .table(TABLE_3)
                     .ordinalPosition(30)
                     .autoGenerated(false)
@@ -3403,7 +3598,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(40L)
+                    .id(COLUMN_3_32_ID)
                     .table(TABLE_3)
                     .ordinalPosition(31)
                     .autoGenerated(false)
@@ -3416,7 +3611,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(41L)
+                    .id(COLUMN_3_33_ID)
                     .table(TABLE_3)
                     .ordinalPosition(32)
                     .autoGenerated(false)
@@ -3429,7 +3624,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(42L)
+                    .id(COLUMN_3_34_ID)
                     .table(TABLE_3)
                     .ordinalPosition(33)
                     .autoGenerated(false)
@@ -3442,7 +3637,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
-                    .id(43L)
+                    .id(COLUMN_3_35_ID)
                     .table(TABLE_3)
                     .ordinalPosition(34)
                     .autoGenerated(false)
@@ -3456,7 +3651,7 @@ public abstract class BaseTest {
                     .build());
 
     public final static List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(9L)
+                    .id(COLUMN_3_1_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3470,7 +3665,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(10L)
+                    .id(COLUMN_3_2_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3484,7 +3679,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(11L)
+                    .id(COLUMN_3_3_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3498,7 +3693,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(12L)
+                    .id(COLUMN_3_4_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3512,7 +3707,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(13L)
+                    .id(COLUMN_3_5_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3526,7 +3721,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(14L)
+                    .id(COLUMN_3_6_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3540,7 +3735,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(15L)
+                    .id(COLUMN_3_7_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3554,7 +3749,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(16L)
+                    .id(COLUMN_3_8_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3568,7 +3763,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(17L)
+                    .id(COLUMN_3_9_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3582,7 +3777,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(18L)
+                    .id(COLUMN_3_10_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3596,7 +3791,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(19L)
+                    .id(COLUMN_3_11_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3610,7 +3805,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(20L)
+                    .id(COLUMN_3_12_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3624,7 +3819,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(21L)
+                    .id(COLUMN_3_13_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3638,7 +3833,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(22L)
+                    .id(COLUMN_3_14_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3652,7 +3847,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(23L)
+                    .id(COLUMN_3_15_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3666,7 +3861,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(24L)
+                    .id(COLUMN_3_16_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3680,7 +3875,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(25L)
+                    .id(COLUMN_3_17_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3694,7 +3889,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(26L)
+                    .id(COLUMN_3_18_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3708,7 +3903,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(27L)
+                    .id(COLUMN_3_19_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3722,7 +3917,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(28L)
+                    .id(COLUMN_3_20_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3736,7 +3931,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(29L)
+                    .id(COLUMN_3_21_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3750,7 +3945,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(30L)
+                    .id(COLUMN_3_22_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3764,7 +3959,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(31L)
+                    .id(COLUMN_3_23_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3778,7 +3973,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(32L)
+                    .id(COLUMN_3_24_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3792,7 +3987,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(33L)
+                    .id(COLUMN_3_25_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3806,7 +4001,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(34L)
+                    .id(COLUMN_3_26_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3820,7 +4015,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(35L)
+                    .id(COLUMN_3_27_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3834,7 +4029,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(36L)
+                    .id(COLUMN_3_28_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3848,7 +4043,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(37L)
+                    .id(COLUMN_3_29_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3862,7 +4057,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(38L)
+                    .id(COLUMN_3_30_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3876,7 +4071,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(39L)
+                    .id(COLUMN_3_31_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3890,7 +4085,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(40L)
+                    .id(COLUMN_3_32_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3904,7 +4099,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(41L)
+                    .id(COLUMN_3_33_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3918,7 +4113,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(42L)
+                    .id(COLUMN_3_34_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3932,7 +4127,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
-                    .id(43L)
+                    .id(COLUMN_3_35_ID)
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
@@ -3946,15 +4141,57 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build());
 
+    public final static Long COLUMN_5_1_ID = 46L;
+
+    public final static Long COLUMN_5_2_ID = 47L;
+
+    public final static Long COLUMN_5_3_ID = 48L;
+
+    public final static Long COLUMN_5_4_ID = 49L;
+
+    public final static Long COLUMN_5_5_ID = 50L;
+
+    public final static Long COLUMN_5_6_ID = 51L;
+
+    public final static Long COLUMN_5_7_ID = 52L;
+
+    public final static Long COLUMN_5_8_ID = 53L;
+
+    public final static Long COLUMN_5_9_ID = 54L;
+
+    public final static Long COLUMN_5_10_ID = 55L;
+
+    public final static Long COLUMN_5_11_ID = 56L;
+
+    public final static Long COLUMN_5_12_ID = 57L;
+
+    public final static Long COLUMN_5_13_ID = 58L;
+
+    public final static Long COLUMN_5_14_ID = 59L;
+
+    public final static Long COLUMN_5_15_ID = 60L;
+
+    public final static Long COLUMN_5_16_ID = 61L;
+
+    public final static Long COLUMN_5_17_ID = 62L;
+
+    public final static Long COLUMN_5_18_ID = 63L;
+
+    public final static Long COLUMN_5_19_ID = 64L;
+
+    public final static Long COLUMN_5_20_ID = 65L;
+
+    public final static Long COLUMN_5_21_ID = 66L;
+
     public final static ColumnBriefDto TABLE_5_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
-            .id(45L)
+            .id(COLUMN_5_1_ID)
             .name("id")
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
-                    .id(45L)
+                    .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_5)
                     .name("id")
@@ -3964,7 +4201,7 @@ public abstract class BaseTest {
                     .autoGenerated(true)
                     .build(),
             TableColumn.builder()
-                    .id(46L)
+                    .id(COLUMN_5_2_ID)
                     .ordinalPosition(1)
                     .table(TABLE_5)
                     .name("Animal Name")
@@ -3974,7 +4211,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(47L)
+                    .id(COLUMN_5_3_ID)
                     .ordinalPosition(2)
                     .table(TABLE_5)
                     .name("Hair")
@@ -3984,7 +4221,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(48L)
+                    .id(COLUMN_5_4_ID)
                     .ordinalPosition(3)
                     .table(TABLE_5)
                     .name("Feathers")
@@ -3994,7 +4231,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(49L)
+                    .id(COLUMN_5_5_ID)
                     .ordinalPosition(4)
                     .table(TABLE_5)
                     .name("Bread")
@@ -4004,7 +4241,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(50L)
+                    .id(COLUMN_5_6_ID)
                     .ordinalPosition(5)
                     .table(TABLE_5)
                     .name("Eggs")
@@ -4014,7 +4251,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(51L)
+                    .id(COLUMN_5_7_ID)
                     .ordinalPosition(6)
                     .table(TABLE_5)
                     .name("Milk")
@@ -4024,7 +4261,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(52L)
+                    .id(COLUMN_5_8_ID)
                     .ordinalPosition(7)
                     .table(TABLE_5)
                     .name("Water")
@@ -4034,7 +4271,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(53L)
+                    .id(COLUMN_5_9_ID)
                     .ordinalPosition(8)
                     .table(TABLE_5)
                     .name("Airborne")
@@ -4044,7 +4281,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(54L)
+                    .id(COLUMN_5_10_ID)
                     .ordinalPosition(9)
                     .table(TABLE_5)
                     .name("Waterborne")
@@ -4054,7 +4291,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(55L)
+                    .id(COLUMN_5_11_ID)
                     .ordinalPosition(10)
                     .table(TABLE_5)
                     .name("Aquantic")
@@ -4064,7 +4301,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(56L)
+                    .id(COLUMN_5_12_ID)
                     .ordinalPosition(11)
                     .table(TABLE_5)
                     .name("Predator")
@@ -4074,7 +4311,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(57L)
+                    .id(COLUMN_5_13_ID)
                     .ordinalPosition(12)
                     .table(TABLE_5)
                     .name("Backbone")
@@ -4084,7 +4321,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(58L)
+                    .id(COLUMN_5_14_ID)
                     .ordinalPosition(13)
                     .table(TABLE_5)
                     .name("Breathes")
@@ -4094,7 +4331,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(59L)
+                    .id(COLUMN_5_15_ID)
                     .ordinalPosition(14)
                     .table(TABLE_5)
                     .name("Venomous")
@@ -4104,7 +4341,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(60L)
+                    .id(COLUMN_5_16_ID)
                     .ordinalPosition(15)
                     .table(TABLE_5)
                     .name("Fin")
@@ -4114,7 +4351,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(61L)
+                    .id(COLUMN_5_17_ID)
                     .ordinalPosition(16)
                     .table(TABLE_5)
                     .name("Legs")
@@ -4124,7 +4361,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(62L)
+                    .id(COLUMN_5_18_ID)
                     .ordinalPosition(17)
                     .table(TABLE_5)
                     .name("Tail")
@@ -4134,7 +4371,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(63L)
+                    .id(COLUMN_5_19_ID)
                     .ordinalPosition(18)
                     .table(TABLE_5)
                     .name("Domestic")
@@ -4144,7 +4381,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(64L)
+                    .id(COLUMN_5_20_ID)
                     .ordinalPosition(19)
                     .table(TABLE_5)
                     .name("Catsize")
@@ -4154,7 +4391,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(65L)
+                    .id(COLUMN_5_21_ID)
                     .ordinalPosition(20)
                     .table(TABLE_5)
                     .name("Class Type")
@@ -4165,7 +4402,7 @@ public abstract class BaseTest {
                     .build());
 
     public final static List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(45L)
+                    .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4176,7 +4413,7 @@ public abstract class BaseTest {
                     .autoGenerated(true)
                     .build(),
             ColumnDto.builder()
-                    .id(46L)
+                    .id(COLUMN_5_2_ID)
                     .ordinalPosition(1)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4187,7 +4424,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(47L)
+                    .id(COLUMN_5_3_ID)
                     .ordinalPosition(2)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4198,7 +4435,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(48L)
+                    .id(COLUMN_5_4_ID)
                     .ordinalPosition(3)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4209,7 +4446,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(49L)
+                    .id(COLUMN_5_5_ID)
                     .ordinalPosition(4)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4220,7 +4457,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(50L)
+                    .id(COLUMN_5_6_ID)
                     .ordinalPosition(5)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4231,7 +4468,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(51L)
+                    .id(COLUMN_5_7_ID)
                     .ordinalPosition(6)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4242,7 +4479,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(52L)
+                    .id(COLUMN_5_8_ID)
                     .ordinalPosition(7)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4253,7 +4490,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(53L)
+                    .id(COLUMN_5_9_ID)
                     .ordinalPosition(8)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4264,7 +4501,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(54L)
+                    .id(COLUMN_5_10_ID)
                     .ordinalPosition(9)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4275,7 +4512,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(55L)
+                    .id(COLUMN_5_11_ID)
                     .ordinalPosition(10)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4286,7 +4523,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(56L)
+                    .id(COLUMN_5_12_ID)
                     .ordinalPosition(11)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4297,7 +4534,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(57L)
+                    .id(COLUMN_5_13_ID)
                     .ordinalPosition(12)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4308,7 +4545,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(58L)
+                    .id(COLUMN_5_14_ID)
                     .ordinalPosition(13)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4319,7 +4556,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(59L)
+                    .id(COLUMN_5_15_ID)
                     .ordinalPosition(14)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4330,7 +4567,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(60L)
+                    .id(COLUMN_5_16_ID)
                     .ordinalPosition(15)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4341,7 +4578,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(61L)
+                    .id(COLUMN_5_17_ID)
                     .ordinalPosition(16)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4352,7 +4589,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(62L)
+                    .id(COLUMN_5_18_ID)
                     .ordinalPosition(17)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4363,7 +4600,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(63L)
+                    .id(COLUMN_5_19_ID)
                     .ordinalPosition(18)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4374,7 +4611,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(64L)
+                    .id(COLUMN_5_20_ID)
                     .ordinalPosition(19)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4385,7 +4622,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(65L)
+                    .id(COLUMN_5_21_ID)
                     .ordinalPosition(20)
                     .tableId(TABLE_5_ID)
                     .table(TABLE_5_DTO)
@@ -4596,7 +4833,7 @@ public abstract class BaseTest {
                     .build());
 
     public final static ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
-            .id(66L)
+            .id(67L)
             .name("id")
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
@@ -4708,22 +4945,26 @@ public abstract class BaseTest {
             .constraints(TABLE_6_CONSTRAINTS_CREATE)
             .build();
 
+    public final static Long COLUMN_7_1_ID = 73L;
+
+    public final static Long COLUMN_7_2_ID = 74L;
+
     public final static ColumnBriefDto TABLE_7_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
-            .id(26L)
+            .id(COLUMN_7_1_ID)
             .name("name_id")
             .internalName("name_id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
     public final static ColumnBriefDto TABLE_7_COLUMNS_BRIEF_1_DTO = ColumnBriefDto.builder()
-            .id(27L)
+            .id(COLUMN_7_2_ID)
             .name("zoo_id")
             .internalName("zoo_id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
     public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
-                    .id(74L)
+                    .id(COLUMN_7_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_7)
                     .name("name_id")
@@ -4733,7 +4974,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             TableColumn.builder()
-                    .id(75L)
+                    .id(COLUMN_7_2_ID)
                     .ordinalPosition(1)
                     .table(TABLE_7)
                     .name("zoo_id")
@@ -4744,7 +4985,7 @@ public abstract class BaseTest {
                     .build());
 
     public final static List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(74L)
+                    .id(COLUMN_7_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_7_ID)
                     .table(TABLE_7_DTO)
@@ -4755,7 +4996,7 @@ public abstract class BaseTest {
                     .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
-                    .id(75L)
+                    .id(COLUMN_7_2_ID)
                     .ordinalPosition(1)
                     .tableId(TABLE_7_ID)
                     .table(TABLE_7_DTO)
@@ -4809,8 +5050,7 @@ public abstract class BaseTest {
                     .size(22L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .build()
-    );
+                    .build()    );
 
     public final static View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
@@ -5104,6 +5344,8 @@ public abstract class BaseTest {
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
     public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
+
+    public final static Long VIEW_3_DATA_COUNT = 3L;
 
     public final static List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
@@ -7118,6 +7360,13 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
@@ -7139,6 +7388,13 @@ public abstract class BaseTest {
             .database(DATABASE_1)
             .huserid(USER_2_ID)
             .user(USER_2)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()

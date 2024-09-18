@@ -1,10 +1,14 @@
 package at.tuwien.config;
 
 import at.tuwien.test.BaseTest;
+import org.codehaus.plexus.util.FileUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.images.PullPolicy;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * This class configures the MariaDB container for the integration tests.

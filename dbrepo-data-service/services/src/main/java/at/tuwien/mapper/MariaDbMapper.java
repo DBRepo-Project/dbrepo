@@ -293,6 +293,9 @@ public interface MariaDbMapper {
                         .append(column.getInternalName())
                         .append("`) as std_dev FROM ")
                         .append(table));
+        if (statement.isEmpty()) {
+            return null;
+        }
         statement.append(";");
         log.trace("mapped select column statistic statement: {}", statement);
         return statement.toString();
@@ -834,17 +837,8 @@ public interface MariaDbMapper {
                     statement.setNull(idx, Types.BLOB);
                     break;
                 }
-                try {
-                    final ByteArrayOutputStream boas = new ByteArrayOutputStream();
-                    try (ObjectOutputStream ois = new ObjectOutputStream(boas)) {
-                        ois.writeObject(value);
-                        statement.setBlob(idx, new ByteArrayInputStream(boas.toByteArray()));
-                    }
-
-                } catch (IOException e) {
-                    log.error("Failed to set blob/tinyblob/mediumblob/longblob: {}", e.getMessage());
-                    throw new SQLException("Failed to set blob: " + e.getMessage(), e);
-                }
+                final byte[] data = (byte[]) value;
+                statement.setBlob(idx, new ByteArrayInputStream(data));
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
                 if (value == null) {

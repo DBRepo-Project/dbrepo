@@ -34,17 +34,14 @@ import java.util.*;
 public class DatabaseServiceImpl implements DatabaseService {
 
     private final MetadataMapper metadataMapper;
-    private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
     private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public DatabaseServiceImpl(MetadataMapper metadataMapper, ContainerService containerService,
-                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
-                               SearchServiceGateway searchServiceGateway) {
+    public DatabaseServiceImpl(MetadataMapper metadataMapper, DatabaseRepository databaseRepository,
+                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
         this.metadataMapper = metadataMapper;
-        this.containerService = containerService;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
         this.searchServiceGateway = searchServiceGateway;
@@ -84,10 +81,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(DatabaseCreateDto data, User user) throws UserNotFoundException,
+    public Database create(Container container, DatabaseCreateDto data, User user) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        final Container container = containerService.find(data.getCid());
         Database database = Database.builder()
                 .isPublic(data.getIsPublic())
                 .name(data.getName())

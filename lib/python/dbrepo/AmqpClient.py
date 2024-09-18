@@ -1,13 +1,11 @@
-import dataclasses
 import os
 import pika
 import sys
 import json
 import logging
 
-from dbrepo.api.dto import CreateData
-
-logger = logging.getLogger("AmqpClient")
+logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
+                    stream=sys.stdout)
 
 
 class AmqpClient:
@@ -34,8 +32,6 @@ class AmqpClient:
                  broker_virtual_host: str = '/',
                  username: str = None,
                  password: str = None) -> None:
-        logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
-                            stream=sys.stdout)
         self.broker_host = os.environ.get('AMQP_API_HOST', broker_host)
         self.broker_port = os.environ.get('AMQP_API_PORT', broker_port)
         if os.environ.get('AMQP_API_VIRTUAL_HOST') is not None:
@@ -59,6 +55,5 @@ class AmqpClient:
                                                                                              self.password))
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
-        channel.basic_publish(exchange=exchange, routing_key=routing_key,
-                              body=json.dumps(data))
+        channel.basic_publish(exchange=exchange, routing_key=routing_key, body=json.dumps(data))
         connection.close()
