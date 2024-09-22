@@ -11,7 +11,7 @@
 
     <artifactId>dbrepo-metadata-service-services</artifactId>
     <name>dbrepo-metadata-service-services</name>
-    <version>1.4.6</version>
+    <version>1.4.5</version>
 
     <dependencies>
         <dependency>
