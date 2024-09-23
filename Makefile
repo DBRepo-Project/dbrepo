@@ -16,7 +16,6 @@ version: ## Get current version.
 	@echo $(APP_VERSION)
 
 include make/build.mk
-include make/dep.mk
 include make/dev.mk
 include make/gen.mk
 include make/rel.mk
