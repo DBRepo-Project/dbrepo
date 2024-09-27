@@ -53,6 +53,7 @@
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <aws-s3.version>2.25.23</aws-s3.version>
         <minio.version>8.5.7</minio.version>
+        <guava.version>33.3.0-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -85,6 +86,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
         <!-- Open API -->
         <dependency>

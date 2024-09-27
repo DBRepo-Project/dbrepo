@@ -1,4 +1,5 @@
 FROM python:3.11-alpine
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 RUN apk add bash curl jq mariadb-client
 

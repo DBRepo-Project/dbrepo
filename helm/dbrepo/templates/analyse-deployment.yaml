@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: analyse-service
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     app: analyse-service
     service: analyse-service
@@ -45,15 +45,15 @@ spec:
                 - -ec
                 - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
             initialDelaySeconds: 120
-            periodSeconds: 30
+            periodSeconds: 10
           readinessProbe:
             exec:
               command:
                 - /bin/bash
                 - -ec
                 - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
-            initialDelaySeconds: 10
-            periodSeconds: 30
+            initialDelaySeconds: 30
+            periodSeconds: 10
           {{- if .Values.analyseservice.resources }}
           resources: {{- toYaml .Values.analyseservice.resources | nindent 12 }}
           {{- end }}

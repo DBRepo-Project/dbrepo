@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: data-service
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     service: data-service
 spec:

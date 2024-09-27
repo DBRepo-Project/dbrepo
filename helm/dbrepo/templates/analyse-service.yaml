@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: analyse-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     service: analyse-service
 spec:

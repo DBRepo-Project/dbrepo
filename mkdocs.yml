@@ -16,7 +16,7 @@ nav:
   - Concepts:
     - Overview: concepts/index.md
     - Authentication: concepts/authentication.md
-    - Databases: concepts/databases.md
+    - Database: concepts/database.md
     - Messaging: concepts/messaging.md
     - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md
@@ -27,6 +27,7 @@ nav:
     - Databases:
       - Data Database: api/data-db.md
       - Metadata Database: api/metadata-db.md
+      - Metric Database: api/metric-db.md
     - SDK:
       - Python Library: api/python.md
       - Swagger / OpenAPI: api/open-api.md
@@ -34,6 +35,7 @@ nav:
       - Analyse Service: api/analyse-service.md
       - Auth Service: api/auth-service.md
       - Broker Service: api/broker-service.md
+      - Dashboard Service: api/dashboard-service.md
       - Data Service: api/data-service.md
       - Gateway Service: api/gateway-service.md
       - Identity Service: api/identity-service.md

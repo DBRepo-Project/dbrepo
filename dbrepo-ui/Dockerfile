@@ -1,10 +1,10 @@
-FROM oven/bun:1.0.26-alpine AS build
+FROM node:18.20.4-alpine3.20 AS build
 
 WORKDIR /app
 
 COPY ./package.json ./package.json
 
-RUN bun install
+RUN npm install
 
 ENV NODE_ENV="production"
 
@@ -22,9 +22,9 @@ COPY ./stores ./stores
 COPY ./utils ./utils
 COPY ./nuxt.config.ts ./nuxt.config.ts
 
-RUN bun run build
+RUN npm run build
 
-FROM oven/bun:1.0.26-alpine AS runtime
+FROM node:18.20.4-alpine3.20 AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
@@ -42,4 +42,4 @@ ENV NUXT_PUBLIC_COMMIT="${COMMIT:-}"
 
 EXPOSE 3000
 
-ENTRYPOINT [ "bun", "run", ".output/server/index.mjs" ]
+ENTRYPOINT [ "node", ".output/server/index.mjs" ]

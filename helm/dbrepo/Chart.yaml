@@ -56,3 +56,13 @@ dependencies:
     version: 4.2.5
     repository: https://jp-gouin.github.io/helm-openldap/
     condition: identityservice.enabled
+  - name: grafana
+    alias: dashboardservice
+    version: 11.3.20
+    repository: https://charts.bitnami.com/bitnami
+    condition: dashboardservice.enabled
+  - name: prometheus
+    alias: metricdb
+    version: 1.3.22
+    repository: https://charts.bitnami.com/bitnami
+    condition: metricdb.enabled

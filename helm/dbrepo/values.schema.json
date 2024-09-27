@@ -396,6 +396,31 @@
         "clusterDomain": {
             "type": "string"
         },
+        "dashboardservice": {
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "envFromSecret": {
+                    "type": "string"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "ldap": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "existingSecret": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "datadb": {
             "properties": {
                 "auth": {
@@ -1088,9 +1113,6 @@
                 }
             },
             "type": "object"
-        },
-        "namespace": {
-            "type": "string"
         },
         "searchdb": {
             "properties": {

@@ -1106,7 +1106,9 @@ class RestClient:
                           false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
                           line_encoding: str = "\n") -> None:
         """
-        Import a csv dataset from a file into a table in a database with given database id and table id.
+        Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
+        the import is column-ordering sensitive! The csv dataset must have the same columns in the same order as the
+        target table.
 
         :param database_id: The database id.
         :param table_id: The table id.

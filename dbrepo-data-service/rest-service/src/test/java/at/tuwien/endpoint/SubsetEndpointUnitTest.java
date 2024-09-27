@@ -88,8 +88,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_unavailable_fails() throws NotAllowedException, SQLException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+    public void list_unavailable_fails() throws SQLException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
