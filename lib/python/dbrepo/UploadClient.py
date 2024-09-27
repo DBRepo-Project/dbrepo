@@ -29,6 +29,7 @@ class UploadClient:
 
         :returns: Filename on the Storage Service, if successful.
         """
+        logging.debug(f"upload file to endpoint: {self.endpoint}")
         tus_client = client.TusClient(url=self.endpoint)
         uploader = tus_client.uploader(file_path=file_path)
         uploader.upload()

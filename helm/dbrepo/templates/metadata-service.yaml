@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: metadata-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     service: metadata-service
 spec:

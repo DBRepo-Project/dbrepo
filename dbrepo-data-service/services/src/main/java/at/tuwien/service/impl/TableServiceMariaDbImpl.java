@@ -30,8 +30,6 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 
-import static org.apache.jena.sparql.util.QueryExecUtils.executeQuery;
-
 @Log4j2
 @Service
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {

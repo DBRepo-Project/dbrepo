@@ -1,0 +1,11 @@
+{{- if .Values.dashboardservice.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-service-config
+  namespace: {{ include "common.names.namespace" . | quote }}
+data:
+  {{ (.Files.Glob "files/system.json").AsConfig | nindent 2 }}
+  {{ (.Files.Glob "files/rabbitmq.json").AsConfig | nindent 2 }}
+  {{ (.Files.Glob "files/mariadb.json").AsConfig | nindent 2 }}
+{{- end }}
