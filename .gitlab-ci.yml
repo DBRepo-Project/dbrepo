@@ -441,7 +441,7 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
-    - "anybadge --label pipeline --value $(curl -fsSL -H 'PRIVATE-TOKEN: ${CI_TOKEN}' 'https://gitlab.phaidra.org/api/v4/projects/450/pipelines?ref=${CI_COMMIT_BRANCH}' | jq '[.[]|select(.)][0].status')  --file '/tmp/pipeline.svg' failed=red success=green"
+    - "anybadge --label pipeline --value $(curl -fsSL -H 'PRIVATE-TOKEN: ${CI_TOKEN}' 'https://gitlab.phaidra.org/api/v4/projects/450/pipelines?ref=${CI_COMMIT_BRANCH}' | jq '[.[]|select(.)][0].status') failed=red success=green > /tmp/pipeline.svg"
     - "cp /tmp/pipeline.svg ./final/${APP_VERSION}/images/pipeline.svg" # badges
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
