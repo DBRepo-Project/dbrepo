@@ -35,9 +35,6 @@ stages:
 build-metadata-service:
   image: maven:3-openjdk-17
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -56,9 +53,6 @@ build-metadata-service:
 build-analyse-service:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -68,9 +62,6 @@ build-analyse-service:
 build-data-db-sidecar:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
   script:
@@ -80,9 +71,6 @@ build-data-db-sidecar:
 build-lib:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
@@ -92,9 +80,6 @@ build-lib:
 build-data-service:
   image: maven:3-openjdk-17
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -114,18 +99,12 @@ build-data-service:
 build-ui:
   image: oven/bun:1.0.26-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
 build-search-service:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "pip install pipenv"
     - "cd dbrepo-search-service && pipenv install --system --deploy"
@@ -133,9 +112,6 @@ build-search-service:
 build-docker:
   image: docker.io/docker:24-dind
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
@@ -146,9 +122,6 @@ build-docker:
 build-helm:
   image: docker.io/docker:24-dind
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   before_script:
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
@@ -205,9 +178,6 @@ verify-install-script:
 lint-helm-chart:
   image: docker.io/alpine:3.20
   stage: lint
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -220,9 +190,6 @@ lint-helm-chart:
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -243,9 +210,6 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-17
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-data-service
   dependencies:
@@ -266,9 +230,6 @@ test-data-service:
 test-analyse-service:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -293,9 +254,6 @@ test-analyse-service:
 test-search-service:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
   needs:
@@ -320,9 +278,6 @@ test-search-service:
 test-lib:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -404,9 +359,6 @@ release-helm:
     refs:
       - /^release-.*/
   when: manual
-  except:
-    refs:
-      - release-latest
   before_script:
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
