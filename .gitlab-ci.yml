@@ -441,8 +441,8 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
-    - "wget -O ./final/${APP_VERSION}/images/pipeline.svg https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/${CI_COMMIT_BRANCH}/pipeline.svg"
-    - "wget -O ./final/${APP_VERSION}/images/coverage.svg https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/${CI_COMMIT_BRANCH}/coverage.svg"
+    - "anybadge --label pipeline --value $(curl -fsSL -H 'PRIVATE-TOKEN: ${CI_TOKEN}' 'https://gitlab.phaidra.org/api/v4/projects/450/pipelines?ref=${CI_COMMIT_BRANCH}' | jq '[.[]|select(.)][0].status')  --file '/tmp/pipeline.svg' failed=red success=green"
+    - "cp /tmp/pipeline.svg ./final/${APP_VERSION}/images/pipeline.svg" # badges
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
