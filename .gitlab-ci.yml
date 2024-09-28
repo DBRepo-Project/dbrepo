@@ -421,3 +421,15 @@ release-libs:
   script:
     - bash ./lib/python/package.sh
     - bash ./lib/python/release.sh
+
+release-gitlab:
+  stage: release
+  image: docker.io/alpine:3.18
+  when: manual
+  only:
+    refs:
+      - /^release-.*/
+  before_script:
+    - "apk add bash curl"
+  script:
+    - "curl -fsSL -X POST -H 'Content-Type: application/json' -H 'PRIVATE-TOKEN: ${CI_TOKEN}' --data \"{'name': 'v${APP_VERSION}', 'tag_name': 'v${CI_COMMIT_BRANCH}', 'ref': '${CI_COMMIT_BRANCH}', 'description': 'Automated release from CI/CD'}\" https://gitlab.phaidra.org/api/v4/projects/450"
