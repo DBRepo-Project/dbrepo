@@ -812,11 +812,13 @@ dashboardservice:
   grafana:
     ## @skip dashboardservice.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-service-secret
+    ## @skip dashboardservice.grafana.extraConfigmaps
     extraConfigmaps:
       - name: dashboard-service-config
         mountPath: /opt/bitnami/grafana/dashboards
         readOnly: true
   datasources:
+    ## @skip dashboardservice.datasources.secretDefinition
     secretDefinition:
       apiVersion: 1
       datasources:
@@ -825,6 +827,7 @@ dashboardservice:
           type: "prometheus"
           url: "http://metric-db-server"
   dashboardsProvider:
+    ## @param dashboardservice.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
     enabled: true
 
 ## @section Metric Service

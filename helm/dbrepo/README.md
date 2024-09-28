@@ -54,13 +54,12 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Common parameters
 
-| Name            | Description                        | Value                 |
-| --------------- | ---------------------------------- | --------------------- |
-| `namespace`     | The namespace to install the chart | `dbrepo`              |
-| `hostname`      | The hostname.                      | `example.com`         |
-| `gateway`       | The gateway endpoint.              | `https://example.com` |
-| `strategyType`  | The image pull                     | `RollingUpdate`       |
-| `clusterDomain` | The cluster domain.                | `cluster.local`       |
+| Name            | Description           | Value                 |
+| --------------- | --------------------- | --------------------- |
+| `hostname`      | The hostname.         | `example.com`         |
+| `gateway`       | The gateway endpoint. | `https://example.com` |
+| `strategyType`  | The image pull        | `RollingUpdate`       |
+| `clusterDomain` | The cluster domain.   | `cluster.local`       |
 
 ### Metadata Database
 
@@ -88,7 +87,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | `authservice.jwt.pubkey`         | The JWT public key from the `dbrepo-client`.                 | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
 | `authservice.tls.enabled`        | Enable TLS/SSL communication. Required for HTTPS.            | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.tls.existingSecret` | The secret containing the `tls.crt`, `tls.key` and `ca.crt`. | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                             |
-| `authservice.metrics.enabled`    | Enable the Prometheus metrics export sidecar container.      | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.client.id`          | The client id for the microservices.                         | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
 | `authservice.client.secret`      | The client secret for the microservices.                     | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
 
@@ -97,7 +95,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | Name                              | Description                                                 | Value         |
 | --------------------------------- | ----------------------------------------------------------- | ------------- |
 | `datadb.enabled`                  | Enable the Data Database.                                   | `true`        |
-| `datadb.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
+| `datadb.database.image.debug`     | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
 | `datadb.auth.rootPassword`        | The root user password.                                     | `dbrepo`      |
 | `datadb.auth.replicationUser`     | The database replication user password                      | `replication` |
 | `datadb.auth.replicationPassword` | The database replication user password                      | `replication` |
@@ -328,6 +326,19 @@ The command removes all the Kubernetes components associated with the chart and 
 | `ui.public.doi.enabled`                                | Enable the display that DOIs are minted.                                                             | `false`                 |
 | `ui.public.doi.endpoint`                               | The DOI proxy.                                                                                       | `https://doi.org`       |
 | `ui.replicaCount`                                      | The number of replicas.                                                                              | `2`                     |
+
+### Dashboard Service
+
+| Name                                          | Description                                                                                                            | Value  |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------ |
+| `dashboardservice.enabled`                    | Enable the Dashboard Service.                                                                                          | `true` |
+| `dashboardservice.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true` |
+
+### Metric Service
+
+| Name               | Description                | Value  |
+| ------------------ | -------------------------- | ------ |
+| `metricdb.enabled` | Enable the Metric Service. | `true` |
 
 ### Ingress
 
