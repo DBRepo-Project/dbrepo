@@ -381,7 +381,7 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add --update alpine-sdk bash sed wget openssh"
+    - "apk add --update alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${APP_VERSION}/rest"
