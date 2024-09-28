@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: data-service
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     app: data-service
     service: data-service
@@ -45,7 +45,7 @@ spec:
                 - -ec
                 - "curl -sSL localhost:8080/actuator/health/readiness | grep 'UP' || exit 1"
             initialDelaySeconds: 120
-            periodSeconds: 30
+            periodSeconds: 10
           readinessProbe:
             exec:
               command:
@@ -53,7 +53,7 @@ spec:
                 - -ec
                 - "curl -sSL localhost:8080/actuator/health/liveness | grep 'UP' || exit 1"
             initialDelaySeconds: 30
-            periodSeconds: 30
+            periodSeconds: 10
           {{- if .Values.dataservice.resources }}
           resources: {{- toYaml .Values.dataservice.resources | nindent 12 }}
           {{- end }}

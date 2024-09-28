@@ -344,27 +344,13 @@ services:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
+      dbrepo-dashboard-service:
+        condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy
       dbrepo-ui:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  # service not part of dbrepo system (but for developing)
-  dbrepo-search-db-dashboard:
-    restart: "no"
-    container_name: dbrepo-search-db-dashboard
-    hostname: search-db-dashboard
-    image: docker.io/opensearchproject/opensearch-dashboards:2.10.0
-    ports:
-      - "5601:5601"
-    volumes:
-      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
-    depends_on:
-      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -420,17 +406,61 @@ services:
     container_name: dbrepo-storage-service
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:3.59
-    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9091" ]
+    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
       - storage-service-data:/data
     ports:
       - "9000:9000"
+      - "8888:8888"
     healthcheck:
       test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-metric-db:
+    restart: "no"
+    container_name: dbrepo-metric-db
+    hostname: metric-db
+    image: bitnami/prometheus:2.54.1-debian-12-r4
+    volumes:
+      - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
+    healthcheck:
+      test: promtool check healthy
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service:
+    restart: "no"
+    container_name: dbrepo-dashboard-service
+    hostname: dashboard-service
+    image: docker.io/bitnami/grafana:11.2.0-debian-12-r4
+    volumes:
+      - ./dbrepo-dashboard-service/dashboards:/app/dashboards
+      - ./dbrepo-dashboard-service/provisioning:/etc/grafana/provisioning
+      - ./dbrepo-dashboard-service/grafana.ini:/etc/grafana/grafana.ini
+      - ./dbrepo-dashboard-service/ldap.toml:/etc/grafana/ldap.toml
+    environment:
+      GF_SERVER_DOMAIN: "dashboard-service"
+      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+    healthcheck:
+      test: test -f /opt/bitnami/grafana/tmp/grafana.pid
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metric-db:
+        condition: service_started
     logging:
       driver: json-file
 

@@ -309,6 +309,8 @@ services:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
+      dbrepo-dashboard-service:
+        condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
       dbrepo-search-db:
@@ -363,7 +365,7 @@ services:
     container_name: dbrepo-storage-service
     hostname: storage-service
     image: docker.io/chrislusf/seaweedfs:3.59
-    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9091" ]
+    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./config/s3_config.json:/app/s3_config.json
       - storage-service-data:/data
@@ -374,6 +376,49 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-metric-db:
+    restart: "no"
+    container_name: dbrepo-metric-db
+    hostname: metric-db
+    image: bitnami/prometheus:2.54.1-debian-12-r4
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    healthcheck:
+      test: promtool check healthy
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-dashboard-service:
+    restart: "no"
+    container_name: dbrepo-dashboard-service
+    hostname: dashboard-service
+    image: docker.io/bitnami/grafana:11.2.0-debian-12-r4
+    volumes:
+      - ./config/dashboards:/app/dashboards
+      - ./config/provisioning:/etc/grafana/provisioning
+      - ./config/grafana.ini:/etc/grafana/grafana.ini
+      - ./config/ldap.toml:/etc/grafana/ldap.toml
+    environment:
+      GF_SERVER_DOMAIN: "dashboard-service"
+      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
+      LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
+      LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
+      LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
+    healthcheck:
+      test: test -f /opt/bitnami/grafana/tmp/grafana.pid
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metric-db:
+        condition: service_started
     logging:
       driver: json-file
 

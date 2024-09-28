@@ -1,8 +1,7 @@
 # Copyright the DBRepo developers
 # SPDX-License-Identifier: APACHE-2.0
 
-## @param namespace The namespace to install the chart
-namespace: dbrepo
+## @param namespaceOverride The namespace to install the chart
 
 s3:
   endpoint: http://storage-service-s3:8333

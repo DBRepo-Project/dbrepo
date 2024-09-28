@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: auth-service-config
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 data:
   KC_HOSTNAME_PATH: "/api/auth"
   KC_HOSTNAME_ADMIN_URL: "{{ .Values.gateway }}/api/auth"
@@ -2287,20 +2287,20 @@ data:
             "fullSyncPeriod" : [ "-1" ],
             "pagination" : [ "false" ],
             "startTls" : [ "false" ],
-            "usersDn" : [ "ou=users,dc=dbrepo,dc=at" ],
+            "usersDn" : [ "ou=users,{{ .Values.identityservice.global.ldapDomain }}" ],
             "connectionPooling" : [ "true" ],
             "cachePolicy" : [ "DEFAULT" ],
             "useKerberosForPasswordAuthentication" : [ "false" ],
             "importEnabled" : [ "true" ],
             "enabled" : [ "true" ],
-            "bindDn" : [ "cn=admin,dc=dbrepo,dc=at" ],
-            "bindCredential" : [ "admin" ],
+            "bindDn" : [ "cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }}" ],
+            "bindCredential" : [ "{{ .Values.identityservice.global.adminPassword }}" ],
             "usernameLDAPAttribute" : [ "uid" ],
             "changedSyncPeriod" : [ "-1" ],
             "lastSync" : [ "1719252666" ],
             "vendor" : [ "other" ],
             "uuidLDAPAttribute" : [ "entryUUID" ],
-            "connectionUrl" : [ "ldap://identity-service:1389" ],
+            "connectionUrl" : [ "ldap://identity-service:389" ],
             "allowKerberosAuthentication" : [ "false" ],
             "syncRegistrations" : [ "true" ],
             "authType" : [ "simple" ],

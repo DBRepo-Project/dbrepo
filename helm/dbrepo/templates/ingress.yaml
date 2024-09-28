@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: dbrepo-ingress-basic
   annotations: {{ toYaml .Values.ingress.annotations.basic | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
@@ -157,6 +157,13 @@ spec:
                 name: upload-service
                 port:
                   number: 80
+          - path: /dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard-service
+                port:
+                  number: 3000
           - path: /
             pathType: Prefix
             backend:
@@ -170,7 +177,7 @@ kind: Ingress
 metadata:
   name: dbrepo-ingress-admin
   annotations: {{ toYaml .Values.ingress.annotations.rewriteApi | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
@@ -196,7 +203,7 @@ kind: Ingress
 metadata:
   name: dbrepo-ingress-rewrite-root
   annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
@@ -222,7 +229,7 @@ kind: Ingress
 metadata:
   name: dbrepo-ingress-rewrite-root-secure
   annotations: {{ toYaml .Values.ingress.annotations.rewriteRootSecure | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
@@ -248,7 +255,7 @@ kind: Ingress
 metadata:
   name: dbrepo-ingress-pid
   annotations: {{ toYaml .Values.ingress.annotations.rewritePid | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}

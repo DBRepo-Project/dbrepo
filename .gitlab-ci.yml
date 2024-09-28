@@ -156,6 +156,39 @@ build-helm:
     - apk add sed helm curl
     - helm package ./helm/dbrepo --destination ./build
 
+lint-docker-compose:
+  image: docker.io/alpine:3.18
+  stage: lint
+  variables:
+    VERSION: 3.3.0
+    BINARY: yq_linux_amd64
+  before_script:
+    - 'apk --no-cache add bash wget'
+    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+    - 'ls -la .scripts'
+  script:
+    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
+    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+    - "bash .scripts/check-service.sh 'dbrepo-data-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-db-sidecar'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
+    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
+
 verify-install-script:
   image: docker.io/docker:24-dind
   stage: verify
@@ -401,12 +434,13 @@ release-docs:
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${APP_VERSION}/rest"
   script:
-    - "make gen-lib-doc gen-docs-doc"
+    - "make gen-lib-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${APP_VERSION}/python" # sphinx
     - "cp .docs/.swagger/api.yaml ./final/${APP_VERSION}/rest/api.yaml" # swagger
     - "cp .docs/.swagger/swagger-ui.html ./final/${APP_VERSION}/rest/index.html" # swagger
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
+    - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa

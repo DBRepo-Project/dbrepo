@@ -3,7 +3,7 @@
 # preset
 VERSION="1.4.6"
 MIN_CPU=8
-MIN_RAM=8
+MIN_RAM=4
 MIN_MAP_COUNT=262144
 SKIP_CHECKS=${SKIP_CHECKS:-0}
 DOWNLOAD_ONLY=${DOWNLOAD_ONLY:-0}
@@ -58,7 +58,7 @@ fi
 
 # environment
 echo "[🚀] Gathering environment for version ${VERSION} ..."
-curl -sSL -o ./dist.tar.gz "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/.docker/dist.tar.gz"
+curl -sSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/dist.tar.gz"
 tar xzfv ./dist.tar.gz
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then

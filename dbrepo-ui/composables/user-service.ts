@@ -83,8 +83,14 @@ export const useUserService = (): any => {
   async function obtainToken(username: string, password: string): Promise<KeycloakOpenIdTokenDto> {
     console.debug('obtain user token for user with username', username)
     return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
+      const config = useRuntimeConfig()
       const userStore = useUserStore()
-      axios.post<KeycloakOpenIdTokenDto>('/api/user/token', {username, password})
+      const instance = axios.create({
+        timeout: 90_000,
+        params: {},
+        baseURL: config.public.api.client
+      })
+      instance.post<KeycloakOpenIdTokenDto>('/api/user/token', {username, password})
         .then((response) => {
           console.info('Obtained user token')
           // eslint-disable-next-line camelcase
@@ -103,7 +109,13 @@ export const useUserService = (): any => {
   async function refreshToken(refreshToken: string): Promise<KeycloakOpenIdTokenDto> {
     console.debug('refresh user token')
     return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
-      axios.put<KeycloakOpenIdTokenDto>('/api/user/token', {refresh_token: refreshToken})
+      const config = useRuntimeConfig()
+      const instance = axios.create({
+        timeout: 90_000,
+        params: {},
+        baseURL: config.public.api.client
+      })
+      instance.put<KeycloakOpenIdTokenDto>('/api/user/token', {refresh_token: refreshToken})
         .then((response) => {
           console.info('Refreshed user token')
           const userStore = useUserStore()
