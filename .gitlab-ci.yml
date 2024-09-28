@@ -394,7 +394,6 @@ release-docs:
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - "bash ./.gitlab/gen-badge.sh"
-    - "cp /tmp/pipeline.svg ./final/${APP_VERSION}/images/pipeline.svg" # badges
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
