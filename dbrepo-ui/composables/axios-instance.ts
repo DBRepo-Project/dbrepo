@@ -4,7 +4,7 @@ import {useUserStore} from '@/stores/user'
 let instance: AxiosInstance | null = null;
 
 export const useAxiosInstance = () => {
-  const config = useRuntimeConfig();
+  const config = useRuntimeConfig()
   const userStore = useUserStore()
   if (!instance) {
     instance = axios.create({

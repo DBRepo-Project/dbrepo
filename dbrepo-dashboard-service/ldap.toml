@@ -1,0 +1,38 @@
+[[servers]]
+host = "identity-service"
+port = 1389
+use_ssl = false
+
+# Search user bind dn
+bind_dn = "cn=${LDAP_ADMIN_USERNAME},${LDAP_ROOT}"
+bind_password = "${LDAP_ADMIN_PASSWORD}"
+
+# Timeout in seconds. Applies to each host specified in the 'host' entry (space separated).
+timeout = 10
+
+# User search filter, for example "(cn=%s)" or "(sAMAccountName=%s)" or "(uid=%s)"
+# Allow login from email or username, example "(|(sAMAccountName=%s)(userPrincipalName=%s))"
+search_filter = "(cn=%s)"
+
+# An array of base dns to search through
+search_base_dns = ["${LDAP_ROOT}"]
+
+group_search_base_dns = ["ou=users,${LDAP_ROOT}"]
+group_search_filter = "(&(objectClass=groupOfNames)(member=cn=%s,ou=users,${LDAP_ROOT}))"
+group_search_filter_user_attribute = "uid"
+
+[servers.attributes]
+name = "givenName"
+surname = "sn"
+username = "cn"
+member_of = "member"
+email =  "email"
+
+[[servers.group_mappings]]
+group_dn = "cn=${LDAP_ADMIN_USERNAME},ou=users,${LDAP_ROOT}"
+org_role = "Admin"
+grafana_admin = true
+
+[[servers.group_mappings]]
+group_dn = "*"
+org_role = "Viewer"

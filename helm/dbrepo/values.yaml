@@ -15,8 +15,6 @@ global:
 
 ## @section Common parameters
 
-## @param namespace The namespace to install the chart
-namespace: dbrepo
 ## @param hostname The hostname.
 hostname: example.com
 ## @param gateway The gateway endpoint.
@@ -53,7 +51,7 @@ metadatadb:
   jdbcExtraArgs: ""
   metrics:
     ## @skip metadatadb.metrics.enabled The Prometheus settings.
-    enabled: false
+    enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
   ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
@@ -100,8 +98,8 @@ authservice:
     ## @skip authservice.tls.usePem
     usePem: true
   metrics:
-    ## @param authservice.metrics.enabled Enable the Prometheus metrics export sidecar container.
-    enabled: false
+    ## @skip authservice.metrics.enabled
+    enabled: true
   client:
     ## @param authservice.client.id The client id for the microservices.
     id: dbrepo-client
@@ -128,9 +126,16 @@ datadb:
   enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
-  image:
-    ## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+  database:
+    image:
+      ## @param datadb.database.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+      debug: false
+    metrics:
+      ## @skip datadb.database.metrics.enabled
+      enabled: true
+    ## @skip datadb.database.secondary
+    secondary:
+      replicaCount: 2
   auth:
     ## @param datadb.auth.rootPassword The root user password.
     rootPassword: dbrepo
@@ -138,12 +143,6 @@ datadb:
     replicationUser: replication
     ## @param datadb.auth.replicationPassword The database replication user password
     replicationPassword: replication
-  metrics:
-    ## @skip datadb.metrics.enabled
-    enabled: true
-  ## @skip datadb.secondary
-  secondary:
-    replicaCount: 2
 
 ## @section Search Database
 
@@ -210,6 +209,9 @@ brokerservice:
   image:
     ## @param brokerservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
     debug: true
+  metrics:
+    ## @skip brokerservice.metrics.enabled
+    enabled: true
   ## @param brokerservice.endpoint The management api endpoint for the microservices.
   endpoint: http://broker-service:15672
   ## @param brokerservice.host The hostname for the microservices.
@@ -599,6 +601,9 @@ storageservice:
   master:
     ## @skip storageservice.master.enabled
     enabled: true
+    metrics:
+      ## @skip storageservice.master.metrics.enabled
+      enabled: true
   filer:
     ## @param storageservice.filer.enabled Enable the storage service filer which is required for S3.
     enabled: true
@@ -789,6 +794,67 @@ ui:
   #  - name: images-map
   #    mountPath: /static/logo.svg
   #    subPath: logo.svg
+
+## @section Dashboard Service
+
+dashboardservice:
+  ## @param dashboardservice.enabled Enable the Dashboard Service.
+  enabled: true
+  ## @skip dashboardservice.fullnameOverride
+  fullnameOverride: dashboard-service
+  ldap:
+    ## @skip dashboardservice.ldap.enabled
+    enabled: true
+    ## @skip dashboardservice.ldap.allowSignUp
+    allowSignUp: true
+    ## @skip dashboardservice.ldap.secretName
+    secretName: dashboard-service-secret
+  grafana:
+    ## @skip dashboardservice.grafana.extraEnvVarsSecret
+    extraEnvVarsSecret: dashboard-service-secret
+    extraConfigmaps:
+      - name: dashboard-service-config
+        mountPath: /opt/bitnami/grafana/dashboards
+        readOnly: true
+  datasources:
+    secretDefinition:
+      apiVersion: 1
+      datasources:
+        - name: "dbrepo-metric-db"
+          uid: "P18F45E9DC7E75912"
+          type: "prometheus"
+          url: "http://metric-db-server"
+  dashboardsProvider:
+    enabled: true
+
+## @section Metric Service
+
+metricdb:
+  ## @param metricdb.enabled Enable the Metric Service.
+  enabled: true
+  ## @skip metricdb.fullnameOverride
+  fullnameOverride: metric-service
+  alertmanager:
+    service:
+      ## @skip metricdb.alertmanager.service.type
+      type: ClusterIP
+  server:
+    service:
+      ## @skip metricdb.server.service.type
+      type: ClusterIP
+    persistence:
+      ## @skip metricdb.server.persistence.enabled
+      enabled: true
+    ## @skip metricdb.server.extraScrapeConfigs
+    extraScrapeConfigs:
+      - job_name: 'spring boot scrape'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: [ 'data-service', 'metadata-service' ]
+      - job_name: 'metrics scrape'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'ui', 'metadata-db-metrics:9104', 'dashboard-service:3000', 'storage-service-master-metrics:9327', 'upload-service' ]
 
 ## @section Ingress
 

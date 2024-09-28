@@ -277,9 +277,6 @@
             },
             "type": "object"
         },
-        "namespace": {
-            "type": "string"
-        },
         "s3": {
             "properties": {
                 "auth": {

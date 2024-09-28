@@ -26,7 +26,6 @@ import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import com.github.dockerjava.zerodep.shaded.org.apache.commons.codec.binary.Hex;
-import com.google.common.hash.Hashing;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
@@ -36,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.testcontainers.shaded.com.google.common.hash.Hashing;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;

@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: metadata-db-setup
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 data:
   {{- with .Values.metadatadb.extraInitDbScripts }}
   {{ toYaml . | nindent 2 }}
@@ -44,10 +44,12 @@ data:
         dialect       character varying(255) NOT NULL,
         driver_class  character varying(255) NOT NULL,
         jdbc_method   character varying(255) NOT NULL,
+        is_default    BOOLEAN                NOT NULL DEFAULT FALSE,
         created       timestamp              NOT NULL DEFAULT NOW(),
         last_modified timestamp,
         PRIMARY KEY (id),
-        UNIQUE (name, version)
+        UNIQUE (name, version),
+        UNIQUE (is_default)
     ) WITH SYSTEM VERSIONING;
 
     CREATE TABLE IF NOT EXISTS `mdb_images_date`
@@ -81,6 +83,7 @@ data:
         last_modified       timestamp,
         privileged_username character varying(255) NOT NULL,
         privileged_password character varying(255) NOT NULL,
+        quota               integer                NOT NULL DEFAULT 50,
         PRIMARY KEY (id),
         FOREIGN KEY (image_id) REFERENCES mdb_images (id)
     ) WITH SYSTEM VERSIONING;
@@ -266,6 +269,7 @@ data:
         cid  BIGINT NOT NULL,
         rcid BIGINT NOT NULL,
         PRIMARY KEY (id),
+        UNIQUE (fkid, cid, rcid),
         FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
         FOREIGN KEY (cid) REFERENCES mdb_columns (id),
         FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
@@ -555,7 +559,8 @@ data:
     VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
            (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
            (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
-           (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true);
+           (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true),
+           (1, '%d.%c.%Y', 'dd.MM.yyyy', '30.01.2022', false);
 
     INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
     VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',

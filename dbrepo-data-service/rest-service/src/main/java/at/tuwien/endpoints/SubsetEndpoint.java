@@ -146,8 +146,7 @@ public class SubsetEndpoint {
                                       @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException, NotAllowedException, UserNotFoundException,
-            MetadataServiceException {
+            SidecarExportException, StorageNotFoundException, UserNotFoundException, MetadataServiceException {
         String accept = httpServletRequest.getHeader("Accept");
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);

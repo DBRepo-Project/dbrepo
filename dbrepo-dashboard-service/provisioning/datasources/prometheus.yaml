@@ -1,0 +1,7 @@
+apiVersion: 1
+
+datasources:
+  - name: dbrepo-metric-db
+    type: prometheus
+    uid: P18F45E9DC7E75912
+    url: http://metric-db:9090

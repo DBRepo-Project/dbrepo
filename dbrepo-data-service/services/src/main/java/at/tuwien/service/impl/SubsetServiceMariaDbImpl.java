@@ -19,13 +19,13 @@ import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.StorageService;
-import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.testcontainers.shaded.com.google.common.hash.Hashing;
 
 import java.nio.charset.Charset;
 import java.sql.*;
