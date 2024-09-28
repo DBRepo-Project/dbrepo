@@ -31,11 +31,11 @@ Installing DBRepo is very easy or
 
 - [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
 - TU Darmstadt
-- [Universität Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
+- [Universit&auml;t Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
 - [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
 - University of the Philippines
 - [Universiti Sains Malaysia](https://dbrepo.wrfexpress.com/)
 
-## How can I try DBRepo
+## How can I try DBRepo?
 
 [:fontawesome-solid-flask: &nbsp;Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }
