@@ -421,15 +421,3 @@ release-libs:
   script:
     - bash ./lib/python/package.sh
     - bash ./lib/python/release.sh
-
-release-gitlab:
-  stage: release
-  image: docker.io/alpine:3.18
-  when: manual
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apk add bash curl"
-  script:
-    - bash ./.gitlab/release-gitlab.sh
