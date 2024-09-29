@@ -15,7 +15,7 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 with:
 
 ```bash
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.6/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | bash
 ```
 
 ## Documentation

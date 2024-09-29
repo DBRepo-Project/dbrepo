@@ -555,7 +555,6 @@ public interface MetadataMapper {
                                 ref.getColumn().setDatabaseId(table.getTdbid());
                                 ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
                                 ref.getReferencedColumn().setDatabaseId(table.getTdbid());
-                                log.trace("mapped foreign key part ({}) reference ({})", ref.getColumn().getInternalName(), ref.getReferencedColumn().getInternalName());
                             });
                 });
         table.getConstraints()
