@@ -32,12 +32,14 @@ public class ForeignKeyReference {
     @JoinColumn(name = "fkid", referencedColumnName = "fkid", nullable = false)
     private ForeignKey foreignKey;
 
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn column;
 
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false)

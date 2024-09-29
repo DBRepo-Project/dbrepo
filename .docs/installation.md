@@ -11,7 +11,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.6/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | bash
 ```
 
 !!! bug "Default installation security disclaimer"
@@ -39,7 +39,7 @@ SSL/TLS certificate is recommended. Follow the [secure install](#secure-install)
 Execute the install script to download only the environment and save it to `dist`.
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.6/install.sh | DOWNLOAD_ONLY=1 bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/install.sh | DOWNLOAD_ONLY=1 bash
 ```
 
 ### Static Configuration
@@ -81,7 +81,7 @@ the variable `IDENTITY_SERVICE_ADMIN_PASSWORD` in `.env`.
 Update the client secret of the `dbrepo-client`:
 
 ```bash
-curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.6/.scripts/reg-client-secret.sh" | bash
+curl -sSL "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.5/.scripts/reg-client-secret.sh" | bash
 ```
    
 Also, update the JWT key according to the 
