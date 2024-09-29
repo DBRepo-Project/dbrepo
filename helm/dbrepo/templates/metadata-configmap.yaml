@@ -190,8 +190,9 @@ data:
         std_dev          Numeric     NULL,
         created          timestamp   NOT NULL DEFAULT NOW(),
         last_modified    timestamp,
+        PRIMARY KEY (ID),
         FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
-        PRIMARY KEY (ID)
+        UNIQUE (tID, internal_name)
     ) WITH SYSTEM VERSIONING;
 
     CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
