@@ -17,7 +17,7 @@ CREATE TABLE weather_aus
     mintemp  DOUBLE PRECISION NULL,
     rainfall DOUBLE PRECISION NULL,
     FOREIGN KEY (location) REFERENCES weather_location (location) ON DELETE SET NULL,
-    UNIQUE (`date`),
+    CONSTRAINT some_constraint UNIQUE (`date`),
     CHECK (`mintemp` > 0)
 ) WITH SYSTEM VERSIONING COMMENT 'Weather in Australia';
 

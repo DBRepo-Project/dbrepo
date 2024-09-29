@@ -194,6 +194,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(1, uniques.size());
         final UniqueDto unique0 = uniques.get(0);
         assertNotNull(unique0.getTable());
+        assertEquals("some_constraint", unique0.getName());
         assertNull(unique0.getTable().getId());
         assertEquals(TABLE_1_INTERNALNAME, unique0.getTable().getName());
         assertEquals(TABLE_1_INTERNALNAME, unique0.getTable().getInternalName());

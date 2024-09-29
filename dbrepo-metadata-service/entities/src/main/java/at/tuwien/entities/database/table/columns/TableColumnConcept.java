@@ -50,7 +50,8 @@ public class TableColumnConcept {
     private Instant created;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY)
+    @org.springframework.data.annotation.Transient
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)

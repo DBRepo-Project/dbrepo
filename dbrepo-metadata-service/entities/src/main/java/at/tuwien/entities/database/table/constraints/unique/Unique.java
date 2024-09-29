@@ -33,13 +33,14 @@ public class Unique {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id")
     })
     private Table table;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @org.springframework.data.annotation.Transient
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "mdb_constraints_unique_columns",
             joinColumns = {
