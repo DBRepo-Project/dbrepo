@@ -432,5 +432,4 @@ release-gitlab:
   before_script:
     - "apk add bash curl"
   script:
-    - "echo \"curl -fsSL -X POST -H 'Content-Type: application/json' -H 'PRIVATE-TOKEN: (nope) --data {'name': 'v${APP_VERSION}', 'tag_name': 'v${CI_COMMIT_BRANCH}', 'ref': '${CI_COMMIT_BRANCH}', 'description': 'Automated release from CI/CD'} https://gitlab.phaidra.org/api/v4/projects/450\""
-    - "curl -fsSL -X POST -H 'Content-Type: application/json' -H 'PRIVATE-TOKEN: ${CI_TOKEN}' --data \"{'name': 'v${APP_VERSION}', 'tag_name': 'v${CI_COMMIT_BRANCH}', 'ref': '${CI_COMMIT_BRANCH}', 'description': 'Automated release from CI/CD'}\" https://gitlab.phaidra.org/api/v4/projects/450"
+    - "curl -fsSL -X POST -H \"Content-Type: application/json\" -H \"PRIVATE-TOKEN: ${CI_TOKEN}\" --data '{\"name\": \"v${APP_VERSION}\", \"tag_name\": \"v${APP_VERSION}\", \"ref\": \"${CI_COMMIT_BRANCH}\", \"description\": \"Automated release from CI/CD\"}' https://gitlab.phaidra.org/api/v4/projects/450/releases"
