@@ -2,8 +2,8 @@
 author: Martin Weise
 ---
 
-[![CI/CD Pipeline](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
-[![Code Coverage](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![CI/CD Status](./images/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
+[![CI/CD Coverage](./images/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![GitLab Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 [![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat&cacheSeconds=3600)](https://hub.docker.com/u/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
@@ -32,11 +32,11 @@ Installing DBRepo is very easy or
 
 - [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
 - TU Darmstadt
-- [Universität Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
+- [Universit&auml;t Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
 - [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
 - University of the Philippines
 - [Universiti Sains Malaysia](https://dbrepo.wrfexpress.com/)
 
-## How can I try DBRepo
+## How can I try DBRepo?
 
 [:fontawesome-solid-flask: &nbsp;Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }

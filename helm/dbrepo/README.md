@@ -1,16 +1,17 @@
 # DBRepo Helm chart
 
-[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.4/) is a database repository system that
+[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/) is a database repository system that
 allows researchers to ingest data into a central, versioned repository through common interfaces.
 
 ## TL;DR
 
 Download the
-sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.4/helm-charts/dbrepo/values.yaml?inline=true)
+sample [
+`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.6/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.6"
 ```
 
 ## Prerequisites
@@ -27,7 +28,7 @@ helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --valu
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.4"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.6"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
@@ -48,24 +49,23 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Global parameters
 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value  |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto` |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`   |
 
 ### Common parameters
 
-| Name            | Description                        | Value                 |
-| --------------- | ---------------------------------- | --------------------- |
-| `namespace`     | The namespace to install the chart | `dbrepo`              |
-| `hostname`      | The hostname.                      | `example.com`         |
-| `gateway`       | The gateway endpoint.              | `https://example.com` |
-| `strategyType`  | The image pull                     | `RollingUpdate`       |
-| `clusterDomain` | The cluster domain.                | `cluster.local`       |
+| Name            | Description           | Value                 |
+|-----------------|-----------------------|-----------------------|
+| `hostname`      | The hostname.         | `example.com`         |
+| `gateway`       | The gateway endpoint. | `https://example.com` |
+| `strategyType`  | The image pull        | `RollingUpdate`       |
+| `clusterDomain` | The cluster domain.   | `cluster.local`       |
 
 ### Metadata Database
 
 | Name                                     | Description                                                      | Value         |
-| ---------------------------------------- | ---------------------------------------------------------------- | ------------- |
+|------------------------------------------|------------------------------------------------------------------|---------------|
 | `metadatadb.enabled`                     | Enable the Metadata Database.                                    | `true`        |
 | `metadatadb.host`                        | The hostname for the microservices.                              | `metadata-db` |
 | `metadatadb.rootUser.user`               | The root username.                                               | `root`        |
@@ -81,23 +81,22 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Auth Service
 
 | Name                             | Description                                                  | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `authservice.enabled`            | Enable the Auth Service.                                     | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.image.debug`        | Set the logging level to `trace`. Otherwise, set to `info`.  | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.endpoint`           | The hostname for the microservices.                          | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
 | `authservice.jwt.pubkey`         | The JWT public key from the `dbrepo-client`.                 | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
 | `authservice.tls.enabled`        | Enable TLS/SSL communication. Required for HTTPS.            | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.tls.existingSecret` | The secret containing the `tls.crt`, `tls.key` and `ca.crt`. | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                             |
-| `authservice.metrics.enabled`    | Enable the Prometheus metrics export sidecar container.      | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.client.id`          | The client id for the microservices.                         | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
 | `authservice.client.secret`      | The client secret for the microservices.                     | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
 
 ### Data Database
 
 | Name                              | Description                                                 | Value         |
-| --------------------------------- | ----------------------------------------------------------- | ------------- |
+|-----------------------------------|-------------------------------------------------------------|---------------|
 | `datadb.enabled`                  | Enable the Data Database.                                   | `true`        |
-| `datadb.image.debug`              | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
+| `datadb.database.image.debug`     | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
 | `datadb.auth.rootPassword`        | The root user password.                                     | `dbrepo`      |
 | `datadb.auth.replicationUser`     | The database replication user password                      | `replication` |
 | `datadb.auth.replicationPassword` | The database replication user password                      | `replication` |
@@ -105,7 +104,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Search Database
 
 | Name                   | Description                         | Value       |
-| ---------------------- | ----------------------------------- | ----------- |
+|------------------------|-------------------------------------|-------------|
 | `searchdb.enabled`     | Enable the Data Database.           | `true`      |
 | `searchdb.host`        | The hostname for the microservices. | `search-db` |
 | `searchdb.port`        | The port for the microservices.     | `9200`      |
@@ -114,14 +113,14 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Upload Service
 
 | Name                         | Description                | Value  |
-| ---------------------------- | -------------------------- | ------ |
+|------------------------------|----------------------------|--------|
 | `uploadservice.enabled`      | Enable the Upload Service. | `true` |
 | `uploadservice.replicaCount` | The number of replicas.    | `2`    |
 
 ### Broker Service
 
 | Name                                | Description                                                                                                                      | Value                                                                        |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
 | `brokerservice.enabled`             | Enable the Broker Service.                                                                                                       | `true`                                                                       |
 | `brokerservice.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                       |
 | `brokerservice.endpoint`            | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                |
@@ -144,7 +143,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Analyse Service
 
 | Name                                                               | Description                                                 | Value                            |
-| ------------------------------------------------------------------ | ----------------------------------------------------------- | -------------------------------- |
+|--------------------------------------------------------------------|-------------------------------------------------------------|----------------------------------|
 | `analyseservice.enabled`                                           | Enable the Broker Service.                                  | `true`                           |
 | `analyseservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                          |
 | `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                               | `true`                           |
@@ -168,7 +167,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Metadata Service
 
 | Name                                                                | Description                                                                        | Value                            |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------- |
+|---------------------------------------------------------------------|------------------------------------------------------------------------------------|----------------------------------|
 | `metadataservice.enabled`                                           | Enable the Broker Service.                                                         | `true`                           |
 | `metadataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                        | `false`                          |
 | `metadataservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                      | `true`                           |
@@ -206,7 +205,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Data Service
 
 | Name                                                            | Description                                                                                                                                      | Value                                                                                                                       |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | `dataservice.enabled`                                           | Enable the Broker Service.                                                                                                                       | `true`                                                                                                                      |
 | `dataservice.endpoint`                                          | Absolute URL to the data service in the form of http://host:port                                                                                 | `http://data-service`                                                                                                       |
 | `dataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                                                                                      | `false`                                                                                                                     |
@@ -244,7 +243,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Search Service
 
 | Name                                                              | Description                                                        | Value                   |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------- |
+|-------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------|
 | `searchservice.enabled`                                           | Enable the Broker Service.                                         | `true`                  |
 | `searchservice.endpoint`                                          | Absolute URL to the search service in the form of http://host:port | `http://search-service` |
 | `searchservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.        | `false`                 |
@@ -267,7 +266,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Storage Service
 
 | Name                                          | Description                                                                            | Value            |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------- |
+|-----------------------------------------------|----------------------------------------------------------------------------------------|------------------|
 | `storageservice.enabled`                      | Enable the Storage Service.                                                            | `true`           |
 | `storageservice.mariadb.auth.rootPassword`    | The user password for the root user.                                                   | `seaweedfsdb`    |
 | `storageservice.filer.enabled`                | Enable the storage service filer which is required for S3.                             | `true`           |
@@ -280,7 +279,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Identity Service
 
 | Name                                   | Description                                                                                                   | Value             |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------- |
+|----------------------------------------|---------------------------------------------------------------------------------------------------------------|-------------------|
 | `identityservice.enabled`              | Enable the Identity Service.                                                                                  | `true`            |
 | `identityservice.global.ldapDomain`    | The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.                        | `dc=dbrepo,dc=at` |
 | `identityservice.global.adminUser`     | The admin username that is used to bind.                                                                      | `admin`           |
@@ -295,7 +294,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### User Interface
 
 | Name                                                   | Description                                                                                          | Value                   |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------------------- |
+|--------------------------------------------------------|------------------------------------------------------------------------------------------------------|-------------------------|
 | `ui.enabled`                                           | Enable the Broker Service.                                                                           | `true`                  |
 | `ui.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                                          | `false`                 |
 | `ui.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                        | `true`                  |
@@ -329,10 +328,23 @@ The command removes all the Kubernetes components associated with the chart and 
 | `ui.public.doi.endpoint`                               | The DOI proxy.                                                                                       | `https://doi.org`       |
 | `ui.replicaCount`                                      | The number of replicas.                                                                              | `2`                     |
 
+### Dashboard Service
+
+| Name                                          | Description                                                                                                            | Value  |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|--------|
+| `dashboardservice.enabled`                    | Enable the Dashboard Service.                                                                                          | `true` |
+| `dashboardservice.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true` |
+
+### Metric Service
+
+| Name               | Description                | Value  |
+|--------------------|----------------------------|--------|
+| `metricdb.enabled` | Enable the Metric Service. | `true` |
+
 ### Ingress
 
 | Name                     | Description                                                                                                     | Value          |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
+|--------------------------|-----------------------------------------------------------------------------------------------------------------|----------------|
 | `ingress.enabled`        | Enable the ingress.                                                                                             | `false`        |
 | `ingress.className`      | The ingress class name.                                                                                         | `nginx`        |
 | `ingress.tls.enabled`    | Enable the ingress.                                                                                             | `true`         |
