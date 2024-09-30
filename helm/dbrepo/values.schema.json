@@ -497,22 +497,22 @@
         },
         "datadb": {
             "properties": {
-                "auth": {
-                    "properties": {
-                        "replicationPassword": {
-                            "type": "string"
-                        },
-                        "replicationUser": {
-                            "type": "string"
-                        },
-                        "rootPassword": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
                 "database": {
                     "properties": {
+                        "auth": {
+                            "properties": {
+                                "replicationPassword": {
+                                    "type": "string"
+                                },
+                                "replicationUser": {
+                                    "type": "string"
+                                },
+                                "rootPassword": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
                         "image": {
                             "properties": {
                                 "debug": {
