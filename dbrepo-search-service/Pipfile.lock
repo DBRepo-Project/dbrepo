@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f4b77f12b6e64d95ba5e3df0cce6f3eeb8d9cb8e45a6a17b46088d7077d13595"
+            "sha256": "8f7de86e8c15ccfa38b73d7deeec2c48afa5dd59f14a2d61432f5e79989b53cd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "aiohappyeyeballs": {
             "hashes": [
-                "sha256:4ca893e6c5c1f5bf3888b04cb5a3bee24995398efef6e0b9f747b5e89d84fd74",
-                "sha256:8522691d9a154ba1145b157d6d5c15e5c692527ce6a53c5e5f9876977f6dab2f"
+                "sha256:75cf88a15106a5002a8eb1dab212525c00d1f4c0fa96e551c9fbe6f09a621586",
+                "sha256:8a7a83727b2756f394ab2895ea0765a0a8c475e3c71e98d43d76f22b4b435572"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.4.2"
+            "version": "==2.4.3"
         },
         "aiohttp": {
             "hashes": [
@@ -373,8 +373,8 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:0a04b67204de6dc969ec68fb21aaead898156077e8a5b6f1e03bb5ab0e124a61",
-                "sha256:454a182b772cb777d27a22bb334bf059ce68d4e6b5fecae802678fabfdf3f934"
+                "sha256:273c77e6b4eb5c32cfb3b852064a2dd8a09c107e385b0a539ee87640ef3d4b75",
+                "sha256:409297ef9bb4687eb66c64ff185fa1d224aa393be5132d0a14d628b200de9ffa"
             ],
             "markers": "python_version >= '3.11'",
             "path": "./lib/dbrepo-1.4.6.tar.gz"
