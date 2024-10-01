@@ -278,7 +278,7 @@ services:
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
-      NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
+      NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files/"
     depends_on:
       dbrepo-search-service:
         condition: service_started
