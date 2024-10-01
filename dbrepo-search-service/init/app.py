@@ -105,7 +105,7 @@ class App:
         logging.debug(f"fetching database from endpoint: {self.metadata_service_endpoint}")
         client = RestClient(endpoint=self.metadata_service_endpoint)
         databases = []
-        for database, index in client.get_databases():
+        for index, database in enumerate(client.get_databases()):
             logging.debug(f"fetching database {index}/{len(databases)} details for database id: {database.id}")
             databases.append(client.get_database(database_id=database.id))
         logging.debug(f"fetched {len(databases)} database(s)")
