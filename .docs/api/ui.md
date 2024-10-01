@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp
 
@@ -37,7 +37,7 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
     ```yaml title="docker-compose.yml"
     services:
       dbrepo-ui:
-        image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
+        image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
         volumes:
           - ./my_logo.png:/app/.output/public/my_logo.png
           - ./favicon.ico:/app/.output/public/favicon.ico

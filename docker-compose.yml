@@ -13,7 +13,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -21,8 +21,10 @@ services:
     ports:
       - "3306:3306"
     environment:
+      BITNAMI_DEBUG: "true"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -35,7 +37,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -43,6 +45,7 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -63,6 +66,7 @@ services:
     environment:
       MARIADB_DATABASE: "${AUTH_DB_NAME:-keycloak}"
       MARIADB_ROOT_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${AUTH_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${AUTH_DB_PASSWORD:-dbrepo}" --silent
       interval: 15s
@@ -428,6 +432,8 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
     healthcheck:
       test: promtool check healthy
       interval: 10s
@@ -440,12 +446,10 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: docker.io/bitnami/grafana:11.2.0-debian-12-r4
-    volumes:
-      - ./dbrepo-dashboard-service/dashboards:/app/dashboards
-      - ./dbrepo-dashboard-service/provisioning:/etc/grafana/provisioning
-      - ./dbrepo-dashboard-service/grafana.ini:/etc/grafana/grafana.ini
-      - ./dbrepo-dashboard-service/ldap.toml:/etc/grafana/ldap.toml
+    image: dbrepo-dashboard-service:latest
+    build:
+      context: ./dbrepo-dashboard-service
+      network: host
     environment:
       GF_SERVER_DOMAIN: "dashboard-service"
       GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"

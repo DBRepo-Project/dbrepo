@@ -19,6 +19,7 @@ import at.tuwien.service.StorageService;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import java.util.List;
 @Service
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
+    private final Counter httpDataAccessCounter;
     private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
@@ -48,10 +50,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, QueryConfig queryConfig,
-                                  MariaDbMapper mariaDbMapper, SchemaService schemaService,
+    public ViewServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
+                                  QueryConfig queryConfig, MariaDbMapper mariaDbMapper, SchemaService schemaService,
                                   StorageService storageService, MetadataMapper metadataMapper,
                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.httpDataAccessCounter = httpDataAccessCounter;
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
@@ -165,6 +168,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             queryResult = dataMapper.resultListToQueryResultDto(mappedColumns, resultSet);
             queryResult.setId(view.getId());
             connection.commit();
+            httpDataAccessCounter.increment();
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
             throw new ViewMalformedException("Failed to map object: " + e.getMessage(), e);
@@ -252,6 +256,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         }
         dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(),
                 database.getContainer().getSidecarPort(), fileName);
+        httpDataAccessCounter.increment();
         return storageService.getResource(fileName);
     }
 

@@ -3,8 +3,8 @@ variables:
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
-  APP_VERSION: "1.4.5"
-  CHART_VERSION: "1.4.5"
+  APP_VERSION: "1.4.6"
+  CHART_VERSION: "1.4.6"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -145,7 +145,7 @@ lint-docker-compose:
     - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-db-sidecar'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"

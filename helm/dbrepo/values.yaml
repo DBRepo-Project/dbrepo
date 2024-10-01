@@ -136,13 +136,13 @@ datadb:
     ## @skip datadb.database.secondary
     secondary:
       replicaCount: 2
-  auth:
-    ## @param datadb.auth.rootPassword The root user password.
-    rootPassword: dbrepo
-    ## @param datadb.auth.replicationUser The database replication user password
-    replicationUser: replication
-    ## @param datadb.auth.replicationPassword The database replication user password
-    replicationPassword: replication
+    auth:
+      ## @param datadb.auth.rootPassword The root user password.
+      rootPassword: dbrepo
+      ## @param datadb.auth.replicationUser The database replication user password
+      replicationUser: replication
+      ## @param datadb.auth.replicationPassword The database replication user password
+      replicationPassword: replication
 
 ## @section Search Database
 
@@ -281,7 +281,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.6
     ## @skip analyseservice.image.pullPolicy
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -343,7 +343,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.6
     ## @skip metadataservice.image.pullPolicy
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -442,7 +442,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.6
     ## @skip dataservice.image.pullPolicy
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -529,7 +529,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.6
     ## @skip searchservice.image.pullPolicy
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -578,7 +578,7 @@ searchservice:
   ## @skip searchservice.init
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.5
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.6
       pullPolicy: Always
   ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
@@ -626,7 +626,7 @@ storageservice:
       adminSecretAccessKey: seaweedfsadmin
   ## @skip storageservice.init
   init:
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.5
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.6
     pullPolicy: Always
 
 ## @section Identity Service
@@ -689,7 +689,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.5
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
     ## @skip ui.image.pullPolicy
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -836,7 +836,7 @@ metricdb:
   ## @param metricdb.enabled Enable the Metric Service.
   enabled: true
   ## @skip metricdb.fullnameOverride
-  fullnameOverride: metric-service
+  fullnameOverride: metric-db
   alertmanager:
     service:
       ## @skip metricdb.alertmanager.service.type

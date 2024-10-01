@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`docker.io/bitnami/grafana:11.2.0-debian-12-r4`](https://hub.docker.com/r/bitnami/grafana)
+    Image: [`docker.io/bitnami/grafana:10.4.9-debian-12-r0`](https://hub.docker.com/r/bitnami/grafana)
 
     * Ports: `http://<hostname>/dashboard`
     * Prometheus: `http://<hostname>/dashboard/prometheus`
@@ -24,7 +24,7 @@ seconds and makes the available in the Dashboard Service.
 
 <figure markdown>
 ![MariaDB Galera Dashboard](../images/screenshots/grafana3.png)
-<figcaption>Figure 2: Database Dashboard</figcaption>
+<figcaption>Figure 2: Database Dashboard (Kubernetes deployment only)</figcaption>
 </figure>
 
 <figure markdown>
