@@ -176,8 +176,8 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     std_dev          Numeric     NULL,
     created          timestamp   NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
-    PRIMARY KEY (ID),
     FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
+    PRIMARY KEY (ID),
     UNIQUE (tID, internal_name)
 ) WITH SYSTEM VERSIONING;
 
@@ -201,25 +201,25 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
 (
-    tID           bigint,
     cID           bigint,
+    tID           bigint,
     maxlength     INTEGER,
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
-    PRIMARY KEY (tID, cID)
+    PRIMARY KEY (cID),
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
 (
-    tID           bigint,
     cID           bigint,
+    tID           bigint,
     num_cat       INTEGER,
     --    cat_array     TEXT[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
-    PRIMARY KEY (tID, cID)
+    PRIMARY KEY (cID),
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`

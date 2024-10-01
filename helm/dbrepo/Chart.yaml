@@ -58,7 +58,7 @@ dependencies:
     condition: identityservice.enabled
   - name: grafana
     alias: dashboardservice
-    version: 11.3.20
+    version: 10.1.1
     repository: https://charts.bitnami.com/bitnami
     condition: dashboardservice.enabled
   - name: prometheus

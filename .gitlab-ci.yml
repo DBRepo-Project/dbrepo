@@ -145,7 +145,7 @@ lint-docker-compose:
     - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-db-sidecar'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
