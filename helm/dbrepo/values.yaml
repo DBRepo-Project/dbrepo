@@ -262,7 +262,7 @@ brokerservice:
     enabled: true
     existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
-  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl
+  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
   persistence:
     ## @param brokerservice.persistence.enabled If set to true, a PVC will be created.
     enabled: false
@@ -270,6 +270,10 @@ brokerservice:
   service:
     type: ClusterIP
     managerPortEnabled: true
+    extraPorts:
+      - name: mqtt
+        port: 1883
+        targetPort: 1883
     # loadBalancerIP:
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1

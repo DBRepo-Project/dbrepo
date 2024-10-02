@@ -19,6 +19,13 @@ It holds exchanges and topics responsible for holding AMQP messages for later co
 use [RabbitMQ](https://www.rabbitmq.com/) in the implementation. By default, the endpoint listens to the insecure port `5672` for incoming 
 AMQP tuples and insecure port `15672` for the management UI.
 
+## Supported Protocols
+
+* AMQP (v0.9.1, v1.0), see [RabbitMQ docs](https://www.rabbitmq.com/docs/next/amqp).
+* MQTT (v3.1, v3.1.1, v5), see [RabbitMQ docs](https://www.rabbitmq.com/docs/mqtt).
+
+## Authentication
+
 The default configuration allows any user in the `cn=system,ou=users,dc=dbrepo,dc=at` from the 
 [Identity Service](../identity-service) to access the Broker Service as user with `administrator` role, i.e. the
 `cn=admin,dc=dbrepo,dc=at` user that is created by default.
@@ -27,6 +34,8 @@ The Broker Service allows two ways of authentication for AMQP tuples:
 
 1. LDAP
 2. Plain (RabbitMQ's internal authentication)
+
+## Architecture
 
 The queue architecture of the Broker Service is very simple. There is only one durable, topic exchange `dbrepo` and one
 quorum queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples with routing key prefix `dbrepo.`
