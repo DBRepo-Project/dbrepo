@@ -7,6 +7,7 @@ volumes:
   search-db-data:
   storage-service-data:
   identity-service-data:
+  metric-db-data:
 
 services:
   dbrepo-metadata-db:
@@ -432,6 +433,7 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
     ports:
       - 9090:9090
     healthcheck:
@@ -450,6 +452,8 @@ services:
     build:
       context: ./dbrepo-dashboard-service
       network: host
+    volumes:
+      - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
       GF_SERVER_DOMAIN: "dashboard-service"
       GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"

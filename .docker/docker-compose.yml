@@ -7,6 +7,7 @@ volumes:
   search-db-data:
   storage-service-data:
   identity-service-data:
+  metric-db-data:
 
 services:
   dbrepo-metadata-db:
@@ -280,11 +281,6 @@ services:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files/"
-    depends_on:
-      dbrepo-search-service:
-        condition: service_started
-      dbrepo-storage-service:
-        condition: service_healthy
     healthcheck:
       test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
       interval: 10s
@@ -387,6 +383,7 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
     healthcheck:
       test: promtool check healthy
       interval: 10s
