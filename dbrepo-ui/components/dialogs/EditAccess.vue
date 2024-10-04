@@ -12,14 +12,13 @@
             <v-col>
               <v-autocomplete
                 v-if="!isModification"
-                v-model="modify.userId"
+                v-model="localUserId"
                 :items="eligibleUsers"
                 :disabled="loadingUsers"
                 :loading="loadingUsers"
                 :rules="[v => !!v || $t('validation.required')]"
                 required
                 :variant="inputVariant"
-                hide-no-data
                 hide-selected
                 hide-details
                 item-value="id"
@@ -56,7 +55,7 @@
             :disabled="!valid || loading || accessType === modify.type"
             :color="buttonColor"
             type="submit"
-            :text="$t('pages.database.subpages.access.submit.text')"
+            :text="$t('navigation.modify')"
             :loading="loading"
             @click="updateAccess" />
         </v-card-actions>
@@ -90,6 +89,7 @@ export default {
       loadingUsers: false,
       users: [],
       error: false,
+      localUserId: null,
       types: [
         { title: this.$t('pages.database.subpages.access.read'), value: 'read' },
         { title: this.$t('pages.database.subpages.access.write-own'), value: 'write_own' },
@@ -169,11 +169,15 @@ export default {
     },
     revokeAccess () {
       const accessService = useAccessService()
-      accessService.remove(this.$route.params.database_id, this.userId)
+      accessService.remove(this.$route.params.database_id, this.localUserId)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('notifications.access.revoked'))
+          toast.success(this.$t('success.access.revoked'))
           this.$emit('close-dialog', { success: true })
+        })
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false
@@ -181,11 +185,15 @@ export default {
     },
     modifyAccess () {
       const accessService = useAccessService()
-      accessService.modify(this.$route.params.database_id, this.userId, this.modify)
+      accessService.modify(this.$route.params.database_id, this.localUserId, this.modify)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('notifications.access.modified'))
+          toast.success(this.$t('success.access.modified'))
           this.$emit('close-dialog', { success: true })
+        })
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false
@@ -193,11 +201,15 @@ export default {
     },
     giveAccess () {
       const accessService = useAccessService()
-      accessService.create(this.$route.params.database_id, this.userId, this.modify)
+      accessService.create(this.$route.params.database_id, this.localUserId, this.modify)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('notifications.access.created'))
+          toast.success(this.$t('success.access.created'))
           this.$emit('close-dialog', { success: true })
+        })
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false
@@ -210,6 +222,10 @@ export default {
         .then((users) => {
           this.users = users.filter(u => u.username !== this.database.creator.username)
         })
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
+        })
         .finally(() => {
           this.loadingUsers = false
         })
@@ -217,6 +233,8 @@ export default {
     init () {
       if (!this.userId) {
         this.loadUsers()
+      } else {
+        this.localUserId = this.userId
       }
       if (!this.accessType) {
         this.modify.type = null

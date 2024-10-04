@@ -4,8 +4,7 @@ import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
-import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
@@ -33,7 +32,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -614,7 +612,7 @@ public class TableEndpoint {
     })
     public ResponseEntity<Void> importDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
                                               @NotBlank @PathVariable("tableId") Long tableId,
-                                              @Valid @RequestBody ImportCsvDto data,
+                                              @Valid @RequestBody ImportDto data,
                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, StorageNotFoundException, SidecarImportException, NotAllowedException,
@@ -623,10 +621,6 @@ public class TableEndpoint {
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
-        if (data.getNullElement() == null) {
-            data.setNullElement("");
-            log.debug("null element not present, default to empty string");
-        }
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());

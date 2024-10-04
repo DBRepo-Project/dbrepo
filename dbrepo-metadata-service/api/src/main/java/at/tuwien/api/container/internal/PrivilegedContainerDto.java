@@ -1,6 +1,5 @@
 package at.tuwien.api.container.internal;
 
-import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.container.image.ImageDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

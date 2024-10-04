@@ -35,20 +35,6 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     UNIQUE (is_default)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_images_date`
-(
-    id              bigint                 NOT NULL AUTO_INCREMENT,
-    iid             bigint                 NOT NULL,
-    database_format character varying(255) NOT NULL,
-    unix_format     character varying(255) NOT NULL,
-    example         character varying(255) NOT NULL,
-    has_time        boolean                NOT NULL,
-    created_at      timestamp              NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
-    FOREIGN KEY (iid) REFERENCES mdb_images (id),
-    UNIQUE (database_format, unix_format, example)
-) WITH SYSTEM VERSIONING;
-
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
     id                  bigint                 NOT NULL AUTO_INCREMENT,
@@ -538,13 +524,6 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
 INSERT INTO `mdb_images` (name, registry, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('mariadb', 'docker.io', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver',
         'mariadb');
-
-INSERT INTO `mdb_images_date` (iid, database_format, unix_format, example, has_time)
-VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
-       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
-       (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
-       (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true),
-       (1, '%d.%c.%Y', 'dd.MM.yyyy', '30.01.2022', false);
 
 INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
 VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',

@@ -212,7 +212,11 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* test */
-        generic_modifyOwner(DATABASE_1, USER_1);
+        final Database response = generic_modifyOwner(DATABASE_1, USER_2);
+        assertEquals(USER_2, response.getOwner());
+        assertEquals(USER_2_ID, response.getOwnedBy());
+        assertEquals(USER_2, response.getContact());
+        assertEquals(USER_2_ID, response.getContactPerson());
     }
 
     @Test

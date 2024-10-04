@@ -349,15 +349,6 @@ public class TableEndpoint {
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
-        final List<ColumnCreateDto> failedDateColumns = data.getColumns()
-                .stream()
-                .filter(column -> List.of(ColumnTypeDto.DATE, ColumnTypeDto.DATETIME, ColumnTypeDto.TIME, ColumnTypeDto.TIMESTAMP).contains(column.getType()))
-                .filter(column -> Objects.isNull(column.getDfid()))
-                .toList();
-        if (!failedDateColumns.isEmpty()) {
-            log.error("Failed to create table: date column(s) {} do not contain date format id", failedDateColumns.stream().map(ColumnCreateDto::getName).toList());
-            throw new MalformedException("Failed to create table: date column(s) " + failedDateColumns.stream().map(ColumnCreateDto::getName).toList() + " do not contain date format id");
-        }
         final Table table = tableService.createTable(database, data, principal);
         final TableDto dto = metadataMapper.customTableToTableDto(table);
         log.info("Created table with id {}", dto.getId());

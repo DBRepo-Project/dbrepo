@@ -73,6 +73,7 @@ public class AccessServiceImpl implements AccessService {
                 .database(database)
                 .huserid(user.getId())
                 .type(metadataMapper.accessTypeDtoToAccessType(type))
+                .user(user)
                 .build();
         database.getAccesses()
                 .add(access);
@@ -95,8 +96,8 @@ public class AccessServiceImpl implements AccessService {
                 .hdbid(database.getId())
                 .database(database)
                 .huserid(user.getId())
-                .user(user)
                 .type(metadataMapper.accessTypeDtoToAccessType(access))
+                .user(user)
                 .build();
         final int idx = database.getAccesses().indexOf(entity);
         if (idx == -1) {

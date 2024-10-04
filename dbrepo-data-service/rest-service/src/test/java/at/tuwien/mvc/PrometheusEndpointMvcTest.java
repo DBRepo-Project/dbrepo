@@ -1,7 +1,7 @@
 package at.tuwien.mvc;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.table.TupleDeleteDto;
 import at.tuwien.api.database.table.TupleDto;
@@ -201,7 +201,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportCsvDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Builder
@@ -37,9 +35,6 @@ public class ImageDto {
     @JsonProperty("driver_class")
     @Schema(example = "org.mariadb.jdbc.Driver")
     private String driverClass;
-
-    @JsonProperty("date_formats")
-    private List<ImageDateDto> dateFormats;
 
     @NotBlank
     @Schema(example = "org.hibernate.dialect.MariaDBDialect")

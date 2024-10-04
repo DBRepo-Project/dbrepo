@@ -66,8 +66,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find container with id {}: service responded unsuccessful: {}", containerId, response.getStatusCode());
             throw new MetadataServiceException("Failed to find container: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged container headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged container headers");
         }
         if (response.getBody() == null) {
@@ -98,8 +101,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged database headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged database headers");
         }
         if (response.getBody() == null) {
@@ -123,11 +129,18 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with internal name {}: {}", internalName, e.getMessage());
             throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
         }
-        if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find database with internal name {}: service responded unsuccessful: {}", internalName, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (response.getBody().length != 1) {
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
+            log.error("Failed to find all privileged database headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
+            throw new MetadataServiceException("Failed to find all privileged database headers");
+        }
+        if (response.getBody() == null || response.getBody().length != 1) {
             log.error("Failed to find database with internal name {}: body is empty", internalName);
             throw new DatabaseNotFoundException("Failed to find database: body is empty");
         }
@@ -151,8 +164,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port"))) {
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged table headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged table headers");
         }
         if (response.getBody() == null) {
@@ -189,8 +205,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (!response.getHeaders().keySet().containsAll(List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database"))) {
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged view headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged view headers");
         }
         if (response.getBody() == null) {
@@ -276,8 +295,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find user with id {}: service responded unsuccessful: {}", userId, response.getStatusCode());
             throw new MetadataServiceException("Failed to find user: service responded unsuccessful: " + response.getStatusCode());
         }
-        if (!response.getHeaders().keySet().containsAll(List.of("X-Username", "X-Password"))) {
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged user headers");
+            log.debug("expected headers: {}", expectedHeaders);
+            log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged user headers");
         }
         if (response.getBody() == null) {

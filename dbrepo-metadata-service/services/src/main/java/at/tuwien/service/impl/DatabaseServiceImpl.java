@@ -167,7 +167,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     public Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in metadata database */
+        database.setOwner(user);
         database.setOwnedBy(user.getId());
+        database.setContact(user);
+        database.setContactPerson(user.getId());
         database = databaseRepository.save(database);
         /* save in search service */
         searchServiceGateway.update(database);

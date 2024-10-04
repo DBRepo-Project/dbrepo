@@ -32,7 +32,8 @@
     "no": "No",
     "mine": "(mine)",
     "loading": "Loading",
-    "view": "View"
+    "view": "View",
+    "modify": "Modify"
   },
   "pages": {
     "identifier": {
@@ -611,10 +612,10 @@
         "access": {
           "title": "Database Access",
           "subtitle": "Overview on users with their access to the database",
-          "read": "You can read all contents",
-          "write-own": "You can write own tables and read all contents",
-          "write-all": "You can write own tables and read all contents",
-          "revoke": "Revoke",
+          "read": "Read all contents",
+          "write-own": "Read all contents & write own tables",
+          "write-all": "Read all contents & write all tables",
+          "revoke": "No access",
           "action": "Action",
           "username": {
             "label": "Username",
@@ -623,9 +624,6 @@
           "type": {
             "label": "Access Type",
             "hint": "Required"
-          },
-          "submit": {
-            "text": "Modify"
           }
         },
         "create": {
