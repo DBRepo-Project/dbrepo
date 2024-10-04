@@ -53,7 +53,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public interface DataMapper {
@@ -678,7 +677,7 @@ public interface DataMapper {
                     ps.setNull(idx, Types.DATE);
                     break;
                 }
-                ps.setDate(idx, Date.valueOf(String.valueOf(value)));
+                ps.setString(idx, String.valueOf(value));
                 break;
             case BIGINT:
                 if (value == null) {
@@ -743,28 +742,7 @@ public interface DataMapper {
                 }
                 ps.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
-            case TIMESTAMP:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIMESTAMP);
-                    break;
-                }
-                ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
-                break;
-            case DATETIME:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIMESTAMP);
-                    break;
-                }
-                ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
-                break;
-            case TIME:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIME);
-                    break;
-                }
-                ps.setTime(idx, Time.valueOf(String.valueOf(value)));
-                break;
-            case YEAR:
+            case TIME, DATETIME, TIMESTAMP, YEAR:
                 if (value == null) {
                     ps.setNull(idx, Types.TIME);
                     break;

@@ -68,7 +68,7 @@ public class EndpointValidator {
         if (data == null) {
             throw new MalformedException("Validation failed: table data is null");
         }
-        final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
+        final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR);
         final List<ColumnTypeDto> needSizeAndD = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
         final List<ColumnTypeDto> needDateFormat = List.of(ColumnTypeDto.DATETIME, ColumnTypeDto.TIMESTAMP, ColumnTypeDto.TIME);
         /* check size */

@@ -39,6 +39,7 @@ RUN chmod -R 755 /app/.output
 
 ENV NUXT_PUBLIC_VERSION="${APP_VERSION:-}"
 ENV NUXT_PUBLIC_COMMIT="${COMMIT:-}"
+ENV NODE_OPTIONS="--max_old_space_size=4096"
 
 EXPOSE 3000
 

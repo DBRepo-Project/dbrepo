@@ -179,6 +179,7 @@ export default {
     }
   },
   mounted() {
+    this.$refs.form.validate()
     this.oldTuple = Object.assign({}, this.tuple)
   },
   computed: {
@@ -212,7 +213,7 @@ export default {
         hint += ' ' + this.$t('pages.table.subpages.data.primary-key.hint')
       }
       if (['double', 'decimal'].includes(column_type)) {
-        hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ` ${'d'.repeat(size)}.${'f'.repeat(d)}`
+        hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ' ddd.f'
       }
       if (['date', 'datetime', 'timestamp', 'time'].includes(column_type) && date_format) {
         hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ' ' + date_format.unix_format
@@ -258,7 +259,7 @@ export default {
       rules.push(v => v !== null || this.$t('validation.required'))
       if (column.column_type === 'decimal' || column.column_type === 'double') {
         rules.push(v => !(!v || v.split('.')[0].length > column.size) || `${this.$t('pages.table.subpages.data.float.max')} ${column.size} ${this.$t('pages.table.subpages.data.float.before')}`)
-        rules.push(v => !(!v || v.split('.')[1].length > column.d) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
+        rules.push(v => !(!v || (column.d && v.split('.')[1].length > column.d)) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
       }
       return rules
     },
