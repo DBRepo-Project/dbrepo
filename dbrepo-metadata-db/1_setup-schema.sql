@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
 
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
+    id            SERIAL,
     registry      character varying(255) NOT NULL DEFAULT 'docker.io',
     name          character varying(255) NOT NULL,
     version       character varying(255) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
-    id                  bigint                 NOT NULL AUTO_INCREMENT,
+    id                  SERIAL,
     internal_name       character varying(255) NOT NULL,
     name                character varying(255) NOT NULL,
     host                character varying(255) NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
 
 CREATE TABLE IF NOT EXISTS `mdb_data`
 (
-    ID           bigint NOT NULL AUTO_INCREMENT,
+    ID           SERIAL,
     PROVENANCE   text,
     FileEncoding text,
     FileType     character varying(100),
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `mdb_licenses`
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
-    id             bigint                 NOT NULL AUTO_INCREMENT,
+    id             SERIAL,
     cid            bigint                 NOT NULL,
     name           character varying(255) NOT NULL,
     internal_name  character varying(255) NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
-    ID              bigint                NOT NULL AUTO_INCREMENT,
+    ID              SERIAL,
     tDBID           bigint                NOT NULL,
     tName           VARCHAR(64)           NOT NULL,
     internal_name   VARCHAR(64)           NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
-    id        bigint                 NOT NULL AUTO_INCREMENT,
+    id        SERIAL,
     column_id bigint                 NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
-    id        bigint                 NOT NULL AUTO_INCREMENT,
+    id        SERIAL,
     column_id bigint                 NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          bigint       NOT NULL AUTO_INCREMENT,
+    id          SERIAL,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
@@ -288,7 +288,7 @@ CREATE TABLE IF NOT EXISTS `mdb_concepts`
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          bigint       NOT NULL AUTO_INCREMENT,
+    id          SERIAL,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
@@ -317,7 +317,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
-    id            bigint                NOT NULL AUTO_INCREMENT,
+    id            SERIAL,
     vdbid         bigint                NOT NULL,
     vName         VARCHAR(64)           NOT NULL,
     internal_name VARCHAR(64)           NOT NULL,
@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
 
 CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
 (
-    id            bigint                            NOT NULL AUTO_INCREMENT,
+    id            SERIAL,
     type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL default 'INFO',
     message       TEXT                              NOT NULL,
     link          TEXT                              NULL,
@@ -347,7 +347,7 @@ CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
 
 CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 (
-    id              bigint     NOT NULL AUTO_INCREMENT,
+    id              SERIAL,
     prefix          VARCHAR(8) NOT NULL,
     uri             TEXT       NOT NULL,
     uri_pattern     TEXT,
@@ -417,7 +417,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
-    id         bigint NOT NULL AUTO_INCREMENT,
+    id         SERIAL,
     pid        bigint NOT NULL,
     title      text   NOT NULL,
     title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
@@ -428,7 +428,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
-    id                     bigint       NOT NULL AUTO_INCREMENT,
+    id                     SERIAL,
     pid                    bigint       NOT NULL,
     funder_name            VARCHAR(255) NOT NULL,
     funder_identifier      TEXT,
@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
-    id               bigint NOT NULL AUTO_INCREMENT,
+    id               SERIAL,
     pid              bigint NOT NULL,
     description      text   NOT NULL,
     description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
@@ -454,7 +454,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 
 CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 (
-    id       bigint       NOT NULL AUTO_INCREMENT,
+    id       SERIAL,
     pid      bigint       NOT NULL,
     value    varchar(255) NOT NULL,
     type     varchar(255) NOT NULL,
@@ -466,7 +466,7 @@ CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
-    id                                bigint       NOT NULL AUTO_INCREMENT,
+    id                                SERIAL,
     pid                               bigint       NOT NULL,
     given_names                       text,
     family_name                       text,

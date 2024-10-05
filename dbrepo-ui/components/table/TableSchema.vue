@@ -68,14 +68,20 @@
             @focusout="formatValues(c)" />
         </v-col>
         <v-col
-          v-if="defaultSize(c) !== false"
+          v-if="defaultSize(c) !== false || hasMinSize(c) || hasMaxSize(c)"
           cols="1">
           <v-text-field
             v-model.number="c.size"
             type="number"
             required
+            :min="hasMinSize(c) ? minSize(c) : null"
+            :max="hasMaxSize(c) ? maxSize(c) : null"
+            :step="sizeSteps(c)"
+            :hint="sizeHint(c)"
+            :clearable="!optionalSize(c)"
+            persistent-hint
             :variant="inputVariant"
-            :rules="[v => (v !== null && v !== '') || $t('validation.required')]"
+            :rules="[v => !(!defaultSize(c) && (v === null || v === '')) || $t('validation.required')]"
             :error-messages="sizeErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
@@ -330,6 +336,76 @@ export default {
         return false
       }
       return filter[0].defaultSize
+    },
+    requiredSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      if (filter[0].requiredSize === undefined || filter[0].requiredSize === null) {
+        return false
+      }
+      return filter[0].requiredSize
+    },
+    hasMinSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      return filter[0].minSize !== undefined
+    },
+    minSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      if (filter[0].minSize === undefined || filter[0].minSize === null) {
+        return false
+      }
+      return filter[0].minSize
+    },
+    hasMaxSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      return filter[0].maxSize !== undefined
+    },
+    maxSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      if (filter[0].maxSize === undefined || filter[0].maxSize === null) {
+        return false
+      }
+      return filter[0].maxSize
+    },
+    sizeSteps (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return null
+      }
+      if (filter[0].sizeSteps === undefined || filter[0].sizeSteps === null) {
+        return 1
+      }
+      return filter[0].sizeSteps
+    },
+    sizeHint (column) {
+      let hint = ''
+      if (this.hasMinSize(column)) {
+        hint += `min. ${this.minSize(column)}`
+      }
+      if (this.hasMaxSize(column)) {
+        if (hint.length > 0) {
+          hint += ', '
+        }
+        hint += `max. ${this.maxSize(column)}`
+      }
+      if (!this.defaultSize(column)) {
+        hint += ' (optional)'
+      }
+      return hint
     },
     defaultD (column) {
       const filter = this.columnTypes.filter(t => t.value === column.type)
