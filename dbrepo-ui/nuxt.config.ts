@@ -103,12 +103,16 @@ export default defineNuxtConfig({
      },
      links: {
        rabbitmq: {
-         text: 'RabbitMQ Admin',
+         text: 'Broker Service',
          href: '/admin/broker/'
        },
        keycloak: {
-         text: 'Keycloak Admin',
+         text: 'Auth Service',
          href: '/api/auth/'
+       },
+       grafana: {
+         text: 'Dashboard Service',
+         href: '/dashboard/'
        }
      }
    }
