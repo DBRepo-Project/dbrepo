@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 2,
   "links": [
     {
       "asDropdown": false,
@@ -53,10 +52,12 @@
         "type": "prometheus",
         "uid": "P18F45E9DC7E75912"
       },
+      "description": "Quality of Service",
       "fieldConfig": {
         "defaults": {
-          "displayName": "QoS",
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -110,7 +111,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "",
+      "pluginVersion": "10.4.9",
       "targets": [
         {
           "datasource": {
@@ -129,6 +130,7 @@
           "useBackend": false
         }
       ],
+      "title": "QoS",
       "type": "stat"
     },
     {
@@ -139,90 +141,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "displayName": "UI Response Time (Mean)",
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "purple",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 200
-              },
-              {
-                "color": "orange",
-                "value": 400
-              },
-              {
-                "color": "red",
-                "value": 600
-              }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 4,
-        "y": 1
-      },
-      "id": 17,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
-          },
-          "editorMode": "code",
-          "expr": "avg(page_total_time)",
-          "format": "table",
-          "intervalFactor": 3,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "B",
-          "step": 15,
-          "target": "dev.grafana.cb-office.alerting.active_alerts"
-        }
-      ],
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "default": true,
-        "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "displayName": "Databases",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -240,7 +158,7 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 8,
+        "x": 4,
         "y": 1
       },
       "id": 4,
@@ -261,7 +179,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "",
+      "pluginVersion": "10.4.9",
       "targets": [
         {
           "datasource": {
@@ -280,6 +198,7 @@
           "useBackend": false
         }
       ],
+      "title": "Databases",
       "type": "stat"
     },
     {
@@ -290,7 +209,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "displayName": "Datasources",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -308,7 +226,7 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 12,
+        "x": 8,
         "y": 1
       },
       "id": 5,
@@ -329,7 +247,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "",
+      "pluginVersion": "10.4.9",
       "targets": [
         {
           "datasource": {
@@ -382,6 +300,7 @@
           "useBackend": false
         }
       ],
+      "title": "Datasources",
       "transformations": [
         {
           "id": "calculateField",
@@ -405,7 +324,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "displayName": "Volume",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -423,7 +341,7 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 16,
+        "x": 12,
         "y": 1
       },
       "id": 8,
@@ -444,7 +362,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "",
+      "pluginVersion": "10.4.9",
       "targets": [
         {
           "datasource": {
@@ -463,6 +381,7 @@
           "useBackend": false
         }
       ],
+      "title": "Data Volume",
       "type": "stat"
     },
     {
@@ -477,94 +396,6 @@
       "panels": [],
       "title": "Services",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P18F45E9DC7E75912"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 200
-              },
-              {
-                "color": "orange",
-                "value": 400
-              },
-              {
-                "color": "red",
-                "value": 600
-              }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
-      "id": 13,
-      "options": {
-        "displayMode": "gradient",
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P18F45E9DC7E75912"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "exemplar": false,
-          "expr": "page_total_time{path!=\"empty: empty\"}",
-          "format": "time_series",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "intervalFactor": 3,
-          "legendFormat": "{{path}}",
-          "range": true,
-          "refId": "B",
-          "step": 15,
-          "target": "dev.grafana.cb-office.alerting.active_alerts",
-          "useBackend": false
-        }
-      ],
-      "title": "UI Response Time",
-      "type": "bargauge"
     },
     {
       "datasource": {
@@ -766,7 +597,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 5
       },
       "id": 1,
       "options": {
@@ -929,7 +760,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 11
       },
       "id": 6,
       "options": {
@@ -1090,7 +921,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 17
       },
       "id": 7,
       "options": {

@@ -123,8 +123,7 @@ export default defineNuxtConfig({
  modules: [
    '@pinia/nuxt',
    '@pinia-plugin-persistedstate/nuxt',
-   '@nuxtjs/i18n',
-   '@artmizu/nuxt-prometheus'
+   '@nuxtjs/i18n'
  ],
 
  pinia: {

@@ -8,6 +8,7 @@ volumes:
   storage-service-data:
   identity-service-data:
   metric-db-data:
+  dashboard-service-data:
 
 services:
   dbrepo-metadata-db:
