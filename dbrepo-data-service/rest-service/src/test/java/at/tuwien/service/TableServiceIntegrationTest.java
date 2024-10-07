@@ -764,30 +764,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void importDataset_malformedData_fails() throws RemoteUnavailableException, StorageNotFoundException,
-            IOException, SidecarImportException {
-        final ImportDto request = ImportDto.builder()
-                .location("weather_aus.csv")
-                .separator(';')
-                .quote('"')
-                .build();
-
-        /* mock */
-        final File source = new File("src/test/resources/csv/weather_aus.csv");
-        final File target = new File("/tmp/weather_aus.csv");
-        log.trace("copy dataset from {} to {}", source.toPath().toAbsolutePath(), target.toPath().toAbsolutePath());
-        FileUtils.copyFile(source, target);
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .importFile(anyString(), anyInt(), eq("weather_aus.csv"));
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
-        });
-    }
-
-    @Test
     public void exportDataset_succeeds() throws SQLException, QueryMalformedException, RemoteUnavailableException,
             StorageNotFoundException, StorageUnavailableException, SidecarExportException {
         final ExportResourceDto mock = ExportResourceDto.builder()

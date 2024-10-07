@@ -1,19 +1,26 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.*;
+import at.tuwien.api.database.table.TupleDeleteDto;
+import at.tuwien.api.database.table.TupleDto;
+import at.tuwien.api.database.table.TupleUpdateDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.exception.*;
+import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.TableMalformedException;
 import at.tuwien.utils.MariaDbUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
-import java.io.*;
-import java.sql.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.Date;
+import java.sql.*;
 import java.text.Normalizer;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -561,11 +568,17 @@ public interface MariaDbMapper {
                     .append(data.getQuote())
                     .append("'");
         }
-        statement.append(" LINES TERMINATED BY '")
-                .append(data.getLineTermination())
-                .append("'")
-                .append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
-                .append(" (");
+        if (data.getLineTermination() != null) {
+            statement.append(" LINES TERMINATED BY '")
+                    .append(data.getLineTermination())
+                    .append("'");
+        }
+        if (data.getSkipLines() != null) {
+            statement.append(" IGNORE")
+                    .append(data.getSkipLines())
+                    .append(" LINES");
+        }
+        statement.append(" (");
         final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
         table.getColumns()
