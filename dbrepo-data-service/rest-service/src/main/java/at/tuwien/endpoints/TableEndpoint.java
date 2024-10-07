@@ -12,6 +12,7 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -49,13 +50,15 @@ import java.util.List;
 public class TableEndpoint {
 
     private final TableService tableService;
+    private final SchemaService schemaService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, EndpointValidator endpointValidator,
+    public TableEndpoint(TableService tableService, SchemaService schemaService, EndpointValidator endpointValidator,
                          MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
+        this.schemaService = schemaService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -105,8 +108,9 @@ public class TableEndpoint {
         /* create */
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
+            final TableDto table = tableService.createTable(database, data);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(tableService.createTable(database, data));
+                    .body(schemaService.inspectTable(database, table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

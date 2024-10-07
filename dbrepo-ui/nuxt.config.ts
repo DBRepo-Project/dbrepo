@@ -108,7 +108,7 @@ export default defineNuxtConfig({
        },
        grafana: {
          text: 'Dashboard Service',
-         href: 'http://localhost:3000/dashboard/'
+         href: 'http://localhost:3000/dashboards'
        }
      }
    }

@@ -1142,8 +1142,8 @@
     "query": {
       "missing": "Failed to find query in data service",
       "invalid": "Query is invalid",
-      "type.exists": "Failed to build query: no such column type",
-      "type.build": "Failed to build query: currently no query build support for column type",
+      "exists": "Failed to build query: no such column type",
+      "build": "Failed to build query: currently no query build support for column type",
       "column.exists": "Failed to build query: data columns are missing column with name"
     },
     "store": {
@@ -1439,6 +1439,9 @@
     "uri": {
       "pattern": "Invalid URI",
       "exists": "URI exists"
+    },
+    "column": {
+      "exists": "Column with this name exists"
     },
     "user": {
       "pattern": "Only lowercase letters, min. 3 length",

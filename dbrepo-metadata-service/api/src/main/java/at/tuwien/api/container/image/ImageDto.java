@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -54,5 +56,9 @@ public class ImageDto {
     @JsonProperty("default_port")
     @Schema(example = "3306")
     private Integer defaultPort;
+
+    @NotNull
+    @JsonProperty("data_types")
+    private List<DataTypeDto> dataTypes;
 
 }

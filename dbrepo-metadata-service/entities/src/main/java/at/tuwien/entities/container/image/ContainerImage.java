@@ -70,4 +70,8 @@ public class ContainerImage {
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
+    private List<DataType> dataTypes;
+
 }

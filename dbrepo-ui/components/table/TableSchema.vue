@@ -14,7 +14,10 @@
           <v-text-field
             v-model="c.name"
             required
-            :rules="[v => !!v || $t('validation.required')]"
+            :rules="[
+              v => !!v || $t('validation.required'),
+              v => this.columns.filter(column => column.name === v).length === 1 || $t('validation.column.exists')
+            ]"
             persistent-hint
             :variant="inputVariant"
             :label="$t('pages.table.subpages.schema.name.label')"
@@ -25,7 +28,7 @@
           <v-select
             v-model="c.type"
             :items="columnTypes"
-            item-title="text"
+            item-title="display_name"
             item-value="value"
             required
             :rules="[v => !!v || $t('validation.required')]"
@@ -68,32 +71,40 @@
             @focusout="formatValues(c)" />
         </v-col>
         <v-col
-          v-if="defaultSize(c) !== false || hasMinSize(c) || hasMaxSize(c)"
+          v-if="columnType(c) && columnType(c).size_required !== null"
           cols="1">
           <v-text-field
             v-model.number="c.size"
             type="number"
-            required
-            :min="hasMinSize(c) ? minSize(c) : null"
-            :max="hasMaxSize(c) ? maxSize(c) : null"
-            :step="sizeSteps(c)"
+            :min="columnType(c).size_min !== null ? columnType(c).size_min : null"
+            :max="columnType(c).size_max !== null ? columnType(c).size_max : null"
+            :step="columnType(c).size_step"
             :hint="sizeHint(c)"
-            :clearable="!optionalSize(c)"
+            :clearable="!columnType(c).size_required"
             persistent-hint
             :variant="inputVariant"
-            :rules="[v => !(!defaultSize(c) && (v === null || v === '')) || $t('validation.required')]"
+            :rules="[
+              v => !(columnType(c).size_required && (v === null || v === '')) || $t('validation.required')
+            ]"
             :error-messages="sizeErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
         <v-col
-          v-if="defaultD(c) !== false"
+          v-if="columnType(c) && columnType(c).d_required !== null"
           cols="1">
           <v-text-field
             v-model.number="c.d"
             type="number"
-            required
+            :min="columnType(c).d_min !== null ? columnType(c).d_min : null"
+            :max="columnType(c).d_max !== null ? columnType(c).d_max : null"
+            :step="columnType(c).d_step"
+            :hint="dHint(c)"
+            :clearable="!columnType(c).d_required"
+            persistent-hint
             :variant="inputVariant"
-            :rules="[v => (v !== null && v !== '') || $t('validation.required')]"
+            :rules="[
+              v => !(columnType(c).d_required && (v === null || v === '')) || $t('validation.required')
+            ]"
             :error-messages="dErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.d.label')" />
         </v-col>
@@ -211,13 +222,18 @@ export default {
     return {
       valid: false,
       tableColumns: [],
-      columnTypes: useQueryService().mySql8DataTypes(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
     database () {
       return this.cacheStore.getDatabase
+    },
+    columnTypes () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.container.image.data_types
     },
     dateFormats () {
       if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
@@ -250,16 +266,10 @@ export default {
         return false
       }
       let shift = 0
-      if (this.hasDate(column) === false && this.columns.filter(c => this.hasDate(c) !== false).length > 0) {
+      if (!this.hasEnumOrSet(column) && (this.columnType(column).size_required === null || this.columnType(column).size_required === undefined) && this.columns.filter(c => (this.columnType(c).size_required !== null || this.columnType(c).size_required !== undefined)).length > 0) {
         shift++
       }
-      if (this.defaultSize(column) === false && this.columns.filter(c => this.defaultSize(c) !== false).length > 0) {
-        shift++
-      }
-      if (this.defaultD(column) === false && this.columns.filter(c => this.defaultD(c) !== false).length > 0) {
-        shift++
-      }
-      if (this.hasEnumOrSet(column) === false && this.columns.filter(c => this.hasEnumOrSet(c) !== false).length > 0) {
+      if (!this.hasEnumOrSet(column) && (this.columnType(column).d_required === null || this.columnType(column).d_required === undefined) && this.columns.filter(c => (this.columnType(c).d_required !== null || this.columnType(c).d_required !== undefined)).length > 0) {
         shift++
       }
       return shift
@@ -312,99 +322,56 @@ export default {
         column.enums = column.enums_values.split(',').map(v => v.trim())
       }
     },
-    defaultSize (column) {
+    columnType (column) {
       const filter = this.columnTypes.filter(t => t.value === column.type)
       if (!filter || filter.length === 0) {
         return false
       }
-      if (filter[0].defaultSize === undefined || filter[0].defaultSize === null) {
-        return false
-      }
-      return filter[0].defaultSize
-    },
-    requiredSize (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
-      }
-      if (filter[0].requiredSize === undefined || filter[0].requiredSize === null) {
-        return false
-      }
-      return filter[0].requiredSize
-    },
-    hasMinSize (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
-      }
-      return filter[0].minSize !== undefined
-    },
-    minSize (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
-      }
-      if (filter[0].minSize === undefined || filter[0].minSize === null) {
-        return false
-      }
-      return filter[0].minSize
-    },
-    hasMaxSize (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
-      }
-      return filter[0].maxSize !== undefined
-    },
-    maxSize (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
-      }
-      if (filter[0].maxSize === undefined || filter[0].maxSize === null) {
-        return false
-      }
-      return filter[0].maxSize
-    },
-    sizeSteps (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return null
-      }
-      if (filter[0].sizeSteps === undefined || filter[0].sizeSteps === null) {
-        return 1
-      }
-      return filter[0].sizeSteps
+      return filter[0]
     },
     sizeHint (column) {
       let hint = ''
-      if (this.hasMinSize(column)) {
-        hint += `min. ${this.minSize(column)}`
+      if (this.columnType(column).size_min !== null) {
+        hint += `min. ${this.columnType(column).size_min}`
       }
-      if (this.hasMaxSize(column)) {
+      if (this.columnType(column).size_max) {
         if (hint.length > 0) {
           hint += ', '
         }
-        hint += `max. ${this.maxSize(column)}`
+        hint += `max. ${this.columnType(column).size_max}`
       }
-      if (!this.defaultSize(column)) {
+      if (!this.columnType(column).size_required) {
         hint += ' (optional)'
       }
       return hint
     },
-    defaultD (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
+    dHint (column) {
+      let hint = ''
+      if (this.columnType(column).d_min !== null) {
+        hint += `min. ${this.columnType(column).d_min}`
       }
-      if (filter[0].defaultD === undefined || filter[0].defaultD === null) {
-        return false
+      if (this.columnType(column).d_max) {
+        if (hint.length > 0) {
+          hint += ', '
+        }
+        hint += `max. ${this.columnType(column).d_max}`
       }
-      return filter[0].defaultD
+      if (!this.columnType(column).d_required) {
+        hint += ' (optional)'
+      }
+      return hint
     },
     setDefaultSizeAndD (column) {
-      column.size = this.defaultSize(column)
-      column.d = this.defaultD(column)
+      if (this.columnType(column).size_default !== null) {
+        column.size = this.columnType(column).size_default
+      } else {
+        column.size = null
+      }
+      if (this.columnType(column).d_default !== null) {
+        column.d = this.columnType(column).d_default
+      } else {
+        column.d = null
+      }
       console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d)
     },
     hasDate (column) {

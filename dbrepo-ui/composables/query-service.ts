@@ -126,7 +126,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  function build(table: TableDto, columns: ColumnDto[], clauses: any[]): QueryBuildResultDto {
+  function build(table: TableDto, columns: ColumnDto[], types: DataTypeDto[], clauses: any[]): QueryBuildResultDto {
     var sql = 'SELECT'
     for (let i = 0; i < columns.length; i++) {
       sql += `${i > 0 ? ',' : ''} \`${columns[i].internal_name}\``
@@ -140,8 +140,8 @@ export const useQueryService = (): any => {
           sql += ` ${clause.type.toUpperCase()} `
           continue
         }
-        const fCol = columns.filter(c => c.internal_name === clause.params[0])
-        if (fCol.length === 0) {
+        const filteredColumn = columns.filter(c => c.internal_name === clause.params[0])
+        if (filteredColumn.length === 0) {
           return {
             error: true,
             reason: 'column.exists',
@@ -151,26 +151,26 @@ export const useQueryService = (): any => {
           }
         }
         sql += ` \`${clause.params[0]}\` ${clause.params[1]} `
-        const fCon = mySql8DataTypes().filter(t => t.value === fCol[0].column_type)
-        if (fCol.length === 0) {
+        const filteredType = types.filter(t => t.value === filteredColumn[0].column_type)
+        if (filteredType.length === 0) {
           return {
             error: true,
-            reason: 'type.exists',
-            column: fCol[0].column_type,
+            reason: 'exists',
+            column: filteredColumn[0].column_type,
             raw: null,
             formatted: null
           }
         }
-        if (!fCon[0].isBuildable) {
+        if (!filteredType[0].is_buildable) {
           return {
             error: true,
-            reason: 'type.build',
-            column: fCol[0].column_type,
+            reason: 'build',
+            column: filteredColumn[0].column_type,
             raw: null,
             formatted: null
           }
         }
-        if (fCon[0].quoted) {
+        if (filteredType[0].is_quoted) {
           sql += `'${clause.params[2]}'`
         } else {
           sql += `${clause.params[2]}`
@@ -196,42 +196,5 @@ export const useQueryService = (): any => {
     return {timestamp, page, size}
   }
 
-  /**
-   * data types with non-null defaultSize values require size to be set
-   */
-  function mySql8DataTypes(): MySql8DataType[] {
-    return [
-      {value: 'bigint', text: 'BIGINT(size)', defaultSize: null, defaultD: null, signed: null, zerofill: false, quoted: false, isBuildable: true, hint: null},
-      {value: 'binary', text: 'BINARY(size)', minSize: 0, maxSize: 255, defaultSize: 255, defaultD: null, quoted: false, isBuildable: false, hint: 'size in Bytes'},
-      {value: 'bit', text: 'BIT(size)', minSize: 1, maxSize: 64, defaultSize: null, defaultD: null, quoted: false, isBuildable: true, hint: null},
-      {value: 'blob', text: 'BLOB(size)', minSize: 0, maxSize: 65535, defaultSize: null, defaultD: null, quoted: false, isBuildable: false, hint: 'size in Bytes'},
-      {value: 'bool', text: 'BOOL', defaultSize: null, defaultD: null, quoted: false, isBuildable: true},
-      {value: 'char', text: 'CHAR(size)', minSize: 0, maxSize: 255, defaultSize: 255, defaultD: null, quoted: true, isBuildable: true},
-      {value: 'date', text: 'DATE', defaultSize: null, defaultD: null, quoted: true, isBuildable: true, hint: 'min. 1000-01-01, max. 9999-12-31'},
-      {value: 'datetime', text: 'DATETIME(fsp)', minSize: 0, maxSize: 6, defaultSize: null, defaultD: null, quoted: true, isBuildable: true, hint: 'fsp=microsecond precision, min. 1000-01-01 00:00:00.0, max. 9999-12-31 23:59:59.9'},
-      {value: 'decimal', text: 'DECIMAL(size, d)', minSize: 0, maxSize: 65, defaultSize: null, defaultD: null, minD: 0, maxD: 38, signed: null, quoted: false, isBuildable: true},
-      {value: 'double', text: 'DOUBLE(size, d)', defaultSize: null, defaultD: null, signed: null, quoted: false, isBuildable: true},
-      {value: 'enum', text: 'ENUM(val1,val2,...)', defaultSize: null, defaultD: null, quoted: true, isBuildable: true},
-      {value: 'float', text: 'FLOAT(p)', defaultSize: null, defaultD: null, signed: null, quoted: false, isBuildable: true},
-      {value: 'int', text: 'INT(size)', defaultSize: null, defaultD: null, signed: null, zerofill: false, quoted: false, isBuildable: true, hint: 'size in Bytes'},
-      {value: 'longblob', text: 'LONGBLOB', defaultSize: null, defaultD: null, quoted: false, isBuildable: false, hint: 'max. 3.999 GiB'},
-      {value: 'longtext', text: 'LONGTEXT', defaultSize: null, defaultD: null, quoted: true, isBuildable: true,  hint: 'max. 3.999 GiB'},
-      {value: 'mediumblob', text: 'MEDIUMBLOB', defaultSize: null, defaultD: null, quoted: false, isBuildable: false, hint: 'max. 15.999 MiB'},
-      {value: 'mediumint', text: 'MEDIUMINT(size)', defaultSize: null, defaultD: null, signed: null, zerofill: false, quoted: false, isBuildable: true, hint: 'size in Bytes'},
-      {value: 'mediumtext', text: 'MEDIUMTEXT', defaultSize: null, defaultD: null, quoted: true, isBuildable: true},
-      {value: 'set', text: 'SET(val1,val2,...)', defaultSize: null, defaultD: null, quoted: true, isBuildable: true},
-      {value: 'smallint', text: 'SMALLINT(size)', defaultSize: null, defaultD: null, signed: null, zerofill: false, quoted: false, isBuildable: true, hint: 'size in Bytes'},
-      {value: 'text', text: 'TEXT(size)', minSize: 0, defaultSize: null, defaultD: null, quoted: true, isBuildable: true, hint: 'size in #characters'},
-      {value: 'time', text: 'TIME(fsp)', minSize: 0, maxSize: 6, defaultSize: 0, defaultD: null, quoted: true, isBuildable: true, hint: 'fsp=microsecond precision, min. 0, max. 6'},
-      {value: 'timestamp', text: 'TIMESTAMP(fsp)', minSize: 0, maxSize: 6, defaultSize: 0, defaultD: null, quoted: true, isBuildable: true, hint: 'fsp=microsecond precision, min. 0, max. 6'},
-      {value: 'tinyblob', text: 'TINYBLOB', defaultSize: null, defaultD: null, quoted: false, isBuildable: false},
-      {value: 'tinyint', text: 'TINYINT(size)', defaultSize: null, defaultD: null, quoted: false, isBuildable: true, hint: 'size in Bytes'},
-      {value: 'tinytext', text: 'TINYTEXT', defaultSize: null, defaultD: null, quoted: true, isBuildable: true, hint: 'max. 255 characters'},
-      {value: 'year', text: 'YEAR', minSize: 2, maxSize: 4, sizeSteps: 2, defaultSize: null, defaultD: null, quoted: true, isBuildable: true, hint: 'min. 1901, max. 2155'},
-      {value: 'varbinary', text: 'VARBINARY(size)', defaultSize: null, defaultD: null, quoted: false, isBuildable: false},
-      {value: 'varchar', text: 'VARCHAR(size)', minSize: 0, maxSize: 65532, defaultSize: 255, defaultD: null, quoted: true, isBuildable: true, hint: 'max. characters depends on the encoding'}
-    ]
-  }
-
-  return {findAll, findOne, update, exportCsv, execute, reExecuteData, reExecuteCount, build, mySql8DataTypes}
+  return {findAll, findOne, update, exportCsv, execute, reExecuteData, reExecuteCount, build}
 }

@@ -510,7 +510,33 @@ CREATE TABLE IF NOT EXISTS `mdb_have_access`
     FOREIGN KEY (user_id) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `mdb_image_types`
+(
+    id            SERIAL,
+    image_id      BIGINT UNSIGNED NOT NULL,
+    display_name  varchar(255)    NOT NULL,
+    value         varchar(255)    NOT NULL,
+    size_min      INT UNSIGNED,
+    size_max      INT UNSIGNED,
+    size_default  INT UNSIGNED,
+    size_required BOOLEAN COMMENT 'When setting NULL, the service assumes the data type has no size',
+    size_step     INT UNSIGNED,
+    d_min         INT UNSIGNED,
+    d_max         INT UNSIGNED,
+    d_default     INT UNSIGNED,
+    d_required    BOOLEAN COMMENT 'When setting NULL, the service assumes the data type has no d',
+    d_step        INT UNSIGNED,
+    hint          TEXT,
+    documentation TEXT            NOT NULL,
+    is_quoted     BOOLEAN         NOT NULL,
+    is_buildable  BOOLEAN         NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
+    UNIQUE (value)
+) WITH SYSTEM VERSIONING;
+
 COMMIT;
+
 BEGIN;
 
 INSERT INTO `mdb_licenses` (identifier, uri, description)
@@ -523,7 +549,71 @@ INSERT INTO `mdb_images` (name, registry, version, default_port, dialect, driver
 VALUES ('mariadb', 'docker.io', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver',
         'mariadb');
 
-INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
+INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
+                               size_step, d_min, d_max, d_default, d_required, d_step, hint, documentation, is_quoted,
+                               is_buildable)
+VALUES (1, 'BIGINT(size)', 'bigint', 0, null, null, false, 1, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/bigint/', false, true),
+       (1, 'BINARY(size)', 'binary', 0, 255, 255, true, 1, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/binary/', false, true),
+       (1, 'BIT(size)', 'bit', 0, 64, null, false, 1, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/bit/', false, true),
+       (1, 'BLOB(size)', 'blob', 0, 65535, null, false, 1, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/blob/', false, false),
+       (1, 'BOOL', 'bool', null, null, null, null, null, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/bool/', false, true),
+       (1, 'CHAR(size)', 'char', 0, 255, 255, false, 1, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/char/', false, true),
+       (1, 'DATE', 'date', null, null, null, null, null, null, null, null, null, null,
+        'min. 1000-01-01, max. 9999-12-31', 'https://mariadb.com/kb/en/date/', true, true),
+       (1, 'DATETIME(fsp)', 'datetime', 0, 6, null, null, 1, null, null, null, null, null,
+        'fsp=microsecond precision, min. 1000-01-01 00:00:00.0, max. 9999-12-31 23:59:59.9',
+        'https://mariadb.com/kb/en/datetime/', true, true),
+       (1, 'DECIMAL(size, d)', 'decimal', 0, 65, null, false, 1, 0, 38, null, false, null, null,
+        'https://mariadb.com/kb/en/decimal/', false, true),
+       (1, 'DOUBLE(size, d)', 'double', null, null, null, false, null, null, null, null, false, null, null,
+        'https://mariadb.com/kb/en/double/', false, true),
+       (1, 'ENUM(v1,v2,...)', 'enum', null, null, null, null, null, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/enum/', true, true),
+       (1, 'FLOAT(size)', 'float', null, null, null, false, null, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/float/', false, true),
+       (1, 'INT(size)', 'int', null, null, null, false, null, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/int/', false, true),
+       (1, 'LONGBLOB', 'longblob', null, null, null, null, null, null, null, null, null, null, 'max. 3.999 GiB',
+        'https://mariadb.com/kb/en/longblob/', false, true),
+       (1, 'LONGTEXT', 'longtext', null, null, null, null, null, null, null, null, null, null, 'max. 3.999 GiB',
+        'https://mariadb.com/kb/en/longtext/', true, true),
+       (1, 'MEDIUMBLOB', 'mediumblob', null, null, null, null, null, null, null, null, null, null, 'max. 15.999 MiB',
+        'https://mariadb.com/kb/en/mediumblob/', false, true),
+       (1, 'MEDIUMINT', 'mediumint', null, null, null, null, null, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/mediumint/', false, true),
+       (1, 'MEDIUMTEXT', 'mediumtext', null, null, null, null, null, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/mediumtext/', true, true),
+       (1, 'SET(v1,v2,...)', 'set', null, null, null, null, null, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/set/', true, true),
+       (1, 'SMALLINT(size)', 'smallint', 0, null, null, false, null, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/smallint/', false, true),
+       (1, 'TEXT(size)', 'text', 0, null, null, false, null, null, null, null, null, null, 'size in Bytes',
+        'https://mariadb.com/kb/en/text/', true, true),
+       (1, 'TIME(fsp)', 'time', 0, 6, 0, false, null, null, null, null, null, null,
+        'fsp=microsecond precision, min. 0, max. 6', 'https://mariadb.com/kb/en/time/', true, true),
+       (1, 'TIMESTAMP(fsp)', 'timestamp', 0, 6, 0, false, null, null, null, null, null, null,
+        'fsp=microsecond precision, min. 0, max. 6', 'https://mariadb.com/kb/en/timestamp/', true, true),
+       (1, 'TINYBLOB', 'tinyblob', null, null, null, null, null, null, null, null, null, null,
+        'fsp=microsecond precision, min. 0, max. 6', 'https://mariadb.com/kb/en/timestamp/', false, true),
+       (1, 'TINYINT(size)', 'tinyint', 0, null, null, false, null, null, null, null, null, null,
+        'size in Bytes', 'https://mariadb.com/kb/en/tinyint/', false, true),
+       (1, 'TINYTEXT', 'tinytext', null, null, null, null, null, null, null, null, null, null,
+        'max. 255 characters', 'https://mariadb.com/kb/en/tinytext/', true, true),
+       (1, 'YEAR', 'year', 2, 4, null, false, 2, null, null, null, null, null, 'min. 1901, max. 2155',
+        'https://mariadb.com/kb/en/year/', false, true),
+       (1, 'VARBINARY(size)', 'varbinary', 0, null, null, true, null, null, null, null, null, null,
+        null, 'https://mariadb.com/kb/en/varbinary/', false, true),
+       (1, 'VARCHAR(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null,
+        null, 'https://mariadb.com/kb/en/varchar/', false, true);
+
+INSERT
+INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
 VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
         'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null, 'rdf/om-2.0.rdf'),
        ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql',

@@ -370,6 +370,12 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    columnTypes () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.container.image.data_types
+    },
     user () {
       return this.userStore.getUser
     },
@@ -533,7 +539,7 @@ export default {
         return
       }
       const queryService = useQueryService()
-      const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.clauses)
+      const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.columnTypes, this.clauses)
       if (error) {
         const toast = useToastInstance()
         toast.error(this.$t('error.query.' + reason) + ' ' + column)
