@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.TableService;
 import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,6 +56,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private TableService tableService;
 
     @MockBean
+    private SchemaService schemaService;
+
+    @MockBean
     private MetadataServiceGateway metadataServiceGateway;
 
     public static Stream<Arguments> size_arguments() {
@@ -88,6 +92,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(tableService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO))
+                .thenReturn(TABLE_4_DTO);
+        when(schemaService.inspectTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_INTERNALNAME))
                 .thenReturn(TABLE_4_DTO);
 
         /* test */

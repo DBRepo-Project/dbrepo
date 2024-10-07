@@ -53,7 +53,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private MetadataMapper metadataMapper;
 
     @BeforeEach
-    public void beforeAll() {
+    public void beforeEach() {
         genesis();
     }
 
