@@ -1,4 +1,4 @@
-FROM docker.io/bitnami/grafana:10.4.9-debian-12-r0 AS runtime
+FROM docker.io/grafana/grafana-oss:11.2.2 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 WORKDIR /app

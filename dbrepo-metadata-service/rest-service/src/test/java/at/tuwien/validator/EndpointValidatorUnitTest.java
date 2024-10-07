@@ -72,14 +72,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         );
     }
 
-    public static Stream<Arguments> needDateFormat_parameters() {
-        return Stream.of(
-                Arguments.arguments(ColumnTypeDto.DATETIME),
-                Arguments.arguments(ColumnTypeDto.TIMESTAMP),
-                Arguments.arguments(ColumnTypeDto.TIME)
-        );
-    }
-
     @BeforeEach
     public void beforeEach() {
         genesis();
@@ -353,35 +345,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         assertThrows(MalformedException.class, () -> {
             endpointValidator.validateColumnCreateConstraints(request);
         });
-    }
-
-    @ParameterizedTest
-    @MethodSource("needDateFormat_parameters")
-    public void validateColumnCreateConstraints_needDateFormat_fails(ColumnTypeDto type) {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(type)
-                        .dfid(null) // <<<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        assertThrows(MalformedException.class, () -> {
-            endpointValidator.validateColumnCreateConstraints(request);
-        });
-    }
-
-    @Test
-    public void validateColumnCreateConstraints_dateFormatEmpty_succeeds() throws MalformedException {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(ColumnTypeDto.DATE)
-                        .dfid(null) // <<<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        endpointValidator.validateColumnCreateConstraints(request);
     }
 
     @Test

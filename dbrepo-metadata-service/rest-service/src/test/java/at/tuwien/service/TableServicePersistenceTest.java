@@ -92,7 +92,6 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
                                 .name("date")
                                 .nullAllowed(true)
                                 .type(ColumnTypeDto.DATE)
-                                .dfid(3L)
                                 .build()))
                 .constraints(ConstraintsCreateDto.builder()
                         .checks(Set.of())
@@ -124,8 +123,6 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         assertEquals("date", date.getName());
         assertEquals("date", date.getInternalName());
         assertEquals(TableColumnType.DATE, date.getColumnType());
-        assertNotNull(date.getDateFormat());
-        assertEquals(3L, date.getDateFormat().getId());
         assertTrue(date.getIsNullAllowed());
         assertNotNull(response.getConstraints());
         final List<Unique> uniques = response.getConstraints().getUniques();

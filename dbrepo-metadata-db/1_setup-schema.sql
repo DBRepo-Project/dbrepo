@@ -53,8 +53,7 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     privileged_username character varying(255) NOT NULL,
     privileged_password character varying(255) NOT NULL,
     quota               integer                NOT NULL DEFAULT 50,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES mdb_images (id)
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_data`
@@ -80,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `mdb_licenses`
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
     id             SERIAL,
-    cid            bigint                 NOT NULL,
+    cid            BIGINT UNSIGNED        NOT NULL,
     name           character varying(255) NOT NULL,
     internal_name  character varying(255) NOT NULL,
     exchange_name  character varying(255) NOT NULL,
@@ -94,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id) /* currently we only support one-to-one */,
+    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
@@ -110,7 +109,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
     ID              SERIAL,
-    tDBID           bigint                NOT NULL,
+    tDBID           BIGINT UNSIGNED       NOT NULL,
     tName           VARCHAR(64)           NOT NULL,
     internal_name   VARCHAR(64)           NOT NULL,
     queue_name      VARCHAR(255)          NOT NULL,
@@ -141,26 +140,25 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
-    ID               BIGINT      NOT NULL AUTO_INCREMENT,
-    tID              BIGINT      NOT NULL,
-    dfID             BIGINT,
+    ID               SERIAL,
+    tID              BIGINT UNSIGNED NOT NULL,
     cName            VARCHAR(64),
-    internal_name    VARCHAR(64) NOT NULL,
+    internal_name    VARCHAR(64)     NOT NULL,
     Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    length           BIGINT      NULL,
-    ordinal_position INTEGER     NOT NULL,
-    index_length     BIGINT      NULL,
+    length           BIGINT UNSIGNED NULL,
+    ordinal_position INTEGER         NOT NULL,
+    index_length     BIGINT UNSIGNED NULL,
     description      VARCHAR(2048),
-    size             BIGINT,
-    d                BIGINT,
-    auto_generated   BOOLEAN              DEFAULT false,
-    is_null_allowed  BOOLEAN     NOT NULL DEFAULT true,
-    val_min          NUMERIC     NULL,
-    val_max          NUMERIC     NULL,
-    mean             NUMERIC     NULL,
-    median           NUMERIC     NULL,
-    std_dev          Numeric     NULL,
-    created          timestamp   NOT NULL DEFAULT NOW(),
+    size             BIGINT UNSIGNED,
+    d                BIGINT UNSIGNED,
+    auto_generated   BOOLEAN                  DEFAULT false,
+    is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
+    val_min          NUMERIC         NULL,
+    val_max          NUMERIC         NULL,
+    mean             NUMERIC         NULL,
+    median           NUMERIC         NULL,
+    std_dev          Numeric         NULL,
+    created          timestamp       NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
     FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
     PRIMARY KEY (ID),
@@ -170,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
 CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
     id        SERIAL,
-    column_id bigint                 NOT NULL,
+    column_id BIGINT UNSIGNED        NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
@@ -179,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
     id        SERIAL,
-    column_id bigint                 NOT NULL,
+    column_id BIGINT UNSIGNED        NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
@@ -187,8 +185,8 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
 (
-    cID           bigint,
-    tID           bigint,
+    cID           BIGINT UNSIGNED,
+    tID           BIGINT UNSIGNED,
     maxlength     INTEGER,
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
@@ -198,8 +196,8 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
 (
-    cID           bigint,
-    tID           bigint,
+    cID           BIGINT UNSIGNED,
+    tID           BIGINT UNSIGNED,
     num_cat       INTEGER,
     --    cat_array     TEXT[],
     last_modified timestamp,
@@ -210,13 +208,13 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
-    fkid      BIGINT       NOT NULL AUTO_INCREMENT,
-    tid       BIGINT       NOT NULL,
-    rtid      BIGINT       NOT NULL,
-    name      VARCHAR(255) NOT NULL,
-    on_update VARCHAR(50)  NULL,
-    on_delete VARCHAR(50)  NULL,
-    position  INT          NULL,
+    fkid      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    tid       BIGINT UNSIGNED NOT NULL,
+    rtid      BIGINT UNSIGNED NOT NULL,
+    name      VARCHAR(255)    NOT NULL,
+    on_update VARCHAR(50)     NULL,
+    on_delete VARCHAR(50)     NULL,
+    position  INT             NULL,
     PRIMARY KEY (fkid),
     FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
     FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
@@ -224,9 +222,9 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 (
-    pkid BIGINT NOT NULL AUTO_INCREMENT,
-    tID  BIGINT NOT NULL,
-    cid  BIGINT NOT NULL,
+    pkid SERIAL,
+    tID  BIGINT UNSIGNED NOT NULL,
+    cid  BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (pkid),
     FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
     FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
@@ -234,10 +232,10 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
-    id   BIGINT NOT NULL AUTO_INCREMENT,
-    fkid BIGINT NOT NULL,
-    cid  BIGINT NOT NULL,
-    rcid BIGINT NOT NULL,
+    id   SERIAL,
+    fkid BIGINT UNSIGNED NOT NULL,
+    cid  BIGINT UNSIGNED NOT NULL,
+    rcid BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (fkid, cid, rcid),
     FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
@@ -247,19 +245,19 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
 (
-    uid      BIGINT       NOT NULL AUTO_INCREMENT,
-    name     VARCHAR(255) NOT NULL,
-    tid      BIGINT       NOT NULL,
-    position INT          NULL,
+    uid      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name     VARCHAR(255)    NOT NULL,
+    tid      BIGINT UNSIGNED NOT NULL,
+    position INT             NULL,
     PRIMARY KEY (uid),
     FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (
-    id  BIGINT NOT NULL AUTO_INCREMENT,
-    uid BIGINT NOT NULL,
-    cid BIGINT NOT NULL,
+    id  SERIAL,
+    uid BIGINT UNSIGNED NOT NULL,
+    cid BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
     FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
@@ -267,9 +265,9 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
-    id     BIGINT       NOT NULL AUTO_INCREMENT,
-    tid    BIGINT       NOT NULL,
-    checks VARCHAR(255) NOT NULL,
+    id     SERIAL,
+    tid    BIGINT UNSIGNED NOT NULL,
+    checks VARCHAR(255)    NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
@@ -299,18 +297,18 @@ CREATE TABLE IF NOT EXISTS `mdb_units`
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
 (
-    id      bigint    NOT NULL,
-    cID     bigint    NOT NULL,
-    created timestamp NOT NULL DEFAULT NOW(),
+    id      BIGINT UNSIGNED NOT NULL,
+    cID     BIGINT UNSIGNED NOT NULL,
+    created timestamp       NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cid),
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 (
-    id      bigint    NOT NULL,
-    cID     bigint    NOT NULL,
-    created timestamp NOT NULL DEFAULT NOW(),
+    id      BIGINT UNSIGNED NOT NULL,
+    cID     BIGINT UNSIGNED NOT NULL,
+    created timestamp       NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cID),
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
@@ -318,7 +316,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
     id            SERIAL,
-    vdbid         bigint                NOT NULL,
+    vdbid         BIGINT UNSIGNED       NOT NULL,
     vName         VARCHAR(64)           NOT NULL,
     internal_name VARCHAR(64)           NOT NULL,
     Query         TEXT                  NOT NULL,
@@ -362,28 +360,28 @@ CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
-    id               BIGINT      NOT NULL AUTO_INCREMENT,
-    view_id          BIGINT      NOT NULL,
-    dfID             BIGINT,
+    id               SERIAL,
+    view_id          BIGINT UNSIGNED NOT NULL,
+    dfID             BIGINT UNSIGNED,
     name             VARCHAR(64),
-    internal_name    VARCHAR(64) NOT NULL,
+    internal_name    VARCHAR(64)     NOT NULL,
     column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    ordinal_position INTEGER     NOT NULL,
-    size             BIGINT,
-    d                BIGINT,
-    auto_generated   BOOLEAN              DEFAULT false,
-    is_null_allowed  BOOLEAN     NOT NULL DEFAULT true,
+    ordinal_position INTEGER         NOT NULL,
+    size             BIGINT UNSIGNED,
+    d                BIGINT UNSIGNED,
+    auto_generated   BOOLEAN                  DEFAULT false,
+    is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
     PRIMARY KEY (id),
     FOREIGN KEY (view_id) REFERENCES mdb_view (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
-    id                BIGINT                                       NOT NULL AUTO_INCREMENT,
-    dbid              BIGINT                                       NOT NULL,
-    qid               BIGINT,
-    vid               BIGINT,
-    tid               BIGINT,
+    id                SERIAL,
+    dbid              BIGINT UNSIGNED                              NOT NULL,
+    qid               BIGINT UNSIGNED,
+    vid               BIGINT UNSIGNED,
+    tid               BIGINT UNSIGNED,
     publisher         VARCHAR(255)                                 NOT NULL,
     language          VARCHAR(2),
     publication_year  INTEGER                                      NOT NULL,
@@ -408,8 +406,8 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
-    pid        bigint       NOT NULL,
-    license_id VARCHAR(255) NOT NULL,
+    pid        BIGINT UNSIGNED NOT NULL,
+    license_id VARCHAR(255)    NOT NULL,
     PRIMARY KEY (pid, license_id),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
     FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
@@ -418,8 +416,8 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
     id         SERIAL,
-    pid        bigint NOT NULL,
-    title      text   NOT NULL,
+    pid        BIGINT UNSIGNED NOT NULL,
+    title      text            NOT NULL,
     title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
     language   VARCHAR(2),
     PRIMARY KEY (id),
@@ -429,8 +427,8 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
     id                     SERIAL,
-    pid                    bigint       NOT NULL,
-    funder_name            VARCHAR(255) NOT NULL,
+    pid                    BIGINT UNSIGNED NOT NULL,
+    funder_name            VARCHAR(255)    NOT NULL,
     funder_identifier      TEXT,
     funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
     scheme_uri             text,
@@ -444,8 +442,8 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
     id               SERIAL,
-    pid              bigint NOT NULL,
-    description      text   NOT NULL,
+    pid              BIGINT UNSIGNED NOT NULL,
+    description      text            NOT NULL,
     description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
     language         VARCHAR(2),
     PRIMARY KEY (id),
@@ -455,10 +453,10 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 (
     id       SERIAL,
-    pid      bigint       NOT NULL,
-    value    varchar(255) NOT NULL,
-    type     varchar(255) NOT NULL,
-    relation varchar(255) NOT NULL,
+    pid      BIGINT UNSIGNED NOT NULL,
+    value    varchar(255)    NOT NULL,
+    type     varchar(255)    NOT NULL,
+    relation varchar(255)    NOT NULL,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
     UNIQUE (pid, value)
@@ -467,10 +465,10 @@ CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
     id                                SERIAL,
-    pid                               bigint       NOT NULL,
+    pid                               BIGINT UNSIGNED NOT NULL,
     given_names                       text,
     family_name                       text,
-    creator_name                      VARCHAR(255) NOT NULL,
+    creator_name                      VARCHAR(255)    NOT NULL,
     name_type                         ENUM ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
     name_identifier                   text,
     name_identifier_scheme            ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
@@ -486,7 +484,7 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 CREATE TABLE IF NOT EXISTS `mdb_update`
 (
     uUserID character varying(255) NOT NULL,
-    uDBID   bigint                 NOT NULL,
+    uDBID   BIGINT UNSIGNED        NOT NULL,
     created timestamp              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (uUserID, uDBID),
     FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
@@ -495,7 +493,7 @@ CREATE TABLE IF NOT EXISTS `mdb_update`
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
     aUserID  character varying(255) NOT NULL,
-    aDBID    bigint REFERENCES mdb_databases (id),
+    aDBID    BIGINT UNSIGNED REFERENCES mdb_databases (id),
     attime   TIMESTAMP,
     download BOOLEAN,
     created  timestamp              NOT NULL DEFAULT NOW(),
@@ -505,7 +503,7 @@ CREATE TABLE IF NOT EXISTS `mdb_access`
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
     user_id     character varying(36)                   NOT NULL,
-    database_id bigint REFERENCES mdb_databases (id),
+    database_id BIGINT UNSIGNED REFERENCES mdb_databases (id),
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     timestamp                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, database_id),

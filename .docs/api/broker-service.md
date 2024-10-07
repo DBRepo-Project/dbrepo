@@ -11,7 +11,7 @@ author: Martin Weise
     * Ports: 5672/tcp, 15672/tcp, 15692/tcp
     * AMQP: `amqp://<hostname>:5672`
     * Prometheus: `http://<hostname>:15692/metrics`
-    * Management: `http://<hostname>/admin/broker`
+    * Management: `http://<hostname>:15672`
 
 ## Overview
 

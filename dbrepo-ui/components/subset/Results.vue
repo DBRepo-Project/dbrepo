@@ -8,6 +8,7 @@
       :items="result.rows"
       :items-length="total"
       :footer-props="footerProps"
+      :items-per-page-options="footerProps.itemsPerPageOptions"
       @update:options="updateOptions" />
   </div>
 </template>

@@ -102,10 +102,6 @@ export default defineNuxtConfig({
        endpoint: 'https://doi.org'
      },
      links: {
-       rabbitmq: {
-         text: 'Broker Service',
-         href: '/admin/broker/'
-       },
        keycloak: {
          text: 'Auth Service',
          href: '/api/auth/'

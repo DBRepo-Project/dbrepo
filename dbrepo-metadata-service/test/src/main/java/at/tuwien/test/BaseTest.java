@@ -1,12 +1,18 @@
 package at.tuwien.test;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.amqp.*;
+import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.ExchangeDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.*;
+import at.tuwien.api.container.image.ImageBriefDto;
+import at.tuwien.api.container.image.ImageChangeDto;
+import at.tuwien.api.container.image.ImageCreateDto;
+import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
@@ -20,7 +26,10 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.*;
-import at.tuwien.api.database.table.columns.concepts.*;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
+import at.tuwien.api.database.table.columns.concepts.UnitDto;
+import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.*;
@@ -51,11 +60,9 @@ import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -897,22 +904,6 @@ public abstract class BaseTest {
     public final static Integer IMAGE_1_PORT = 3306;
     public final static Boolean IMAGE_1_IS_DEFAULT = true;
 
-    public final static Long IMAGE_DATE_1_ID = 1L;
-    public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_1_UNIX_FORMAT = "yyyy-MM-dd";
-    public final static String IMAGE_DATE_1_DATABASE_FORMAT = "%Y-%c-%d";
-    public final static String IMAGE_DATE_1_EXAMPLE = "2022-01-30";
-    public final static Boolean IMAGE_DATE_1_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_1_ID)
-            .iid(IMAGE_DATE_1_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
-            .example(IMAGE_DATE_1_EXAMPLE)
-            .hasTime(IMAGE_DATE_1_HAS_TIME)
-            .build();
-
     public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
             .registry(IMAGE_1_REGISTRY)
             .name(IMAGE_1_NAME)
@@ -931,54 +922,6 @@ public abstract class BaseTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
-    public final static Long IMAGE_DATE_2_ID = 2L;
-    public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
-    public final static String IMAGE_DATE_2_DATABASE_FORMAT = "%d.%c.%y";
-    public final static String IMAGE_DATE_2_EXAMPLE = "30.01.2022";
-    public final static Boolean IMAGE_DATE_2_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_2 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_2_ID)
-            .iid(IMAGE_DATE_2_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
-            .example(IMAGE_DATE_2_EXAMPLE)
-            .hasTime(IMAGE_DATE_2_HAS_TIME)
-            .build();
-
-    public final static Long IMAGE_DATE_3_ID = 3L;
-    public final static Long IMAGE_DATE_3_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_3_UNIX_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
-    public final static String IMAGE_DATE_3_DATABASE_FORMAT = "%Y-%c-%dT%H:%i:%S.%f";
-    public final static String IMAGE_DATE_3_EXAMPLE = "2022-01-30T13:44:25.499";
-    public final static Boolean IMAGE_DATE_3_HAS_TIME = true;
-
-    public final static ContainerImageDate IMAGE_DATE_3 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_3_ID)
-            .iid(IMAGE_DATE_3_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
-            .example(IMAGE_DATE_3_EXAMPLE)
-            .hasTime(IMAGE_DATE_3_HAS_TIME)
-            .build();
-
-    public final static Long IMAGE_DATE_4_ID = 4L;
-    public final static Long IMAGE_DATE_4_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_4_UNIX_FORMAT = "HH:mm:ss";
-    public final static String IMAGE_DATE_4_DATABASE_FORMAT = "%H:%i:%S";
-    public final static String IMAGE_DATE_4_EXAMPLE = "14:44:25";
-    public final static Boolean IMAGE_DATE_4_HAS_TIME = true;
-
-    public final static ContainerImageDate IMAGE_DATE_4 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_4_ID)
-            .iid(IMAGE_DATE_4_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
-            .example(IMAGE_DATE_4_EXAMPLE)
-            .hasTime(IMAGE_DATE_4_HAS_TIME)
-            .build();
-
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
@@ -989,7 +932,6 @@ public abstract class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
-            .dateFormats(new LinkedList<>(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3, IMAGE_DATE_4)))
             .build();
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
@@ -1452,25 +1394,21 @@ public abstract class BaseTest {
                             .name("col25")
                             .type(ColumnTypeDto.DATE)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_1_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col26")
                             .type(ColumnTypeDto.DATETIME)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col27")
                             .type(ColumnTypeDto.TIMESTAMP)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col28")
                             .type(ColumnTypeDto.TIME)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_4_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col29")
@@ -2167,7 +2105,6 @@ public abstract class BaseTest {
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(ColumnCreateDto.builder()
                     .name("Timestamp")
                     .type(ColumnTypeDto.TIMESTAMP)
-                    .dfid(IMAGE_DATE_4_ID)
                     .nullAllowed(false)
                     .build(),
             ColumnCreateDto.builder()
@@ -2844,7 +2781,6 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
                     .autoGenerated(false)
                     .build(),
@@ -2897,14 +2833,12 @@ public abstract class BaseTest {
                     .name("Date")
                     .type(ColumnTypeDto.DATE)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("Location")
                     .type(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("MinTemp")
@@ -2912,7 +2846,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("Rainfall")
@@ -2920,7 +2853,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .conceptUri(CONCEPT_1_URI)
                     .unitUri(UNIT_1_URI)
                     .build());
@@ -3157,7 +3089,6 @@ public abstract class BaseTest {
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3170,7 +3101,6 @@ public abstract class BaseTest {
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3183,7 +3113,6 @@ public abstract class BaseTest {
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3208,7 +3137,6 @@ public abstract class BaseTest {
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3221,7 +3149,6 @@ public abstract class BaseTest {
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3234,7 +3161,6 @@ public abstract class BaseTest {
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3247,7 +3173,6 @@ public abstract class BaseTest {
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3260,7 +3185,6 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3273,7 +3197,6 @@ public abstract class BaseTest {
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3298,7 +3221,6 @@ public abstract class BaseTest {
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3311,7 +3233,6 @@ public abstract class BaseTest {
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3324,7 +3245,6 @@ public abstract class BaseTest {
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3337,7 +3257,6 @@ public abstract class BaseTest {
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3350,7 +3269,6 @@ public abstract class BaseTest {
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3363,7 +3281,6 @@ public abstract class BaseTest {
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3376,7 +3293,6 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3389,7 +3305,6 @@ public abstract class BaseTest {
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3414,7 +3329,6 @@ public abstract class BaseTest {
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3427,7 +3341,6 @@ public abstract class BaseTest {
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3440,7 +3353,6 @@ public abstract class BaseTest {
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3453,7 +3365,6 @@ public abstract class BaseTest {
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3466,7 +3377,6 @@ public abstract class BaseTest {
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3479,7 +3389,6 @@ public abstract class BaseTest {
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3492,7 +3401,6 @@ public abstract class BaseTest {
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3505,7 +3413,6 @@ public abstract class BaseTest {
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3518,7 +3425,6 @@ public abstract class BaseTest {
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3531,7 +3437,6 @@ public abstract class BaseTest {
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3544,7 +3449,6 @@ public abstract class BaseTest {
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3557,7 +3461,6 @@ public abstract class BaseTest {
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3570,7 +3473,6 @@ public abstract class BaseTest {
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3583,7 +3485,6 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3596,7 +3497,6 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build());
@@ -4733,7 +4633,6 @@ public abstract class BaseTest {
                     .name("reminder")
                     .internalName("reminder")
                     .columnType(TableColumnType.TIME)
-                    .dateFormat(IMAGE_DATE_4)
                     .isNullAllowed(false)
                     .autoGenerated(false)
                     .build(),
@@ -4965,7 +4864,7 @@ public abstract class BaseTest {
                     .size(22L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .build()    );
+                    .build());
 
     public final static View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
@@ -5168,7 +5067,6 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
                     .autoGenerated(false)
                     .view(VIEW_2)
@@ -5376,7 +5274,6 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
                     .autoGenerated(false)
                     .view(VIEW_3)

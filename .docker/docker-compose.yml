@@ -8,6 +8,7 @@ volumes:
   storage-service-data:
   identity-service-data:
   metric-db-data:
+  dashboard-service-data:
 
 services:
   dbrepo-metadata-db:
@@ -473,7 +474,7 @@ services:
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
       BROKER_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
-      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}"
+      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}

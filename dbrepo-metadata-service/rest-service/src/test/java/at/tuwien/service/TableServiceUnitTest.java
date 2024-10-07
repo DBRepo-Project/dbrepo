@@ -202,7 +202,6 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                         .name("date")
                         .nullAllowed(true)
                         .type(ColumnTypeDto.DATE)
-                        .dfid(9999L)
                         .build()))
                 .constraints(ConstraintsCreateDto.builder()
                         .checks(Set.of())

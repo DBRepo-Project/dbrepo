@@ -1,6 +1,5 @@
 package at.tuwien.entities.database;
 
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,11 +23,6 @@ public class ViewColumn implements Comparable<ViewColumn> {
     @GenericGenerator(name = "view-columns-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dfid", referencedColumnName = "id")
-    private ContainerImageDate dateFormat;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})

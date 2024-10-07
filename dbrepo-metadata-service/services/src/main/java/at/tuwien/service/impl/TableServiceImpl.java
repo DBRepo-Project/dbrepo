@@ -4,10 +4,8 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.RabbitConfig;
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -145,20 +143,6 @@ public class TableServiceImpl implements TableService {
                         concept = conceptService.create(metadataMapper.entityDtoToTableColumnConcept(entityService.findOneByUri(c.getConceptUri())));
                     }
                     column.setConcept(concept);
-                }
-                if (List.of(TableColumnType.TIME, TableColumnType.TIMESTAMP, TableColumnType.DATE, TableColumnType.DATETIME).contains(column.getColumnType())) {
-                    final Optional<ContainerImageDate> optional = database.getContainer()
-                            .getImage()
-                            .getDateFormats()
-                            .stream()
-                            .filter(df -> df.getId().equals(c.getDfid()))
-                            .findFirst();
-                    if (optional.isEmpty()) {
-                        log.error("Failed to find date format with id {} in metadata database", c.getDfid());
-                        throw new IllegalArgumentException("Failed to find date format in metadata database");
-                    }
-                    column.setDateFormat(optional.get());
-                    log.debug("column is of temporal type: added date format with id {}", column.getDateFormat().getId());
                 }
                 table.getColumns()
                         .add(column);
