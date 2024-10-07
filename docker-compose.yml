@@ -458,17 +458,12 @@ services:
       network: host
     volumes:
       - dashboard-service-data:/opt/bitnami/grafana/data
-    ports:
-      - "3000:3000"
     environment:
-      GF_SERVER_DOMAIN: "dashboard-service"
-      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
     healthcheck:
-      test: test -f /var/lib/grafana/grafana.db
+      test: test -f /opt/bitnami/grafana/tmp/grafana.pid
       interval: 10s
       timeout: 5s
       retries: 12

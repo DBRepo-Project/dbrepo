@@ -532,9 +532,6 @@ interface ImportCsv {
   separator: string;
   quote: string;
   skip_lines: number;
-  false_element: string;
-  true_element: string;
-  null_element: string;
   line_termination: string;
 }
 
@@ -656,9 +653,6 @@ interface ImportDto {
   separator: string;
   quote: string;
   skip_lines: number;
-  false_element: string;
-  true_element: string;
-  null_element: string;
   line_termination: string;
 }
 
