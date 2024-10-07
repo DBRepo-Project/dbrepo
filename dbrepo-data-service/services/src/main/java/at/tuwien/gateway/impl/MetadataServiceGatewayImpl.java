@@ -133,16 +133,17 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with internal name {}: service responded unsuccessful: {}", internalName, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
+        /* body first, then headers next */
+        if (response.getBody() == null || response.getBody().length != 1) {
+            log.error("Failed to find database with internal name {}: body is empty", internalName);
+            throw new DatabaseNotFoundException("Failed to find database: body is empty");
+        }
         final List<String> expectedHeaders = List.of("X-Username", "X-Password");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged database headers");
             log.debug("expected headers: {}", expectedHeaders);
             log.debug("found headers: {}", response.getHeaders().keySet());
             throw new MetadataServiceException("Failed to find all privileged database headers");
-        }
-        if (response.getBody() == null || response.getBody().length != 1) {
-            log.error("Failed to find database with internal name {}: body is empty", internalName);
-            throw new DatabaseNotFoundException("Failed to find database: body is empty");
         }
         return response.getBody()[0];
     }

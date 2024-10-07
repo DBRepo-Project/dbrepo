@@ -368,8 +368,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getSystemUserId())
-                .thenReturn(USER_LOCAL_ADMIN_ID);
         when(subsetService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_LOCAL_ADMIN_ID), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(QUERY_5_RESULT_DTO);
 

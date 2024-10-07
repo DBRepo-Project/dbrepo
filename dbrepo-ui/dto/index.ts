@@ -562,7 +562,6 @@ interface ColumnCreateDto {
   type: string;
   size: number | null;
   d: number | null;
-  dfid: number | null;
   enums: string[];
   sets: string[];
   index_length: number;
@@ -574,7 +573,6 @@ interface InternalColumnDto {
   type: string;
   size: number;
   d: number;
-  dfid: number;
   enums: string[];
   sets: string[];
   primary_key: boolean;

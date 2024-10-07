@@ -98,20 +98,6 @@
             :label="$t('pages.table.subpages.schema.d.label')" />
         </v-col>
         <v-col
-          cols="2"
-          v-if="hasDate(c)">
-          <v-select
-            v-model="c.dfid"
-            required
-            :variant="inputVariant"
-            :disabled="disabled"
-            :rules="[v => !!v || $t('validation.required')]"
-            :items="filterDateFormats(c)"
-            item-title="unix_format"
-            item-value="id"
-            :label="$t('pages.table.subpages.schema.fsp.label')" />
-        </v-col>
-        <v-col
           v-if="shift(c)"
           :cols="shift(c)" />
         <v-col
@@ -304,7 +290,6 @@ export default {
         type,
         null_allowed,
         primary_key,
-        dfid: null,
         sets: [],
         sets_values: null,
         enums: [],
@@ -420,8 +405,7 @@ export default {
     setDefaultSizeAndD (column) {
       column.size = this.defaultSize(column)
       column.d = this.defaultD(column)
-      column.dfid = null
-      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d, '& dfid', column.dfid)
+      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d)
     },
     hasDate (column) {
       return column.type === 'date' || column.type === 'datetime' || column.type === 'timestamp' || column.type === 'time'
