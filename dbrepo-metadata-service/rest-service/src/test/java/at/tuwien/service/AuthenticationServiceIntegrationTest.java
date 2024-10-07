@@ -6,6 +6,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,11 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private KeycloakGateway keycloakGateway;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Container
     private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")

@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,11 @@ public class ActuatorComponentTest extends AbstractUnitTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     public void actuatorInfo_succeeds() throws Exception {

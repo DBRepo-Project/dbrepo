@@ -5,16 +5,16 @@ import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
-import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.entities.database.table.constraints.Constraints;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,9 +48,6 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private DataServiceGateway dataServiceGateway;
-
-    @MockBean
-    private OntologyService ontologyService;
 
     @Autowired
     private TableService tableService;

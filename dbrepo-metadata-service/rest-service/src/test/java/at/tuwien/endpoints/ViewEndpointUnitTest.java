@@ -14,6 +14,7 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,11 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private ViewEndpoint viewEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser
