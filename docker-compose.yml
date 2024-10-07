@@ -458,6 +458,8 @@ services:
       network: host
     volumes:
       - dashboard-service-data:/opt/bitnami/grafana/data
+    ports:
+      - "3000:3000"
     environment:
       GF_SERVER_DOMAIN: "dashboard-service"
       GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}"

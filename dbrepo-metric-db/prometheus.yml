@@ -16,8 +16,4 @@ scrape_configs:
   - job_name: 'metrics scrape'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['auth-service:8080', 'analyse-service:8080', 'search-service:8080', 'data-db-sidecar:8080', 'broker-service:15692', 'storage-service:9090', 'upload-service:8080']
-  - job_name: 'dashboard scrape'
-    metrics_path: '/dashboard/metrics'
-    static_configs:
-      - targets: ['dashboard-service:3000']
+      - targets: ['auth-service:8080', 'analyse-service:8080', 'search-service:8080', 'data-db-sidecar:8080', 'broker-service:15692', 'storage-service:9090', 'upload-service:8080', 'dashboard-service:3000']
