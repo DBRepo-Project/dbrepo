@@ -167,7 +167,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     public Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in metadata database */
+        database.setOwner(user);
         database.setOwnedBy(user.getId());
+        database.setContact(user);
+        database.setContactPerson(user.getId());
         database = databaseRepository.save(database);
         /* save in search service */
         searchServiceGateway.update(database);
@@ -281,7 +284,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* correct the unique constraint columns */
         for (Table table : database.getTables()) {
             for (Unique uniqueConstraint : table.getConstraints().getUniques()) {
-                uniqueConstraint.setColumns(uniqueConstraint.getColumns()
+                uniqueConstraint.setColumns(new LinkedList<>(uniqueConstraint.getColumns()
                         .stream()
                         .map(column -> {
                             final Optional<TableColumn> optional = table.getColumns()
@@ -294,7 +297,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                             }
                             return optional.get();
                         })
-                        .toList());
+                        .toList()));
             }
         }
         /* update in metadata database */

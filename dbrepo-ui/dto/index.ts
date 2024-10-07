@@ -532,9 +532,6 @@ interface ImportCsv {
   separator: string;
   quote: string;
   skip_lines: number;
-  false_element: string;
-  true_element: string;
-  null_element: string;
   line_termination: string;
 }
 
@@ -562,7 +559,6 @@ interface ColumnCreateDto {
   type: string;
   size: number | null;
   d: number | null;
-  dfid: number | null;
   enums: string[];
   sets: string[];
   index_length: number;
@@ -574,7 +570,6 @@ interface InternalColumnDto {
   type: string;
   size: number;
   d: number;
-  dfid: number;
   enums: string[];
   sets: string[];
   primary_key: boolean;
@@ -658,9 +653,6 @@ interface ImportDto {
   separator: string;
   quote: string;
   skip_lines: number;
-  false_element: string;
-  true_element: string;
-  null_element: string;
   line_termination: string;
 }
 

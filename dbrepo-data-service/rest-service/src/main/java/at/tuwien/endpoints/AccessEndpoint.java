@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -88,7 +89,7 @@ public class AccessEndpoint {
         }
         try {
             accessService.create(database, user, data.getType());
-            return ResponseEntity.accepted()
+            return ResponseEntity.status(HttpStatus.CREATED)
                     .build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());

@@ -8,6 +8,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,11 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private UserEndpoint userEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser

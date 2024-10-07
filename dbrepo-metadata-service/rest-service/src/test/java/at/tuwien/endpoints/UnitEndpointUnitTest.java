@@ -4,6 +4,7 @@ import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.service.UnitService;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,11 @@ public class UnitEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private UnitEndpoint unitEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser

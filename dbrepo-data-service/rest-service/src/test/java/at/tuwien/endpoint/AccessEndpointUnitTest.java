@@ -15,12 +15,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -54,7 +56,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_4_PRIVILEGED_DTO);
 
         /* test */
-        accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        final ResponseEntity<Void> response = accessEndpoint.create(DATABASE_1_ID, USER_4_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     @Test
@@ -150,7 +154,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_1_DTO);
 
         /* test */
-        accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        final ResponseEntity<Void> response = accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     @Test
@@ -250,7 +256,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .delete(any(PrivilegedDatabaseDto.class), any(UserDto.class));
 
         /* test */
-        accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+        final ResponseEntity<Void> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     @Test

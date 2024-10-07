@@ -3,9 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.EntityDto;
@@ -16,7 +14,10 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.*;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.EntityService;
+import at.tuwien.service.TableService;
+import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -39,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -349,15 +350,6 @@ public class TableEndpoint {
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
-        final List<ColumnCreateDto> failedDateColumns = data.getColumns()
-                .stream()
-                .filter(column -> List.of(ColumnTypeDto.DATE, ColumnTypeDto.DATETIME, ColumnTypeDto.TIME, ColumnTypeDto.TIMESTAMP).contains(column.getType()))
-                .filter(column -> Objects.isNull(column.getDfid()))
-                .toList();
-        if (!failedDateColumns.isEmpty()) {
-            log.error("Failed to create table: date column(s) {} do not contain date format id", failedDateColumns.stream().map(ColumnCreateDto::getName).toList());
-            throw new MalformedException("Failed to create table: date column(s) " + failedDateColumns.stream().map(ColumnCreateDto::getName).toList() + " do not contain date format id");
-        }
         final Table table = tableService.createTable(database, data, principal);
         final TableDto dto = metadataMapper.customTableToTableDto(table);
         log.info("Created table with id {}", dto.getId());

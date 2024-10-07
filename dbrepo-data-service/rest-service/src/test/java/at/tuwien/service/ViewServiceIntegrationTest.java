@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
@@ -24,7 +23,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static at.tuwien.service.SchemaServiceIntegrationTest.assertViewColumn;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,11 +66,11 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
         final List<ViewColumnDto> columns = response.getColumns();
         assertEquals(VIEW_1_COLUMNS.size(), columns.size());
         ViewColumnDto ref = VIEW_1_COLUMNS_DTO.get(0);
-        SchemaServiceIntegrationTest.assertViewColumn(columns.get(0), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(0), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDescription());
         ref = VIEW_1_COLUMNS_DTO.get(1);
-        SchemaServiceIntegrationTest.assertViewColumn(columns.get(1), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(1), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDescription());
         ref = VIEW_1_COLUMNS_DTO.get(2);
-        SchemaServiceIntegrationTest.assertViewColumn(columns.get(2), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDateFormat(), ref.getDescription());
+        SchemaServiceIntegrationTest.assertViewColumn(columns.get(2), null, ref.getDatabaseId(), ref.getName(), ref.getInternalName(), ref.getColumnType(), ref.getSize(), ref.getD(), ref.getIsNullAllowed(), ref.getDescription());
 
     }
 

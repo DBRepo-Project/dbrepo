@@ -4,6 +4,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.image.DataTypeDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
@@ -55,6 +56,7 @@ import at.tuwien.api.user.external.ExternalResultType;
 import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.DataType;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -85,6 +87,14 @@ import java.util.stream.Collectors;
 public interface MetadataMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MetadataMapper.class);
+
+    @Mappings({
+            @Mapping(target = "dMin", source = "DMin"),
+            @Mapping(target = "dMax", source = "DMax"),
+            @Mapping(target = "dDefault", source = "DDefault"),
+            @Mapping(target = "dRequired", source = "DRequired")
+    })
+    DataTypeDto dataTypeToDataTypeDto(DataType data);
 
     BannerMessageDto bannerMessageToBannerMessageDto(BannerMessage data);
 

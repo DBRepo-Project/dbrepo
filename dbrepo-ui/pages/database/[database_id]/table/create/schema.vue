@@ -269,13 +269,13 @@ export default {
           this.cacheStore.reloadDatabase()
           this.table = table
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
             return
           }
-          toast.error(this.$t(code))
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false

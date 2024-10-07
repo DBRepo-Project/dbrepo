@@ -1,12 +1,10 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.repository.TableRepository;
 import at.tuwien.repository.ViewRepository;
-import at.tuwien.service.DatabaseService;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.observation.ObservationRegistry;
@@ -15,8 +13,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Log4j2
 @Configuration
@@ -70,7 +66,12 @@ public class MetricsConfig {
 
     @Bean
     public Gauge volumeSumGauge() {
-        return Gauge.builder("dbrepo.volume.sum", () -> tableRepository.findAll().stream().map(Table::getDataLength).mapToLong(d -> d).sum())
+        return Gauge.builder("dbrepo.volume.sum", () -> {
+                    if (tableRepository.findAll().isEmpty()) {
+                        return 0;
+                    }
+                    return tableRepository.findAll().stream().map(Table::getDataLength).mapToLong(d -> d).sum();
+                })
                 .description("The total volume of available research data")
                 .strongReference(true)
                 .register(Metrics.globalRegistry);

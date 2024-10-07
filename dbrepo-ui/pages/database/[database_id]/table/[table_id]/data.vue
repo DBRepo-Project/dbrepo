@@ -75,6 +75,7 @@
         :loading="loadingData || loadingCount"
         :options.sync="options"
         :footer-props="footerProps"
+        :items-per-page-options="footerProps.itemsPerPageOptions"
         @update:options="loadData">
         <template
           v-for="(blobColumn, idx) in blobColumns"

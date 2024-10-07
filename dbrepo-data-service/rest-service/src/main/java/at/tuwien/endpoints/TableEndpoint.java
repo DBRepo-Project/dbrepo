@@ -4,8 +4,7 @@ import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
-import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
@@ -13,6 +12,7 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -33,7 +33,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,13 +50,15 @@ import java.util.List;
 public class TableEndpoint {
 
     private final TableService tableService;
+    private final SchemaService schemaService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, EndpointValidator endpointValidator,
+    public TableEndpoint(TableService tableService, SchemaService schemaService, EndpointValidator endpointValidator,
                          MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
+        this.schemaService = schemaService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -107,8 +108,9 @@ public class TableEndpoint {
         /* create */
         final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
         try {
+            final TableDto table = tableService.createTable(database, data);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(tableService.createTable(database, data));
+                    .body(schemaService.inspectTable(database, table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -614,7 +616,7 @@ public class TableEndpoint {
     })
     public ResponseEntity<Void> importDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
                                               @NotBlank @PathVariable("tableId") Long tableId,
-                                              @Valid @RequestBody ImportCsvDto data,
+                                              @Valid @RequestBody ImportDto data,
                                               @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, StorageNotFoundException, SidecarImportException, NotAllowedException,
@@ -623,10 +625,6 @@ public class TableEndpoint {
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), UserUtil.getId(principal));
-        if (data.getNullElement() == null) {
-            data.setNullElement("");
-            log.debug("null element not present, default to empty string");
-        }
         if (data.getLineTermination() == null) {
             data.setLineTermination("\\r\\n");
             log.debug("line termination not present, default to {}", data.getLineTermination());

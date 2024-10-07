@@ -22,6 +22,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         /* USER_4 */
         USER_5.setAccesses(new LinkedList<>());
         /* DATABASE 1 */
+        DATABASE_1.setOwner(USER_1);
         DATABASE_1.setSubsets(new LinkedList<>());
         DATABASE_1.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_1_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));

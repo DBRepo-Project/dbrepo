@@ -27,7 +27,8 @@
           :items="rows"
           :options.sync="options"
           :server-items-length="total"
-          :footer-props="footerProps">
+          :footer-props="footerProps"
+          :items-per-page-options="footerProps.itemsPerPageOptions">
           <template v-slot:item.uri="{ item }">
             <a :href="item.uri" target="_blank" v-text="item.uri" />
           </template>
@@ -83,7 +84,7 @@ export default {
       },
       total: -1,
       footerProps: {
-        'items-per-page-options': [10, 20, 30, 40, 50]
+        itemsPerPageOptions: [10, 25, 50, 100]
       },
       tab: 0,
       tabs: [

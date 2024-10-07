@@ -83,39 +83,6 @@
               </v-select>
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.null_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.null.hint')"
-                :label="$t('pages.table.subpages.import.null.label')"/>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.true_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.true.hint')"
-                :label="$t('pages.table.subpages.import.true.label')"/>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.false_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.false.hint')"
-                :label="$t('pages.table.subpages.import.false.label')"/>
-            </v-col>
-          </v-row>
         </v-container>
       </v-form>
     </v-stepper-window>
@@ -356,9 +323,6 @@ export default {
     this.cacheStore.setUploadProgress(null)
     this.setQueryParamSafely('location')
     this.setQueryParamSafely('quote')
-    this.setQueryParamSafely('false_element')
-    this.setQueryParamSafely('true_element')
-    this.setQueryParamSafely('null_element')
     this.setQueryParamSafely('separator')
     this.setQueryParamSafely('line_termination')
     this.setQueryParamSafely('skip_lines')
@@ -541,9 +505,6 @@ export default {
             separator: this.tableImport.separator,
             skip_lines: this.tableImport.skip_lines,
             quote: this.tableImport.quote,
-            null_element: this.tableImport.null_element,
-            true_element: this.tableImport.true_element,
-            false_element: this.tableImport.false_element
           })
           this.loading = false
         })

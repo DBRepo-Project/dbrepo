@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -273,7 +273,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws StorageNotFoundException,
+    public void importDataset(PrivilegedTableDto table, ImportDto data) throws StorageNotFoundException,
             SQLException, QueryMalformedException, RemoteUnavailableException, SidecarImportException {
         /* import .csv from blob storage to sidecar */
         dataDatabaseSidecarGateway.importFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), data.getLocation());

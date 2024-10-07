@@ -1,0 +1,15 @@
+[
+  {
+    "name": "",
+    "size": {
+      "min": 0,
+      "required": true
+    },
+    "d": {
+      "required": false
+    },
+    "documentation": "https://mariadb.com/kb/en/bigint/",
+    "quoted": false,
+    "buildable": true
+  }
+]

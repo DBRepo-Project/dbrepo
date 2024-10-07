@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
@@ -45,7 +44,6 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -53,7 +51,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public interface DataMapper {
@@ -177,19 +174,6 @@ public interface DataMapper {
         } else if (resultSet.getString(6) != null) {
             column.setSize(resultSet.getLong(6));
         }
-        if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultTimestampFormatId())
-                    .build());
-        } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultDateFormatId())
-                    .build());
-        } else if (column.getColumnType().equals(ColumnTypeDto.TIME)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultTimeFormatId())
-                    .build());
-        }
         /* constraints */
         if (resultSet.getString(9) != null && resultSet.getString(9).equals("PRI")) {
             table.getConstraints().getPrimaryKey().add(PrimaryKeyDto.builder()
@@ -220,19 +204,6 @@ public interface DataMapper {
             column.setSize(resultSet.getLong(5));
         } else if (resultSet.getString(6) != null) {
             column.setSize(resultSet.getLong(6));
-        }
-        if (column.getColumnType().equals(ColumnTypeDto.TIMESTAMP) || column.getColumnType().equals(ColumnTypeDto.DATETIME)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultTimestampFormatId())
-                    .build());
-        } else if (column.getColumnType().equals(ColumnTypeDto.DATE)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultDateFormatId())
-                    .build());
-        } else if (column.getColumnType().equals(ColumnTypeDto.TIME)) {
-            column.setDateFormat(ImageDateDto.builder()
-                    .id(queryConfig.getDefaultTimeFormatId())
-                    .build());
         }
         view.getColumns()
                 .add(column);
@@ -562,10 +533,6 @@ public interface DataMapper {
         }
         switch (column.getColumnType()) {
             case DATE -> {
-                if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {}", column.getId());
-                    throw new IllegalArgumentException("Missing date format");
-                }
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                         .parseCaseInsensitive() /* case insensitive to parse JAN and FEB */
                         .appendPattern("yyyy-MM-dd")
@@ -575,10 +542,6 @@ public interface DataMapper {
                         .toInstant();
             }
             case TIMESTAMP, DATETIME -> {
-                if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {}", column.getId());
-                    throw new IllegalArgumentException("Missing date format");
-                }
                 return Timestamp.valueOf(data.toString())
                         .toInstant();
             }
@@ -678,7 +641,7 @@ public interface DataMapper {
                     ps.setNull(idx, Types.DATE);
                     break;
                 }
-                ps.setDate(idx, Date.valueOf(String.valueOf(value)));
+                ps.setString(idx, String.valueOf(value));
                 break;
             case BIGINT:
                 if (value == null) {
@@ -743,28 +706,7 @@ public interface DataMapper {
                 }
                 ps.setBoolean(idx, Boolean.parseBoolean(String.valueOf(value)));
                 break;
-            case TIMESTAMP:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIMESTAMP);
-                    break;
-                }
-                ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
-                break;
-            case DATETIME:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIMESTAMP);
-                    break;
-                }
-                ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
-                break;
-            case TIME:
-                if (value == null) {
-                    ps.setNull(idx, Types.TIME);
-                    break;
-                }
-                ps.setTime(idx, Time.valueOf(String.valueOf(value)));
-                break;
-            case YEAR:
+            case TIME, DATETIME, TIMESTAMP, YEAR:
                 if (value == null) {
                     ps.setNull(idx, Types.TIME);
                     break;

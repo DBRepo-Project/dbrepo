@@ -1,22 +1,27 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.query.ImportCsvDto;
-import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.*;
+import at.tuwien.api.database.query.ImportDto;
+import at.tuwien.api.database.table.TupleDeleteDto;
+import at.tuwien.api.database.table.TupleDto;
+import at.tuwien.api.database.table.TupleUpdateDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.exception.*;
+import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.TableMalformedException;
 import at.tuwien.utils.MariaDbUtil;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.sql.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.Date;
+import java.sql.*;
 import java.text.Normalizer;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -548,7 +553,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String datasetToRawInsertQuery(String databaseName, PrivilegedTableDto table, ImportCsvDto data) {
+    default String datasetToRawInsertQuery(String databaseName, PrivilegedTableDto table, ImportDto data) {
         final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '")
                 .append(data.getLocation())
                 .append("' REPLACE INTO TABLE `")
@@ -563,11 +568,17 @@ public interface MariaDbMapper {
                     .append(data.getQuote())
                     .append("'");
         }
-        statement.append(" LINES TERMINATED BY '")
-                .append(data.getLineTermination())
-                .append("'")
-                .append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
-                .append(" (");
+        if (data.getLineTermination() != null) {
+            statement.append(" LINES TERMINATED BY '")
+                    .append(data.getLineTermination())
+                    .append("'");
+        }
+        if (data.getSkipLines() != null) {
+            statement.append(" IGNORE")
+                    .append(data.getSkipLines())
+                    .append(" LINES");
+        }
+        statement.append(" (");
         final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
         table.getColumns()
@@ -580,20 +591,10 @@ public interface MariaDbMapper {
                     /* format as variable */
                     statement.append("@")
                             .append(column.getInternalName());
-                    if (column.getDateFormat() != null) {
-                        /* reformat dates */
-                        columnToDateSet(data, column, set);
-                    } else if (column.getColumnType().equals(ColumnTypeDto.BOOL)) {
-                        /* reformat booleans */
-                        columnToBoolSet(data, column, set);
-                    } else {
-                        /* reformat others */
-                        columnToTextSet(data, column, set);
-                    }
                     idx[0]++;
                 });
         statement.append(")")
-                .append(set.length() != 0 ? (" SET " + set) : "")
+                .append(!set.isEmpty() ? (" SET " + set) : "")
                 .append(";");
         log.trace("mapped insert statement: {}", statement);
         return statement.toString();
@@ -708,125 +709,6 @@ public interface MariaDbMapper {
         statement.append(");");
         log.trace("mapped create tuple query: {}", statement);
         return statement.toString();
-    }
-
-    default void columnToDateSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        log.trace("import column has date format, need to format it: {}", column.getDateFormat().getUnixFormat());
-        set.append(!set.isEmpty() ? ", " : "")
-                .append("`")
-                .append(column.getInternalName())
-                .append("` = STR_TO_DATE(");
-        if (data.getNullElement() != null) {
-            set.append("IF(STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'), @")
-                    .append(column.getInternalName())
-                    .append(", NULL), '")
-                    .append(column.getDateFormat()
-                            .getDatabaseFormat()
-                            .replace('\'', '\\'))
-                    .append("')");
-            return;
-        }
-        set.append("@")
-                .append(column.getInternalName())
-                .append(", '")
-                .append(column.getDateFormat()
-                        .getDatabaseFormat()
-                        .replace('\'', '\\'))
-                .append("')");
-    }
-
-    default void columnToBoolSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        set.append(!set.isEmpty() ? ", " : "")
-                .append("`")
-                .append(column.getInternalName())
-                .append("` = ");
-        if (data.getNullElement() != null) {
-            set.append("IF(!STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'),NULL,");
-            columnToBoolSet2(data, column, set);
-            set.append(")");
-            return;
-        }
-        columnToBoolSet2(data, column, set);
-    }
-
-    default void columnToBoolSet2(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        if (data.getTrueElement() != null) {
-            set.append("IF(!STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getTrueElement())
-                    .append("'),TRUE,");
-            if (data.getFalseElement() != null) {
-                log.trace("import has false element present (both true and false)");
-                /* can map both true/false */
-                set.append("IF(!STRCMP(@")
-                        .append(column.getInternalName())
-                        .append(",'")
-                        .append(data.getFalseElement())
-                        .append("'),FALSE,@")
-                        .append(column.getInternalName())
-                        .append("))");
-            } else {
-                /* can only map true */
-                set.append("@")
-                        .append(column.getInternalName())
-                        .append(")");
-            }
-            return;
-        }
-        if (data.getFalseElement() != null) {
-            set.append("IF(!STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getFalseElement())
-                    .append("'),FALSE,");
-            if (data.getTrueElement() != null) {
-                log.trace("import has true element present (both true and false)");
-                /* can map both true/false */
-                set.append("IF(!STRCMP(@")
-                        .append(column.getInternalName())
-                        .append(",'")
-                        .append(data.getTrueElement())
-                        .append("'),TRUE,@")
-                        .append(column.getInternalName())
-                        .append("))");
-            } else {
-                /* can only map true */
-                set.append("@")
-                        .append(column.getInternalName())
-                        .append(")");
-            }
-            return;
-        }
-        set.append("@")
-                .append(column.getInternalName());
-    }
-
-    default void columnToTextSet(ImportCsvDto data, ColumnDto column, StringBuilder set) {
-        set.append(!set.isEmpty() ? ", " : "")
-                .append("`")
-                .append(column.getInternalName())
-                .append("` = ");
-        if (data.getNullElement() != null) {
-            set.append("IF(STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'), @")
-                    .append(column.getInternalName())
-                    .append(", NULL)");
-            return;
-        }
-        set.append("@")
-                .append(column.getInternalName());
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement statement, ColumnTypeDto columnType, int idx,

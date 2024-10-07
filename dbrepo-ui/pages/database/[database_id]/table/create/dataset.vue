@@ -241,9 +241,6 @@ export default {
       tableImport: {
         location: null,
         quote: '"',
-        false_element: null,
-        true_element: null,
-        null_element: '',
         separator: ',',
         line_termination: null,
         skip_lines: 1
@@ -364,9 +361,6 @@ export default {
       this.tableImport.separator = separator
       this.tableImport.skip_lines = skip_lines
       this.tableImport.quote = quote
-      this.tableImport.null_element = null_element
-      this.tableImport.true_element = true_element
-      this.tableImport.false_element = false_element
       if (filename) {
         this.step = 4
       }

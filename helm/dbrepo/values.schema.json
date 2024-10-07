@@ -386,6 +386,23 @@
                 },
                 "service": {
                     "properties": {
+                        "extraPorts": {
+                            "items": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "port": {
+                                        "type": "integer"
+                                    },
+                                    "targetPort": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
                         "managerPortEnabled": {
                             "type": "boolean"
                         },
