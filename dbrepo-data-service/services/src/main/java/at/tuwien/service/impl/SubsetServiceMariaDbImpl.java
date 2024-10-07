@@ -17,8 +17,8 @@ import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.SubsetService;
 import at.tuwien.service.StorageService;
+import at.tuwien.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
@@ -287,7 +287,11 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             /* insert query into query store */
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
-            callableStatement.setString(1, String.valueOf(userId));
+            if (userId != null) {
+                callableStatement.setString(1, String.valueOf(userId));
+            } else {
+                callableStatement.setNull(1, Types.VARCHAR);
+            }
             callableStatement.setString(2, query);
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
             callableStatement.registerOutParameter(4, Types.BIGINT);

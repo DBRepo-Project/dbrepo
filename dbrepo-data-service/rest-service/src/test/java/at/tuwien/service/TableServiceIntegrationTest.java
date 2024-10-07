@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
@@ -19,7 +19,6 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.QueryConfig;
-import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -45,15 +44,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 
 import static at.tuwien.service.SchemaServiceIntegrationTest.assertColumn;
-import static at.tuwien.service.SchemaServiceIntegrationTest.assertViewColumn;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
@@ -383,9 +378,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns0 = table0.getColumns();
         assertNotNull(columns0);
         Assertions.assertEquals(3, columns0.size());
-        assertColumn(columns0.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns0.get(1), null, null, DATABASE_1_ID, "weather_id", "weather_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns0.get(2), null, null, DATABASE_1_ID, "other_id", "other_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
+        assertColumn(columns0.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns0.get(1), null, null, DATABASE_1_ID, "weather_id", "weather_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns0.get(2), null, null, DATABASE_1_ID, "other_id", "other_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
         final ConstraintsDto constraints0 = table0.getConstraints();
         assertNotNull(constraints0);
         assertEquals(1, constraints0.getPrimaryKey().size());
@@ -430,8 +425,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns1 = table1.getColumns();
         assertNotNull(columns1);
         Assertions.assertEquals(2, columns1.size());
-        assertColumn(columns1.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns1.get(1), null, null, DATABASE_1_ID, "other_id", "other_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
+        assertColumn(columns1.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns1.get(1), null, null, DATABASE_1_ID, "other_id", "other_id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
         final ConstraintsDto constraints1 = table1.getConstraints();
         assertNotNull(constraints1);
         assertEquals(2, constraints1.getPrimaryKey().size());
@@ -458,9 +453,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns2 = table2.getColumns();
         assertNotNull(columns2);
         Assertions.assertEquals(3, columns2.size());
-        assertColumn(columns2.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null, null);
-        assertColumn(columns2.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null, null);
-        assertColumn(columns2.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns2.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null);
+        assertColumn(columns2.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null);
+        assertColumn(columns2.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null);
         final ConstraintsDto constraints2 = table2.getConstraints();
         assertNotNull(constraints2);
         final Set<PrimaryKeyDto> primaryKey2 = constraints2.getPrimaryKey();
@@ -479,11 +474,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns3 = table3.getColumns();
         assertNotNull(columns3);
         Assertions.assertEquals(5, columns3.size());
-        assertColumn(columns3.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns3.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns3.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null, null);
-        assertColumn(columns3.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns3.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null, null);
+        assertColumn(columns3.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns3.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null);
+        assertColumn(columns3.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null);
+        assertColumn(columns3.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null);
+        assertColumn(columns3.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null);
         final ConstraintsDto constraints3 = table3.getConstraints();
         assertNotNull(constraints3);
         final Set<PrimaryKeyDto> primaryKey3 = constraints3.getPrimaryKey();
@@ -509,8 +504,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(TABLE_4_INTERNALNAME, response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
         assertEquals(TABLE_4_COLUMNS.size(), columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "timestamp", "timestamp", ColumnTypeDto.TIMESTAMP, null, null, false, queryConfig.getDefaultTimestampFormatId(), null);
-        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "value", "value", ColumnTypeDto.DECIMAL, 10L, 10L, true, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "timestamp", "timestamp", ColumnTypeDto.TIMESTAMP, null, null, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "value", "value", ColumnTypeDto.DECIMAL, 10L, 10L, true, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
         final Set<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
@@ -619,9 +614,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         assertEquals("composite_primary_key", response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
         assertEquals(3, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "name", "name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "lat", "lat", ColumnTypeDto.DECIMAL, 10L, 10L, false, null, null);
-        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "lng", "lng", ColumnTypeDto.DECIMAL, 10L, 10L, false, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "name", "name", ColumnTypeDto.VARCHAR, 255L, null, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "lat", "lat", ColumnTypeDto.DECIMAL, 10L, 10L, false, null);
+        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "lng", "lng", ColumnTypeDto.DECIMAL, 10L, 10L, false, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
         final Set<String> checks = constraints.getChecks();
@@ -765,53 +760,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
             tableService.history(TABLE_5_PRIVILEGED_DTO, null);
-        });
-    }
-
-    @Test
-    public void importDataset_withSeparatorAndQuoteAndNullElement_succeeds() throws SidecarImportException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, StorageNotFoundException, IOException {
-        final ImportCsvDto request = ImportCsvDto.builder()
-                .location("weather_aus.csv")
-                .separator(';')
-                .quote('"')
-                .nullElement("NA")
-                .build();
-
-        /* mock */
-        final File source = new File("src/test/resources/csv/weather_aus.csv");
-        final File target = new File("/tmp/weather_aus.csv") /* must be /tmp */;
-        log.trace("copy dataset from {} to {}", source.toPath().toAbsolutePath(), target.toPath().toAbsolutePath());
-        FileUtils.copyFile(source, target);
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .importFile(anyString(), anyInt(), eq("weather_aus.csv"));
-
-        /* test */
-        tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
-    }
-
-    @Test
-    public void importDataset_malformedData_fails() throws RemoteUnavailableException, StorageNotFoundException,
-            IOException, SidecarImportException {
-        final ImportCsvDto request = ImportCsvDto.builder()
-                .location("weather_aus.csv")
-                .separator(';')
-                .quote('"')
-                .build();
-
-        /* mock */
-        final File source = new File("src/test/resources/csv/weather_aus.csv");
-        final File target = new File("/tmp/weather_aus.csv");
-        log.trace("copy dataset from {} to {}", source.toPath().toAbsolutePath(), target.toPath().toAbsolutePath());
-        FileUtils.copyFile(source, target);
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .importFile(anyString(), anyInt(), eq("weather_aus.csv"));
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
         });
     }
 

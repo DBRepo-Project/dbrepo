@@ -102,13 +102,13 @@ export default defineNuxtConfig({
        endpoint: 'https://doi.org'
      },
      links: {
-       rabbitmq: {
-         text: 'RabbitMQ Admin',
-         href: '/admin/broker/'
-       },
        keycloak: {
-         text: 'Keycloak Admin',
-         href: '/api/auth/'
+         text: 'Auth Service',
+         href: 'http://localhost/api/auth/'
+       },
+       grafana: {
+         text: 'Dashboard Service',
+         href: 'http://localhost:3000/dashboards'
        }
      }
    }
@@ -123,8 +123,7 @@ export default defineNuxtConfig({
  modules: [
    '@pinia/nuxt',
    '@pinia-plugin-persistedstate/nuxt',
-   '@nuxtjs/i18n',
-   '@artmizu/nuxt-prometheus'
+   '@nuxtjs/i18n'
  ],
 
  pinia: {

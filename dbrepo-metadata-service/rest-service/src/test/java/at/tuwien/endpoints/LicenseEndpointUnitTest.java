@@ -4,6 +4,7 @@ import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.repository.LicenseRepository;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ public class LicenseEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private LicenseEndpoint licenseEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     public void list_succeeds() {

@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
@@ -104,7 +104,7 @@ public interface TableService {
     Long getCount(PrivilegedTableDto table, Instant timestamp) throws SQLException,
             QueryMalformedException;
 
-    void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws SidecarImportException,
+    void importDataset(PrivilegedTableDto table, ImportDto data) throws SidecarImportException,
             StorageNotFoundException, SQLException, QueryMalformedException, RemoteUnavailableException;
 
     void deleteTuple(PrivilegedTableDto table, TupleDeleteDto data) throws SQLException,

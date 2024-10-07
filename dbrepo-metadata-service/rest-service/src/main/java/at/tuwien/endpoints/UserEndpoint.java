@@ -5,7 +5,10 @@ import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -26,6 +29,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -284,7 +288,13 @@ public class UserEndpoint {
             }
         }
         final UserDto dto = userMapper.userToUserDto(user);
-        return ResponseEntity.ok()
+        final HttpHeaders headers = new HttpHeaders();
+        if (UserUtil.isSystem(principal)) {
+            headers.set("X-Username", user.getUsername());
+            headers.set("X-Password", user.getMariadbPassword());
+        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(headers)
                 .body(dto);
     }
 

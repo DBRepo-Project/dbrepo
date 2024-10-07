@@ -66,7 +66,7 @@ dbrepo:
     searchService: http://localhost
     analyseService: http://localhost
     dataService: http://localhost:9093
-    brokerService: http://localhost/admin/broker
+    brokerService: http://localhost:15672
     authService: http://localhost/api/auth
     storageService: http://localhost/api/storage
     rorService: https://api.ror.org

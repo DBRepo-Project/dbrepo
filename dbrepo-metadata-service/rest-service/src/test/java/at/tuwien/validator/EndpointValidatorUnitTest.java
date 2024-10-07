@@ -53,30 +53,9 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> needSize_parameters() {
         return Stream.of(
-                Arguments.arguments(ColumnTypeDto.CHAR),
                 Arguments.arguments(ColumnTypeDto.VARCHAR),
                 Arguments.arguments(ColumnTypeDto.BINARY),
-                Arguments.arguments(ColumnTypeDto.VARBINARY),
-                Arguments.arguments(ColumnTypeDto.BIT),
-                Arguments.arguments(ColumnTypeDto.TINYINT),
-                Arguments.arguments(ColumnTypeDto.SMALLINT),
-                Arguments.arguments(ColumnTypeDto.MEDIUMINT),
-                Arguments.arguments(ColumnTypeDto.INT)
-        );
-    }
-
-    public static Stream<Arguments> needSizeAndD_parameters() {
-        return Stream.of(
-                Arguments.arguments(ColumnTypeDto.DOUBLE),
-                Arguments.arguments(ColumnTypeDto.DECIMAL)
-        );
-    }
-
-    public static Stream<Arguments> needDateFormat_parameters() {
-        return Stream.of(
-                Arguments.arguments(ColumnTypeDto.DATETIME),
-                Arguments.arguments(ColumnTypeDto.TIMESTAMP),
-                Arguments.arguments(ColumnTypeDto.TIME)
+                Arguments.arguments(ColumnTypeDto.VARBINARY)
         );
     }
 
@@ -308,23 +287,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         });
     }
 
-    @ParameterizedTest
-    @MethodSource("needSizeAndD_parameters")
-    public void validateColumnCreateConstraints_needSizeAndD_fails(ColumnTypeDto type) {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(type)
-                        .size(10L)
-                        .d(null) // <<<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        assertThrows(MalformedException.class, () -> {
-            endpointValidator.validateColumnCreateConstraints(request);
-        });
-    }
-
     @Test
     public void validateColumnCreateConstraints_needEnum_fails() {
         final TableCreateDto request = TableCreateDto.builder()
@@ -353,35 +315,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         assertThrows(MalformedException.class, () -> {
             endpointValidator.validateColumnCreateConstraints(request);
         });
-    }
-
-    @ParameterizedTest
-    @MethodSource("needDateFormat_parameters")
-    public void validateColumnCreateConstraints_needDateFormat_fails(ColumnTypeDto type) {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(type)
-                        .dfid(null) // <<<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        assertThrows(MalformedException.class, () -> {
-            endpointValidator.validateColumnCreateConstraints(request);
-        });
-    }
-
-    @Test
-    public void validateColumnCreateConstraints_dateFormatEmpty_succeeds() throws MalformedException {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(ColumnTypeDto.DATE)
-                        .dfid(null) // <<<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        endpointValidator.validateColumnCreateConstraints(request);
     }
 
     @Test

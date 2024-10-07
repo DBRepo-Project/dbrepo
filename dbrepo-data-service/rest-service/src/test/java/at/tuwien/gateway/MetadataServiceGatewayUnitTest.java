@@ -175,8 +175,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
+        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
+                        .headers(headers)
                         .body(new PrivilegedDatabaseDto[]{DATABASE_1_PRIVILEGED_DTO}));
 
         /* test */
@@ -221,7 +225,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(MetadataServiceException.class, () -> {
+        assertThrows(DatabaseNotFoundException.class, () -> {
             metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
         });
     }

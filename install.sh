@@ -58,7 +58,7 @@ fi
 
 # environment
 echo "[🚀] Gathering environment for version ${VERSION} ..."
-curl -sSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/dist.tar.gz"
+curl -ksSL -o ./dist.tar.gz "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/dist.tar.gz"
 tar xzfv ./dist.tar.gz
 
 if [[ $DOWNLOAD_ONLY -eq 1 ]]; then

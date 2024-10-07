@@ -27,16 +27,6 @@ public class ImportDto {
     @JsonProperty("skip_lines")
     private Long skipLines;
 
-    @JsonProperty("false_element")
-    private String falseElement;
-
-    @JsonProperty("true_element")
-    private String trueElement;
-
-    @JsonProperty("null_element")
-    @Schema(example = "NA")
-    private String nullElement;
-
     @NotNull
     @Schema(example = ",")
     private Character separator;

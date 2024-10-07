@@ -10,6 +10,7 @@ import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.repository.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,11 @@ public class ImageServiceUnitTest extends AbstractUnitTest {
 
     @Autowired
     private ImageService imageService;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     public void getAll_succeeds() {

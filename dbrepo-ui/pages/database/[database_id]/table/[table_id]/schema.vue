@@ -217,12 +217,20 @@ export default {
   },
   methods: {
     extra (column) {
-      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
-        return `fsp=${column.date_format.unix_format}`
-      } else if (column.column_type === 'float') {
-        return `p=${column.size}`
+      if (column.column_type === 'float') {
+        return `precision=${column.size}`
       } else if (['decimal', 'double'].includes(column.column_type)) {
-        return `size=${column.size} d=${column.d}`
+        let extra = ''
+        if (column.size !== null) {
+          extra += `size=${column.size}`
+        }
+        if (column.d !== null) {
+          if (extra.length > 0) {
+            extra += ', '
+          }
+          extra += `d=${column.d}`
+        }
+        return extra
       } else if (column.column_type === 'enum') {
         return `(${column.enums.join(', ')})`
       } else if (column.column_type === 'set') {

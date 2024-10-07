@@ -7,6 +7,8 @@ volumes:
   search-db-data:
   storage-service-data:
   identity-service-data:
+  metric-db-data:
+  dashboard-service-data:
 
 services:
   dbrepo-metadata-db:
@@ -207,16 +209,19 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.12-debian-12
+    image: docker.io/bitnami/rabbitmq:3.13.7-debian-12-r4
     ports:
       - 15672:15672
       - 5672:5672
+      - 1883:1883
     volumes:
       - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./dbrepo-broker-service/advanced.config:/etc/rabbitmq/advanced.config
       - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
+    environment:
+      RABBITMQ_FEATURE_FLAGS: mqtt_v5
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -432,6 +437,7 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
     ports:
       - 9090:9090
     healthcheck:
@@ -450,10 +456,9 @@ services:
     build:
       context: ./dbrepo-dashboard-service
       network: host
+    volumes:
+      - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
-      GF_SERVER_DOMAIN: "dashboard-service"
-      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
@@ -534,7 +539,7 @@ services:
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
       BROKER_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
-      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}"
+      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}

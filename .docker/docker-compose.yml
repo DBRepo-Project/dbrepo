@@ -7,6 +7,8 @@ volumes:
   search-db-data:
   storage-service-data:
   identity-service-data:
+  metric-db-data:
+  dashboard-service-data:
 
 services:
   dbrepo-metadata-db:
@@ -191,6 +193,7 @@ services:
     image: docker.io/bitnami/rabbitmq:3.12-debian-12
     ports:
       - 5672:5672
+      - 1883:1883
     volumes:
       - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./config/advanced.config:/etc/rabbitmq/advanced.config
@@ -279,11 +282,6 @@ services:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files/"
-    depends_on:
-      dbrepo-search-service:
-        condition: service_started
-      dbrepo-storage-service:
-        condition: service_healthy
     healthcheck:
       test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
       interval: 10s
@@ -386,6 +384,7 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
     healthcheck:
       test: promtool check healthy
       interval: 10s
@@ -475,7 +474,7 @@ services:
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
       BROKER_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
-      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}"
+      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}

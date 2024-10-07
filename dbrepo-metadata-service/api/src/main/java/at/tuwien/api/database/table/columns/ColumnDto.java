@@ -1,6 +1,5 @@
 package at.tuwien.api.database.table.columns;
 
-import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
@@ -58,9 +57,6 @@ public class ColumnDto {
 
     @Schema
     private String alias;
-
-    @JsonProperty("date_format")
-    private ImageDateDto dateFormat;
 
     @NotNull
     @JsonProperty("auto_generated")

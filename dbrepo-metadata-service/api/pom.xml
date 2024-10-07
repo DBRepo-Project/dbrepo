@@ -13,7 +13,14 @@
     <name>dbrepo-metadata-service-api</name>
     <version>1.4.6</version>
 
-    <dependencies/>
+    <dependencies>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-entities</artifactId>
+            <version>1.4.6</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

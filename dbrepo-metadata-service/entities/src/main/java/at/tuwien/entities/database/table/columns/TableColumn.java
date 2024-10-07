@@ -1,6 +1,5 @@
 package at.tuwien.entities.database.table.columns;
 
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -37,11 +36,6 @@ public class TableColumn implements Comparable<TableColumn> {
     @GenericGenerator(name = "columns-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dfid", referencedColumnName = "id")
-    private ContainerImageDate dateFormat;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})

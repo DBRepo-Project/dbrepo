@@ -1,13 +1,15 @@
 package at.tuwien.service;
 
-import at.tuwien.config.RabbitConfig;
-import at.tuwien.exception.*;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.TopicPermissionDto;
 import at.tuwien.api.amqp.VirtualHostPermissionDto;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.BrokerServiceConnectionException;
+import at.tuwien.exception.BrokerServiceException;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.utils.AmqpUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +29,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @Testcontainers
@@ -167,10 +169,15 @@ public class BrokerServiceIntegrationTest extends AbstractUnitTest {
 
     protected VirtualHostPermissionDto setVirtualHostPermissions_generic() throws BrokerServiceException,
             BrokerServiceConnectionException {
+        final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
+                .configure("")
+                .read("")
+                .write("")
+                .build();
         final AmqpUtils amqpUtils = new AmqpUtils(rabbitContainer.getHttpUrl());
 
         /* mock */
-        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
+        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, permissions);
 
         /* test */
         brokerService.setVirtualHostPermissions(USER_1);

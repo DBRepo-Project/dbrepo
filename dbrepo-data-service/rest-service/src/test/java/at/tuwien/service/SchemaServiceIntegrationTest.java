@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
@@ -16,7 +15,8 @@ import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.*;
+import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,11 +74,11 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns = response.getColumns();
         assertNotNull(columns);
         assertEquals(5, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null, null);
-        assertColumn(columns.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null, null);
-        assertColumn(columns.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "given_name", "given_name", ColumnTypeDto.VARCHAR, 255L, null, false, null);
+        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "middle_name", "middle_name", ColumnTypeDto.VARCHAR, 255L, null, true, null);
+        assertColumn(columns.get(3), null, null, DATABASE_1_ID, "family_name", "family_name", ColumnTypeDto.VARCHAR, 255L, null, false, null);
+        assertColumn(columns.get(4), null, null, DATABASE_1_ID, "age", "age", ColumnTypeDto.INT, 10L, 0L, false, null);
         final ConstraintsDto constraints = response.getConstraints();
         assertNotNull(constraints);
         final Set<PrimaryKeyDto> primaryKey = constraints.getPrimaryKey();
@@ -127,11 +127,11 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns = response.getColumns();
         assertNotNull(columns);
         assertEquals(3, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_2_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns.get(1), null, null, DATABASE_2_ID, "mode", "mode", ColumnTypeDto.ENUM, 3L, null, false, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_2_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_2_ID, "mode", "mode", ColumnTypeDto.ENUM, 3L, null, false, null);
         assertEquals(2, columns.get(1).getEnums().size());
         assertEquals(List.of("ABC", "DEF"), columns.get(1).getEnums());
-        assertColumn(columns.get(2), null, null, DATABASE_2_ID, "seq", "seq", ColumnTypeDto.SET, 5L, null, true, null, null);
+        assertColumn(columns.get(2), null, null, DATABASE_2_ID, "seq", "seq", ColumnTypeDto.SET, 5L, null, true, null);
         assertEquals(3, columns.get(2).getSets().size());
         assertEquals(List.of("1", "2", "3"), columns.get(2).getSets());
         /* ignore rest (constraints) */
@@ -167,11 +167,11 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns = response.getColumns();
         assertNotNull(columns);
         assertEquals(5, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null, null);
-        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "date", "date", ColumnTypeDto.DATE, null, null, false, IMAGE_DATE_1_ID, null);
-        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "location", "location", ColumnTypeDto.VARCHAR, 255L, null, true, null, "Closest city");
-        assertColumn(columns.get(3), null, null, DATABASE_1_ID, "mintemp", "mintemp", ColumnTypeDto.DOUBLE, 22L, null, true, null, null);
-        assertColumn(columns.get(4), null, null, DATABASE_1_ID, "rainfall", "rainfall", ColumnTypeDto.DOUBLE, 22L, null, true, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "date", "date", ColumnTypeDto.DATE, null, null, false, null);
+        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "location", "location", ColumnTypeDto.VARCHAR, 255L, null, true, "Closest city");
+        assertColumn(columns.get(3), null, null, DATABASE_1_ID, "mintemp", "mintemp", ColumnTypeDto.DOUBLE, 22L, null, true, null);
+        assertColumn(columns.get(4), null, null, DATABASE_1_ID, "rainfall", "rainfall", ColumnTypeDto.DOUBLE, 22L, null, true, null);
         final ConstraintsDto constraints = response.getConstraints();
         final List<PrimaryKeyDto> primaryKey = new LinkedList<>(constraints.getPrimaryKey());
         assertEquals(1, primaryKey.size());
@@ -359,9 +359,9 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(ColumnTypeDto.BOOL, pk0.getColumn().getColumnType());
         final List<ColumnDto> columns = response.getColumns();
         assertEquals(3, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null, null);
-        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null, null);
-        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "bool_default", "bool_default", ColumnTypeDto.BOOL, null, 0L, false, null);
+        assertColumn(columns.get(1), null, null, DATABASE_1_ID, "bool_tinyint", "bool_tinyint", ColumnTypeDto.BOOL, null, 0L, false, null);
+        assertColumn(columns.get(2), null, null, DATABASE_1_ID, "bool_tinyint_unsigned", "bool_tinyint_unsigned", ColumnTypeDto.BOOL, null, 0L, false, null);
     }
 
     @Test
@@ -398,9 +398,9 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(DATABASE_1_ID, column3.getDatabaseId());
     }
 
-    protected static void assertViewColumn(ViewColumnDto column, Long id, Long databaseId, String name, String internalName,
-                                           ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
-                                           ImageDateDto dateFormat, String description) {
+    protected static void assertViewColumn(ViewColumnDto column, Long id, Long databaseId, String name,
+                                           String internalName, ColumnTypeDto type, Long size, Long d,
+                                           Boolean nullAllowed, String description) {
         log.trace("assert column: {}", internalName);
         assertNotNull(column);
         assertEquals(id, column.getId());
@@ -412,17 +412,11 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(d, column.getD());
         assertEquals(nullAllowed, column.getIsNullAllowed());
         assertEquals(description, column.getDescription());
-        if (dateFormat != null) {
-            assertNotNull(column.getDateFormat());
-            assertEquals(dateFormat.getId(), column.getDateFormat().getId());
-        } else {
-            assertNull(column.getDateFormat());
-        }
     }
 
     protected static void assertColumn(ColumnDto column, Long id, Long tableId, Long databaseId, String name,
                                        String internalName, ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
-                                       Long dfid, String description) {
+                                       String description) {
         log.trace("assert column: {}", internalName);
         assertNotNull(column);
         assertEquals(id, column.getId());
@@ -437,12 +431,6 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(d, column.getD());
         assertEquals(nullAllowed, column.getIsNullAllowed());
         assertEquals(description, column.getDescription());
-        if (dfid != null) {
-            assertNotNull(column.getDateFormat());
-            assertEquals(dfid, column.getDateFormat().getId());
-        } else {
-            assertNull(column.getDateFormat());
-        }
     }
 
 }

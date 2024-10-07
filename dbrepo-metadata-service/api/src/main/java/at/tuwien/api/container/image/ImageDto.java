@@ -38,9 +38,6 @@ public class ImageDto {
     @Schema(example = "org.mariadb.jdbc.Driver")
     private String driverClass;
 
-    @JsonProperty("date_formats")
-    private List<ImageDateDto> dateFormats;
-
     @NotBlank
     @Schema(example = "org.hibernate.dialect.MariaDBDialect")
     private String dialect;
@@ -59,5 +56,9 @@ public class ImageDto {
     @JsonProperty("default_port")
     @Schema(example = "3306")
     private Integer defaultPort;
+
+    @NotNull
+    @JsonProperty("data_types")
+    private List<DataTypeDto> dataTypes;
 
 }

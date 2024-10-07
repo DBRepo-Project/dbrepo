@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.entities.database.Database;
@@ -8,8 +7,8 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
-import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,10 +22,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -212,7 +211,11 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* test */
-        generic_modifyOwner(DATABASE_1, USER_1);
+        final Database response = generic_modifyOwner(DATABASE_1, USER_2);
+        assertEquals(USER_2, response.getOwner());
+        assertEquals(USER_2_ID, response.getOwnedBy());
+        assertEquals(USER_2, response.getContact());
+        assertEquals(USER_2_ID, response.getContactPerson());
     }
 
     @Test

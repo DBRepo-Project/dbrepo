@@ -250,12 +250,7 @@ public class SubsetEndpoint {
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateForbiddenStatements(data.getStatement());
         /* parameters */
-        final UUID userId;
-        if (principal == null) {
-            userId = metadataServiceGateway.getSystemUserId();
-        } else {
-            userId = UserUtil.getId(principal);
-        }
+        final UUID userId = principal != null ? UserUtil.getId(principal) : null;
         if (page == null) {
             page = 0L;
             log.debug("page not set: default to {}", page);

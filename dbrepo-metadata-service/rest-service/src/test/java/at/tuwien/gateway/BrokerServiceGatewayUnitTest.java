@@ -1,5 +1,6 @@
 package at.tuwien.gateway;
 
+import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.exception.*;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +33,12 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Autowired
     private BrokerServiceGateway brokerServiceGateway;
+
+    private final GrantExchangePermissionsDto WRITE_ALL_PERMISSIONS = GrantExchangePermissionsDto.builder()
+            .exchange("dbrepo")
+            .read("^(dbrepo\\.1\\..*)$") /* WRITE_ALL */
+            .write("^(dbrepo\\.1\\..*)$")
+            .build();
 
     @Test
     public void grantTopicPermission_exchangeNoRightsBefore_succeeds() throws BrokerServiceException,
@@ -178,43 +185,40 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void grantExchangePermission_succeeds() throws BrokerServiceException,
             BrokerServiceConnectionException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
-                .build();
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
 
         /* test */
-        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, WRITE_ALL_PERMISSIONS);
     }
 
     @Test
     public void grantExchangePermission_exists_succeeds() throws BrokerServiceException,
             BrokerServiceConnectionException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
+                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .build());
 
         /* test */
-        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, WRITE_ALL_PERMISSIONS);
     }
 
     @Test
     public void grantExchangePermission_unexpected2_fails() {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .build();
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
+                .thenReturn(ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                        .build());
 
         /* test */
         assertThrows(BrokerServiceException.class, () -> {
-            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, WRITE_ALL_PERMISSIONS);
         });
     }
 
@@ -228,7 +232,7 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(BrokerServiceConnectionException.class, () -> {
-            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, WRITE_ALL_PERMISSIONS);
         });
     }
 
@@ -242,7 +246,7 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(BrokerServiceException.class, () -> {
-            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, WRITE_ALL_PERMISSIONS);
         });
     }
 
