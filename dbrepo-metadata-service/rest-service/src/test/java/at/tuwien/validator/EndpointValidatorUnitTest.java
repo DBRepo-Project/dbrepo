@@ -53,22 +53,9 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> needSize_parameters() {
         return Stream.of(
-                Arguments.arguments(ColumnTypeDto.CHAR),
                 Arguments.arguments(ColumnTypeDto.VARCHAR),
                 Arguments.arguments(ColumnTypeDto.BINARY),
-                Arguments.arguments(ColumnTypeDto.VARBINARY),
-                Arguments.arguments(ColumnTypeDto.BIT),
-                Arguments.arguments(ColumnTypeDto.TINYINT),
-                Arguments.arguments(ColumnTypeDto.SMALLINT),
-                Arguments.arguments(ColumnTypeDto.MEDIUMINT),
-                Arguments.arguments(ColumnTypeDto.INT)
-        );
-    }
-
-    public static Stream<Arguments> needSizeAndD_parameters() {
-        return Stream.of(
-                Arguments.arguments(ColumnTypeDto.DOUBLE),
-                Arguments.arguments(ColumnTypeDto.DECIMAL)
+                Arguments.arguments(ColumnTypeDto.VARBINARY)
         );
     }
 
@@ -291,23 +278,6 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .type(type)
                         .size(null) // <<<<<<
-                        .build()))
-                .build();
-
-        /* test */
-        assertThrows(MalformedException.class, () -> {
-            endpointValidator.validateColumnCreateConstraints(request);
-        });
-    }
-
-    @ParameterizedTest
-    @MethodSource("needSizeAndD_parameters")
-    public void validateColumnCreateConstraints_needSizeAndD_fails(ColumnTypeDto type) {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
-                        .type(type)
-                        .size(10L)
-                        .d(null) // <<<<<<<
                         .build()))
                 .build();
 

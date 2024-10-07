@@ -68,17 +68,37 @@ public class EndpointValidator {
         if (data == null) {
             throw new MalformedException("Validation failed: table data is null");
         }
+        final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
         final List<ColumnTypeDto> canHaveSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
         final List<ColumnTypeDto> canHaveSizeAndD = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
         /* check size */
         final Optional<ColumnCreateDto> optional0 = data.getColumns()
                 .stream()
+                .filter(c -> Objects.isNull(c.getSize()))
+                .filter(c -> needSize.contains(c.getType()))
+                .findFirst();
+        if (optional0.isPresent()) {
+            log.error("Validation failed: column {} need size parameter", optional0.get().getName());
+            throw new MalformedException("Validation failed: column " + optional0.get().getName() + " need size parameter");
+        }
+        final Optional<ColumnCreateDto> optional0a = data.getColumns()
+                .stream()
+                .filter(c -> !Objects.isNull(c.getSize()))
+                .filter(c -> canHaveSize.contains(c.getType()))
+                .filter(c -> c.getSize() < 0)
+                .findFirst();
+        if (optional0a.isPresent()) {
+            log.error("Validation failed: column {} needs positive size parameter", optional0a.get().getName());
+            throw new MalformedException("Validation failed: column " + optional0a.get().getName() + " needs positive size parameter");
+        }
+        final Optional<ColumnCreateDto> optional0b = data.getColumns()
+                .stream()
                 .filter(c -> !Objects.isNull(c.getSize()))
                 .filter(c -> !canHaveSize.contains(c.getType()))
                 .findFirst();
-        if (optional0.isPresent()) {
-            log.error("Validation failed: column {} cannot have size parameter", optional0.get().getName());
-            throw new MalformedException("Validation failed: column " + optional0.get().getName() + " cannot have size parameter");
+        if (optional0b.isPresent()) {
+            log.error("Validation failed: column {} cannot have size parameter", optional0b.get().getName());
+            throw new MalformedException("Validation failed: column " + optional0b.get().getName() + " cannot have size parameter");
         }
         /* check size and d */
         final Optional<ColumnCreateDto> optional1 = data.getColumns()

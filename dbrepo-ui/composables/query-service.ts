@@ -196,6 +196,9 @@ export const useQueryService = (): any => {
     return {timestamp, page, size}
   }
 
+  /**
+   * data types with non-null defaultSize values require size to be set
+   */
   function mySql8DataTypes(): MySql8DataType[] {
     return [
       {value: 'bigint', text: 'BIGINT(size)', defaultSize: null, defaultD: null, signed: null, zerofill: false, quoted: false, isBuildable: true, hint: null},

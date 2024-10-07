@@ -1,16 +1,16 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.AccessService;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +57,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(null, USER_2_ID, null, null);
+            generic_create(null, null, null, null);
         });
     }
 
@@ -67,7 +67,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(USER_2_PRINCIPAL, USER_4_ID, USER_4_USERNAME, USER_4);
+            generic_create(USER_2_PRINCIPAL, USER_2, USER_4_ID, USER_4);
         });
     }
 
@@ -82,7 +82,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
-        generic_create(USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
+        generic_create(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(null, USER_4_USERNAME, USER_4, null, null);
+            generic_update(null, null, null, null, null);
         });
     }
 
@@ -138,8 +138,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     public void update_hasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_update(null, USER_4_USERNAME, USER_4, USER_1_PRINCIPAL, USER_1);
+        assertThrows(AccessNotFoundException.class, () -> {
+            generic_update(USER_1_PRINCIPAL, USER_1, USER_4_ID, USER_4, null);
         });
     }
 
@@ -149,7 +149,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(null, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL, USER_4);
+            generic_update(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1, null);
         });
     }
 
@@ -165,7 +165,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .update(eq(DATABASE_1), eq(USER_2), any(AccessTypeDto.class));
 
         /* test */
-        generic_update(DATABASE_1_USER_2_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, USER_2);
+        generic_update(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2, DATABASE_1_USER_2_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(USER_1_PRINCIPAL, USER_1);
+            generic_revoke(null, null, USER_1_ID, USER_1);
         });
     }
 
@@ -184,7 +184,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(USER_4_PRINCIPAL, USER_4);
+            generic_revoke(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1);
         });
     }
 
@@ -200,14 +200,14 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .delete(DATABASE_1, USER_2);
 
         /* test */
-        generic_revoke(USER_1_PRINCIPAL, USER_1);
+        generic_revoke(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Principal principal, UUID userId, String username, User user)
+    protected void generic_create(Principal principal, User principalUser, UUID userId, User user)
             throws NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
@@ -218,11 +218,18 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
                 .find(DATABASE_1, user);
-        if (user != null) {
-            when(userRepository.findByUsername(username))
-                    .thenReturn(Optional.of(user));
+        if (principalUser != null) {
+            when(userRepository.findByUsername(principal.getName()))
+                    .thenReturn(Optional.of(principalUser));
         } else {
             when(userRepository.findByUsername(anyString()))
+                    .thenReturn(Optional.empty());
+        }
+        if (user != null) {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+        } else {
+            when(userRepository.findById(any(UUID.class)))
                     .thenReturn(Optional.empty());
         }
 
@@ -268,61 +275,62 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         }
     }
 
-    protected void generic_update(DatabaseAccess access, String otherUsername, User otherUser, Principal principal,
-                                  User user) throws NotAllowedException, DataServiceException, DataServiceConnectionException,
-            AccessNotFoundException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+    protected void generic_update(Principal principal, User principalUser, UUID userId, User user,
+                                  DatabaseAccess access) throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, AccessNotFoundException, UserNotFoundException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         if (access != null) {
-            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), USER_1_ID, DATABASE_1_ID);
-            when(accessService.find(DATABASE_1, USER_1))
+            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, DATABASE_1_ID);
+            when(accessService.find(DATABASE_1, user))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access for user with id {} for database with id {}", USER_1_ID, DATABASE_1_ID);
+            log.trace("mock no access for user with id {} for database with id {}", userId, DATABASE_1_ID);
             doThrow(AccessNotFoundException.class)
                     .when(accessService)
-                    .find(DATABASE_1, USER_1);
+                    .find(DATABASE_1, user);
         }
-        if (otherUsername != null) {
-            when(userRepository.findByUsername(otherUsername))
-                    .thenReturn(Optional.of(otherUser));
+        if (userId != null) {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
         } else {
-            when(userRepository.findByUsername(anyString()))
+            when(userRepository.findById(any(UUID.class)))
                     .thenReturn(Optional.empty());
         }
         if (principal != null) {
             when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(user));
+                    .thenReturn(Optional.of(principalUser));
         } else {
             when(userRepository.findByUsername(anyString()))
                     .thenReturn(Optional.empty());
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO, principal);
+        final ResponseEntity<?> response = accessEndpoint.update(DATABASE_1_ID, userId, UPDATE_DATABASE_ACCESS_READ_DTO, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    protected void generic_revoke(Principal principal, User user) throws DataServiceConnectionException,
-            NotAllowedException, DataServiceException, UserNotFoundException, DatabaseNotFoundException,
-            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    protected void generic_revoke(Principal principal, User principalUser, UUID userId, User user)
+            throws DataServiceConnectionException, NotAllowedException, DataServiceException, UserNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
-        when(accessService.find(any(Database.class), eq(user)))
-                .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         if (principal != null) {
             when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(user));
+                    .thenReturn(Optional.of(principalUser));
         }
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID, principal);
+        final ResponseEntity<?> response = accessEndpoint.revoke(DATABASE_1_ID, userId, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
