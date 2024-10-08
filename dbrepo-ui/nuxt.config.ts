@@ -104,11 +104,11 @@ export default defineNuxtConfig({
      links: {
        keycloak: {
          text: 'Auth Service',
-         href: 'http://localhost/api/auth/'
+         href: '/api/auth/'
        },
        grafana: {
          text: 'Dashboard Service',
-         href: 'http://localhost:3000/dashboards'
+         href: '/dashboard/'
        }
      }
    }
