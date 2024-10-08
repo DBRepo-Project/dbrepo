@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
@@ -18,13 +17,11 @@ import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +36,6 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -62,9 +57,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private TableService tableService;
-
-    @Autowired
-    private QueryConfig queryConfig;
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
@@ -518,38 +510,26 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
-        final TableStatisticDto response = tableService.getStatistics(TABLE_1_PRIVILEGED_DTO);
-        assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
+        final TableStatisticDto response = tableService.getStatistics(TABLE_2_PRIVILEGED_DTO);
+        assertEquals(TABLE_2_COLUMNS.size(), response.getColumns().size());
         log.trace("response rows: {}", response.getRows());
         assertEquals(3L, response.getRows());
-        assertEquals(Set.of("id", "date", "location", "mintemp", "rainfall"), response.getColumns().keySet());
-        final ColumnStatisticDto column0 = response.getColumns().get("id");
-        assertEquals(BigDecimal.valueOf(1L), column0.getMin());
-        assertEquals(BigDecimal.valueOf(3L), column0.getMax());
-        assertNotNull(column0.getMean());
-        assertNotNull(column0.getMedian());
-        assertNotNull(column0.getStdDev());
-        final ColumnStatisticDto column1 = response.getColumns().get("date");
-        assertNull(column1.getMin());
-        assertNull(column1.getMax());
-        assertNull(column1.getMean());
-        assertNull(column1.getMedian());
-        assertNull(column1.getStdDev());
-        final ColumnStatisticDto column2 = response.getColumns().get("location");
-        assertNull(column2.getMin());
-        assertNull(column2.getMax());
-        assertNull(column2.getMean());
-        assertNull(column2.getMedian());
-        assertNull(column2.getStdDev());
-        final ColumnStatisticDto column3 = response.getColumns().get("mintemp");
-        assertEquals(BigDecimal.valueOf(7.4), column3.getMin());
-        assertEquals(BigDecimal.valueOf(13.4), column3.getMax());
+        assertEquals(Set.of("location", "lat", "lng"), response.getColumns().keySet());
+        final ColumnStatisticDto column0 = response.getColumns().get("location");
+        assertNull(column0.getMin());
+        assertNull(column0.getMax());
+        assertNull(column0.getMean());
+        assertNull(column0.getMedian());
+        assertNull(column0.getStdDev());
+        final ColumnStatisticDto column3 = response.getColumns().get("lat");
+        assertEquals(BigDecimal.valueOf(-36.0653583), column3.getMin());
+        assertEquals(BigDecimal.valueOf(-33.847927), column3.getMax());
         assertNotNull(column3.getMean());
         assertNotNull(column3.getMedian());
         assertNotNull(column3.getStdDev());
-        final ColumnStatisticDto column4 = response.getColumns().get("rainfall");
-        assertEquals(BigDecimal.valueOf(0L), column4.getMin());
-        assertEquals(BigDecimal.valueOf(0.6), column4.getMax());
+        final ColumnStatisticDto column4 = response.getColumns().get("lng");
+        assertEquals(BigDecimal.valueOf(146.9112214), column4.getMin());
+        assertEquals(BigDecimal.valueOf(150.6517942), column4.getMax());
         assertNotNull(column4.getMean());
         assertNotNull(column4.getMedian());
         assertNotNull(column4.getStdDev());
