@@ -854,14 +854,18 @@ metricdb:
       enabled: true
     ## @skip metricdb.server.extraScrapeConfigs
     extraScrapeConfigs:
-      - job_name: 'spring boot scrape'
+      - job_name: 'actuator scrape'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: [ 'data-service', 'metadata-service' ]
+          - targets: [ 'data-service', 'metadata-service', 'ui' ]
       - job_name: 'metrics scrape'
         metrics_path: '/metrics'
         static_configs:
-          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'ui', 'metadata-db-metrics:9104', 'dashboard-service:3000', 'storage-service-master-metrics:9327', 'upload-service' ]
+          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'metadata-db-metrics:9104', 'storage-service-master-metrics:9327', 'upload-service' ]
+      - job_name: 'dashboard scrape'
+        metrics_path: '/dashboard/metrics'
+        static_configs:
+          - targets: [ 'dashboard-service:3000' ]
 
 ## @section Ingress
 
