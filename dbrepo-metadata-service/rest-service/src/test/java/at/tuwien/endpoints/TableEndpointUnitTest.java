@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
@@ -17,12 +16,17 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
+import at.tuwien.test.AbstractUnitTest;
+import at.tuwien.validation.EndpointValidator;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
@@ -36,6 +40,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -61,11 +66,23 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MockBean
     private EntityService entityService;
 
-    @MockBean
-    private BrokerService messageQueueService;
-
     @Autowired
     private TableEndpoint tableEndpoint;
+
+    public static Stream<Arguments> needSize_parameters() {
+        return EndpointValidator.NEED_SIZE.stream()
+                .map(Arguments::arguments);
+    }
+
+    public static Stream<Arguments> canHaveSize_parameters() {
+        return EndpointValidator.CAN_HAVE_SIZE.stream()
+                .map(Arguments::arguments);
+    }
+
+    public static Stream<Arguments> canHaveSizeAndD_parameters() {
+        return EndpointValidator.CAN_HAVE_SIZE_AND_D.stream()
+                .map(Arguments::arguments);
+    }
 
     @BeforeAll
     public static void beforeAll() {
@@ -176,7 +193,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
-                        .size(-1L)
+                        .size(-1L) // <<<
                         .d(0L)
                         .build()))
                 .constraints(null)
@@ -190,28 +207,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
-    public void create_publicDecimalColumnSizeTooBig_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
-                .name("Some Table")
-                .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
-                        .name("ID")
-                        .type(ColumnTypeDto.DECIMAL)
-                        .size(66L)
-                        .d(0L)
-                        .build()))
-                .constraints(null)
-                .build();
-
-        /* test */
-        assertThrows(MalformedException.class, () -> {
-            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
-    public void create_publicDecimalColumnDTooBig_fails() {
+    public void create_publicDecimalColumnDTooSmall_fails() {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("Some Table")
                 .description("Some Description")
@@ -219,7 +215,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
                         .size(0L)
-                        .d(39L)
+                        .d(-1L) // <<<
                         .build()))
                 .constraints(null)
                 .build();
@@ -230,16 +226,98 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("canHaveSize_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
-    public void create_publicDecimalColumnDBiggerSize_fails() {
+    public void create_publicOptionalSizeNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
+            NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("Some Table")
                 .description("Some Description")
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
-                        .type(ColumnTypeDto.DECIMAL)
-                        .size(9L)
+                        .type(columnType)
+                        .size(null) // <<<
+                        .d(null) // <<<
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        if (EndpointValidator.NEED_SIZE.contains(columnType)) {
+            assertThrows(MalformedException.class, () -> {
+                generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+            });
+        } else {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSize_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicOptionalSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
+            NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(40L)
+                        .d(10L)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @ParameterizedTest
+    @MethodSource("needSize_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicNeedSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
+            NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(40L)
+                        .d(10L)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @ParameterizedTest
+    @MethodSource("needSize_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicNeedSizeNone_fails(ColumnTypeDto columnType) {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(null) // <<<
                         .d(10L)
                         .build()))
                 .constraints(null)
@@ -249,6 +327,106 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertThrows(MalformedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSizeAndD_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicCanHaveSizeAndDSizeNone_fails(ColumnTypeDto columnType) {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(null) // <<<
+                        .d(0L)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSizeAndD_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicCanHaveSizeAndDDNone_fails(ColumnTypeDto columnType) {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(0L)
+                        .d(null) // <<<
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSizeAndD_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicCanHaveSizeAndDBothNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
+            SearchServiceException, NotAllowedException, SemanticEntityNotFoundException,
+            DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
+            DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException,
+            SearchServiceConnectionException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(null) // <<<
+                        .d(null) // <<<
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @ParameterizedTest
+    @MethodSource("canHaveSizeAndD_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicCanHaveSizeAndDBothNotNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException,
+            SearchServiceException, NotAllowedException, SemanticEntityNotFoundException,
+            DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
+            DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException,
+            SearchServiceConnectionException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .size(0L) // <<<
+                        .d(0L) // <<<
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test

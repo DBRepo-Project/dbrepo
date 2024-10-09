@@ -21,11 +21,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Log4j2
 @Component
 public class EndpointValidator {
+
+    public static final List<ColumnTypeDto> NEED_SIZE = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
+    public static final List<ColumnTypeDto> CAN_HAVE_SIZE = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
+    public static final List<ColumnTypeDto> CAN_HAVE_SIZE_AND_D = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
 
     private final UserService userService;
     private final AccessService accessService;
@@ -68,14 +74,11 @@ public class EndpointValidator {
         if (data == null) {
             throw new MalformedException("Validation failed: table data is null");
         }
-        final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
-        final List<ColumnTypeDto> canHaveSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
-        final List<ColumnTypeDto> canHaveSizeAndD = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
         /* check size */
         final Optional<ColumnCreateDto> optional0 = data.getColumns()
                 .stream()
                 .filter(c -> Objects.isNull(c.getSize()))
-                .filter(c -> needSize.contains(c.getType()))
+                .filter(c -> NEED_SIZE.contains(c.getType()))
                 .findFirst();
         if (optional0.isPresent()) {
             log.error("Validation failed: column {} need size parameter", optional0.get().getName());
@@ -84,7 +87,7 @@ public class EndpointValidator {
         final Optional<ColumnCreateDto> optional0a = data.getColumns()
                 .stream()
                 .filter(c -> !Objects.isNull(c.getSize()))
-                .filter(c -> canHaveSize.contains(c.getType()))
+                .filter(c -> CAN_HAVE_SIZE.contains(c.getType()) || CAN_HAVE_SIZE_AND_D.contains(c.getType()))
                 .filter(c -> c.getSize() < 0)
                 .findFirst();
         if (optional0a.isPresent()) {
@@ -93,18 +96,19 @@ public class EndpointValidator {
         }
         final Optional<ColumnCreateDto> optional0b = data.getColumns()
                 .stream()
-                .filter(c -> !Objects.isNull(c.getSize()))
-                .filter(c -> !canHaveSize.contains(c.getType()))
+                .filter(c -> !Objects.isNull(c.getD()))
+                .filter(c -> CAN_HAVE_SIZE_AND_D.contains(c.getType()))
+                .filter(c -> c.getD() < 0)
                 .findFirst();
         if (optional0b.isPresent()) {
-            log.error("Validation failed: column {} cannot have size parameter", optional0b.get().getName());
-            throw new MalformedException("Validation failed: column " + optional0b.get().getName() + " cannot have size parameter");
+            log.error("Validation failed: column {} needs positive d parameter", optional0b.get().getName());
+            throw new MalformedException("Validation failed: column " + optional0b.get().getName() + " needs positive d parameter");
         }
         /* check size and d */
         final Optional<ColumnCreateDto> optional1 = data.getColumns()
                 .stream()
                 .filter(c -> Objects.isNull(c.getSize()) ^ Objects.isNull(c.getD()))
-                .filter(c -> canHaveSizeAndD.contains(c.getType()))
+                .filter(c -> CAN_HAVE_SIZE_AND_D.contains(c.getType()))
                 .findFirst();
         if (optional1.isPresent()) {
             log.error("Validation failed: column {} either needs both size and d parameter or none (use default)", optional1.get().getName());

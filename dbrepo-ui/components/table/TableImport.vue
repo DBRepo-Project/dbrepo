@@ -295,9 +295,6 @@ export default {
       tableImport: {
         location: null,
         quote: '"',
-        false_element: null,
-        true_element: null,
-        null_element: '',
         separator: ',',
         line_termination: '\\n',
         skip_lines: 1
