@@ -309,8 +309,9 @@ test-ui:
   dependencies:
     - build-ui
   before_script:
-    - docker compose build dbrepo-ui
-    - docker compose up -d dbrepo-ui
+    - "apk add bash apache2-utils"
+    - "docker compose build dbrepo-ui"
+    - "docker compose up -d dbrepo-ui"
   script:
     - bash ./dbrepo-ui/test/test_heap.sh || exit 1
 
