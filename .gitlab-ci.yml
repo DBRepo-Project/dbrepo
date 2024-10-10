@@ -304,6 +304,7 @@ test-ui:
   image: docker.io/docker:24-dind
   variables:
     UI_RUNTIME_OPTIONS: --max_old_space_size=256
+    ENDPOINT: http://localhost:3000
   needs:
     - build-ui
   dependencies:
@@ -311,7 +312,7 @@ test-ui:
   before_script:
     - "apk add bash apache2-utils"
     - "docker compose build dbrepo-ui"
-    - "docker compose up -d dbrepo-ui"
+    - "docker run --name dbrepo-ui -p 3000:3000 -d dbrepo-ui:latest"
   script:
     - bash ./dbrepo-ui/test/test_heap.sh || exit 1
 

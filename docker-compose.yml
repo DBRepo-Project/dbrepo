@@ -23,7 +23,6 @@ services:
     ports:
       - "3306:3306"
     environment:
-      BITNAMI_DEBUG: "true"
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
       MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
@@ -281,6 +280,11 @@ services:
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   dbrepo-data-db-sidecar:
     restart: "no"
@@ -326,8 +330,8 @@ services:
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
     depends_on:
       dbrepo-search-service:
-        condition: service_started
-      dbrepo-storage-service:
+        condition: service_healthy
+      dbrepo-upload-service:
         condition: service_healthy
     healthcheck:
       test: curl -fsSL http://127.0.0.1:3000 && curl -fsSL http://127.0.0.1:3000/health
