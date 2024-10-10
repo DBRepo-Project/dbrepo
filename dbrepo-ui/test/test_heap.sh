@@ -3,6 +3,7 @@ CALLS=1000
 CONCURRENCY=10
 ENDPOINT=http://localhost
 
+sleep 10
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/"
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/search"
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/login"
