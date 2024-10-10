@@ -314,7 +314,8 @@ test-ui:
     - "docker compose build dbrepo-ui"
     - "docker run --name dbrepo-ui -p 3000:3000 -d dbrepo-ui:latest"
   script:
-    - bash ./dbrepo-ui/test/test_heap.sh || exit 1
+    - "sleep 30"
+    - "bash ./dbrepo-ui/test/test_heap.sh || exit 1"
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:10.0
