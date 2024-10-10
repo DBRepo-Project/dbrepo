@@ -1,3 +1,14 @@
 a {
   color: var(--v-theme-primary);
 }
+
+label.native,
+select.native {
+  display: block;
+}
+
+select.native {
+  -webkit-appearance: listbox;
+  border-style: solid;
+  width: 100%;
+}

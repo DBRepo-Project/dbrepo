@@ -2,6 +2,7 @@ FROM oven/bun:1.1.20-alpine AS build
 
 WORKDIR /app
 
+COPY ./bun.lockb ./bun.lockb
 COPY ./package.json ./package.json
 
 RUN bun install
@@ -24,10 +25,12 @@ COPY ./nuxt.config.ts ./nuxt.config.ts
 
 RUN bun run build
 
-FROM oven/bun:1.1.20-alpine AS runtime
+FROM node:18.19.0-alpine3.19 AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
+
+RUN apk add --no-cache curl bash
 
 USER 1000
 
@@ -39,8 +42,8 @@ RUN chmod -R 755 /app/.output
 
 ENV NUXT_PUBLIC_VERSION="${APP_VERSION:-}"
 ENV NUXT_PUBLIC_COMMIT="${COMMIT:-}"
-ENV NODE_OPTIONS="--max_old_space_size=4096"
+ENV NODE_OPTIONS="--max_old_space_size=256"
 
 EXPOSE 3000
 
-ENTRYPOINT [ "bun", "run", ".output/server/index.mjs" ]
+ENTRYPOINT [ "node", ".output/server/index.mjs" ]
