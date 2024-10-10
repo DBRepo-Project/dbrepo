@@ -67,9 +67,14 @@
                 inline
                 color="secondary"
                 :content="brokerExtraInfo">
-                <span v-text="accessDescription" />
+                <span>
+                  {{ accessDescription }}
+                </span>
               </v-badge>
-              <span v-else v-text="accessDescription" />
+              <span
+                v-else>
+                {{ accessDescription}}
+              </span>
             </span>
           </v-list-item>
         </v-list>
@@ -87,7 +92,9 @@
           dense>
           <v-list-item
             :title="$t('pages.table.protocol.title')">
-            <span v-text="$t('pages.table.protocol.name')" />
+            <span>
+              {{ $t('pages.table.protocol.name') }}
+            </span>
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.exchange.title')">
@@ -100,7 +107,7 @@
           <v-list-item
             :title="$t('pages.table.routing-key.title')">
             <div v-if="table.routing_key">
-              <pre v-text="table.routing_key" />
+              <pre>{{ table.routing_key }}</pre>
             </div>
           </v-list-item>
           <v-list-item
@@ -113,8 +120,7 @@
                 :content="port.secure ? $t('pages.table.connection.secure') : $t('pages.table.connection.insecure')"
                 :color="port.secure ? 'success' : ''">
               <pre
-                class="pb-1"
-                v-text="amqpString(port)" />
+                class="pb-1">{{ amqpString(port) }}</pre>
               </v-badge>
             </p>
           </v-list-item>
@@ -137,8 +143,9 @@
             :title="$t('pages.database.name.title')">
             <NuxtLink
               class="text-primary"
-              :to="`/database/${database.id}`"
-              v-text="database.internal_name" />
+              :to="`/database/${database.id}`">
+              {{ database.internal_name }}
+            </NuxtLink>
           </v-list-item>
         </v-list>
       </v-card-text>

@@ -25,7 +25,7 @@ COPY ./nuxt.config.ts ./nuxt.config.ts
 
 RUN bun run build
 
-FROM node:18.19.0-alpine3.19 AS runtime
+FROM node:22.9.0-alpine3.20 AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
@@ -42,7 +42,6 @@ RUN chmod -R 755 /app/.output
 
 ENV NUXT_PUBLIC_VERSION="${APP_VERSION:-}"
 ENV NUXT_PUBLIC_COMMIT="${COMMIT:-}"
-ENV NODE_OPTIONS="--max_old_space_size=256"
 
 EXPOSE 3000
 

@@ -116,8 +116,9 @@
                 <v-col md="8">
                   <v-alert
                     border="start"
-                    color="success"
-                    v-text="$t('pages.table.subpages.schema.summary.text') + ' ' + table.internal_name" />
+                    color="success">
+                    {{ $t('pages.table.subpages.schema.summary.text') + ' ' + table.internal_name }}
+                  </v-alert>
                 </v-col>
               </v-row>
               <v-row>

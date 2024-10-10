@@ -1,20 +1,38 @@
 <template>
-  <div v-if="canListOntologies">
+  <div
+    v-if="canListOntologies">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" plain class="mr-2" to="/semantic/ontology">
+        <v-btn
+          id="back-btn"
+          plain
+          class="mr-2"
+          to="/semantic/ontology">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
       <v-toolbar-title>
-        <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+        <v-skeleton-loader
+          v-if="loading"
+          type="text"
+          class="skeleton-small" />
         <span v-if="!loading">
-          Ontology <a v-if="ontology" :href="ontology.uri" target="_blank" v-text="ontology.uri" />
+          Ontology
+          <a
+            v-if="ontology"
+            :href="ontology.uri"
+            target="_blank">
+            {{ ontology.uri }}
+          </a>
         </span>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="canDeleteOntology" :loading="loadingDelete" color="error" @click="deleteOntology">
+        <v-btn
+          v-if="canDeleteOntology"
+          :loading="loadingDelete"
+          color="error"
+          @click="deleteOntology">
           Delete Ontology
         </v-btn>
       </v-toolbar-title>

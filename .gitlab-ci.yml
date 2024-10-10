@@ -97,7 +97,7 @@ build-data-service:
     expire_in: 1 days
 
 build-ui:
-  image: oven/bun:1.0.26-alpine
+  image: oven/bun:1.1.20-alpine
   stage: build
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
@@ -298,6 +298,21 @@ test-lib:
     reports:
       junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-ui:
+  stage: test
+  image: docker.io/docker:24-dind
+  variables:
+    UI_RUNTIME_OPTIONS: --max_old_space_size=256
+  needs:
+    - build-ui
+  dependencies:
+    - build-ui
+  before_script:
+    - docker compose build dbrepo-ui
+    - docker compose up -d dbrepo-ui
+  script:
+    - bash ./dbrepo-ui/test/test_heap.sh || exit 1
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:10.0

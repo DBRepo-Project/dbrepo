@@ -110,7 +110,9 @@
             v-if="isEligibleYearRangeSearch"
             dense>
             <v-col>
-              <p v-text="$t('pages.search.publication-range.hint')" />
+              <p>
+                {{ $t('pages.search.publication-range.hint') }}
+              </p>
             </v-col>
           </v-row>
           <v-row
@@ -125,7 +127,9 @@
                 :hint="$t('pages.search.start-year.hint')"
                 :variant="inputVariant"
                 required
-                :rules="[v => !!v || $t('validation.required')]"
+                :rules="[
+                  v => !!v || $t('validation.required')
+                ]"
                 clearable />
             </v-col>
             <v-col cols="3">
@@ -144,12 +148,17 @@
             <v-col>
               <p
                 v-if="isEligibleUnitIndependentSearch"
-                v-text="$t('pages.search.concept-unit.hint')"
-                class="mt-4" />
+                class="mt-4">
+                {{ $t('pages.search.concept-unit.hint') }}
+              </p>
             </v-col>
           </v-row>
-          <v-row v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" dense>
-            <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
+          <v-row
+            v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch"
+            dense>
+            <v-col
+              v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch"
+              cols="3">
               <v-select
                 v-model="advancedSearchData['tables.columns.concept.uri']"
                 clearable
@@ -162,7 +171,9 @@
                 :label="$t('pages.search.concept.label')"
                 :hint="$t('pages.search.concept.hint')" />
             </v-col>
-            <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
+            <v-col
+              v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch"
+              cols="3">
               <v-select
                 v-model="advancedSearchData['tables.columns.unit.uri']"
                 clearable
@@ -175,7 +186,9 @@
                 :label="$t('pages.search.unit.label')"
                 :hint="$t('pages.search.unit.hint')" />
             </v-col>
-            <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
+            <v-col
+              v-if="isEligibleUnitIndependentSearch"
+              cols="3">
               <v-text-field
                 v-model="advancedSearchData['t1']"
                 clearable
@@ -185,7 +198,9 @@
                 :label="$t('pages.search.start.label')"
                 :hint="$t('pages.search.start.hint')" />
             </v-col>
-            <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
+            <v-col
+              v-if="isEligibleUnitIndependentSearch"
+              cols="3">
               <v-text-field
                 v-model="advancedSearchData['t2']"
                 clearable
@@ -196,7 +211,8 @@
                 :hint="$t('pages.search.end.hint')" />
             </v-col>
           </v-row>
-          <v-row dense>
+          <v-row
+            dense>
             <v-col>
               <v-btn
                 type="submit"
@@ -205,8 +221,9 @@
                 :loading="loading"
                 :disabled="!valid || loading || loadingFields"
                 size="small"
-                :text="$t('navigation.search')"
-                @click="advancedSearch" />
+                @click="advancedSearch">
+                {{ $t('navigation.search') }}
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>

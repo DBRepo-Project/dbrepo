@@ -22,8 +22,9 @@
               color="info">
               {{ $t('pages.table.subpages.import.dataset.text') }}
               <NuxtLink
-                :href="`/database/${$route.params.database_id}/table/create/schema`"
-                v-text="$t('pages.table.subpages.import.schema.text')" />
+                :href="`/database/${$route.params.database_id}/table/create/schema`">
+                {{ $t('pages.table.subpages.import.schema.text') }}
+              </NuxtLink>
             </v-alert>
           </v-col>
         </v-row>
@@ -140,7 +141,9 @@
                     border="start"
                     color="success">
                     {{ $t('pages.table.subpages.create.summary.text') }}
-                    <strong v-text="table.internal_name"/>
+                    <strong>
+                      {{ table.internal_name }}
+                    </strong>
                   </v-alert>
                 </v-col>
               </v-row>

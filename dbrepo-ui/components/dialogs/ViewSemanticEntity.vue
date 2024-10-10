@@ -1,17 +1,32 @@
 <template>
   <div>
     <v-card>
-      <v-card-title v-text="entity.name" />
+      <v-card-title>
+        {{ entity.name }}
+      </v-card-title>
       <v-card-subtitle>
-        <a :href="entity.uri" target="_blank" v-text="entity.uri" />
+        <a
+          :href="entity.uri"
+          target="_blank">
+          {{ entity.uri }}
+        </a>
       </v-card-subtitle>
       <v-card-text>
-        <p v-text="description" />
+        <p>
+          {{ description }}
+        </p>
       </v-card-text>
-      <div v-for="(item,idx) in entity.columns" :key="idx">
+      <div
+        v-for="(item,idx) in entity.columns"
+        :key="idx">
         <v-list-item two-line :to="link(item)">
-          <v-list-item-title v-text="item.name" />
-          <v-list-item-subtitle class="mt-2" v-text="link(item)" />
+          <v-list-item-title>
+            {{ item.name }}
+          </v-list-item-title>
+          <v-list-item-subtitle
+            class="mt-2">
+            {{ link(item) }}
+          </v-list-item-subtitle>
         </v-list-item>
       </div>
       <v-card-actions>

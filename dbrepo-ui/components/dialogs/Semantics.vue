@@ -12,14 +12,21 @@
             <v-alert
               border="start"
               color="info">
-              <p
-                v-text="$t('pages.table.subpages.semantics.info')" />
+              <p>
+                {{ $t('pages.table.subpages.semantics.info') }}
+              </p>
               <p
                 class="mt-1"
                 v-for="(ontology, idx) in ontologies"
                 :key="`o-${idx}`">
-                <v-badge inline :content="badge(ontology).text" :color="badge(ontology).color">
-                  <a :href="ontology.uri" v-text="ontology.uri_pattern" />
+                <v-badge
+                  inline
+                  :content="badge(ontology).text"
+                  :color="badge(ontology).color">
+                  <a
+                    :href="ontology.uri">
+                    {{ ontology.uri_pattern }}
+                  </a>
                 </v-badge>
               </p>
             </v-alert>
@@ -34,11 +41,13 @@
               color="info">
               <p>
                 <a
-                  :href="entity.uri"
-                  v-text="entity.name ? entity.name : entity.uri" />
+                  :href="entity.uri">
+                  {{ entity.name ? entity.name : entity.uri }}
+                </a>
               </p>
-              <p
-                v-text="entity.description" />
+              <p>
+                {{ entity.description }}
+              </p>
             </v-alert>
           </v-col>
         </v-row>
@@ -65,8 +74,9 @@
                 lines="one"
                 v-model="recommendation"
                 select-strategy="single-independent">
-                <v-list-subheader
-                  v-text="$t('pages.table.subpages.semantics.recommended')" />
+                <v-list-subheader>
+                  {{ $t('pages.table.subpages.semantics.recommended') }}
+                </v-list-subheader>
                 <v-list-item
                   v-for="(item, idx) in recommendations"
                   :key="`r-${idx}`"
@@ -77,8 +87,12 @@
                       <v-checkbox-btn :model-value="isActive"></v-checkbox-btn>
                     </v-list-item-action>
                   </template>
-                  <v-list-item-title v-text="item.label" />
-                  <v-list-item-subtitle v-text="subtitle(item)" />
+                  <v-list-item-title>
+                    {{ item.label }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    {{ subtitle(item) }}
+                  </v-list-item-subtitle>
                 </v-list-item>
               </v-list>
             </v-col>
