@@ -6,8 +6,9 @@
         size="small"
         icon="mdi-arrow-left"
         to="/semantic" />
-      <v-toolbar-title
-        v-text="ontologies.length + ' ' + $t('toolbars.semantic.ontologies.title')" />
+      <v-toolbar-title>
+        {{ ontologies.length + ' ' + $t('toolbars.semantic.ontologies.title') }}
+      </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canCreateOntology"

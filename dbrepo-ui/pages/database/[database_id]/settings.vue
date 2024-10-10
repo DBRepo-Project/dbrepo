@@ -89,7 +89,10 @@
             :items="database.accesses"
             :items-per-page="10">
             <template v-slot:item.qualified_name="{ item }">
-              <span v-if="item && item.user" v-text="item.user.qualified_name" />
+              <span
+                v-if="item && item.user">
+                {{ item.user.qualified_name }}
+              </span>
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn

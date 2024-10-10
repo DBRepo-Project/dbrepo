@@ -52,7 +52,7 @@
           <v-list-item
             :title="$t('pages.subset.query-hash.title')"
             density="compact">
-            <pre v-text="`${$t('pages.subset.query-hash.prefix')}${subset.query_hash}`" />
+            <pre>{{ $t('pages.subset.query-hash.prefix') }}{{ subset.query_hash }}</pre>
           </v-list-item>
           <v-list-item
             v-if="executionUTC"
@@ -63,7 +63,7 @@
           <v-list-item
             :title="$t('pages.subset.result-hash.title')"
             density="compact">
-            <pre v-text="result_hash" />
+            <pre>{{ result_hash }}</pre>
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.result-rows.title')"
@@ -90,8 +90,9 @@
             :title="$t('pages.database.name.title')">
             <NuxtLink
               class="text-primary"
-              :to="`/database/${database.id}`"
-              v-text="database.internal_name" />
+              :to="`/database/${database.id}`">
+              {{ database.internal_name }}
+            </NuxtLink>
           </v-list-item>
         </v-list>
       </v-card-text>

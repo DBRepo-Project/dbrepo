@@ -8,9 +8,14 @@
       <v-badge
         inline
         content="you"
-        color="code">{{ creatorName }}</v-badge>
+        color="code">
+        {{ creatorName }}
+      </v-badge>
     </span>
-    <span v-else v-text="creatorName" />
+    <span
+      v-else>
+      {{ creatorName }}
+    </span>
   </p>
 </template>
 

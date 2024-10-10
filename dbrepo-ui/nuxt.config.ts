@@ -1,6 +1,6 @@
-import { transformAssetUrls } from 'vite-plugin-vuetify'
+import {transformAssetUrls} from 'vite-plugin-vuetify'
 
-const proxy : any = {}
+const proxy: any = {}
 
 /* proxies the backend calls, >>NOT<< the frontend calls (clicking) */
 if (process.env.NODE_ENV === 'development') {
@@ -19,154 +19,156 @@ if (process.env.NODE_ENV === 'development') {
 /**
  * https://nuxt.com/docs/guide/concepts/rendering#hybrid-rendering
  */
-const routeRules = {
-}
+const routeRules = {}
 
 export default defineNuxtConfig({
- app: {
-   head: {
-     charset: 'utf-8',
-     viewport: 'width=device-width, initial-scale=1',
-     meta: [
-       { 'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests' }
-     ],
-     htmlAttrs: {
-       lang: 'en-US'
-     }
-   }
- },
+  app: {
+    head: {
+      charset: 'utf-8',
+      viewport: 'width=device-width, initial-scale=1',
+      meta: [
+        {'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests'}
+      ],
+      htmlAttrs: {
+        lang: 'en-US'
+      }
+    }
+  },
 
- build: {
-   transpile: ['vuetify'],
- },
+  build: {
+    transpile: ['vuetify'],
+  },
 
- css: [
-   'vuetify/lib/styles/main.sass',
-   '@mdi/font/css/materialdesignicons.min.css',
-   '@/assets/globals.css',
-   '@/assets/overrides.css',
- ],
+  builder: 'vite',
 
- runtimeConfig: {
-   public: {
-     commit: '',
-     title: 'Database Repository',
-     logo: '/logo.svg',
-     icon: '/favicon.ico',
-     touch: '/apple-touch-icon.png',
-     version: 'bun-dev',
-     broker: {
-       host: 'localhost',
-       port: {
-         '5672': false
-       },
-       extra: ''
-     },
-     variant: {
-       input: {
-         normal: 'underlined',
-         contrast: 'outlined',
-       },
-       button: {
-         normal: 'flat',
-         contrast: 'outlined',
-       },
-       list: {
-         normal: '',
-         contrast: 'flat',
-       }
-     },
-     api: {
-       client: 'http://localhost',
-       server: 'http://gateway-service',
-     },
-     upload: {
-       client: 'http://localhost/api/upload/files',
-       prefix: '/'
-     },
-     database: {
-       unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
-       image: {
-         width: 200,
-         height: 200
-       },
-       extra: ''
-     },
-     pid: {
-       default: {
-         publisher: 'Example University'
-       }
-     },
-     doi: {
-       enabled: false,
-       endpoint: 'https://doi.org'
-     },
-     links: {
-       keycloak: {
-         text: 'Auth Service',
-         href: '/api/auth/'
-       },
-       grafana: {
-         text: 'Dashboard Service',
-         href: '/dashboard/'
-       }
-     }
-   }
- },
+  css: [
+    'vuetify/lib/styles/main.sass',
+    '@mdi/font/css/materialdesignicons.min.css',
+    '@/assets/globals.css',
+    '@/assets/overrides.css',
+  ],
 
- routeRules,
+  runtimeConfig: {
+    public: {
+      commit: '',
+      title: 'Database Repository',
+      logo: '/logo.svg',
+      icon: '/favicon.ico',
+      touch: '/apple-touch-icon.png',
+      version: 'bun-dev',
+      broker: {
+        host: 'localhost',
+        port: {
+          '5672': false
+        },
+        extra: ''
+      },
+      variant: {
+        input: {
+          normal: 'underlined',
+          contrast: 'outlined',
+        },
+        button: {
+          normal: 'flat',
+          contrast: 'outlined',
+        },
+        list: {
+          normal: '',
+          contrast: 'flat',
+        }
+      },
+      api: {
+        client: 'http://localhost',
+        server: 'http://gateway-service',
+      },
+      upload: {
+        client: 'http://localhost/api/upload/files',
+        prefix: '/'
+      },
+      database: {
+        unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
+        image: {
+          width: 200,
+          height: 200
+        },
+        extra: ''
+      },
+      pid: {
+        default: {
+          publisher: 'Example University'
+        }
+      },
+      doi: {
+        enabled: false,
+        endpoint: 'https://doi.org'
+      },
+      links: {
+        keycloak: {
+          text: 'Auth Service',
+          href: '/api/auth/'
+        },
+        grafana: {
+          text: 'Dashboard Service',
+          href: '/dashboard/'
+        }
+      }
+    }
+  },
 
- devServer: {
-   port: 3001
- },
+  routeRules,
 
- modules: [
-   '@pinia/nuxt',
-   '@pinia-plugin-persistedstate/nuxt',
-   '@nuxtjs/i18n'
- ],
+  devServer: {
+    port: 3001
+  },
 
- pinia: {
-   storesDirs: ['./stores/**'],
- },
+  modules: [
+    '@artmizu/nuxt-prometheus',
+    '@nuxtjs/i18n',
+    '@pinia/nuxt',
+    '@pinia-plugin-persistedstate/nuxt'
+  ],
 
- piniaPersistedstate: {
-   storage: 'localStorage'
- },
+  pinia: {
+    storesDirs: ['./stores/**'],
+  },
 
- i18n: {
-   lazy: false,
-   langDir: 'locales',
-   strategy: 'no_prefix',
-   defaultLocale: 'de',
-   locales: [
-     {
-       'code': 'en',
-       'file': 'en-US.json',
-       'name': 'English (US)',
-       'iso': 'en-US'
-     },
-     {
-       'code': 'de',
-       'file': 'de-AT.json',
-       'name': 'German (AT)',
-       'iso': 'de-AT'
-     }
-   ]
+  piniaPersistedstate: {
+    storage: 'localStorage'
+  },
 
- },
+  i18n: {
+    lazy: false,
+    langDir: 'locales',
+    strategy: 'no_prefix',
+    defaultLocale: 'de',
+    locales: [
+      {
+        'code': 'en',
+        'file': 'en-US.json',
+        'name': 'English (US)',
+        'iso': 'en-US'
+      },
+      {
+        'code': 'de',
+        'file': 'de-AT.json',
+        'name': 'German (AT)',
+        'iso': 'de-AT'
+      }
+    ]
 
- vite: {
-   server: {
-     proxy
-   },
-   vue: {
-     template: {
-       transformAssetUrls,
-     },
-   },
- },
+  },
 
- devtools: { enabled: true },
- compatibilityDate: '2024-07-24'
+  vite: {
+    server: {
+      proxy
+    },
+    vue: {
+      template: {
+        transformAssetUrls,
+      },
+    },
+  },
+
+  devtools: {enabled: true},
+  compatibilityDate: '2024-07-24'
 })

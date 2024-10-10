@@ -7,9 +7,13 @@
         <v-card-text>
           <v-row dense>
             <v-col>
-              <span v-text="$t('pages.table.subpages.drop.warning.prefix')" />
+              <span>
+                {{ $t('pages.table.subpages.drop.warning.prefix') }}
+              </span>
               &nbsp;<code class="code-key">{{ table.internal_name }}</code>&nbsp;
-              <span v-text="$t('pages.table.subpages.drop.warning.suffix')" />
+              <span>
+                {{ $t('pages.table.subpages.drop.warning.suffix') }}
+              </span>
             </v-col>
           </v-row>
           <v-row>

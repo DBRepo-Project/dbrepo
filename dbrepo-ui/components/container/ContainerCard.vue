@@ -4,9 +4,12 @@
     variant="flat"
     rounded="0">
     <v-divider class="mx-4" />
-    <v-card-title
-      v-text="container.name" />
-    <v-card-subtitle v-text="$t('pages.container.subtitle.text')" />
+    <v-card-title>
+      {{ container.name }}
+    </v-card-title>
+    <v-card-subtitle>
+      {{ $t('pages.container.subtitle.text') }}
+    </v-card-subtitle>
     <v-card-text>
       <v-progress-linear
         v-model="utilization"

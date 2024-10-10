@@ -99,8 +99,9 @@
           v-if="$route.query.location"
           dense>
           <v-col>
-            <p
-              v-text="$t('pages.table.subpages.import.storage.text')" />
+            <p>
+              {{ $t('pages.table.subpages.import.storage.text') }}
+            </p>
             <v-chip
               prepend-icon="mdi-cloud-upload"
               label>
@@ -122,9 +123,13 @@
                   border="start"
                   color="warning">
                   {{ $t('pages.table.subpages.import.separator.warn.prefix') }}
-                  <strong v-text="tableImport.separator"/>
+                  <strong>
+                    {{ tableImport.separator }}
+                  </strong>
                   {{ $t('pages.table.subpages.import.separator.warn.middle') }}
-                  <strong v-text="suggestedAnalyseSeparator"/>
+                  <strong>
+                    {{ suggestedAnalyseSeparator }}
+                  </strong>
                   {{ $t('pages.table.subpages.import.separator.warn.suffix') }}
                 </v-alert>
               </v-col>
@@ -236,7 +241,9 @@
             <v-alert
               border="start"
               color="success">
-              <span v-text="$t(`pages.table.subpages.import.summary.text`)"/>
+              <span>
+                {{ $t(`pages.table.subpages.import.summary.text`)}}
+              </span>
             </v-alert>
           </v-col>
         </v-row>

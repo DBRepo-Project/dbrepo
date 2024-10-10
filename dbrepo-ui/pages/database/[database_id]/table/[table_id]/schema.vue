@@ -20,8 +20,10 @@
         :items="table.columns">
         <template v-slot:item.is_null_allowed="{ item }">
           <span
-            v-if="item.is_null_allowed"
-            v-text="$t('pages.table.subpages.schema.bullet')" /> {{ item.is_null_allowed }}
+            v-if="item.is_null_allowed">
+            {{ $t('pages.table.subpages.schema.bullet') }}
+          </span>
+          {{ item.is_null_allowed }}
         </template>
         <template v-slot:item.extra="{ item }">
           <pre>{{ extra(item) }}</pre>
@@ -47,8 +49,9 @@
             @click="pick(item, 'concept')" />
           <a
             v-if="!canAssignSemanticInformation && hasConcept(item)"
-            :href="item.concept.uri"
-            v-text="item.concept.name ? item.concept.name : item.concept.uri" />
+            :href="item.concept.uri">
+            {{ item.concept.name ? item.concept.name : item.concept.uri }}
+          </a>
         </template>
         <template v-slot:item.column_unit="{ item }">
           <v-btn
@@ -68,8 +71,9 @@
             @click="pick(item, 'unit')" />
           <a
             v-if="!canAssignSemanticInformation && hasUnit(item)"
-            :href="item.unit.uri"
-            v-text="item.unit.name ? item.unit.name : item.unit.uri" />
+            :href="item.unit.uri">
+            {{ item.unit.name ? item.unit.name : item.unit.uri }}
+          </a>
         </template>
       </v-data-table>
     </v-card>
@@ -84,18 +88,18 @@
           <ul>
             <li v-if="table.constraints.primary_key.length > 0">
               <strong>PRIMARY KEY</strong>
-              (<i v-text="primaryKeysColumns" />)
+              (<i>{{ primaryKeysColumns }}</i>)
             </li>
             <li v-for="(foreignKey, i) in table.constraints.foreign_keys" :key="`fk-${i}`">
-              <strong>FOREIGN KEY</strong> <span v-text="foreignKey.name" /> (<i v-text="foreignKeyColumns(foreignKey)" />) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" /> (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
+              <strong>FOREIGN KEY</strong> <span>{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>)
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong>UNIQUE INDEX</strong>
-              (<i v-text="uniqueColumns(uniqueConstraint)" />)
+              (<i>{{ uniqueColumns(uniqueConstraint) }}</i>)
             </li>
             <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
               <strong>CHECK CONSTRAINT</strong>
-              (<i v-text="checkConstraint" />)
+              (<i>{{ checkConstraint }}</i>)
             </li>
           </ul>
         </v-container>

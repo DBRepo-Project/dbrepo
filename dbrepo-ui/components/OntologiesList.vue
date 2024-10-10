@@ -8,10 +8,12 @@
       rounded="0">
       <v-divider
         class="mx-4" />
-      <v-card-title
-        v-text="ontology.prefix" />
-      <v-card-subtitle
-        v-text="ontology.uri" />
+      <v-card-title>
+        {{ ontology.prefix }}
+      </v-card-title>
+      <v-card-subtitle>
+        {{ ontology.uri }}
+      </v-card-subtitle>
       <v-card-text>
         <div
           class="db-tags">

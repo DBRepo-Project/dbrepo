@@ -12,8 +12,9 @@
           type="subtitle"
           width="200" />
         <span
-          v-if="table && $vuetify.display.lgAndUp"
-          v-text="table.name" />
+          v-if="table && $vuetify.display.lgAndUp">
+          {{ table.name}}
+        </span>
       </v-toolbar-title>
       <v-spacer />
       <v-btn

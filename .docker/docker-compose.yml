@@ -15,7 +15,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -25,6 +25,7 @@ services:
     environment:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -37,7 +38,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -45,6 +46,7 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -65,6 +67,7 @@ services:
     environment:
       MARIADB_DATABASE: "${AUTH_DB_NAME:-keycloak}"
       MARIADB_ROOT_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${AUTH_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${AUTH_DB_PASSWORD:-dbrepo}" --silent
       interval: 15s
@@ -190,7 +193,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.12-debian-12
+    image: docker.io/bitnami/rabbitmq:3.13.7-debian-12-r4
     ports:
       - 5672:5672
       - 1883:1883
@@ -200,6 +203,8 @@ services:
       - ./config/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./config/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
+    environment:
+      RABBITMQ_FEATURE_FLAGS: mqtt_v5
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -251,6 +256,11 @@ services:
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   dbrepo-data-db-sidecar:
     restart: "no"
@@ -281,9 +291,14 @@ services:
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
-      NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files/"
+      NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
+    depends_on:
+      dbrepo-search-service:
+        condition: service_healthy
+      dbrepo-upload-service:
+        condition: service_healthy
     healthcheck:
-      test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
+      test: curl -fsSL http://127.0.0.1:3000 && curl -fsSL http://127.0.0.1:3000/health
       interval: 10s
       timeout: 5s
       retries: 12

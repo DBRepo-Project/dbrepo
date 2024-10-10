@@ -65,8 +65,9 @@
                 :title="$t('pages.database.name.title')">
                 <NuxtLink
                   class="text-primary"
-                  :to="`/database/${database.id}`"
-                  v-text="database.internal_name" />
+                  :to="`/database/${database.id}`">
+                  {{ database.internal_name }}
+                </NuxtLink>
               </v-list-item>
             </v-list>
           </v-card-text>

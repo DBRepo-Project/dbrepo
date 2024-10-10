@@ -2,17 +2,19 @@
   <div>
     <v-toolbar
       variant="flat">
-      <v-toolbar-title
-        v-text="header" />
+      <v-toolbar-title>
+        {{ header }}
+      </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canCreateDatabase"
         class="mr-4"
         prepend-icon="mdi-plus"
-        :text="$t('toolbars.database.create.text')"
         color="primary"
         variant="flat"
-        @click.stop="createDbDialog = true" />
+        @click.stop="createDbDialog = true">
+        {{ $t('toolbars.database.create.text') }}
+      </v-btn>
     </v-toolbar>
     <v-card
       rounded="0"
@@ -25,7 +27,7 @@
       v-if="isDatabaseSearch"
       :loading="loading"
       :databases="results" />
-    <div v-else>
+    <div>
       <v-card
         v-for="(result, idx) in results"
         :key="idx"
@@ -36,10 +38,16 @@
         <v-divider class="mx-4" />
         <v-card-title
           class="text-primary text-decoration-underline">
-          <a v-if="link(result)" :href="link(result)">{{ title(result) }}</a>
-          <span v-else>{{ title(result) }}</span>
+          <a v-if="link(result)" :href="link(result)">
+            {{ title(result) }}
+          </a>
+          <span v-else>
+            {{ title(result) }}
+          </span>
         </v-card-title>
-        <v-card-subtitle v-text="description(result)" />
+        <v-card-subtitle>
+          {{ description(result) }}
+        </v-card-subtitle>
         <v-card-text>
           <div
             v-if="tags(result).length > 0"
@@ -49,8 +57,9 @@
               :key="i"
               size="small"
               :color="tag.color"
-              variant="outlined"
-              v-text="tag.text" />
+              variant="outlined">
+              {{ tag.text }}
+            </v-chip>
           </div>
         </v-card-text>
       </v-card>

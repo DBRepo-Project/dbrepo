@@ -60,8 +60,9 @@
       <v-card
         v-if="error"
         variant="flat">
-        <v-card-text
-          v-text="$t('error.table.connection')" />
+        <v-card-text>
+          {{ $t('error.table.connection') }}
+        </v-card-text>
       </v-card>
       <v-data-table-server
         v-if="!error"

@@ -6,9 +6,13 @@
       autocomplete="off"
       @submit.prevent="submit">
       <v-card
-        variant="elevated"
-        :title="$t('pages.database.subpages.create.title')"
-        :subtitle="$t('pages.database.subpages.create.subtitle')">
+        variant="elevated">
+        <v-card-title>
+          {{ $t('pages.database.subpages.create.title') }}
+        </v-card-title>
+        <v-card-subtitle>
+          {{ $t('pages.database.subpages.create.subtitle') }}
+        </v-card-subtitle>
         <v-card-text>
           <v-row dense>
             <v-col>
@@ -58,16 +62,18 @@
           <v-spacer />
           <v-btn
             :variant="buttonVariant"
-            :text="$t('navigation.cancel')"
-            @click="cancel" />
+            @click="cancel">
+            {{ $t('navigation.cancel') }}
+          </v-btn>
           <v-btn
             :disabled="!valid || loading"
             color="primary"
             type="submit"
             variant="flat"
-            :text="$t('pages.database.subpages.create.submit.text')"
             :loading="loading"
-            @click="create" />
+            @click="create">
+            {{ $t('pages.database.subpages.create.submit.text') }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-form>

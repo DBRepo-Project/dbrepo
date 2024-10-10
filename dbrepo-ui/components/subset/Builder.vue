@@ -194,7 +194,7 @@
                     <v-col
                       md="8"
                       class="text-center">
-                      <pre v-text="clause.type.toUpperCase()" />
+                      <pre>{{ clause.type.toUpperCase() }}</pre>
                     </v-col>
                   </v-row>
                   <div
@@ -233,13 +233,17 @@
                   <v-alert
                     border="start"
                     color="warning">
-                    <span v-text="$t('pages.subset.subpages.create.expert.warn')" />
-                    <pre style="white-space:inherit;" v-text="unsupported.join(', ')" />
+                    <span>
+                      {{ $t('pages.subset.subpages.create.expert.warn') }}
+                    </span>
+                    <pre style="white-space:inherit;">{{ unsupported.join(', ') }}</pre>
                   </v-alert>
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col v-text="$t('pages.subset.subpages.create.subtitle')" />
+                <v-col>
+                  {{ $t('pages.subset.subpages.create.subtitle') }}
+                </v-col>
               </v-row>
               <v-row dense>
                 <v-col>

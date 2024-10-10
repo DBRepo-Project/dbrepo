@@ -11,6 +11,7 @@
     "prod": "bun run .output/server/index.mjs"
   },
   "dependencies": {
+    "@artmizu/nuxt-prometheus": "^2.4.0",
     "@fontsource/open-sans": "^5.0.24",
     "@mdi/font": "^7.4.47",
     "@nuxtjs/robots": "^3.0.0",
@@ -36,7 +37,7 @@
     "vue-meta": "^2.4.0",
     "vue-toast-notification": "^3.1.2",
     "vue3-ace-editor": "^2.2.4",
-    "vuetify": "^3.5.7"
+    "vuetify": "^3.7.2"
   },
   "devDependencies": {
     "@nuxtjs/i18n": "^8.1.1",

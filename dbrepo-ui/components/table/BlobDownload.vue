@@ -1,6 +1,6 @@
 <template>
   <div>
-    <pre v-text="description" />
+    <pre>{{ description }}</pre>
   </div>
 </template>
 
