@@ -1,8 +1,9 @@
 #!/bin/bash
-CALLS=1000
-CONCURRENCY=10
-ENDPOINT=http://localhost
+CALLS=${CALLS:-1000}
+CONCURRENCY=${CONCURRENCY:-10}
+ENDPOINT=${ENDPOINT:-http://localhost}
 
+echo "[DEBUG] Testing endpoint: ${ENDPOINT} x${CALLS} (concurrency ${CONCURRENCY})"
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/"
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/search"
 ab -n "${CALLS}" -c "${CONCURRENCY}" "${ENDPOINT}/login"

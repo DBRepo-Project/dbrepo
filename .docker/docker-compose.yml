@@ -289,7 +289,6 @@ services:
     hostname: ui
     image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
     environment:
-      NODE_OPTIONS: "${UI_RUNTIME_OPTIONS:-}"
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
