@@ -487,9 +487,6 @@ class Import(BaseModel):
     separator: str
     quote: Optional[str] = None
     skip_lines: Optional[int] = None
-    false_element: Optional[bool] = None
-    true_element: Optional[bool] = None
-    null_element: Optional[str] = None
     line_termination: Optional[str] = None
 
 

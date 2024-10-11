@@ -6,10 +6,10 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`quay.io/keycloak/keycloak:24.0`](quay.io/keycloak/keycloak)
+    Image: [`docker.io/bitnami/keycloak:26.0.0-debian-12-r1`](https://hub.docker.com/r/bitnami/keycloak)
 
     * Ports: 8080/tcp
-    * UI: `http://<hostname>/api/auth/`
+    * UI: `http://<hostname>:8080/`
 
 ## Overview
 

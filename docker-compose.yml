@@ -59,17 +59,18 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/postgresql:17.0.0-debian-12-r1
     volumes:
-      - auth-db-data:/bitnami/mariadb
+      - auth-db-data:/bitnami/postgresql
     ports:
-      - "3308:3306"
+      - "5432:5432"
     environment:
-      MARIADB_DATABASE: "${AUTH_DB_NAME:-keycloak}"
-      MARIADB_ROOT_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${AUTH_DB_BACKUP_PASSWORD:-dbrepobackup}"
+      POSTGRESQL_DATABASE: "${AUTH_DB_NAME:-keycloak}"
+      POSTGRESQL_USERNAME: "${AUTH_DB_USERNAME:-keycloak}"
+      POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user=root --password="${AUTH_DB_PASSWORD:-dbrepo}" --silent
+      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
       interval: 15s
       timeout: 5s
       retries: 12
@@ -80,23 +81,27 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: dbrepo-auth-service:latest
+    image: bitnami/keycloak:26.0.0-debian-12-r1
+    volumes:
+      - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
+      - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
+      - ./dbrepo-auth-service/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
     ports:
       - "8080:8080"
-    build:
-      context: ./dbrepo-auth-service
-      network: host
+    environment:
+      BITNAMI_DEBUG: "true"
+      KEYCLOAK_ENABLE_HTTPS: "false"
+      KEYCLOAK_ENABLE_STATISTICS: "true"
+      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
+      KEYCLOAK_DATABASE_HOST: "auth-db"
+      KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
+      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
+      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
-      interval: 15s
+      test: curl --head -fsS http://localhost:9000/health/ready
+      interval: 10s
       timeout: 5s
       retries: 12
-    environment:
-      AUTH_DB: "${AUTH_DB:-keycloak}"
-      KC_DB_USERNAME: root
-      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      KEYCLOAK_ADMIN: "${AUTH_SERVICE_ADMIN_USERNAME:-admin}"
-      KEYCLOAK_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -353,11 +358,7 @@ services:
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
-      dbrepo-auth-service:
-        condition: service_healthy
       dbrepo-broker-service:
-        condition: service_healthy
-      dbrepo-dashboard-service:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
@@ -394,6 +395,7 @@ services:
 
   dbrepo-search-service-init:
     restart: "no"
+    init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
     image: dbrepo-search-service-init:latest
@@ -460,6 +462,8 @@ services:
     build:
       context: ./dbrepo-dashboard-service
       network: host
+    ports:
+      - "3000:3000"
     volumes:
       - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
@@ -479,6 +483,7 @@ services:
 
   dbrepo-storage-service-init:
     restart: "no"
+    init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
     image: dbrepo-storage-service-init:latest
