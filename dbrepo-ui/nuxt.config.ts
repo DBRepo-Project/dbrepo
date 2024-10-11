@@ -102,16 +102,7 @@ export default defineNuxtConfig({
         enabled: false,
         endpoint: 'https://doi.org'
       },
-      links: {
-        keycloak: {
-          text: 'Auth Service',
-          href: '/api/auth/'
-        },
-        grafana: {
-          text: 'Dashboard Service',
-          href: '/dashboard/'
-        }
-      }
+      links: {}
     }
   },
 

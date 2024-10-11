@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.4.6</version>
+    <version>1.4.7</version>
 
     <description>Service that manages the metadata</description>
 
@@ -27,7 +27,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
