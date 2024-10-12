@@ -10,7 +10,7 @@
         v-if="canCreateDatabase"
         class="mr-4"
         prepend-icon="mdi-plus"
-        color="primary"
+        color="secondary"
         variant="flat"
         @click.stop="createDbDialog = true">
         {{ $t('toolbars.database.create.text') }}

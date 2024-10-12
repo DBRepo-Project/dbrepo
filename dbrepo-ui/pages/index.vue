@@ -11,7 +11,7 @@
         prepend-icon="mdi-plus"
         variant="flat"
         :text="$t('toolbars.database.create.text')"
-        color="primary"
+        color="secondary"
         @click.stop="dialog = true" />
     </v-toolbar>
     <DatabaseList
