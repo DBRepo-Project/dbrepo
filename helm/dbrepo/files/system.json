@@ -1292,7 +1292,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "auth-service:8080"
+              "options": "auth-service:9000"
             },
             "properties": [
               {
@@ -1442,10 +1442,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -1455,7 +1451,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "auth-service:8080"
+              "options": "auth-service:9000"
             },
             "properties": [
               {
@@ -1803,7 +1799,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "1m",
   "schemaVersion": 39,
   "tags": [
     "provisioned",
