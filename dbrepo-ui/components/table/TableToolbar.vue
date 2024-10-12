@@ -13,7 +13,7 @@
           width="200" />
         <span
           v-if="table && $vuetify.display.lgAndUp">
-          {{ table.name}}
+          {{ table.name }}
         </span>
       </v-toolbar-title>
       <v-spacer />

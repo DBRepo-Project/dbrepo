@@ -6,6 +6,8 @@ services[9093]=data
 services[9099]=metadata
 services[3305]=sidecar
 
+# requires https://github.com/mikefarah/yq/ -> v4.44.3
+
 function retrieve () {
   if [[ "$2" == analyse ]] || [[ "$2" == search ]] || [[ "$2" == sidecar ]]; then
     echo "... retrieve json api from localhost:$1"

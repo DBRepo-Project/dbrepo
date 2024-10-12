@@ -12,6 +12,7 @@ nav:
     - Help with DBRepo: help.md
     - Installation: installation.md
     - Kubernetes: kubernetes.md
+    - changelog.md
     - contributing.md
   - Concepts:
     - Overview: concepts/index.md

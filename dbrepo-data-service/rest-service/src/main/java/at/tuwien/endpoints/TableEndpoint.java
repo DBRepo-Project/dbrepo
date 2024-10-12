@@ -555,7 +555,7 @@ public class TableEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             NotAllowedException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
             StorageNotFoundException, MetadataServiceException {
-        log.debug("endpoint find table history, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
+        log.debug("endpoint export table data, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
         /* parameters */
         if (timestamp == null) {
             timestamp = Instant.now();

@@ -49,6 +49,9 @@ public enum ColumnTypeDto {
     @JsonProperty("set")
     SET("set"),
 
+    @JsonProperty("serial")
+    SERIAL("serial"),
+
     @JsonProperty("bit")
     BIT("bit"),
 

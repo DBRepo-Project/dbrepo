@@ -167,7 +167,7 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         final List<ColumnDto> columns = response.getColumns();
         assertNotNull(columns);
         assertEquals(5, columns.size());
-        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
+        assertColumn(columns.get(0), null, null, DATABASE_1_ID, "id", "id", ColumnTypeDto.BIGINT, 20L, 0L, false, null);
         assertColumn(columns.get(1), null, null, DATABASE_1_ID, "date", "date", ColumnTypeDto.DATE, null, null, false, null);
         assertColumn(columns.get(2), null, null, DATABASE_1_ID, "location", "location", ColumnTypeDto.VARCHAR, 255L, null, true, "Closest city");
         assertColumn(columns.get(3), null, null, DATABASE_1_ID, "mintemp", "mintemp", ColumnTypeDto.DOUBLE, 22L, null, true, null);

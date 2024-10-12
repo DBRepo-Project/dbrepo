@@ -97,7 +97,7 @@ public class View {
     @ToString.Exclude
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "view")
-    @OrderColumn(name = "ordinalPosition")
+    @OrderBy("ordinalPosition")
     private List<ViewColumn> columns;
 
     @CreatedDate

@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.4.4
+  version: 1.4.7
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -929,7 +929,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ImportCsvDto'
+              $ref: '#/components/schemas/ImportDto'
         required: true
       responses:
         '202':
@@ -5605,7 +5605,7 @@ components:
           type: object
           additionalProperties:
             type: object
-    ImportCsvDto:
+    ImportDto:
       required:
         - location
         - separator
@@ -5624,13 +5624,6 @@ components:
           minimum: 0
           type: integer
           format: int64
-        false_element:
-          type: string
-        true_element:
-          type: string
-        null_element:
-          type: string
-          example: NA
         line_termination:
           type: string
           example: \r\n
@@ -5760,6 +5753,7 @@ components:
             - longblob
             - enum
             - set
+            - serial
             - bit
             - tinyint
             - bool
@@ -5777,7 +5771,6 @@ components:
             - year
     ColumnDto:
       required:
-        - auto_generated
         - column_type
         - database_id
         - id
@@ -5845,11 +5838,6 @@ components:
           minLength: 0
           type: string
           example: mdb_date
-        date_format:
-          $ref: '#/components/schemas/ImageDateDto'
-        auto_generated:
-          type: boolean
-          example: false
         index_length:
           type: integer
           format: int64
@@ -5874,6 +5862,7 @@ components:
             - longblob
             - enum
             - set
+            - serial
             - bit
             - tinyint
             - bool
@@ -6014,6 +6003,64 @@ components:
         ui_port:
           type: integer
           format: int32
+    DataTypeDto:
+      required:
+        - display_name
+        - documentation
+        - is_buildable
+        - is_quoted
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          example: time
+        documentation:
+          type: string
+          example: 'https://mariadb.com/kb/en/time/'
+        display_name:
+          type: string
+          example: TIME(fsp)
+        size_min:
+          type: integer
+          format: int32
+          example: 0
+        size_max:
+          type: integer
+          format: int32
+          example: 6
+        size_default:
+          type: integer
+          format: int32
+          example: 0
+        size_required:
+          type: boolean
+          example: false
+        d_min:
+          type: integer
+          format: int32
+        d_max:
+          type: integer
+          format: int32
+        d_default:
+          type: integer
+          format: int32
+        d_required:
+          type: boolean
+        data_hint:
+          type: string
+          example: 'e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S'
+        type_hint:
+          type: string
+          example: 'fsp=microsecond precision, min. 0, max. 6'
+        is_quoted:
+          type: boolean
+          description: frontend needs to quote this data type
+          example: false
+        is_buildable:
+          type: boolean
+          description: frontend can build this data type
+          example: true
     DatabaseAccessDto:
       required:
         - created
@@ -6164,33 +6211,9 @@ components:
           $ref: '#/components/schemas/ForeignKeyBriefDto'
         referenced_column:
           $ref: '#/components/schemas/ColumnBriefDto'
-    ImageDateDto:
-      required:
-        - created_at
-        - database_format
-        - has_time
-        - id
-        - unix_format
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        database_format:
-          type: string
-          example: '%d.%c.%Y'
-        unix_format:
-          type: string
-          example: dd.MM.YYYY
-        has_time:
-          type: boolean
-          example: false
-        created_at:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
     ImageDto:
       required:
+        - data_types
         - default
         - default_port
         - dialect
@@ -6220,10 +6243,6 @@ components:
         driver_class:
           type: string
           example: org.mariadb.jdbc.Driver
-        date_formats:
-          type: array
-          items:
-            $ref: '#/components/schemas/ImageDateDto'
         jdbc_method:
           type: string
           example: mariadb
@@ -6234,6 +6253,10 @@ components:
           type: integer
           format: int32
           example: 3306
+        data_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataTypeDto'
     PrimaryKeyDto:
       required:
         - column
@@ -6494,8 +6517,6 @@ components:
           minLength: 0
           type: string
           example: mdb_date
-        date_format:
-          $ref: '#/components/schemas/ImageDateDto'
         auto_generated:
           type: boolean
           example: false
@@ -6523,6 +6544,7 @@ components:
             - longblob
             - enum
             - set
+            - serial
             - bit
             - tinyint
             - bool
@@ -8169,6 +8191,7 @@ components:
             - longblob
             - enum
             - set
+            - serial
             - bit
             - tinyint
             - bool
@@ -8197,10 +8220,6 @@ components:
           minLength: 0
           type: string
           example: Formatted as YYYY-MM-dd
-        dfid:
-          type: integer
-          description: date format id
-          format: int64
         enums:
           type: array
           description: 'enum values, only considered when type = ENUM'
@@ -8409,14 +8428,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8692,10 +8711,6 @@ components:
           format: int32
         isDefault:
           type: boolean
-        dateFormats:
-          type: array
-          items:
-            $ref: '#/components/schemas/ContainerImageDate'
         containers:
           type: array
           items:
@@ -8706,28 +8721,10 @@ components:
         lastModified:
           type: string
           format: date-time
-    ContainerImageDate:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        iid:
-          type: integer
-          format: int64
-        image:
-          $ref: '#/components/schemas/ContainerImage'
-        example:
-          type: string
-        hasTime:
-          type: boolean
-        databaseFormat:
-          type: string
-        unixFormat:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
+        dataTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataType'
     Creator:
       type: object
       properties:
@@ -8776,6 +8773,50 @@ components:
           type: string
         ieeeName:
           type: string
+    DataType:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        displayName:
+          type: string
+        value:
+          type: string
+        sizeMin:
+          type: integer
+          format: int32
+        sizeMax:
+          type: integer
+          format: int32
+        sizeDefault:
+          type: integer
+          format: int32
+        sizeRequired:
+          type: boolean
+        documentation:
+          type: string
+        typeHint:
+          type: string
+        dataHint:
+          type: string
+        quoted:
+          type: boolean
+        buildable:
+          type: boolean
+        image:
+          $ref: '#/components/schemas/ContainerImage'
+        dmin:
+          type: integer
+          format: int32
+        dmax:
+          type: integer
+          format: int32
+        ddefault:
+          type: integer
+          format: int32
+        drequired:
+          type: boolean
     Database:
       type: object
       properties:
@@ -9775,14 +9816,10 @@ components:
         id:
           type: integer
           format: int64
-        dateFormat:
-          $ref: '#/components/schemas/ContainerImageDate'
         table:
           $ref: '#/components/schemas/Table'
         name:
           type: string
-        autoGenerated:
-          type: boolean
         internalName:
           type: string
         description:
@@ -9809,6 +9846,7 @@ components:
             - TableColumnType.LONGBLOB
             - TableColumnType.ENUM
             - TableColumnType.SET
+            - TableColumnType.SERIAL
             - TableColumnType.BIT
             - TableColumnType.TINYINT
             - TableColumnType.BOOL
@@ -9994,8 +10032,6 @@ components:
         id:
           type: integer
           format: int64
-        dateFormat:
-          $ref: '#/components/schemas/ContainerImageDate'
         view:
           $ref: '#/components/schemas/View'
         name:
@@ -10021,6 +10057,7 @@ components:
             - TableColumnType.LONGBLOB
             - TableColumnType.ENUM
             - TableColumnType.SET
+            - TableColumnType.SERIAL
             - TableColumnType.BIT
             - TableColumnType.TINYINT
             - TableColumnType.BOOL

@@ -1,8 +1,6 @@
 package at.tuwien.validation;
 
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.PaginationException;

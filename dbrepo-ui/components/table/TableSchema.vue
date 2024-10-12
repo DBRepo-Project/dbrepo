@@ -76,9 +76,10 @@
           <v-text-field
             v-model.number="c.size"
             type="number"
-            :min="columnType(c).size_min !== null ? columnType(c).size_min : null"
-            :max="columnType(c).size_max !== null ? columnType(c).size_max : null"
+            :min="columnType(c).size_min"
+            :max="columnType(c).size_max"
             :step="columnType(c).size_step"
+            :value="columnType(c).size_required === true ? columnType(c).size_default : null"
             :hint="sizeHint(c)"
             :clearable="!columnType(c).size_required"
             persistent-hint
@@ -125,7 +126,7 @@
           class="pl-10">
           <v-checkbox
             v-model="c.null_allowed"
-            :disabled="c.primary_key || disabled"
+            :disabled="c.primary_key || c.type === 'serial' || disabled"
             :label="$t('pages.table.subpages.schema.null.label')" />
         </v-col>
         <v-col
@@ -133,7 +134,7 @@
           class="pl-10">
           <v-checkbox
             v-model="c.unique"
-            :disabled="disabled"
+            :disabled="disabled || c.type === 'serial'"
             :hidden="c.primary_key"
             :label="$t('pages.table.subpages.schema.unique.label')" />
         </v-col>
@@ -233,7 +234,11 @@ export default {
       if (!this.database) {
         return []
       }
-      return this.database.container.image.data_types
+      const types = this.database.container.image.data_types
+      if (this.columns.filter(c => c.type === 'serial').length > 0) {
+        return types.filter(t => t.value !== 'serial')
+      }
+      return types
     },
     dateFormats () {
       if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
@@ -373,20 +378,12 @@ export default {
         column.d = null
       }
       console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d)
-    },
-    hasDate (column) {
-      return column.type === 'date' || column.type === 'datetime' || column.type === 'timestamp' || column.type === 'time'
+      if (column.type === 'serial') {
+        this.setOthers(column)
+      }
     },
     hasEnumOrSet (column) {
       return column.type === 'enum' || column.type === 'set'
-    },
-    filterDateFormats (column) {
-      return this.dateFormats.filter((df) => {
-        if (column.type === 'date') {
-          return !df.has_time
-        }
-        return df.has_time
-      })
     },
     sizeErrorMessages (column) {
       if (column.size < column.d) {

@@ -228,12 +228,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     }
 
     @Override
-    public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
-            throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
-            RemoteUnavailableException, SidecarExportException {
+    public ExportResourceDto exportDataset(PrivilegedViewDto view) throws SQLException, QueryMalformedException,
+            SidecarExportException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final String filePath = s3Config.getS3FilePath() + File.separator + fileName;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(view.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
@@ -242,8 +241,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                     .map(metadataMapper::viewColumnDtoToColumnDto)
                     .toList();
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(database.getInternalName(),
-                            view.getInternalName(), columns, timestamp, filePath))
+            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(view.getDatabase().getInternalName(),
+                            view.getInternalName(), columns, null, filePath))
                     .executeUpdate();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
@@ -254,8 +253,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(),
-                database.getContainer().getSidecarPort(), fileName);
+        dataDatabaseSidecarGateway.exportFile(view.getDatabase().getContainer().getSidecarHost(),
+                view.getDatabase().getContainer().getSidecarPort(), fileName);
         httpDataAccessCounter.increment();
         return storageService.getResource(fileName);
     }

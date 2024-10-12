@@ -28,9 +28,6 @@
         <template v-slot:item.extra="{ item }">
           <pre>{{ extra(item) }}</pre>
         </template>
-        <template v-slot:item.auto_generated="{ item }">
-          <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
-        </template>
         <template v-slot:item.column_concept="{ item }">
           <v-btn
             v-if="canAssignSemanticInformation && !hasConcept(item)"
@@ -167,7 +164,6 @@ export default {
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
         { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
-        { value: 'auto_generated', title: this.$t('pages.table.subpages.schema.sequence.title') },
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],

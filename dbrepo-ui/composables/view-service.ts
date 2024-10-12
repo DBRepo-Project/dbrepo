@@ -1,4 +1,5 @@
 import {axiosErrorToApiError} from '@/utils'
+import type {AxiosRequestConfig} from "axios";
 
 export const useViewService = (): any => {
   async function remove(databaseId: number, viewId: number): Promise<void> {
@@ -66,5 +67,27 @@ export const useViewService = (): any => {
     })
   }
 
-  return {remove, create, reExecuteData, reExecuteCount}
+  async function exportData(databaseId: number, viewId: number): Promise<QueryResultDto> {
+    const axios = useAxiosInstance()
+    const config: AxiosRequestConfig = {
+      responseType: 'blob',
+      headers: {
+        Accept: 'text/csv'
+      }
+    }
+    console.debug('export data for view with id', viewId, 'in database with id', databaseId);
+    return new Promise<QueryResultDto>((resolve, reject) => {
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/export`, config)
+        .then((response) => {
+          console.info('Exported data for view with id', viewId, 'in database with id', databaseId)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to export data', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
+  return {remove, create, reExecuteData, reExecuteCount, exportData}
 }
