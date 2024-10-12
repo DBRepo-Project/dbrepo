@@ -55,8 +55,8 @@ req = Database(id=1,
                              routing_key="dbrepo.1.1",
                              is_public=True,
                              columns=[Column(id=1, database_id=1, table_id=1, name="ID", internal_name="id",
-                                             auto_generated=True, column_type=ColumnType.BIGINT, is_public=True,
-                                             is_null_allowed=False, size=20, d=0,
+                                             column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False,
+                                             size=20, d=0,
                                              concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906",
                                                              created=datetime.datetime(2024, 3, 1, 10,
                                                                                        tzinfo=datetime.timezone.utc)),
@@ -104,7 +104,6 @@ class OpenSearchClientTest(unittest.TestCase):
                                                 internal_name="id",
                                                 database_id=req.id,
                                                 table_id=1,
-                                                auto_generated=True,
                                                 column_type=ColumnType.BIGINT,
                                                 is_public=True,
                                                 is_null_allowed=False)])]
@@ -153,7 +152,6 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(ColumnType.BIGINT, database.tables[0].columns[0].column_type)
             self.assertEqual(1, database.tables[0].columns[0].database_id)
             self.assertEqual(1, database.tables[0].columns[0].table_id)
-            self.assertEqual(True, database.tables[0].columns[0].auto_generated)
             self.assertEqual(True, database.tables[0].columns[0].is_public)
             self.assertEqual(False, database.tables[0].columns[0].is_null_allowed)
 
@@ -308,4 +306,3 @@ class OpenSearchClientTest(unittest.TestCase):
     #         response = client.general_search(type="database", field_value_pairs={"name": "Test",
     #                                                                              "id": None})
     #         self.assertTrue(len(response) > 0)
-

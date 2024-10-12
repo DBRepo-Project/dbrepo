@@ -336,7 +336,6 @@ interface ColumnDto {
   table_id: number;
   internal_name: string;
   date_format: ImageDateDto;
-  auto_generated: boolean;
   is_primary_key: boolean;
   index_length: number;
   length: number;

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@artmizu/nuxt-prometheus": "^2.4.0",
+    "@date-fns/utc": "^2.1.0",
     "@fontsource/open-sans": "^5.0.24",
     "@mdi/font": "^7.4.47",
     "@nuxtjs/robots": "^3.0.0",

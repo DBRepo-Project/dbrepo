@@ -191,7 +191,9 @@ public class TableServiceImpl implements TableService {
         /* delete at data service */
         dataServiceGateway.deleteTable(table.getDatabase().getId(), table.getId());
         /* update in metadata database */
-        table.getDatabase().getTables().remove(table);
+        table.getDatabase()
+                .getTables()
+                .remove(table);
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in search service */
         searchServiceGateway.update(database);

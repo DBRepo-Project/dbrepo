@@ -89,7 +89,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      BITNAMI_DEBUG: "true"
       KEYCLOAK_ENABLE_HTTPS: "false"
       KEYCLOAK_ENABLE_STATISTICS: "true"
       KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"

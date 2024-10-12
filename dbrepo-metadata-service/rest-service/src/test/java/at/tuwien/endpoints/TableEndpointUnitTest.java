@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.Database;
@@ -68,6 +69,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private TableEndpoint tableEndpoint;
+
+    public static Stream<Arguments> needNothing_parameters() {
+        return EndpointValidator.NEED_NOTHING.stream()
+                .map(Arguments::arguments);
+    }
 
     public static Stream<Arguments> needSize_parameters() {
         return EndpointValidator.NEED_SIZE.stream()
@@ -283,6 +289,32 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     }
 
     @ParameterizedTest
+    @MethodSource("needNothing_parameters")
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicNeedNothing_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
+            NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(columnType)
+                        .nullAllowed(false)
+                        .build()))
+                .constraints(ConstraintsCreateDto.builder()
+                        .uniques(List.of(List.of("ID")))
+                        .build())
+                .build();
+
+        /* mock */
+        when(tableService.createTable(DATABASE_3, request, USER_1_PRINCIPAL))
+                .thenReturn(TABLE_1) /* some table */;
+
+        /* test */
+        generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @ParameterizedTest
     @MethodSource("needSize_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
@@ -399,6 +431,56 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicHasMultipleSerial_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                                .name("ID")
+                                .type(ColumnTypeDto.SERIAL)
+                                .nullAllowed(false)
+                                .build(),
+                        ColumnCreateDto.builder()
+                                .name("Counter")
+                                .type(ColumnTypeDto.SERIAL)
+                                .nullAllowed(false)
+                                .build()))
+                .constraints(ConstraintsCreateDto.builder()
+                        .uniques(List.of(List.of("ID"),
+                                List.of("Counter")))
+                        .build())
+                .build();
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicSerialNullAllowed_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                                .name("ID")
+                                .type(ColumnTypeDto.SERIAL)
+                                .nullAllowed(true) // <<<
+                                .build()))
+                .constraints(ConstraintsCreateDto.builder()
+                        .uniques(List.of(List.of("ID")))
+                        .build())
+                .build();
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_PRINCIPAL, USER_1, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
     }
 
     @ParameterizedTest

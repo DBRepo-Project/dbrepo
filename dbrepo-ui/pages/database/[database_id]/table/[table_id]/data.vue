@@ -50,7 +50,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-update' : null"
         variant="flat"
         :text="$t('toolbars.table.data.version')"
-        class="ml-2"
+        class="ml-2 mr-2"
         @click.stop="pick" />
     </v-toolbar>
     <TimeDrift />
@@ -348,6 +348,7 @@ export default {
         const tableService = useTableService()
         tableService.exportData(this.$route.params.database_id, this.$route.params.table_id)
           .then((data) => {
+            this.downloadLoading = false
             const url = URL.createObjectURL(data)
             const link = document.createElement('a')
             link.href = url

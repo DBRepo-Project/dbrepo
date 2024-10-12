@@ -15,12 +15,12 @@ import java.util.List;
 public interface ViewService {
 
     /**
-     *
-     * @param database
+     * Gets the metadata schema for a given database.
+     * @param database The database.
      * @return The list of view metadata.
-     * @throws SQLException
-     * @throws DatabaseMalformedException
-     * @throws ViewNotFoundException
+     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws DatabaseMalformedException The columns that are referenced in the views are unknown to the Metadata Database. Call {@link TableService#getSchemas(PrivilegedDatabaseDto)} beforehand.
+     * @throws ViewNotFoundException The view with given name was not found.
      */
     List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
             ViewNotFoundException;
@@ -50,11 +50,35 @@ public interface ViewService {
     QueryResultDto data(PrivilegedViewDto view, Instant timestamp, Long page, Long size) throws SQLException,
             ViewMalformedException;
 
+    /**
+     * Deletes a view.
+     * @param view The view.
+     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws ViewMalformedException The query is malformed and was rejected by the data database.
+     */
     void delete(PrivilegedViewDto view) throws SQLException, ViewMalformedException;
 
+    /**
+     * Counts tuples in a view at system-versioned timestamp.
+     * @param view The view.
+     * @param timestamp The system-versioned timestamp.
+     * @return The number of tuples.
+     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws QueryMalformedException The query is malformed and was rejected by the data database.
+     */
     Long count(PrivilegedViewDto view, Instant timestamp) throws SQLException, QueryMalformedException;
 
-    ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
-            throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException, RemoteUnavailableException;
+    /**
+     * Exports view data into a dataset.
+     * @param view The view.
+     * @return The dataset.
+     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws QueryMalformedException The query is malformed and was rejected by the data database.
+     * @throws SidecarExportException The sidecar of the target database failed to export the dataset.
+     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
+     * @throws StorageNotFoundException The storage service was not able to find the dataset for export.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     */
+    ExportResourceDto exportDataset(PrivilegedViewDto view) throws SQLException, QueryMalformedException,
+            SidecarExportException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException;
 }

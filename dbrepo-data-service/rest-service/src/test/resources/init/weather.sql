@@ -11,7 +11,7 @@ CREATE TABLE weather_location
 
 CREATE TABLE weather_aus
 (
-    id       BIGINT           NOT NULL PRIMARY KEY,
+    id       SERIAL PRIMARY KEY,
     `date`   DATE             NOT NULL,
     location VARCHAR(255)     NULL COMMENT 'Closest city',
     mintemp  DOUBLE PRECISION NULL,

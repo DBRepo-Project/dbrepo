@@ -75,7 +75,9 @@ public class ViewServiceImpl implements ViewService {
         /* delete in data service */
         dataServiceGateway.deleteView(view.getDatabase().getId(), view.getId());
         /* delete in metadata database */
-        view.getDatabase().getViews().remove(view);
+        view.getDatabase()
+                .getViews()
+                .remove(view);
         final Database database = databaseRepository.save(view.getDatabase());
         /* update in search service */
         searchServiceGateway.update(database);

@@ -60,7 +60,6 @@ export default {
         { value: 'is_primary_key', title: 'Primary Key' },
         { value: 'unique', title: 'Unique' },
         { value: 'is_null_allowed', title: 'Nullable' },
-        { value: 'auto_generated', title: 'Sequence' }
       ],
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
