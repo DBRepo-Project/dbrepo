@@ -369,7 +369,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     d                BIGINT UNSIGNED,
     is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
     PRIMARY KEY (id),
-    FOREIGN KEY (view_id) REFERENCES mdb_view (id),
+    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
     UNIQUE (view_id, internal_name)
 ) WITH SYSTEM VERSIONING;
 
