@@ -372,7 +372,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     auto_generated   BOOLEAN                  DEFAULT false,
     is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
     PRIMARY KEY (id),
-    FOREIGN KEY (view_id) REFERENCES mdb_view (id)
+    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
