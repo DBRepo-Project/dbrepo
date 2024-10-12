@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
@@ -64,7 +65,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
         licenseRepository.save(LICENSE_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3));
     }
 
     @Test

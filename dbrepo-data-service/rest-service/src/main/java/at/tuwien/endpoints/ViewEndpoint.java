@@ -1,9 +1,12 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.*;
+import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -24,6 +27,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -279,6 +283,69 @@ public class ViewEndpoint {
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @GetMapping("/{viewId}/export")
+    @Observed(name = "dbrepo_view_data_export")
+    @Operation(summary = "Get view data",
+            description = "Gets data from view with id as downloadable file. For tables in private databases, the user needs to have at least *READ* access to the associated database.",
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Exported view data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = InputStreamResource.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Request pagination or view data select query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Export view data not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find view in metadata database or export dataset",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<InputStreamResource> exportDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                                             @NotBlank @PathVariable("viewId") Long viewId,
+                                                             Principal principal)
+            throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
+            NotAllowedException, MetadataServiceException, StorageUnavailableException, QueryMalformedException,
+            SidecarExportException, StorageNotFoundException {
+        log.debug("endpoint export view data, databaseId={}, viewId={}", databaseId, viewId);
+        /* parameters */
+        final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
+        if (!view.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to export private view: principal is null");
+                throw new NotAllowedException("Failed to export private view: principal is null");
+            }
+            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+        }
+        try {
+            final HttpHeaders headers = new HttpHeaders();
+            final ExportResourceDto resource = viewService.exportDataset(view);
+            headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+            log.trace("export table resulted in resource {}", resource);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource.getResource());
+
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
     }
 

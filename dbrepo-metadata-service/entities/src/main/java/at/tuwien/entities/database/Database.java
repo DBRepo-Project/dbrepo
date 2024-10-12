@@ -127,7 +127,7 @@ public class Database implements Serializable {
     private List<View> views;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<DatabaseAccess> accesses;
 
     @Column(nullable = false)

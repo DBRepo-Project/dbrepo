@@ -41,7 +41,6 @@ class OpenSearchClientTest(unittest.TestCase):
                                                 internal_name="id",
                                                 database_id=req.id,
                                                 table_id=1,
-                                                auto_generated=True,
                                                 column_type=ColumnType.BIGINT,
                                                 is_public=True,
                                                 is_null_allowed=False)])]
@@ -90,6 +89,5 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(ColumnType.BIGINT, database.tables[0].columns[0].column_type)
             self.assertEqual(1, database.tables[0].columns[0].database_id)
             self.assertEqual(1, database.tables[0].columns[0].table_id)
-            self.assertEqual(True, database.tables[0].columns[0].auto_generated)
             self.assertEqual(True, database.tables[0].columns[0].is_public)
             self.assertEqual(False, database.tables[0].columns[0].is_null_allowed)

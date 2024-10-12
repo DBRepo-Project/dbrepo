@@ -29,6 +29,7 @@ import java.util.Optional;
 @Component
 public class EndpointValidator {
 
+    public static final List<ColumnTypeDto> NEED_NOTHING = List.of(ColumnTypeDto.BOOL, ColumnTypeDto.SERIAL);
     public static final List<ColumnTypeDto> NEED_SIZE = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
     public static final List<ColumnTypeDto> CAN_HAVE_SIZE = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
     public static final List<ColumnTypeDto> CAN_HAVE_SIZE_AND_D = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
@@ -133,6 +134,35 @@ public class EndpointValidator {
         if (optional3.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed set value", optional3.get().getName());
             throw new MalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
+        }
+        /* check serial */
+        final List<ColumnCreateDto> list4a = data.getColumns()
+                .stream()
+                .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL))
+                .toList();
+        if (list4a.size() > 1) {
+            log.error("Validation failed: only one column of type serial allowed");
+            throw new MalformedException("Validation failed: only one column of type serial allowed");
+        }
+        final Optional<ColumnCreateDto> optional4a = data.getColumns()
+                .stream()
+                .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL))
+                .filter(ColumnCreateDto::getNullAllowed)
+                .findFirst();
+        if (optional4a.isPresent()) {
+            log.error("Validation failed: column {} type serial demands non-null", optional4a.get().getName());
+            throw new MalformedException("Validation failed: column " + optional4a.get().getName() + " type serial demands non-null");
+        }
+        final Optional<ColumnCreateDto> optional4b = data.getColumns()
+                .stream()
+                .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL) && data.getConstraints()
+                        .getUniques()
+                        .stream()
+                        .noneMatch(uk -> uk.size() == 1 && uk.contains(c.getName())))
+                .findFirst();
+        if (optional4b.isPresent()) {
+            log.error("Validation failed: column {} type serial demands a unique constraint", optional4b.get().getName());
+            throw new MalformedException("Validation failed: column " + optional4b.get().getName() + " type serial demands a unique constraint");
         }
     }
 

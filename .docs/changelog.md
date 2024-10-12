@@ -1,0 +1,56 @@
+---
+author: Martin Weise
+---
+
+## v1.4.7 (???)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.7)
+
+!!! warning "Contains Breaking Changes"
+
+    This release updates the Metadata Database schema which is incompatible to v1.4.6!
+
+### What's Changed
+
+#### Features
+
+* Added `SERIAL` data type to create incrementing key
+  in [#454](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/454)
+
+#### Changes
+
+* Change the Docker image of the Auth Service to Bitnami-maintained similar to Kubernetes deployment with accompanying
+  Auth Database change to PostgreSQL
+  in [#455](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/455)
+
+#### Fixes
+
+* No hardcoded data type metadata in UI but instead added it hardcoded (associated with `image_id`) Metadata Database.
+
+## v1.4.6 (2024-10-11)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.6)
+
+!!! warning "Contains Breaking Changes"
+
+    This release updates the Metadata Database schema which is incompatible to v1.4.5!
+
+### What's Changed
+
+#### Features
+
+* Added [Dashboard Service](../api/dashboard-service/) and monitoring in default setup.
+
+#### Changes
+
+* Show the progress of dataset uploads in the UI
+  in [#448](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/448)
+* Anonymous users are allowed to create (non-persistent) subsets
+  in [#449](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/449)
+* Removed logic that maps `True`, `False` and `null`
+
+#### Fixes
+
+* Import of datasets stabilized in the UI
+  in [#442](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/442)
+* Install script in [#444](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/444)

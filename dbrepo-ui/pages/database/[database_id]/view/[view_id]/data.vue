@@ -7,10 +7,18 @@
       :title="$t('toolbars.database.current')"
       flat>
       <v-btn
+        v-if="canDownload"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
+        variant="flat"
+        :loading="downloadLoading"
+        :text="$t('toolbars.table.data.download')"
+        class="mr-2"
+        @click.stop="download" />
+      <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
-        class="mb-1 mr-2"
+        class="mr-2"
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
@@ -29,7 +37,6 @@
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
-import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
@@ -39,6 +46,7 @@ export default {
   data () {
     return {
       loadingData: false,
+      downloadLoading: false,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -73,6 +81,21 @@ export default {
         return null
       }
       return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    },
+    access () {
+      return this.userStore.getAccess
+    },
+    canDownload () {
+      if (!this.view) {
+        return false
+      }
+      if (this.view.is_public) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
   mounted () {
@@ -82,6 +105,31 @@ export default {
     reload () {
       this.$refs.queryResults.reExecute(Number(this.$route.params.view_id))
       this.$refs.queryResults.reExecuteCount(Number(this.$route.params.view_id))
+    },
+    download () {
+      this.downloadLoading = true
+      const viewService = useViewService()
+      viewService.exportData(this.$route.params.database_id, this.$route.params.view_id)
+        .then((data) => {
+          this.downloadLoading = false
+          const url = URL.createObjectURL(data)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'view.csv'
+          document.body.appendChild(link)
+          link.click()
+        })
+        .catch(({code}) => {
+          this.downloadLoading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.downloadLoading = false
+        })
     }
   }
 }

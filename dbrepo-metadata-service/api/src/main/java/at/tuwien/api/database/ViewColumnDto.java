@@ -43,9 +43,6 @@ public class ViewColumnDto {
     @Schema(example = "mdb_date")
     private String internalName;
 
-    @Schema
-    private String alias;
-
     @NotNull
     @JsonProperty("auto_generated")
     @Schema(example = "false")

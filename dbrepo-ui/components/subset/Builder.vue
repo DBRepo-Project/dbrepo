@@ -123,7 +123,23 @@
                     :rules="[v => !!v || $t('validation.required')]"
                     return-object
                     multiple
-                    @update:model-value="buildQuery" />
+                    @update:model-value="buildQuery">
+                    <template
+                      v-slot:prepend-item>
+                      <v-list-item
+                        title="Select All"
+                        :active="select.length === columns.length"
+                        @click="toggleColumns">
+                        <template
+                          v-slot:prepend>
+                          <v-checkbox-btn
+                            :model-value="select.length === columns.length" />
+                        </template>
+                      </v-list-item>
+                      <v-divider
+                        class="mt-2" />
+                    </template>
+                  </v-select>
                 </v-col>
               </v-row>
               <v-row v-if="select.length > 0">
@@ -593,6 +609,14 @@ export default {
           language: 'mysql',
           keywordCase: 'upper'
         })
+      }
+    },
+    toggleColumns () {
+      if (this.select.length !== this.columns.length) {
+        this.select = this.columns
+        this.buildQuery()
+      } else {
+        this.select = []
       }
     }
   }

@@ -193,6 +193,7 @@ class ColumnType(str, Enum):
     LONGTEXT = "longtext"
     LONGBLOB = "longblob"
     ENUM = "enum"
+    SERIAL = "serial"
     SET = "set"
     BIT = "bit"
     TINYINT = "tinyint"
@@ -888,7 +889,6 @@ class Column(BaseModel):
     database_id: int
     table_id: int
     internal_name: str
-    auto_generated: bool
     column_type: ColumnType
     is_public: bool
     is_null_allowed: bool
@@ -918,7 +918,6 @@ class ViewColumn(BaseModel):
     name: str
     database_id: int
     internal_name: str
-    auto_generated: bool
     column_type: ColumnType
     is_public: bool
     is_null_allowed: bool

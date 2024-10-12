@@ -18,23 +18,27 @@ public class DataTypeDto {
 
     @NotBlank
     @JsonProperty("display_name")
-    @Schema(example = "BIGINT")
+    @Schema(example = "TIME(fsp)")
     private String displayName;
 
     @NotBlank
-    @Schema(example = "bigint")
+    @Schema(example = "time")
     private String value;
 
     @JsonProperty("size_min")
+    @Schema(example = "0")
     private Integer sizeMin;
 
     @JsonProperty("size_max")
+    @Schema(example = "6")
     private Integer sizeMax;
 
     @JsonProperty("size_default")
+    @Schema(example = "0")
     private Integer sizeDefault;
 
     @JsonProperty("size_required")
+    @Schema(example = "false")
     private Boolean sizeRequired;
 
     @JsonProperty("d_min")
@@ -50,17 +54,25 @@ public class DataTypeDto {
     private Boolean dRequired;
 
     @NotNull
-    @Schema(example = "https://mariadb.com/kb/en/bigint/")
+    @Schema(example = "https://mariadb.com/kb/en/time/")
     private String documentation;
 
+    @JsonProperty("data_hint")
+    @Schema(example = "e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S")
+    private String dataHint;
+
+    @JsonProperty("type_hint")
+    @Schema(example = "fsp=microsecond precision, min. 0, max. 6")
+    private String typeHint;
+
     @NotNull
-    @Schema(description = "frontend needs to quote this data type")
     @JsonProperty("is_quoted")
+    @Schema(example = "false", description = "frontend needs to quote this data type")
     private Boolean quoted;
 
     @NotNull
     @JsonProperty("is_buildable")
-    @Schema(description = "frontend can build this data type")
+    @Schema(example = "true", description = "frontend can build this data type")
     private Boolean buildable;
 
 }

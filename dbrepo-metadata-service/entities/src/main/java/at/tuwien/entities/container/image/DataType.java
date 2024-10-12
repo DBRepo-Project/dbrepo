@@ -5,8 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.List;
-
 @Data
 @Entity
 @Builder
@@ -57,6 +55,12 @@ public class DataType {
 
     @Column(nullable = false)
     private String documentation;
+
+    @Column(name = "type_hint")
+    private String typeHint;
+
+    @Column(name = "data_hint")
+    private String dataHint;
 
     @Column(name = "is_quoted", nullable = false)
     private Boolean quoted;

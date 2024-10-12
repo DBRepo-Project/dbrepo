@@ -89,12 +89,6 @@ public class Table {
     private Database database;
 
     @ToString.Exclude
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
-    @OrderBy("ordinalPosition")
-    private List<TableColumn> columns;
-
-    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -123,6 +117,12 @@ public class Table {
 
     @Column(name = "avg_row_length")
     private Long avgRowLength;
+
+    @ToString.Exclude
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
+    @OrderBy("ordinalPosition")
+    private List<TableColumn> columns;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
