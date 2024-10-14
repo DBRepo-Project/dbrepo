@@ -287,16 +287,16 @@ test-search-service-init:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py --junitxml=report.xml && coverage html --omit="test/*,omlib/*" && coverage report --omit="test/*,omlib/*" > ./coverage.txt
+    - cd ./dbrepo-search-service/ && coverage run -m pytest ./init/test/test_app.py --junitxml=report.xml && coverage html --omit="init/test/*" && coverage report --omit="init/test/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
-      - ./dbrepo-search-service/init/report.xml
-      - ./dbrepo-search-service/init/coverage.txt
+      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-search-service/init/report.xml
+      junit: ./dbrepo-search-service/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-lib:
