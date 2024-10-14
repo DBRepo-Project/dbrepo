@@ -10,10 +10,10 @@ from collections.abc import MutableMapping
 
 from opensearchpy import OpenSearch, TransportError, RequestError
 
-from init.omlib.measure import om
-from init.omlib.constants import OM_IDS
-from init.omlib.omconstants import OM
-from init.omlib.unit import Unit
+from omlib.measure import om
+from omlib.constants import OM_IDS
+from omlib.omconstants import OM
+from omlib.unit import Unit
 
 
 class OpenSearchClient:

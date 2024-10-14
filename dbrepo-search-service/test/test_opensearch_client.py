@@ -7,7 +7,7 @@ from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Tab
 
 from app import app
 
-from clients.opensearch_client import OpenSearchClient
+from init.clients.opensearch_client import OpenSearchClient
 
 req = Database(id=1,
                name="Test",
