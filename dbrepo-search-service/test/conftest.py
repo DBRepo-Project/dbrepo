@@ -1,8 +1,7 @@
 import logging
 
 import pytest
-from app import app
-from flask import current_app
+import os
 
 from testcontainers.opensearch import OpenSearchContainer
 
@@ -19,9 +18,10 @@ def session(request):
     logging.debug("[fixture] starting opensearch container")
     container.start()
 
-    with app.app_context():
-        current_app.config['OPENSEARCH_HOST'] = container.get_container_host_ip()
-        current_app.config['OPENSEARCH_PORT'] = container.get_exposed_port(9200)
+    os.environ['OPENSEARCH_HOST'] = container.get_container_host_ip()
+    os.environ['OPENSEARCH_PORT'] = container.get_exposed_port(9200)
+    os.environ['OPENSEARCH_USERNAME'] = 'admin'
+    os.environ['OPENSEARCH_PASSWORD'] = 'admin'
 
     # destructor
     def stop_opensearch():
