@@ -4,7 +4,7 @@ import requests_mock
 import datetime
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief
+from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief, DataType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError
 
 

@@ -7,7 +7,7 @@ from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType, DatabaseBrief, \
-    UserBrief
+    UserBrief, DataType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
 

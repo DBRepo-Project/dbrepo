@@ -5,6 +5,7 @@
 dist/
 dbrepo.egg-info/
 build/
+htmlcov/
 
 # debug
 debug.py
