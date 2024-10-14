@@ -284,6 +284,9 @@ test-search-service-init:
     - build-search-service
   dependencies:
     - build-search-service
+  before_script:
+    - "cp ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
+    - "cp ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
