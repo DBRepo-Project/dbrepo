@@ -1,7 +1,8 @@
 import logging
+import os
 
 import pytest
-import os
+import json
 
 from testcontainers.opensearch import OpenSearchContainer
 
@@ -30,20 +31,17 @@ def session(request):
     request.addfinalizer(stop_opensearch)
     return container
 
-# @pytest.fixture(scope="function", autouse=True)
-# def cleanup(request, session):
-#     """
-#     Clean up after each test by removing the buckets and re-adding them (=so they are empty again)
-#     :param request: /
-#     :param session: /
-#     :return:
-#     """
-#     logging.info("[fixture] truncate buckets")
-#     for bucket in ["dbrepo-upload", "dbrepo-download"]:
-#         objects = []
-#         for obj in session.get_client().list_objects(bucket):
-#             objects.append(DeleteObject(obj.object_name))
-#         logging.info(f'request to remove objects {objects}')
-#         errors = session.get_client().remove_objects(bucket, objects)
-#         for error in errors:
-#             raise ConnectionError(f'Failed to delete object with key {error.object_name} of bucket {bucket}')
+
+@pytest.fixture(scope="function", autouse=True)
+def cleanup(request, session):
+    """
+    Clean up after each test by removing the index and re-adding it (=so it's empty again)
+    :param request: /
+    :param session: /
+    :return:
+    """
+    logging.info("[fixture] clean schema")
+    with open('./init/database.json', 'r') as f:
+        if session.get_client().indices.exists(index="database"):
+            session.get_client().indices.delete(index="database")
+        session.get_client().indices.create(index="database", body=json.load(f))
