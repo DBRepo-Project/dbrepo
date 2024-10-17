@@ -19,6 +19,7 @@ import at.tuwien.service.StorageService;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import java.util.List;
 @Service
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
+    private final Counter httpDataAccessCounter;
     private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
@@ -48,10 +50,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, QueryConfig queryConfig,
-                                  MariaDbMapper mariaDbMapper, SchemaService schemaService,
+    public ViewServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
+                                  QueryConfig queryConfig, MariaDbMapper mariaDbMapper, SchemaService schemaService,
                                   StorageService storageService, MetadataMapper metadataMapper,
                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.httpDataAccessCounter = httpDataAccessCounter;
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
@@ -165,6 +168,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             queryResult = dataMapper.resultListToQueryResultDto(mappedColumns, resultSet);
             queryResult.setId(view.getId());
             connection.commit();
+            httpDataAccessCounter.increment();
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
             throw new ViewMalformedException("Failed to map object: " + e.getMessage(), e);
@@ -224,12 +228,11 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     }
 
     @Override
-    public ExportResourceDto exportDataset(PrivilegedDatabaseDto database, ViewDto view, Instant timestamp)
-            throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
-            RemoteUnavailableException, SidecarExportException {
+    public ExportResourceDto exportDataset(PrivilegedViewDto view) throws SQLException, QueryMalformedException,
+            SidecarExportException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException {
         final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final String filePath = s3Config.getS3FilePath() + File.separator + fileName;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(view.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* export to data database sidecar */
@@ -238,8 +241,8 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                     .map(metadataMapper::viewColumnDtoToColumnDto)
                     .toList();
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(database.getInternalName(),
-                            view.getInternalName(), columns, timestamp, filePath))
+            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(view.getDatabase().getInternalName(),
+                            view.getInternalName(), columns, null, filePath))
                     .executeUpdate();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
@@ -250,8 +253,9 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(),
-                database.getContainer().getSidecarPort(), fileName);
+        dataDatabaseSidecarGateway.exportFile(view.getDatabase().getContainer().getSidecarHost(),
+                view.getDatabase().getContainer().getSidecarPort(), fileName);
+        httpDataAccessCounter.increment();
         return storageService.getResource(fileName);
     }
 

@@ -4,10 +4,8 @@ import requests_mock
 import datetime
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief
+from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief, DataType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError
-
-from dbrepo.api.dto import ImageDate
 
 
 class ContainerUnitTest(unittest.TestCase):
@@ -69,29 +67,10 @@ class ContainerUnitTest(unittest.TestCase):
                                         dialect="org.hibernate.dialect.MariaDBDialect",
                                         driver_class="org.mariadb.jdbc.Driver",
                                         jdbc_method="mariadb",
-                                        date_formats=[
-                                            ImageDate(id=1,
-                                                      example="2024-03-26 10:26:00",
-                                                      database_format="%Y-%c-%d %H:%i:%S",
-                                                      unix_format="yyyy-MM-dd HH:mm:ss",
-                                                      has_time=True,
-                                                      created_at=datetime.datetime(2024, 3, 26, 10, 26, 0, 0,
-                                                                                   datetime.timezone.utc)),
-                                            ImageDate(id=2,
-                                                      example="2024-03-26",
-                                                      database_format="%Y-%c-%d",
-                                                      unix_format="yyyy-MM-dd",
-                                                      has_time=False,
-                                                      created_at=datetime.datetime(2024, 3, 26, 0, 0, 0, 0,
-                                                                                   datetime.timezone.utc)),
-                                            ImageDate(id=3,
-                                                      example="10:25:01",
-                                                      database_format="%Y-%c-%d",
-                                                      unix_format="yyyy-MM-dd",
-                                                      has_time=False,
-                                                      created_at=datetime.datetime(2024, 3, 26, 0, 0, 0, 0,
-                                                                                   datetime.timezone.utc)),
-                                        ]),
+                                        data_types=[
+                                            DataType(display_name="SERIAL", value="serial",
+                                                     documentation="https://mariadb.com/kb/en/bigint/",
+                                                     is_quoted=False, is_buildable=True)]),
                             hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             # mock
             mock.get('/api/container/1', json=exp.model_dump())

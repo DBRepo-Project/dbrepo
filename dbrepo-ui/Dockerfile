@@ -1,10 +1,11 @@
-FROM node:18.20.4-alpine3.20 AS build
+FROM oven/bun:1.1.20-alpine AS build
 
 WORKDIR /app
 
+COPY ./bun.lockb ./bun.lockb
 COPY ./package.json ./package.json
 
-RUN npm install
+RUN bun install
 
 ENV NODE_ENV="production"
 
@@ -22,12 +23,14 @@ COPY ./stores ./stores
 COPY ./utils ./utils
 COPY ./nuxt.config.ts ./nuxt.config.ts
 
-RUN npm run build
+RUN bun run build
 
-FROM node:18.20.4-alpine3.20 AS runtime
+FROM node:22.9.0-alpine3.20 AS runtime
 
 ARG APP_VERSION="latest"
 ARG COMMIT=""
+
+RUN apk add --no-cache curl bash
 
 USER 1000
 

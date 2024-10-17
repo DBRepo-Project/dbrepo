@@ -589,14 +589,20 @@
             v-if="identifier.licenses.length > 0"
             color="tertiary">
             <p>
-              <a :href="identifier.licenses[0].uri" target="_blank">
-                <strong v-text="identifier.licenses[0].identifier" />&nbsp;<sup><v-icon x-small>mdi-open-in-new</v-icon></sup>
+              <a
+                :href="identifier.licenses[0].uri"
+                target="_blank">
+                <strong>
+                  {{ identifier.licenses[0].identifier }}
+                </strong>
+                &nbsp;<sup><v-icon x-small>mdi-open-in-new</v-icon></sup>
               </a>
             </p>
             <p
               v-if="identifier.licenses[0].description"
-              class="mt-2"
-              v-text="identifier.licenses[0].description" />
+              class="mt-2">
+              {{ identifier.licenses[0].description }}
+            </p>
           </v-alert>
         </v-card-text>
         <v-card-text>
@@ -755,7 +761,7 @@
               <v-list-item>
                 <v-list-item-title>
                   {{ $t('pages.identifier.subpages.create.summary.record') }} {{ resourceHumanDescription.prefix }}
-                  &quot;<strong v-text="resourceHumanDescription.info" />&quot;
+                  &quot;<strong>{{ resourceHumanDescription.info }}</strong>&quot;
                 </v-list-item-title>
                 <template v-slot:prepend>
                   <v-icon
@@ -775,7 +781,7 @@
                 <v-list-item-title
                   v-if="identifier.licenses.length > 0">
                   {{ $t('pages.identifier.subpages.create.summary.license') }}
-                  &quot;<strong v-text="identifier.licenses[0].identifier" />&quot;
+                  &quot;<strong>{{ identifier.licenses[0].identifier }}</strong>&quot;
                 </v-list-item-title>
                 <v-list-item-title
                   v-else>
@@ -791,7 +797,7 @@
                 v-if="identifier.publisher">
                 <v-list-item-title>
                   {{ $t('pages.identifier.subpages.create.summary.publisher') }}
-                  &quot;<strong v-text="identifier.publisher" />&quot;
+                  &quot;<strong>{{ identifier.publisher }}</strong>&quot;
                 </v-list-item-title>
                 <template v-slot:prepend>
                   <v-icon

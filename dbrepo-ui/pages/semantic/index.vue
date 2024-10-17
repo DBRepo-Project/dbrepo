@@ -1,7 +1,9 @@
 <template>
   <div v-if="canListOntologies">
     <v-toolbar flat>
-      <v-toolbar-title v-text="$t('pages.semantics.title')" />
+      <v-toolbar-title>
+        {{ $t('pages.semantics.title') }}
+      </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canListOntologies"
@@ -13,10 +15,12 @@
         <v-tabs
           v-model="tab"
           color="primary">
-          <v-tab
-            v-text="$t('toolbars.semantic.ontologies.concepts')" />
-          <v-tab
-            v-text="$t('toolbars.semantic.ontologies.units')" />
+          <v-tab>
+            {{ $t('toolbars.semantic.ontologies.concepts') }}
+          </v-tab>
+          <v-tab>
+            {{ $t('toolbars.semantic.ontologies.units') }}
+          </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
@@ -27,9 +31,13 @@
           :items="rows"
           :options.sync="options"
           :server-items-length="total"
-          :footer-props="footerProps">
+          :footer-props="footerProps"
+          :items-per-page-options="footerProps.itemsPerPageOptions">
           <template v-slot:item.uri="{ item }">
-            <a :href="item.uri" target="_blank" v-text="item.uri" />
+            <a :href="item.uri"
+               target="_blank">
+              {{ item.uri }}
+            </a>
           </template>
           <template v-slot:item.action="{ item }">
             <v-btn
@@ -83,7 +91,7 @@ export default {
       },
       total: -1,
       footerProps: {
-        'items-per-page-options': [10, 20, 30, 40, 50]
+        itemsPerPageOptions: [10, 25, 50, 100]
       },
       tab: 0,
       tabs: [

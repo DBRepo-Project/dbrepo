@@ -17,9 +17,10 @@ import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.SubsetService;
 import at.tuwien.service.StorageService;
+import at.tuwien.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.lang3.RandomUtils;
@@ -38,6 +39,7 @@ import java.util.UUID;
 @Service
 public class SubsetServiceMariaDbImpl extends HibernateConnector implements SubsetService {
 
+    private final Counter httpDataAccessCounter;
     private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
@@ -47,10 +49,11 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                    MetadataMapper metadataMapper, StorageService storageService,
-                                    MetadataServiceGateway metadataServiceGateway,
+    public SubsetServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
+                                    MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
+                                    StorageService storageService, MetadataServiceGateway metadataServiceGateway,
                                     DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.httpDataAccessCounter = httpDataAccessCounter;
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
@@ -106,6 +109,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             MetadataServiceException {
         final Long queryId = storeQuery(database, statement, timestamp, userId);
         final QueryDto query = findById(database, queryId);
+        httpDataAccessCounter.increment();
         return reExecute(database, query, page, size, sortDirection, sortColumn);
     }
 
@@ -200,6 +204,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             dataSource.close();
         }
         dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), filename);
+        httpDataAccessCounter.increment();
         return storageService.getResource(filename);
     }
 
@@ -212,6 +217,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             final PreparedStatement preparedStatement = connection.prepareStatement(statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            httpDataAccessCounter.increment();
             return dataMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
@@ -231,6 +237,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.countRawSelectQuery(statement, timestamp))
                     .executeQuery();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            httpDataAccessCounter.increment();
             return mariaDbMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
@@ -280,7 +287,11 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             /* insert query into query store */
             final long start = System.currentTimeMillis();
             final CallableStatement callableStatement = connection.prepareCall(mariaDbMapper.queryStoreStoreQueryRawQuery());
-            callableStatement.setString(1, String.valueOf(userId));
+            if (userId != null) {
+                callableStatement.setString(1, String.valueOf(userId));
+            } else {
+                callableStatement.setNull(1, Types.VARCHAR);
+            }
             callableStatement.setString(2, query);
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
             callableStatement.registerOutParameter(4, Types.BIGINT);

@@ -1103,7 +1103,6 @@ class RestClient:
 
     def import_table_data(self, database_id: int, table_id: int, file_name_or_data_frame: str | DataFrame,
                           separator: str = ",", quote: str = "\"", skip_lines: int = 0,
-                          false_encoding: str = None, true_encoding: str = None, null_encoding: str = None,
                           line_encoding: str = "\n") -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
@@ -1116,9 +1115,6 @@ class RestClient:
         :param separator: The csv column separator. Optional.
         :param quote: The column data quotation character. Optional.
         :param skip_lines: The number of lines to skip. Optional. Default: 0.
-        :param false_encoding: The encoding of boolean false. Optional.
-        :param true_encoding: The encoding of boolean true. Optional.
-        :param null_encoding: The encoding of null. Optional.
         :param line_encoding: The encoding of the line termination. Optional. Default: CR (Windows).
 
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB could not be imported).
@@ -1138,9 +1134,7 @@ class RestClient:
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=Import(location=filename, separator=separator, quote=quote,
-                                                skip_lines=skip_lines, false_element=false_encoding,
-                                                true_element=true_encoding, null_element=null_encoding,
-                                                line_termination=line_encoding))
+                                                skip_lines=skip_lines, line_termination=line_encoding))
         if response.status_code == 202:
             return
         if response.status_code == 400:

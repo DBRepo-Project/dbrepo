@@ -21,7 +21,7 @@ export const useAccessService = (): any => {
     const axios = useAxiosInstance()
     console.debug('create access for user with id', userId, 'of database with id', databaseId)
     return new Promise<DatabaseAccessDto>((resolve, reject) => {
-      axios.post<DatabaseAccessDto>(`/api/database/${databaseId}/access`, payload)
+      axios.post<DatabaseAccessDto>(`/api/database/${databaseId}/access/${userId}`, payload)
         .then((response) => {
           console.info('Created access for user with id', userId, 'of database with id', databaseId)
           resolve(response.data)

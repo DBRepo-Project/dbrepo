@@ -356,6 +356,14 @@
                     },
                     "type": "object"
                 },
+                "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
                 "persistence": {
                     "properties": {
                         "enabled": {
@@ -378,6 +386,23 @@
                 },
                 "service": {
                     "properties": {
+                        "extraPorts": {
+                            "items": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "port": {
+                                        "type": "integer"
+                                    },
+                                    "targetPort": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
                         "managerPortEnabled": {
                             "type": "boolean"
                         },
@@ -398,21 +423,87 @@
         },
         "dashboardservice": {
             "properties": {
+                "dashboardsProvider": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "datasources": {
+                    "properties": {
+                        "secretDefinition": {
+                            "properties": {
+                                "apiVersion": {
+                                    "type": "integer"
+                                },
+                                "datasources": {
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "uid": {
+                                                "type": "string"
+                                            },
+                                            "url": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
                 "enabled": {
                     "type": "boolean"
-                },
-                "envFromSecret": {
-                    "type": "string"
                 },
                 "fullnameOverride": {
                     "type": "string"
                 },
+                "grafana": {
+                    "properties": {
+                        "extraConfigmaps": {
+                            "items": {
+                                "properties": {
+                                    "mountPath": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "readOnly": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "extraEnvVarsSecret": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
                 "ldap": {
                     "properties": {
+                        "allowSignUp": {
+                            "type": "boolean"
+                        },
                         "enabled": {
                             "type": "boolean"
                         },
-                        "existingSecret": {
+                        "secretName": {
                             "type": "string"
                         }
                     },
@@ -423,16 +514,45 @@
         },
         "datadb": {
             "properties": {
-                "auth": {
+                "database": {
                     "properties": {
-                        "replicationPassword": {
-                            "type": "string"
+                        "auth": {
+                            "properties": {
+                                "replicationPassword": {
+                                    "type": "string"
+                                },
+                                "replicationUser": {
+                                    "type": "string"
+                                },
+                                "rootPassword": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
                         },
-                        "replicationUser": {
-                            "type": "string"
+                        "image": {
+                            "properties": {
+                                "debug": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
                         },
-                        "rootPassword": {
-                            "type": "string"
+                        "metrics": {
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "secondary": {
+                            "properties": {
+                                "replicaCount": {
+                                    "type": "integer"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"
@@ -442,30 +562,6 @@
                 },
                 "fullnameOverride": {
                     "type": "string"
-                },
-                "image": {
-                    "properties": {
-                        "debug": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "metrics": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "secondary": {
-                    "properties": {
-                        "replicaCount": {
-                            "type": "integer"
-                        }
-                    },
-                    "type": "object"
                 }
             },
             "type": "object"
@@ -1114,6 +1210,79 @@
             },
             "type": "object"
         },
+        "metricdb": {
+            "properties": {
+                "alertmanager": {
+                    "properties": {
+                        "service": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "server": {
+                    "properties": {
+                        "extraScrapeConfigs": {
+                            "items": {
+                                "properties": {
+                                    "job_name": {
+                                        "type": "string"
+                                    },
+                                    "metrics_path": {
+                                        "type": "string"
+                                    },
+                                    "static_configs": {
+                                        "items": {
+                                            "properties": {
+                                                "targets": {
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "type": "array"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "persistence": {
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "service": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "searchdb": {
             "properties": {
                 "clusterName": {
@@ -1332,6 +1501,14 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
+                        },
+                        "metrics": {
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"

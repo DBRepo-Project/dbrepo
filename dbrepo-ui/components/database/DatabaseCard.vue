@@ -9,8 +9,9 @@
     <v-divider class="mx-4" />
     <v-card-title>
       <span
-        class="text-primary text-decoration-underline"
-        v-text="formatTitle(database)" />
+        class="text-primary text-decoration-underline">
+        {{ formatTitle(database) }}
+      </span>
       <v-progress-circular
         v-if="loading"
         color="primary"
@@ -18,56 +19,66 @@
         class="ml-1"
         indeterminate />
     </v-card-title>
-    <v-card-subtitle
-      v-text="formatCreators(database)" />
+    <v-card-subtitle>
+      {{ formatCreators(database) }}
+    </v-card-subtitle>
     <v-card-text>
-      <div v-text="identifierDescription(database)" />
+      <div>
+        {{ identifierDescription(database) }}
+      </div>
       <div class="mt-2 db-tags">
         <v-chip
           v-if="database.is_public"
           size="small"
           color="success"
-          :text="$t('toolbars.database.public')"
-          variant="outlined" />
+          variant="outlined">
+          {{ $t('toolbars.database.public') }}
+        </v-chip>
         <v-chip
           v-if="!database.is_public"
           size="small"
           :color="colorVariant"
           variant="outlined"
-          :text="$t('toolbars.database.private')"
-          flat />
+          flat>
+          {{ $t('toolbars.database.private') }}
+        </v-chip>
         <v-chip
           v-if="identifierYear(database)"
           size="small"
           :color="colorVariant"
-          variant="outlined"
-          v-text="identifierYear(database)" />
+          variant="outlined">
+          {{ identifierYear(database) }}
+        </v-chip>
         <v-chip
           v-if="identifier(database)"
           size="small"
           :color="colorVariant"
-          variant="outlined"
-          v-text="identifierPublisher(database)" />
+          variant="outlined">
+          {{ identifierPublisher(database) }}
+        </v-chip>
         <v-chip
           v-for="(license, i) in identifierLicenses(database)"
           :key="`l-${i}`"
           size="small"
           color="success"
-          variant="outlined"
-          v-text="license.identifier" />
+          variant="outlined">
+          {{ license.identifier }}
+        </v-chip>
         <v-chip
           v-for="(funder, i) in identifierFunders(database)"
           :key="`f-${i}`"
           size="small"
           :color="colorVariant"
-          variant="outlined"
-          v-text="funder.funder_name" />
+          variant="outlined">
+          {{ funder.funder_name }}
+        </v-chip>
         <v-chip
           v-if="identifierLanguage(database)"
           size="small"
           :color="colorVariant"
-          variant="outlined"
-          v-text="identifierLanguage(database)" />
+          variant="outlined">
+          {{ identifierLanguage(database) }}
+        </v-chip>
       </div>
     </v-card-text>
   </v-card>

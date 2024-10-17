@@ -12,7 +12,7 @@ Quickstart
 ----------
 
 Find numerous quickstart examples on
-the `DBRepo website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/api/>`_.
+the `DBRepo website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/api/>`_.
 
 AMQP API Client
 -----------

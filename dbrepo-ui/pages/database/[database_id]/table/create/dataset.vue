@@ -22,8 +22,9 @@
               color="info">
               {{ $t('pages.table.subpages.import.dataset.text') }}
               <NuxtLink
-                :href="`/database/${$route.params.database_id}/table/create/schema`"
-                v-text="$t('pages.table.subpages.import.schema.text')" />
+                :href="`/database/${$route.params.database_id}/table/create/schema`">
+                {{ $t('pages.table.subpages.import.schema.text') }}
+              </NuxtLink>
             </v-alert>
           </v-col>
         </v-row>
@@ -140,7 +141,9 @@
                     border="start"
                     color="success">
                     {{ $t('pages.table.subpages.create.summary.text') }}
-                    <strong v-text="table.internal_name"/>
+                    <strong>
+                      {{ table.internal_name }}
+                    </strong>
                   </v-alert>
                 </v-col>
               </v-row>
@@ -241,9 +244,6 @@ export default {
       tableImport: {
         location: null,
         quote: '"',
-        false_element: null,
-        true_element: null,
-        null_element: '',
         separator: ',',
         line_termination: null,
         skip_lines: 1
@@ -364,9 +364,6 @@ export default {
       this.tableImport.separator = separator
       this.tableImport.skip_lines = skip_lines
       this.tableImport.quote = quote
-      this.tableImport.null_element = null_element
-      this.tableImport.true_element = true_element
-      this.tableImport.false_element = false_element
       if (filename) {
         this.step = 4
       }

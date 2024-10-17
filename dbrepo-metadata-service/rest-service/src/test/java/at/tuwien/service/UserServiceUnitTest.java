@@ -5,6 +5,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,11 @@ public class UserServiceUnitTest extends AbstractUnitTest {
 
     @Autowired
     private UserService userService;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     public void findByUsername_succeeds() throws UserNotFoundException {

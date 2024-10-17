@@ -123,7 +123,23 @@
                     :rules="[v => !!v || $t('validation.required')]"
                     return-object
                     multiple
-                    @update:model-value="buildQuery" />
+                    @update:model-value="buildQuery">
+                    <template
+                      v-slot:prepend-item>
+                      <v-list-item
+                        title="Select All"
+                        :active="select.length === columns.length"
+                        @click="toggleColumns">
+                        <template
+                          v-slot:prepend>
+                          <v-checkbox-btn
+                            :model-value="select.length === columns.length" />
+                        </template>
+                      </v-list-item>
+                      <v-divider
+                        class="mt-2" />
+                    </template>
+                  </v-select>
                 </v-col>
               </v-row>
               <v-row v-if="select.length > 0">
@@ -194,7 +210,7 @@
                     <v-col
                       md="8"
                       class="text-center">
-                      <pre v-text="clause.type.toUpperCase()" />
+                      <pre>{{ clause.type.toUpperCase() }}</pre>
                     </v-col>
                   </v-row>
                   <div
@@ -233,13 +249,17 @@
                   <v-alert
                     border="start"
                     color="warning">
-                    <span v-text="$t('pages.subset.subpages.create.expert.warn')" />
-                    <pre style="white-space:inherit;" v-text="unsupported.join(', ')" />
+                    <span>
+                      {{ $t('pages.subset.subpages.create.expert.warn') }}
+                    </span>
+                    <pre style="white-space:inherit;">{{ unsupported.join(', ') }}</pre>
                   </v-alert>
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col v-text="$t('pages.subset.subpages.create.subtitle')" />
+                <v-col>
+                  {{ $t('pages.subset.subpages.create.subtitle') }}
+                </v-col>
               </v-row>
               <v-row dense>
                 <v-col>
@@ -369,6 +389,12 @@ export default {
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    columnTypes () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.container.image.data_types
     },
     user () {
       return this.userStore.getUser
@@ -533,7 +559,7 @@ export default {
         return
       }
       const queryService = useQueryService()
-      const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.clauses)
+      const { error, reason, column, raw, formatted } = queryService.build(this.table.internal_name, this.select, this.columnTypes, this.clauses)
       if (error) {
         const toast = useToastInstance()
         toast.error(this.$t('error.query.' + reason) + ' ' + column)
@@ -583,6 +609,14 @@ export default {
           language: 'mysql',
           keywordCase: 'upper'
         })
+      }
+    },
+    toggleColumns () {
+      if (this.select.length !== this.columns.length) {
+        this.select = this.columns
+        this.buildQuery()
+      } else {
+        this.select = []
       }
     }
   }

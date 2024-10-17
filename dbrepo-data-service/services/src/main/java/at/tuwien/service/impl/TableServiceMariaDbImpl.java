@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -20,6 +20,7 @@ import at.tuwien.service.StorageService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.*;
 @Service
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {
 
+    private final Counter httpDataAccessCounter;
     private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final MariaDbMapper mariaDbMapper;
@@ -42,9 +44,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public TableServiceMariaDbImpl(S3Config s3Config, DataMapper dataMapper, MariaDbMapper mariaDbMapper,
-                                   SchemaService schemaService, StorageService storageService,
+    public TableServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
+                                   MariaDbMapper mariaDbMapper, SchemaService schemaService,
+                                   StorageService storageService,
                                    DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+        this.httpDataAccessCounter = httpDataAccessCounter;
         this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.mariaDbMapper = mariaDbMapper;
@@ -203,6 +207,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             connection.commit();
             queryResult = dataMapper.resultListToQueryResultDto(table.getColumns(), resultSet);
             log.debug("mapped result in {} ms", System.currentTimeMillis() - start);
+            httpDataAccessCounter.increment();
         } catch (SQLException e) {
             connection.rollback();
             log.error("Failed to find data from table {}.{}: {}", table.getDatabase().getInternalName(), table.getInternalName(), e.getMessage());
@@ -268,7 +273,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws StorageNotFoundException,
+    public void importDataset(PrivilegedTableDto table, ImportDto data) throws StorageNotFoundException,
             SQLException, QueryMalformedException, RemoteUnavailableException, SidecarImportException {
         /* import .csv from blob storage to sidecar */
         dataDatabaseSidecarGateway.importFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), data.getLocation());
@@ -438,6 +443,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             dataSource.close();
         }
         dataDatabaseSidecarGateway.exportFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), fileName);
+        httpDataAccessCounter.increment();
         return storageService.getResource(fileName);
     }
 

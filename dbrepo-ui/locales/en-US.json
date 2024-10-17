@@ -32,7 +32,9 @@
     "no": "No",
     "mine": "(mine)",
     "loading": "Loading",
-    "view": "View"
+    "view": "View",
+    "modify": "Modify",
+    "help": "Help"
   },
   "pages": {
     "identifier": {
@@ -543,8 +545,9 @@
           "subtitle": "Select a timestamp to view the data for this specific time of day",
           "chart": {
             "title": "Data Events",
+            "legend": "Chart legend: green color marks data insertions, red color marks data deletions (=data updates in some cases)",
             "ylabel": "# Events",
-            "xlabel": "Timestamp"
+            "xlabel": "Data Timestamp (UTC)"
           },
           "timestamp": {
             "label": "Timestamp",
@@ -561,7 +564,7 @@
             "hint": "Value is a primary key"
           },
           "format": {
-            "hint": "Value must be in format"
+            "hint": "Format hint:"
           },
           "required": {
             "hint": "Required. "
@@ -611,10 +614,10 @@
         "access": {
           "title": "Database Access",
           "subtitle": "Overview on users with their access to the database",
-          "read": "You can read all contents",
-          "write-own": "You can write own tables and read all contents",
-          "write-all": "You can write own tables and read all contents",
-          "revoke": "Revoke",
+          "read": "Read all contents",
+          "write-own": "Read all contents & write own tables",
+          "write-all": "Read all contents & write all tables",
+          "revoke": "No access",
           "action": "Action",
           "username": {
             "label": "Username",
@@ -623,9 +626,6 @@
           "type": {
             "label": "Access Type",
             "hint": "Required"
-          },
-          "submit": {
-            "text": "Modify"
           }
         },
         "create": {
@@ -1144,8 +1144,8 @@
     "query": {
       "missing": "Failed to find query in data service",
       "invalid": "Query is invalid",
-      "type.exists": "Failed to build query: no such column type",
-      "type.build": "Failed to build query: currently no query build support for column type",
+      "exists": "Failed to build query: no such column type",
+      "build": "Failed to build query: currently no query build support for column type",
       "column.exists": "Failed to build query: data columns are missing column with name"
     },
     "store": {
@@ -1441,6 +1441,9 @@
     "uri": {
       "pattern": "Invalid URI",
       "exists": "URI exists"
+    },
+    "column": {
+      "exists": "Column with this name exists"
     },
     "user": {
       "pattern": "Only lowercase letters, min. 3 length",

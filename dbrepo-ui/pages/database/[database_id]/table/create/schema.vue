@@ -116,8 +116,9 @@
                 <v-col md="8">
                   <v-alert
                     border="start"
-                    color="success"
-                    v-text="$t('pages.table.subpages.schema.summary.text') + ' ' + table.internal_name" />
+                    color="success">
+                    {{ $t('pages.table.subpages.schema.summary.text') + ' ' + table.internal_name }}
+                  </v-alert>
                 </v-col>
               </v-row>
               <v-row>
@@ -269,13 +270,13 @@ export default {
           this.cacheStore.reloadDatabase()
           this.table = table
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
             return
           }
-          toast.error(this.$t(code))
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false

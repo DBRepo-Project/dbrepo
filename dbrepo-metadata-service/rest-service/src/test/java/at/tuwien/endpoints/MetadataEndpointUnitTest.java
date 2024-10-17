@@ -6,6 +6,7 @@ import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.utils.XmlUtils;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,11 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private MetadataEndpoint metadataEndpoint;
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
+    }
 
     @Test
     @WithAnonymousUser

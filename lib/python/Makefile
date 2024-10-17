@@ -1,4 +1,4 @@
-all: build install
+all: build
 
 clean:
 	rm -rf ./python/dist/* ./docs/build/* ./dist/*
@@ -13,14 +13,6 @@ check:
 build: clean
 	python3 -m build --sdist .
 	python3 -m build --wheel .
-
-install:
-	cp ./dist/dbrepo-* ../../dbrepo-analyse-service/lib/
-	(cd ../../dbrepo-analyse-service && pipenv lock)
-	cp ./dist/dbrepo-* ../../dbrepo-search-service/lib/
-	(cd ../../dbrepo-search-service && pipenv lock)
-	cp ./dist/dbrepo-* ../../dbrepo-search-service/init/lib/
-	(cd ../../dbrepo-search-service/init && pipenv lock)
 
 deploy: build
 	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*

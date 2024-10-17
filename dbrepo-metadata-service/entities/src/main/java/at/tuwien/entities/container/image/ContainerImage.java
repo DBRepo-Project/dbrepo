@@ -57,9 +57,6 @@ public class ContainerImage {
     @Column(nullable = false, unique = true, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDefault = false;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
-    private List<ContainerImageDate> dateFormats;
-
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
     private List<Container> containers;
@@ -72,5 +69,9 @@ public class ContainerImage {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
+    private List<DataType> dataTypes;
 
 }

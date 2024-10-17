@@ -1,7 +1,10 @@
 <template>
-  <v-row no-gutters>
-    <v-col v-if="!loading" md="10">
-      <pre v-text="citation" />
+  <v-row
+    no-gutters>
+    <v-col
+      v-if="!loading"
+      md="10">
+      <pre>{{ citation }}</pre>
     </v-col>
     <v-col
       v-if="!$vuetify.display.mdAndDown"

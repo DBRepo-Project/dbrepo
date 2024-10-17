@@ -7,13 +7,15 @@ volumes:
   search-db-data:
   storage-service-data:
   identity-service-data:
+  metric-db-data:
+  dashboard-service-data:
 
 services:
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./config/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -23,6 +25,7 @@ services:
     environment:
       MARIADB_DATABASE: "${METADATA_DB:-dbrepo}"
       MARIADB_ROOT_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${METADATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${METADATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -35,7 +38,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -43,6 +46,7 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${DATA_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${DATA_DB_BACKUP_PASSWORD:-dbrepobackup}"
     healthcheck:
       test: mysqladmin ping --user=root --password="${DATA_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -55,16 +59,16 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/mariadb:11.1.3-debian-11-r6
+    image: docker.io/bitnami/postgresql:17.0.0-debian-12-r1
     volumes:
-      - auth-db-data:/bitnami/mariadb
-    ports:
-      - "3308:3306"
+      - auth-db-data:/bitnami/postgresql
     environment:
-      MARIADB_DATABASE: "${AUTH_DB_NAME:-keycloak}"
-      MARIADB_ROOT_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      POSTGRESQL_DATABASE: "${AUTH_DB_NAME:-keycloak}"
+      POSTGRESQL_USERNAME: "${AUTH_DB_USERNAME:-keycloak}"
+      POSTGRESQL_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      PGPASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user=root --password="${AUTH_DB_PASSWORD:-dbrepo}" --silent
+      test: "psql -U ${AUTH_DB_USERNAME:-keycloak} -h 127.0.0.1 -p 5432 -d ${AUTH_DB_NAME:-keycloak} -c 'select version();'"
       interval: 15s
       timeout: 5s
       retries: 12
@@ -75,18 +79,24 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/auth-service:1.4.6
+    image: bitnami/keycloak:26.0.0-debian-12-r1
+    volumes:
+      - ./config/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
+      - ./config/master-realm.json:/opt/keycloak/data/import/master-realm.json
+      - ./config/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
+    environment:
+      KEYCLOAK_ENABLE_HTTPS: "false"
+      KEYCLOAK_ENABLE_STATISTICS: "true"
+      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
+      KEYCLOAK_DATABASE_HOST: "auth-db"
+      KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
+      KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
+      KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
-      interval: 15s
+      test: curl --head -fsS http://localhost:9000/health/ready
+      interval: 10s
       timeout: 5s
       retries: 12
-    environment:
-      AUTH_DB: "${AUTH_DB:-keycloak}"
-      KC_DB_USERNAME: root
-      KC_DB_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
-      KEYCLOAK_ADMIN: "${AUTH_SERVICE_ADMIN_USERNAME:-admin}"
-      KEYCLOAK_ADMIN_PASSWORD: "${AUTH_SERVICE_ADMIN_PASSWORD:-admin}"
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -99,7 +109,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.7
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -162,7 +172,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.7
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -188,15 +198,18 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.12-debian-12
+    image: docker.io/bitnami/rabbitmq:3.13.7-debian-12-r4
     ports:
       - 5672:5672
+      - 1883:1883
     volumes:
       - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./config/advanced.config:/etc/rabbitmq/advanced.config
       - ./config/enabled_plugins:/etc/rabbitmq/enabled_plugins
       - ./config/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
+    environment:
+      RABBITMQ_FEATURE_FLAGS: mqtt_v5
     depends_on:
       dbrepo-identity-service:
         condition: service_healthy
@@ -212,7 +225,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.4.7
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -236,7 +249,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.7
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -248,12 +261,17 @@ services:
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+    healthcheck:
+      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   dbrepo-data-db-sidecar:
     restart: "no"
     container_name: dbrepo-data-db-sidecar
     hostname: data-db-sidecar
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.7
     environment:
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -274,18 +292,18 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.7
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
     depends_on:
       dbrepo-search-service:
-        condition: service_started
-      dbrepo-storage-service:
+        condition: service_healthy
+      dbrepo-upload-service:
         condition: service_healthy
     healthcheck:
-      test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
+      test: curl -fsSL http://127.0.0.1:3000 && curl -fsSL http://127.0.0.1:3000/health
       interval: 10s
       timeout: 5s
       retries: 12
@@ -305,11 +323,7 @@ services:
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
-      dbrepo-auth-service:
-        condition: service_healthy
       dbrepo-broker-service:
-        condition: service_healthy
-      dbrepo-dashboard-service:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
@@ -343,9 +357,10 @@ services:
 
   dbrepo-search-service-init:
     restart: "no"
+    init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.7
     environment:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
@@ -386,6 +401,7 @@ services:
     image: bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - metric-db-data:/opt/bitnami/prometheus/data
     healthcheck:
       test: promtool check healthy
       interval: 10s
@@ -398,16 +414,8 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: docker.io/bitnami/grafana:11.2.0-debian-12-r4
-    volumes:
-      - ./config/dashboards:/app/dashboards
-      - ./config/provisioning:/etc/grafana/provisioning
-      - ./config/grafana.ini:/etc/grafana/grafana.ini
-      - ./config/ldap.toml:/etc/grafana/ldap.toml
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.4.7
     environment:
-      GF_SERVER_DOMAIN: "dashboard-service"
-      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}/dashboard/"
-      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
@@ -424,9 +432,10 @@ services:
 
   dbrepo-storage-service-init:
     restart: "no"
+    init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.7
     environment:
       WEED_CLUSTER_SW_MASTER: "${STORAGE_SERVICE_MASTER_ENDPOINT:-storage-service:9333}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -466,7 +475,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.7
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -480,7 +489,7 @@ services:
       BROKER_HOST: "${BROKER_ENDPOINT:-broker-service}"
       BROKER_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
       BROKER_PORT: ${BROKER_PORT:-5672}
-      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://gateway-service/admin/broker}"
+      BROKER_SERVICE_ENDPOINT: "${BROKER_SERVICE_ENDPOINT:-http://broker-service:15672}"
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}

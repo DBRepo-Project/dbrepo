@@ -2,6 +2,7 @@ import math
 import os
 import logging
 from ast import literal_eval
+from json import dumps
 from typing import List, Any
 
 import requests
@@ -10,6 +11,7 @@ from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
+from jwt.exceptions import JWTDecodeError
 from opensearchpy import TransportError, NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
@@ -165,7 +167,7 @@ template = {
     "info": {
         "title": "Database Repository Search Service API",
         "description": "Service that searches the search database",
-        "version": "1.4.6",
+        "version": "1.4.7",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -177,7 +179,7 @@ template = {
     },
     "externalDocs": {
         "description": "Sourcecode Documentation",
-        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.6/"
+        "url": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/"
     },
     "servers": [
         {
@@ -206,9 +208,6 @@ app.config["OPENSEARCH_PASSWORD"] = os.getenv('OPENSEARCH_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 
-available_types = literal_eval(
-    os.getenv("COLLECTION", "['database','table','column','identifier','unit','concept','user','view']"))
-
 
 @token_auth.verify_token
 def verify_token(token: str):
@@ -217,7 +216,7 @@ def verify_token(token: str):
     try:
         client = KeycloakClient()
         return client.verify_jwt(access_token=token)
-    except AssertionError:
+    except JWTDecodeError as error:
         return False
 
 
@@ -268,8 +267,7 @@ def general_filter(index, results):
         "view": ["id", "name", "creator", " created"],
     }
     if index not in important_keys.keys():
-        error_msg = "the keys to be returned to the user for your index aren't specified in the important Keys dict"
-        raise KeyError(error_msg)
+        raise KeyError(f"Failed to find index {index} in: {important_keys.keys()}")
     for result in results:
         result_keys_copy = tuple(result.keys())
         for key in result_keys_copy:
@@ -294,35 +292,37 @@ def get_index(index: str):
     :return: list of the results
     """
     logging.info(f'Searching for index: {index}')
-    if index not in available_types:
-        return ApiError(status='NOT_FOUND', message='Failed to find index',
-                        code='search.index.missing').model_dump(), 404
     results = OpenSearchClient().query_index_by_term_opensearch("*", "contains")
-    results = general_filter(index, results)
+    try:
+        results = general_filter(index, results)
 
-    results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
-    max_pages = math.ceil(len(results) / results_per_page)
-    page = min(request.args.get("page", 1, type=int), max_pages)
-    results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-    return dict({"results": results}), 200
+        results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
+        max_pages = math.ceil(len(results) / results_per_page)
+        page = min(request.args.get("page", 1, type=int), max_pages)
+        results = results[(results_per_page * (page - 1)): (results_per_page * page)]
+        return dict({"results": results}), 200
+    except KeyError:
+        return ApiError(status='NOT_FOUND', message=f'Failed to find get index: {index}',
+                        code='search.index.missing').model_dump(), 404
 
 
-@app.route("/api/search/<string:type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@app.route("/api/search/<string:field_type>/fields", methods=["GET"], endpoint="search_get_index_fields")
 @metrics.gauge(name='dbrepo_search_type_list', description='Time needed to list search types')
 @swag_from("os-yml/get_fields.yml")
-def get_fields(type: str):
+def get_fields(field_type: str):
     """
     returns a list of attributes of the data for a specific index.
-    :param type: The search type
+    :param field_type: The search type
     :return:
     """
-    logging.info(f'Searching in index database for type: {type}')
-    if type not in available_types:
-        return ApiError(status='NOT_FOUND', message='Failed to find type',
+    logging.info(f'Searching in index database for type: {field_type}')
+    try:
+        fields = OpenSearchClient().get_fields_for_index(field_type)
+        logging.debug(f'get fields for field_type {field_type} resulted in {len(fields)} field(s)')
+        return fields, 200
+    except NotFoundError:
+        return ApiError(status='NOT_FOUND', message=f'Failed to find fields for search type {field_type}',
                         code='search.type.missing').model_dump(), 404
-    fields = OpenSearchClient().get_fields_for_index(type)
-    logging.debug(f'get fields for type {type} resulted in {len(fields)} field(s)')
-    return fields, 200
 
 
 @app.route("/api/search", methods=["GET"], endpoint="search_fuzzy_search")
@@ -344,10 +344,10 @@ def get_fuzzy_search():
     return dict({"results": results}), 200
 
 
-@app.route("/api/search/<string:type>", methods=["POST"], endpoint="search_post_general_search")
+@app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
 @metrics.gauge(name='dbrepo_search_type', description='Time needed to search by type')
 @swag_from("os-yml/post_general_search.yml")
-def post_general_search(type):
+def post_general_search(field_type):
     """
     Main endpoint for fuzzy searching.
     :return:
@@ -356,11 +356,7 @@ def post_general_search(type):
         return ApiError(status='UNSUPPORTED_MEDIA_TYPE', message='Content type needs to be application/json',
                         code='search.general.media').model_dump(), 415
     req_body = request.json
-    logging.info(f'Searching in index database for type: {type}')
-    logging.debug(f"search request body: {req_body}")
-    if type is not None and type not in available_types:
-        return ApiError(status='NOT_FOUND', message=f'Type {type} is not in collection: {available_types}',
-                        code='search.general.missing').model_dump(), 404
+    logging.info(f'Searching in index database for type: {field_type}')
     t1 = request.args.get("t1")
     if not str(t1).isdigit():
         t1 = None
@@ -370,9 +366,9 @@ def post_general_search(type):
     if t1 is not None and t2 is not None and "unit.uri" in req_body and "concept.uri" in req_body:
         response = OpenSearchClient().unit_independent_search(t1, t2, req_body)
     else:
-        response = OpenSearchClient().general_search(type, req_body)
+        response = OpenSearchClient().general_search(field_type, req_body)
     # filter by type
-    if type == 'table':
+    if field_type == 'table':
         tmp = []
         for database in response:
             if database["tables"] is not None:
@@ -380,7 +376,7 @@ def post_general_search(type):
                     table["is_public"] = database["is_public"]
                     tmp.append(table)
         response = tmp
-    if type == 'identifier':
+    if field_type == 'identifier':
         tmp = []
         for database in response:
             if database["identifiers"] is not None:
@@ -398,30 +394,30 @@ def post_general_search(type):
             if 'identifier' in view:
                 tmp.append(view['identifier'])
         response = tmp
-    elif type == 'column':
+    elif field_type == 'column':
         response = [x for xs in response for x in xs["tables"]]
         for table in response:
             for column in table["columns"]:
                 column["table_id"] = table["id"]
                 column["database_id"] = table["database_id"]
         response = [x for xs in response for x in xs["columns"]]
-    elif type == 'concept':
+    elif field_type == 'concept':
         tmp = []
         tables = [x for xs in response for x in xs["tables"]]
         for column in [x for xs in tables for x in xs["columns"]]:
             if 'concept' in column and column["concept"] is not None:
                 tmp.append(column["concept"])
         response = tmp
-    elif type == 'unit':
+    elif field_type == 'unit':
         tmp = []
         tables = [x for xs in response for x in xs["tables"]]
         for column in [x for xs in tables for x in xs["columns"]]:
             if 'unit' in column and column["unit"] is not None:
                 tmp.append(column["unit"])
         response = tmp
-    elif type == 'view':
+    elif field_type == 'view':
         response = [x for xs in response for x in xs["views"]]
-    return dict({'results': response, 'type': type}), 200
+    return dict({'results': response, 'type': field_type}), 200
 
 
 @app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="search_put_database")
@@ -436,16 +432,9 @@ def update_database(database_id: int) -> Database | ApiError:
         logging.error(f"Failed to validate: {e}")
         return ApiError(status='BAD_REQUEST', message=f'Malformed payload: {e}',
                         code='search.general.missing').model_dump(), 400
-    try:
-        database = OpenSearchClient().update_database(database_id, payload)
-        logging.info(f"Updated database with id : {database_id}")
-        return database.model_dump(), 202
-    except NotFoundError:
-        return ApiError(status='NOT_FOUND', message='Failed to find database',
-                        code='search.database.missing').model_dump(), 404
-    except TransportError:
-        return ApiError(status='BAD_REQUEST', message='Failed to update database',
-                        code='search.database.invalid').model_dump(), 400
+    database = OpenSearchClient().update_database(database_id, payload)
+    logging.info(f"Updated database with id : {database_id}")
+    return database.model_dump(), 202
 
 
 @app.route("/api/search/database/<int:database_id>", methods=["DELETE"], endpoint="database_delete_database")
@@ -455,7 +444,7 @@ def update_database(database_id: int) -> Database | ApiError:
 def delete_database(database_id: int):
     try:
         OpenSearchClient().delete_database(database_id)
-        return None, 202
+        return dumps({}), 202
     except NotFoundError:
         return ApiError(status='NOT_FOUND', message='Failed to find database',
                         code='search.database.missing').model_dump(), 404

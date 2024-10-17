@@ -12,6 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.hibernate.HibernateException;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,11 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
     @BeforeAll
     public static void beforeAll() {
         JenaSystem.init();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        genesis();
     }
 
     @Test

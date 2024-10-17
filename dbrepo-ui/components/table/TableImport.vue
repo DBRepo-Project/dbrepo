@@ -83,39 +83,6 @@
               </v-select>
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.null_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.null.hint')"
-                :label="$t('pages.table.subpages.import.null.label')"/>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.true_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.true.hint')"
-                :label="$t('pages.table.subpages.import.true.label')"/>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col md="8">
-              <v-text-field
-                v-model="tableImport.false_element"
-                clearable
-                persistent-hint
-                :variant="inputVariant"
-                :hint="$t('pages.table.subpages.import.false.hint')"
-                :label="$t('pages.table.subpages.import.false.label')"/>
-            </v-col>
-          </v-row>
         </v-container>
       </v-form>
     </v-stepper-window>
@@ -132,8 +99,9 @@
           v-if="$route.query.location"
           dense>
           <v-col>
-            <p
-              v-text="$t('pages.table.subpages.import.storage.text')" />
+            <p>
+              {{ $t('pages.table.subpages.import.storage.text') }}
+            </p>
             <v-chip
               prepend-icon="mdi-cloud-upload"
               label>
@@ -155,9 +123,13 @@
                   border="start"
                   color="warning">
                   {{ $t('pages.table.subpages.import.separator.warn.prefix') }}
-                  <strong v-text="tableImport.separator"/>
+                  <strong>
+                    {{ tableImport.separator }}
+                  </strong>
                   {{ $t('pages.table.subpages.import.separator.warn.middle') }}
-                  <strong v-text="suggestedAnalyseSeparator"/>
+                  <strong>
+                    {{ suggestedAnalyseSeparator }}
+                  </strong>
                   {{ $t('pages.table.subpages.import.separator.warn.suffix') }}
                 </v-alert>
               </v-col>
@@ -269,7 +241,9 @@
             <v-alert
               border="start"
               color="success">
-              <span v-text="$t(`pages.table.subpages.import.summary.text`)"/>
+              <span>
+                {{ $t(`pages.table.subpages.import.summary.text`)}}
+              </span>
             </v-alert>
           </v-col>
         </v-row>
@@ -328,9 +302,6 @@ export default {
       tableImport: {
         location: null,
         quote: '"',
-        false_element: null,
-        true_element: null,
-        null_element: '',
         separator: ',',
         line_termination: '\\n',
         skip_lines: 1
@@ -356,9 +327,6 @@ export default {
     this.cacheStore.setUploadProgress(null)
     this.setQueryParamSafely('location')
     this.setQueryParamSafely('quote')
-    this.setQueryParamSafely('false_element')
-    this.setQueryParamSafely('true_element')
-    this.setQueryParamSafely('null_element')
     this.setQueryParamSafely('separator')
     this.setQueryParamSafely('line_termination')
     this.setQueryParamSafely('skip_lines')
@@ -541,9 +509,6 @@ export default {
             separator: this.tableImport.separator,
             skip_lines: this.tableImport.skip_lines,
             quote: this.tableImport.quote,
-            null_element: this.tableImport.null_element,
-            true_element: this.tableImport.true_element,
-            false_element: this.tableImport.false_element
           })
           this.loading = false
         })

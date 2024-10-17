@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -63,7 +65,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
         licenseRepository.save(LICENSE_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3));
     }
 
     @Test
@@ -91,6 +93,9 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         viewService.delete(VIEW_1);
+        assertThrows(ViewNotFoundException.class, () -> {
+            viewService.findById(DATABASE_1, VIEW_1_ID);
+        });
     }
 
 }

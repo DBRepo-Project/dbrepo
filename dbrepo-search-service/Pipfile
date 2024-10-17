@@ -18,12 +18,13 @@ jwt = "~=1.3"
 testcontainers-opensearch = "*"
 pytest = "*"
 rdflib = "*"
-dbrepo = {path = "./lib/dbrepo-1.4.6.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.4.7.tar.gz"}
 gunicorn = "*"
 
 [dev-packages]
 coverage = "*"
 pytest = "*"
+requests-mock = "*"
 
 [requires]
 python_version = "3.11"

@@ -17,8 +17,9 @@
       <v-list-item
         class="mt-2">
         <v-list-item-title
-          class="text-h6"
-          v-text="title" />
+          class="text-h6">
+          {{ title }}
+        </v-list-item-title>
       </v-list-item>
       <v-list nav>
         <v-list-item
@@ -49,7 +50,7 @@
           border="start"
           tile
           :type="message.type">
-          {{ message.message }}<span v-if="message.link">&nbsp;&mdash;&nbsp;<a :href="message.link" v-text="message.link_text ? message.link_text : message.link" /></span>
+          {{ message.message }}<span v-if="message.link">&nbsp;&mdash;&nbsp;<a :href="message.link">{{ message.link_text ? message.link_text : message.link }}</a></span>
         </v-alert>
         <div class="d-flex pa-2">
           <v-spacer />

@@ -20,14 +20,13 @@
         :items="table.columns">
         <template v-slot:item.is_null_allowed="{ item }">
           <span
-            v-if="item.is_null_allowed"
-            v-text="$t('pages.table.subpages.schema.bullet')" /> {{ item.is_null_allowed }}
+            v-if="item.is_null_allowed">
+            {{ $t('pages.table.subpages.schema.bullet') }}
+          </span>
+          {{ item.is_null_allowed }}
         </template>
         <template v-slot:item.extra="{ item }">
           <pre>{{ extra(item) }}</pre>
-        </template>
-        <template v-slot:item.auto_generated="{ item }">
-          <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
         </template>
         <template v-slot:item.column_concept="{ item }">
           <v-btn
@@ -47,8 +46,9 @@
             @click="pick(item, 'concept')" />
           <a
             v-if="!canAssignSemanticInformation && hasConcept(item)"
-            :href="item.concept.uri"
-            v-text="item.concept.name ? item.concept.name : item.concept.uri" />
+            :href="item.concept.uri">
+            {{ item.concept.name ? item.concept.name : item.concept.uri }}
+          </a>
         </template>
         <template v-slot:item.column_unit="{ item }">
           <v-btn
@@ -68,8 +68,9 @@
             @click="pick(item, 'unit')" />
           <a
             v-if="!canAssignSemanticInformation && hasUnit(item)"
-            :href="item.unit.uri"
-            v-text="item.unit.name ? item.unit.name : item.unit.uri" />
+            :href="item.unit.uri">
+            {{ item.unit.name ? item.unit.name : item.unit.uri }}
+          </a>
         </template>
       </v-data-table>
     </v-card>
@@ -84,18 +85,18 @@
           <ul>
             <li v-if="table.constraints.primary_key.length > 0">
               <strong>PRIMARY KEY</strong>
-              (<i v-text="primaryKeysColumns" />)
+              (<i>{{ primaryKeysColumns }}</i>)
             </li>
             <li v-for="(foreignKey, i) in table.constraints.foreign_keys" :key="`fk-${i}`">
-              <strong>FOREIGN KEY</strong> <span v-text="foreignKey.name" /> (<i v-text="foreignKeyColumns(foreignKey)" />) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" /> (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
+              <strong>FOREIGN KEY</strong> <span>{{ foreignKey.name }}</span> (<i>{{ foreignKeyColumns(foreignKey) }}</i>) <strong>REFERENCES</strong> <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`">{{ foreignKeyReferencedTable(foreignKey) }}</a> (<i>{{ foreignKeyReferencedColumns(foreignKey) }}</i>)
             </li>
             <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
               <strong>UNIQUE INDEX</strong>
-              (<i v-text="uniqueColumns(uniqueConstraint)" />)
+              (<i>{{ uniqueColumns(uniqueConstraint) }}</i>)
             </li>
             <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
               <strong>CHECK CONSTRAINT</strong>
-              (<i v-text="checkConstraint" />)
+              (<i>{{ checkConstraint }}</i>)
             </li>
           </ul>
         </v-container>
@@ -163,7 +164,6 @@ export default {
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
         { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
-        { value: 'auto_generated', title: this.$t('pages.table.subpages.schema.sequence.title') },
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
@@ -217,12 +217,20 @@ export default {
   },
   methods: {
     extra (column) {
-      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
-        return `fsp=${column.date_format.unix_format}`
-      } else if (column.column_type === 'float') {
-        return `p=${column.size}`
+      if (column.column_type === 'float') {
+        return `precision=${column.size}`
       } else if (['decimal', 'double'].includes(column.column_type)) {
-        return `size=${column.size} d=${column.d}`
+        let extra = ''
+        if (column.size !== null) {
+          extra += `size=${column.size}`
+        }
+        if (column.d !== null) {
+          if (extra.length > 0) {
+            extra += ', '
+          }
+          extra += `d=${column.d}`
+        }
+        return extra
       } else if (column.column_type === 'enum') {
         return `(${column.enums.join(', ')})`
       } else if (column.column_type === 'set') {

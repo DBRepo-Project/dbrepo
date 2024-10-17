@@ -52,9 +52,6 @@ public class ColumnCreateDto {
     @JsonProperty("unit_uri")
     private String unitUri;
 
-    @Schema(description = "date format id")
-    private Long dfid;
-
     @Schema(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 

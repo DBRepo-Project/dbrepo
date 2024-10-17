@@ -60,6 +60,40 @@ services:
   ...
 ```
 
+## Monitoring (Optional)
+
+By default the Gateway Service is not monitored. You need to add the following to the `docker-compose.yml` file.
+
+```yaml title="docker-compose.yml"
+services:
+  ...
+  dbrepo-gateway-service-sidecar:
+    restart: "no"
+    container_name: dbrepo-gateway-service-sidecar
+    hostname: dbrepo-gateway-service-sidecar
+    image: docker.io/nginx/nginx-prometheus-exporter:1.3.0
+    command:
+      - "-nginx.scrape-uri=http://gateway-service/basic_status"
+    ports:
+      - "9113:9113"
+    depends_on:
+      dbrepo-gateway-service:
+        condition: service_started
+    logging:
+      driver: json-file
+```
+
+Then, uncomment the scrape config from the `prometheus.yml` file.
+
+```yaml title="prometheus.yml"
+scrape_configs:
+  ...
+  - job_name: 'gateway scrape'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['dbrepo-gateway-service-sidecar:9113']
+```
+
 ## Limitations
 
 (none relevant to DBRepo)

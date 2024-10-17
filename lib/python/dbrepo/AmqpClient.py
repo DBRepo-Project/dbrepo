@@ -4,6 +4,8 @@ import sys
 import json
 import logging
 
+from dbrepo.api.exceptions import AuthenticationError
+
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
 
@@ -14,9 +16,9 @@ class AmqpClient:
     via environment variables, e.g. set endpoint with DBREPO_ENDPOINT. You can override the constructor parameters \
     with the environment variables.
 
-    :param broker_host: The AMQP API host. Optional. Default: "broker-service"
-    :param broker_port: The AMQP API port. Optional. Default: 5672
-    :param broker_virtual_host: The AMQP API virtual host. Optional. Default: "/"
+    :param broker_host: The AMQP API host. Optional. Default: "localhost".
+    :param broker_port: The AMQP API port. Optional. Default: 5672,
+    :param broker_virtual_host: The AMQP API virtual host. Optional. Default: "dbrepo".
     :param username: The AMQP API username. Optional.
     :param password: The AMQP API password. Optional.
     """
@@ -27,9 +29,9 @@ class AmqpClient:
     password: str = None
 
     def __init__(self,
-                 broker_host: str = 'broker-service',
+                 broker_host: str = 'localhost',
                  broker_port: int = 5672,
-                 broker_virtual_host: str = '/',
+                 broker_virtual_host: str = 'dbrepo',
                  username: str = None,
                  password: str = None) -> None:
         self.broker_host = os.environ.get('AMQP_API_HOST', broker_host)
@@ -41,14 +43,16 @@ class AmqpClient:
         self.username = os.environ.get('AMQP_API_USERNAME', username)
         self.password = os.environ.get('AMQP_API_PASSWORD', password)
 
-    def publish(self, exchange: str, routing_key: str, data=dict) -> None:
+    def publish(self, routing_key: str, data=dict, exchange: str = 'dbrepo') -> None:
         """
         Publishes data to a given exchange with the given routing key with a blocking connection.
 
-        :param exchange: The exchange name.
         :param routing_key: The routing key.
         :param data: The data.
+        :param exchange: The exchange name. Default: "dbrepo".
         """
+        if self.username is None or self.password is None:
+            raise AuthenticationError(f"Failed to perform request: authentication required")
         parameters = pika.ConnectionParameters(host=self.broker_host, port=self.broker_port,
                                                virtual_host=self.broker_virtual_host,
                                                credentials=pika.credentials.PlainCredentials(self.username,

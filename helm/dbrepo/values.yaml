@@ -136,13 +136,13 @@ datadb:
     ## @skip datadb.database.secondary
     secondary:
       replicaCount: 2
-  auth:
-    ## @param datadb.auth.rootPassword The root user password.
-    rootPassword: dbrepo
-    ## @param datadb.auth.replicationUser The database replication user password
-    replicationUser: replication
-    ## @param datadb.auth.replicationPassword The database replication user password
-    replicationPassword: replication
+    auth:
+      ## @param datadb.auth.rootPassword The root user password.
+      rootPassword: dbrepo
+      ## @param datadb.auth.replicationUser The database replication user password
+      replicationUser: replication
+      ## @param datadb.auth.replicationPassword The database replication user password
+      replicationPassword: replication
 
 ## @section Search Database
 
@@ -262,7 +262,7 @@ brokerservice:
     enabled: true
     existingSecret: broker-service-secret
   ## @param brokerservice.extraPlugins The list of plugins to be activated.
-  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl
+  extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt
   persistence:
     ## @param brokerservice.persistence.enabled If set to true, a PVC will be created.
     enabled: false
@@ -270,6 +270,10 @@ brokerservice:
   service:
     type: ClusterIP
     managerPortEnabled: true
+    extraPorts:
+      - name: mqtt
+        port: 1883
+        targetPort: 1883
     # loadBalancerIP:
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
@@ -281,7 +285,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.6
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.7
     ## @skip analyseservice.image.pullPolicy
     pullPolicy: Always
     ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -343,7 +347,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.6
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.7
     ## @skip metadataservice.image.pullPolicy
     pullPolicy: Always
     ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -442,7 +446,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.6
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.7
     ## @skip dataservice.image.pullPolicy
     pullPolicy: Always
     ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -529,7 +533,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.6
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.7
     ## @skip searchservice.image.pullPolicy
     pullPolicy: Always
     ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -578,7 +582,7 @@ searchservice:
   ## @skip searchservice.init
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.6
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.4.7
       pullPolicy: Always
   ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
@@ -626,7 +630,7 @@ storageservice:
       adminSecretAccessKey: seaweedfsadmin
   ## @skip storageservice.init
   init:
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.6
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.4.7
     pullPolicy: Always
 
 ## @section Identity Service
@@ -689,7 +693,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.6
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.7
     ## @skip ui.image.pullPolicy
     pullPolicy: Always
     ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
@@ -812,11 +816,13 @@ dashboardservice:
   grafana:
     ## @skip dashboardservice.grafana.extraEnvVarsSecret
     extraEnvVarsSecret: dashboard-service-secret
+    ## @skip dashboardservice.grafana.extraConfigmaps
     extraConfigmaps:
       - name: dashboard-service-config
         mountPath: /opt/bitnami/grafana/dashboards
         readOnly: true
   datasources:
+    ## @skip dashboardservice.datasources.secretDefinition
     secretDefinition:
       apiVersion: 1
       datasources:
@@ -825,6 +831,7 @@ dashboardservice:
           type: "prometheus"
           url: "http://metric-db-server"
   dashboardsProvider:
+    ## @param dashboardservice.dashboardsProvider.enabled Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards
     enabled: true
 
 ## @section Metric Service
@@ -833,7 +840,7 @@ metricdb:
   ## @param metricdb.enabled Enable the Metric Service.
   enabled: true
   ## @skip metricdb.fullnameOverride
-  fullnameOverride: metric-service
+  fullnameOverride: metric-db
   alertmanager:
     service:
       ## @skip metricdb.alertmanager.service.type
@@ -847,14 +854,18 @@ metricdb:
       enabled: true
     ## @skip metricdb.server.extraScrapeConfigs
     extraScrapeConfigs:
-      - job_name: 'spring boot scrape'
+      - job_name: 'actuator scrape'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: [ 'data-service', 'metadata-service' ]
+          - targets: [ 'data-service', 'metadata-service', 'ui' ]
       - job_name: 'metrics scrape'
         metrics_path: '/metrics'
         static_configs:
-          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'ui', 'metadata-db-metrics:9104', 'dashboard-service:3000', 'storage-service-master-metrics:9327', 'upload-service' ]
+          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'metadata-db-metrics:9104', 'storage-service-master-metrics:9327', 'upload-service' ]
+      - job_name: 'dashboard scrape'
+        metrics_path: '/dashboard/metrics'
+        static_configs:
+          - targets: [ 'dashboard-service:3000' ]
 
 ## @section Ingress
 
