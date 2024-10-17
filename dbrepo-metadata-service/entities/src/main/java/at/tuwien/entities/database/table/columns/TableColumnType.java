@@ -20,6 +20,7 @@ public enum TableColumnType {
     LONGBLOB,
     ENUM,
     SET,
+    SERIAL,
     BIT,
     TINYINT,
     BOOL,

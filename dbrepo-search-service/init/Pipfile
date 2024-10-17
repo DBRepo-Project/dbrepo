@@ -9,7 +9,8 @@ opensearch-py = "~=2.2"
 python-dotenv = "~=1.0"
 testcontainers-opensearch = "*"
 pytest = "*"
-dbrepo = {path = "./lib/dbrepo-1.4.4.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.4.7.tar.gz"}
+rdflib = "*"
 
 [dev-packages]
 coverage = "*"

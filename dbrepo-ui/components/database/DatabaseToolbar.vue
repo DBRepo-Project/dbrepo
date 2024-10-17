@@ -8,8 +8,9 @@
           type="subtitle"
           width="200" />
         <span
-          v-if="database && $vuetify.display.lgAndUp"
-          v-text="database.name" />
+          v-if="database && $vuetify.display.lgAndUp">
+          {{ database.name }}
+        </span>
         <v-chip
           v-if="database && database.is_public"
           size="small"

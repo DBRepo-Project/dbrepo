@@ -14,7 +14,10 @@
           <v-text-field
             v-model="c.name"
             required
-            :rules="[v => !!v || $t('validation.required')]"
+            :rules="[
+              v => !!v || $t('validation.required'),
+              v => this.columns.filter(column => column.name === v).length === 1 || $t('validation.column.exists')
+            ]"
             persistent-hint
             :variant="inputVariant"
             :label="$t('pages.table.subpages.schema.name.label')"
@@ -25,7 +28,7 @@
           <v-select
             v-model="c.type"
             :items="columnTypes"
-            item-title="text"
+            item-title="display_name"
             item-value="value"
             required
             :rules="[v => !!v || $t('validation.required')]"
@@ -68,42 +71,43 @@
             @focusout="formatValues(c)" />
         </v-col>
         <v-col
-          v-if="defaultSize(c) !== false"
+          v-if="columnType(c) && columnType(c).size_required !== null"
           cols="1">
           <v-text-field
             v-model.number="c.size"
             type="number"
-            required
+            :min="columnType(c).size_min"
+            :max="columnType(c).size_max"
+            :step="columnType(c).size_step"
+            :value="columnType(c).size_required === true ? columnType(c).size_default : null"
+            :hint="sizeHint(c)"
+            :clearable="!columnType(c).size_required"
+            persistent-hint
             :variant="inputVariant"
-            :rules="[v => (v !== null && v !== '') || $t('validation.required')]"
+            :rules="[
+              v => !(columnType(c).size_required && (v === null || v === '')) || $t('validation.required')
+            ]"
             :error-messages="sizeErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.size.label')" />
         </v-col>
         <v-col
-          v-if="defaultD(c) !== false"
+          v-if="columnType(c) && columnType(c).d_required !== null"
           cols="1">
           <v-text-field
             v-model.number="c.d"
             type="number"
-            required
+            :min="columnType(c).d_min !== null ? columnType(c).d_min : null"
+            :max="columnType(c).d_max !== null ? columnType(c).d_max : null"
+            :step="columnType(c).d_step"
+            :hint="dHint(c)"
+            :clearable="!columnType(c).d_required"
+            persistent-hint
             :variant="inputVariant"
-            :rules="[v => (v !== null && v !== '') || $t('validation.required')]"
+            :rules="[
+              v => !(columnType(c).d_required && (v === null || v === '')) || $t('validation.required')
+            ]"
             :error-messages="dErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.d.label')" />
-        </v-col>
-        <v-col
-          cols="2"
-          v-if="hasDate(c)">
-          <v-select
-            v-model="c.dfid"
-            required
-            :variant="inputVariant"
-            :disabled="disabled"
-            :rules="[v => !!v || $t('validation.required')]"
-            :items="filterDateFormats(c)"
-            item-title="unix_format"
-            item-value="id"
-            :label="$t('pages.table.subpages.schema.fsp.label')" />
         </v-col>
         <v-col
           v-if="shift(c)"
@@ -122,7 +126,7 @@
           class="pl-10">
           <v-checkbox
             v-model="c.null_allowed"
-            :disabled="c.primary_key || disabled"
+            :disabled="c.primary_key || c.type === 'serial' || disabled"
             :label="$t('pages.table.subpages.schema.null.label')" />
         </v-col>
         <v-col
@@ -130,7 +134,7 @@
           class="pl-10">
           <v-checkbox
             v-model="c.unique"
-            :disabled="disabled"
+            :disabled="disabled || c.type === 'serial'"
             :hidden="c.primary_key"
             :label="$t('pages.table.subpages.schema.unique.label')" />
         </v-col>
@@ -219,13 +223,22 @@ export default {
     return {
       valid: false,
       tableColumns: [],
-      columnTypes: useQueryService().mySql8DataTypes(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
     database () {
       return this.cacheStore.getDatabase
+    },
+    columnTypes () {
+      if (!this.database) {
+        return []
+      }
+      const types = this.database.container.image.data_types
+      if (this.columns.filter(c => c.type === 'serial').length > 0) {
+        return types.filter(t => t.value !== 'serial')
+      }
+      return types
     },
     dateFormats () {
       if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
@@ -258,16 +271,10 @@ export default {
         return false
       }
       let shift = 0
-      if (this.hasDate(column) === false && this.columns.filter(c => this.hasDate(c) !== false).length > 0) {
+      if (!this.hasEnumOrSet(column) && (this.columnType(column).size_required === null || this.columnType(column).size_required === undefined) && this.columns.filter(c => (this.columnType(c).size_required !== null || this.columnType(c).size_required !== undefined)).length > 0) {
         shift++
       }
-      if (this.defaultSize(column) === false && this.columns.filter(c => this.defaultSize(c) !== false).length > 0) {
-        shift++
-      }
-      if (this.defaultD(column) === false && this.columns.filter(c => this.defaultD(c) !== false).length > 0) {
-        shift++
-      }
-      if (this.hasEnumOrSet(column) === false && this.columns.filter(c => this.hasEnumOrSet(c) !== false).length > 0) {
+      if (!this.hasEnumOrSet(column) && (this.columnType(column).d_required === null || this.columnType(column).d_required === undefined) && this.columns.filter(c => (this.columnType(c).d_required !== null || this.columnType(c).d_required !== undefined)).length > 0) {
         shift++
       }
       return shift
@@ -298,7 +305,6 @@ export default {
         type,
         null_allowed,
         primary_key,
-        dfid: null,
         sets: [],
         sets_values: null,
         enums: [],
@@ -321,45 +327,63 @@ export default {
         column.enums = column.enums_values.split(',').map(v => v.trim())
       }
     },
-    defaultSize (column) {
+    columnType (column) {
       const filter = this.columnTypes.filter(t => t.value === column.type)
       if (!filter || filter.length === 0) {
         return false
       }
-      if (filter[0].defaultSize === undefined || filter[0].defaultSize === null) {
-        return false
-      }
-      return filter[0].defaultSize
+      return filter[0]
     },
-    defaultD (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.type)
-      if (!filter || filter.length === 0) {
-        return false
+    sizeHint (column) {
+      let hint = ''
+      if (this.columnType(column).size_min !== null) {
+        hint += `min. ${this.columnType(column).size_min}`
       }
-      if (filter[0].defaultD === undefined || filter[0].defaultD === null) {
-        return false
+      if (this.columnType(column).size_max) {
+        if (hint.length > 0) {
+          hint += ', '
+        }
+        hint += `max. ${this.columnType(column).size_max}`
       }
-      return filter[0].defaultD
+      if (!this.columnType(column).size_required) {
+        hint += ' (optional)'
+      }
+      return hint
+    },
+    dHint (column) {
+      let hint = ''
+      if (this.columnType(column).d_min !== null) {
+        hint += `min. ${this.columnType(column).d_min}`
+      }
+      if (this.columnType(column).d_max) {
+        if (hint.length > 0) {
+          hint += ', '
+        }
+        hint += `max. ${this.columnType(column).d_max}`
+      }
+      if (!this.columnType(column).d_required) {
+        hint += ' (optional)'
+      }
+      return hint
     },
     setDefaultSizeAndD (column) {
-      column.size = this.defaultSize(column)
-      column.d = this.defaultD(column)
-      column.dfid = null
-      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d, '& dfid', column.dfid)
-    },
-    hasDate (column) {
-      return column.type === 'date' || column.type === 'datetime' || column.type === 'timestamp' || column.type === 'time'
+      if (this.columnType(column).size_default !== null) {
+        column.size = this.columnType(column).size_default
+      } else {
+        column.size = null
+      }
+      if (this.columnType(column).d_default !== null) {
+        column.d = this.columnType(column).d_default
+      } else {
+        column.d = null
+      }
+      console.debug('for column type', column.type, 'set default size', column.size, '& d', column.d)
+      if (column.type === 'serial') {
+        this.setOthers(column)
+      }
     },
     hasEnumOrSet (column) {
       return column.type === 'enum' || column.type === 'set'
-    },
-    filterDateFormats (column) {
-      return this.dateFormats.filter((df) => {
-        if (column.type === 'date') {
-          return !df.has_time
-        }
-        return df.has_time
-      })
     },
     sizeErrorMessages (column) {
       if (column.size < column.d) {

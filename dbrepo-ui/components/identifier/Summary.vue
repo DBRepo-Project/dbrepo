@@ -18,7 +18,9 @@
           <p
             v-for="(title, i) in identifier.titles"
             :key="`t-${i}`">
-            <span v-text="title.title" />
+            <span>
+              {{ title.title }}
+            </span>
           </p>
         </v-list-item>
         <v-list-item
@@ -28,32 +30,42 @@
             v-for="(description, i) in identifier.descriptions"
             :key="`d-${i}`">
             <div
-              v-text="description?.type"
-              class="text-subtitle-2" />
-            <span v-text="description.description" />
+              class="text-subtitle-2">
+              {{ description?.type }}
+            </div>
+            <span>
+              {{ description.description }}
+            </span>
           </p>
         </v-list-item>
         <v-list-item
           :title="$t('pages.identifier.publisher.title')"
           density="compact">
-          <div v-text="identifier.publisher" />
+          <div>
+            {{ identifier.publisher }}
+          </div>
         </v-list-item>
         <v-list-item
           :title="$t('pages.identifier.creators.title')"
           density="compact">
-          <Creators :person-or-orgs="identifier.creators" />
+          <Creators
+            :person-or-orgs="identifier.creators" />
         </v-list-item>
         <v-list-item
           v-if="identifierLang"
           :title="$t('pages.identifier.language.title')"
           density="compact">
-          <div v-text="identifierLang" />
+          <div>
+            {{ identifierLang }}
+          </div>
         </v-list-item>
         <v-list-item
           v-if="publication"
           :title="$t('pages.identifier.publication-date.title')"
           density="compact">
-          <div v-text="publication" />
+          <div>
+            {{ publication }}
+          </div>
         </v-list-item>
         <v-list-item
           v-if="identifier.related_identifiers && identifier.related_identifiers.length > 0"
@@ -75,16 +87,19 @@
             :key="`f-${i}`">
             <a
               v-if="funder.funder_identifier"
-              v-text="funder.funder_name"
-              :href="funder.funder_identifier" />
+              :href="funder.funder_identifier">
+              {{ funder.funder_name }}
+            </a>
             <span
               v-if="funder.award_title"
-              class="ml-1"
-              v-text="funder.award_title" />
+              class="ml-1">
+              {{ funder.award_title }}
+            </span>
             <span
               v-if="funder.award_number"
-              class="ml-1"
-              v-text="`(${funder.award_number})`" />
+              class="ml-1">
+              ({{ funder.award_number }})
+            </span>
           </p>
         </v-list-item>
         <v-list-item
@@ -95,11 +110,14 @@
             v-for="(license, i) in identifier.licenses"
             :key="`l-${i}`">
             <span>
-              <span v-text="i > 0 ? ', ' : ''" />
+              <span>
+                {{ i > 0 ? ', ' : '' }}
+              </span>
               <a
                 v-if="license"
-                v-text="license.identifier"
-                :href="license.uri" />
+                :href="license.uri">
+                {{ license.identifier }}
+              </a>
             </span>
           </p>
         </v-list-item>

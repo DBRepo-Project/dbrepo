@@ -3,8 +3,8 @@ variables:
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
-  APP_VERSION: "1.4.6"
-  CHART_VERSION: "1.4.6"
+  APP_VERSION: "1.4.7"
+  CHART_VERSION: "1.4.7"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -35,9 +35,6 @@ stages:
 build-metadata-service:
   image: maven:3-openjdk-17
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
@@ -56,9 +53,6 @@ build-metadata-service:
 build-analyse-service:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -68,9 +62,6 @@ build-analyse-service:
 build-data-db-sidecar:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
   script:
@@ -80,9 +71,6 @@ build-data-db-sidecar:
 build-lib:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
@@ -92,9 +80,6 @@ build-lib:
 build-data-service:
   image: maven:3-openjdk-17
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -112,20 +97,14 @@ build-data-service:
     expire_in: 1 days
 
 build-ui:
-  image: oven/bun:1.0.26-alpine
+  image: oven/bun:1.1.20-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
 build-search-service:
   image: docker.io/python:3.11-alpine
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   script:
     - "pip install pipenv"
     - "cd dbrepo-search-service && pipenv install --system --deploy"
@@ -133,9 +112,6 @@ build-search-service:
 build-docker:
   image: docker.io/docker:24-dind
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
@@ -146,9 +122,6 @@ build-docker:
 build-helm:
   image: docker.io/docker:24-dind
   stage: build
-  except:
-    refs:
-      - /^release-.*/
   before_script:
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
@@ -172,7 +145,7 @@ lint-docker-compose:
     - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-db-sidecar'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
@@ -205,9 +178,6 @@ verify-install-script:
 lint-helm-chart:
   image: docker.io/alpine:3.20
   stage: lint
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -220,9 +190,6 @@ lint-helm-chart:
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-metadata-service
   dependencies:
@@ -243,9 +210,6 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-17
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   needs:
     - build-data-service
   dependencies:
@@ -266,9 +230,6 @@ test-data-service:
 test-analyse-service:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -293,11 +254,35 @@ test-analyse-service:
 test-search-service:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
+  needs:
+    - build-search-service
+  dependencies:
+    - build-search-service
+  before_script:
+    - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
+    - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_app.py test/test_jwt.py test/test_opensearch_client.py test/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.txt
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-search-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-search-service-init:
+  image: docker.io/python:3.11-alpine
+  stage: test
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
   needs:
     - build-search-service
   dependencies:
@@ -305,7 +290,7 @@ test-search-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*,omlib/*" && coverage report --omit="test/*,omlib/*" > ./coverage.txt
+    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -320,9 +305,6 @@ test-search-service:
 test-lib:
   image: docker.io/python:3.11-alpine
   stage: test
-  except:
-    refs:
-      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
   needs:
@@ -343,6 +325,21 @@ test-lib:
     reports:
       junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-ui:
+  stage: test
+  image: docker.io/docker:24-dind
+  needs:
+    - build-ui
+  dependencies:
+    - build-ui
+  before_script:
+    - "apk add bash apache2-utils"
+    - "docker compose build dbrepo-ui"
+    - "docker run --name dbrepo-ui -e NODE_OPTIONS='--max_old_space_size=256' -p 3000:3000 -d dbrepo-ui:latest"
+  script:
+    - "sleep 30"
+    - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/test/test_heap.sh"
 
 scan-sonarqube:
   image: sonarsource/sonar-scanner-cli:10.0
@@ -404,9 +401,6 @@ release-helm:
     refs:
       - /^release-.*/
   when: manual
-  except:
-    refs:
-      - release-latest
   before_script:
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
@@ -429,7 +423,7 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add --update alpine-sdk bash sed wget openssh"
+    - "apk add --update alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
     - "pip install -r ./requirements.txt"
     - "mkdir -p ./final/${APP_VERSION}/rest"
@@ -441,6 +435,7 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${APP_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${APP_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
+    - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa

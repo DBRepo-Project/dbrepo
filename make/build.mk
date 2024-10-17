@@ -23,11 +23,11 @@ build-lib: ## Build the Python Library.
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}.tar.gz
-	(cd ./dbrepo-analyse-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install)
+	(cd ./dbrepo-analyse-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
 	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}.tar.gz
-	(cd ./dbrepo-search-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install)
+	(cd ./dbrepo-search-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
 	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}.tar.gz
-	(cd ./dbrepo-search-service/init && PIPENV_IGNORE_VIRTUALENVS=1 pipenv install)
+	(cd ./dbrepo-search-service/init && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.

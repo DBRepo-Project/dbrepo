@@ -89,15 +89,19 @@
             :items="database.accesses"
             :items-per-page="10">
             <template v-slot:item.qualified_name="{ item }">
-              <span v-if="item && item.user" v-text="item.user.qualified_name" />
+              <span
+                v-if="item && item.user">
+                {{ item.user.qualified_name }}
+              </span>
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
                 v-if="item && item.user && item.user.username !== user.username"
                 size="x-small"
                 variant="flat"
+                color="warning"
                 :disabled="!canModifyAccess"
-                :text="$t('pages.database.subpages.access.submit.text')"
+                :text="$t('navigation.modify')"
                 @click="modifyAccess(item)" />
             </template>
           </v-data-table>
@@ -107,7 +111,7 @@
               variant="flat"
               :disabled="!canCreateAccess"
               color="warning"
-              :text="$t('pages.database.subpages.access.submit.text')"
+              :text="$t('navigation.create')"
               @click="giveAccess" />
           </v-card-text>
         </v-card>
@@ -422,7 +426,7 @@ export default {
       this.$refs.form.validate()
     },
     closeDialog () {
-      this.reloadDatabase()
+      this.cacheStore.reloadDatabase()
       this.editAccessDialog = false
     },
     updateDatabaseVisibility () {
@@ -510,11 +514,11 @@ export default {
     updateDatabaseOwner () {
       this.loading = true
       const databaseService = useDatabaseService()
-      databaseService.updateOwner(this.$route.params.database_id, this.modifyOwner.id)
+      databaseService.updateOwner(this.$route.params.database_id, { id: this.modifyOwner.id })
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.database.transfer'))
-          location.reload()
+          this.$router.push(`/database/${this.$route.params.database_id}/info`)
         })
         .catch(() => {
           this.loading = false

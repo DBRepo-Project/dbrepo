@@ -17,14 +17,35 @@
               <v-text-field
                 v-if="isNumber(column)"
                 v-model.number="tuple[column.internal_name]"
-                :disabled="(!edit && column.auto_generated)"
+                :disabled="!edit"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
                 :rules="rules(column)"
                 :required="required(column)"
-                type="number" /><v-text-field
+                type="number">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-text-field>
+              <v-text-field
                 v-if="isTextField(column)"
                 v-model="tuple[column.internal_name]"
                 :disabled="disabled(column)"
@@ -37,7 +58,27 @@
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
-                type="text" />
+                type="text">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-text-field>
               <v-text-field
                 v-if="isFloatingPoint(column)"
                 v-model="tuple[column.internal_name]"
@@ -50,7 +91,27 @@
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
-                type="number" />
+                type="number">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-text-field>
               <v-textarea
                 v-if="isTextArea(column)"
                 v-model="tuple[column.internal_name]"
@@ -62,7 +123,27 @@
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
-                :hint="hint(column)" />
+                :hint="hint(column)">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-textarea>
               <BlobUpload
                 v-if="isFileField(column)"
                 :column="column"
@@ -77,7 +158,27 @@
                 :rules="rules(column)"
                 :required="required(column)"
                 :clearable="!required(column)"
-                :items="isSet(column) ? column.sets : column.enums" />
+                :items="isSet(column) ? column.sets : column.enums">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-select>
               <v-select
                 v-if="isBoolean(column)"
                 v-model="tuple[column.internal_name]"
@@ -88,7 +189,27 @@
                 :rules="rules(column)"
                 :required="required(column)"
                 :items="bools"
-                :clearable="!required(column)" />
+                :clearable="!required(column)">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-select>
               <v-text-field
                 v-if="isTimeField(column)"
                 v-model="tuple[column.internal_name]"
@@ -97,7 +218,27 @@
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
-                :hint="hint(column)" />
+                :hint="hint(column)">
+                <template
+                  v-slot:append>
+                  {{ column.column_type.toUpperCase() }}
+                  <NuxtLink
+                    target="_blank"
+                    class="ml-2"
+                    :href="documentationLink(column)">
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('navigation.help') }}
+                    </v-tooltip>
+                  </NuxtLink>
+                </template>
+              </v-text-field>
             </v-col>
           </v-row>
         </v-card-text>
@@ -175,13 +316,24 @@ export default {
       bools: [
         { title: 'true', value: true },
         { title: 'false', value: false }
-      ]
+      ],
+      cacheStore: useCacheStore()
     }
   },
   mounted() {
+    this.$refs.form.validate()
     this.oldTuple = Object.assign({}, this.tuple)
   },
   computed: {
+    database () {
+      return this.cacheStore.getDatabase
+    },
+    columnTypes () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.container.image.data_types
+    },
     title () {
       return (this.edit ? this.$t('toolbars.table.data.edit') : this.$t('toolbars.table.data.add')) + ' ' + this.$t('toolbars.table.data.tuple')
     },
@@ -203,24 +355,35 @@ export default {
       this.$emit('close', { success: false })
     },
     hint (column) {
-      const { is_null_allowed, auto_generated, is_primary_key, column_type, date_format, size, d } = column
-      let hint = is_null_allowed ? '' : this.$t('pages.table.subpages.data.required.hint')
-      if (auto_generated) {
+      const { is_null_allowed, is_primary_key } = column
+      let hint = ''
+      if (!is_null_allowed) {
+        hint += this.$t('pages.table.subpages.data.required.hint')
+      }
+      if (column.column_type === 'sequence') {
         hint += ' ' + this.$t('pages.table.subpages.data.auto.hint')
       }
       if (is_primary_key) {
         hint += ' ' + this.$t('pages.table.subpages.data.primary-key.hint')
       }
-      if (['double', 'decimal'].includes(column_type)) {
-        hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ` ${'d'.repeat(size)}.${'f'.repeat(d)}`
-      }
-      if (['date', 'datetime', 'timestamp', 'time'].includes(column_type) && date_format) {
-        hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ' ' + date_format.unix_format
-      }
-      if (['year'].includes(column_type)) {
-        hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ' YYYY'
+      if (this.formatHint(column)) {
+        hint += this.$t('pages.table.subpages.data.format.hint') + ' ' + this.formatHint(column)
       }
       return hint
+    },
+    documentationLink ({column_type}) {
+      const filter = this.columnTypes.filter(t => t.value === column_type)
+      if (filter.length !== 1) {
+        return null
+      }
+      return filter[0].documentation
+    },
+    formatHint ({column_type}) {
+      const filter = this.columnTypes.filter(t => t.value === column_type)
+      if (filter.length !== 1) {
+        return null
+      }
+      return filter[0].data_hint
     },
     isTextField (column) {
       const { column_type } = column
@@ -251,14 +414,14 @@ export default {
       return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
     },
     rules (column) {
-      if (column.auto_generated || column.is_null_allowed) {
+      if (column.is_null_allowed) {
         return []
       }
       const rules = []
       rules.push(v => v !== null || this.$t('validation.required'))
       if (column.column_type === 'decimal' || column.column_type === 'double') {
         rules.push(v => !(!v || v.split('.')[0].length > column.size) || `${this.$t('pages.table.subpages.data.float.max')} ${column.size} ${this.$t('pages.table.subpages.data.float.before')}`)
-        rules.push(v => !(!v || v.split('.')[1].length > column.d) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
+        rules.push(v => !(!v || (column.d && v.split('.')[1].length > column.d)) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
       }
       return rules
     },
@@ -272,7 +435,7 @@ export default {
       return column.is_null_allowed === false
     },
     disabled (column) {
-      return (this.edit && column.is_primary_key) || (!this.edit && column.auto_generated)
+      return (this.edit && column.is_primary_key) || !this.edit
     },
     updateTuple () {
       const constraints = {}

@@ -11,13 +11,13 @@ CREATE TABLE weather_location
 
 CREATE TABLE weather_aus
 (
-    id       BIGINT           NOT NULL PRIMARY KEY,
+    id       SERIAL PRIMARY KEY,
     `date`   DATE             NOT NULL,
     location VARCHAR(255)     NULL COMMENT 'Closest city',
     mintemp  DOUBLE PRECISION NULL,
     rainfall DOUBLE PRECISION NULL,
     FOREIGN KEY (location) REFERENCES weather_location (location) ON DELETE SET NULL,
-    UNIQUE (`date`),
+    CONSTRAINT some_constraint UNIQUE (`date`),
     CHECK (`mintemp` > 0)
 ) WITH SYSTEM VERSIONING COMMENT 'Weather in Australia';
 

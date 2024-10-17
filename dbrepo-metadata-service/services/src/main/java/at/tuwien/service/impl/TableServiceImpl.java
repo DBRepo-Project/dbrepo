@@ -4,15 +4,12 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.RabbitConfig;
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -27,7 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -146,20 +146,6 @@ public class TableServiceImpl implements TableService {
                     }
                     column.setConcept(concept);
                 }
-                if (List.of(TableColumnType.TIME, TableColumnType.TIMESTAMP, TableColumnType.DATE, TableColumnType.DATETIME).contains(column.getColumnType())) {
-                    final Optional<ContainerImageDate> optional = database.getContainer()
-                            .getImage()
-                            .getDateFormats()
-                            .stream()
-                            .filter(df -> df.getId().equals(c.getDfid()))
-                            .findFirst();
-                    if (optional.isEmpty()) {
-                        log.error("Failed to find date format with id {} in metadata database", c.getDfid());
-                        throw new IllegalArgumentException("Failed to find date format in metadata database");
-                    }
-                    column.setDateFormat(optional.get());
-                    log.debug("column is of temporal type: added date format with id {}", column.getDateFormat().getId());
-                }
                 table.getColumns()
                         .add(column);
             }
@@ -172,6 +158,8 @@ public class TableServiceImpl implements TableService {
         for (int i = 0; i < data.getConstraints().getUniques().size(); i++) {
             if (data.getConstraints().getUniques().get(i).size() != table.getConstraints().getUniques().get(i).getColumns().size()) {
                 log.error("Failed to create table: some unique constraint(s) reference non-existing table columns: {}", data.getConstraints().getUniques().get(i));
+                log.debug("payload uniques: {}", data.getConstraints().getUniques());
+                log.debug("mapped table uniques: {}", table.getConstraints().getUniques().stream().map(u -> List.of(u.getColumns().stream().map(TableColumn::getInternalName).toList())).toList());
                 throw new MalformedException("Failed to create table: some unique constraint(s) reference non-existing table columns");
             }
         }
@@ -203,7 +191,9 @@ public class TableServiceImpl implements TableService {
         /* delete at data service */
         dataServiceGateway.deleteTable(table.getDatabase().getId(), table.getId());
         /* update in metadata database */
-        table.getDatabase().getTables().remove(table);
+        table.getDatabase()
+                .getTables()
+                .remove(table);
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in search service */
         searchServiceGateway.update(database);

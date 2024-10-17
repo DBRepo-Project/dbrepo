@@ -7,10 +7,8 @@ from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType, DatabaseBrief, \
-    UserBrief
+    UserBrief, DataType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
-
-from dbrepo.api.dto import ImageDate
 
 
 class DatabaseUnitTest(unittest.TestCase):
@@ -72,7 +70,11 @@ class DatabaseUnitTest(unittest.TestCase):
                     dialect='org.hibernate.dialect.MariaDBDialect',
                     driver_class='org.mariadb.jdbc.Driver',
                     jdbc_method='mariadb',
-                    default_port=3306
+                    default_port=3306,
+                    data_types=[
+                        DataType(display_name="SERIAL", value="serial",
+                                 documentation="https://mariadb.com/kb/en/bigint/",
+                                 is_quoted=False, is_buildable=True)]
                 )
             )
         )

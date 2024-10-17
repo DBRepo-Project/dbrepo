@@ -214,7 +214,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     public ViewDto createView(Long databaseId, ViewCreateDto data) throws DataServiceConnectionException, DataServiceException {
         final ResponseEntity<ViewDto> response;
         final String path = "/api/database/" + databaseId + "/view";
-        log.trace("delete table at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        log.trace("create view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), ViewDto.class);
         } catch (HttpServerErrorException e) {
@@ -264,6 +264,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             QueryNotFoundException {
         final ResponseEntity<QueryDto> response;
         final String path = "/api/database/" + databaseId + "/subset/" + queryId;
+        log.trace("find subset at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, QueryDto.class);
         } catch (HttpServerErrorException e) {
@@ -291,6 +292,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             DataServiceException, QueryNotFoundException {
         final ResponseEntity<ExportResourceDto> response;
         final String path = "/api/database/" + databaseId + "/subset/" + queryId;
+        log.trace("export subset at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, ExportResourceDto.class);
         } catch (HttpServerErrorException e) {
@@ -315,6 +317,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
             TableNotFoundException {
         final ResponseEntity<TableDto[]> response;
         final String path = "/api/database/" + databaseId + "/table";
+        log.trace("get table schemas at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, TableDto[].class);
         } catch (HttpServerErrorException e) {

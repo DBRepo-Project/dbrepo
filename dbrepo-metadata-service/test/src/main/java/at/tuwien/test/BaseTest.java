@@ -1,12 +1,18 @@
 package at.tuwien.test;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.amqp.*;
+import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.ExchangeDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.*;
+import at.tuwien.api.container.image.ImageBriefDto;
+import at.tuwien.api.container.image.ImageChangeDto;
+import at.tuwien.api.container.image.ImageCreateDto;
+import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
@@ -20,7 +26,10 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.*;
-import at.tuwien.api.database.table.columns.concepts.*;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
+import at.tuwien.api.database.table.columns.concepts.UnitDto;
+import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.*;
@@ -51,11 +60,9 @@ import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -421,17 +428,6 @@ public abstract class BaseTest {
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
-
-    public final static CreateUserDto USER_1_RABBITMQ_CREATE_DTO = CreateUserDto.builder()
-            .password("")
-            .tags("")
-            .build();
-
-    public final static GrantVirtualHostPermissionsDto USER_1_RABBITMQ_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
-            .configure("")
-            .read("")
-            .write("")
-            .build();
 
     public final static UpdateUserPasswordDto USER_1_UPDATE_PASSWORD_DTO = UpdateUserPasswordDto.builder()
             .username(USER_1_USERNAME)
@@ -908,29 +904,6 @@ public abstract class BaseTest {
     public final static Integer IMAGE_1_PORT = 3306;
     public final static Boolean IMAGE_1_IS_DEFAULT = true;
 
-    public final static Long IMAGE_DATE_1_ID = 1L;
-    public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_1_UNIX_FORMAT = "yyyy-MM-dd";
-    public final static String IMAGE_DATE_1_DATABASE_FORMAT = "%Y-%c-%d";
-    public final static String IMAGE_DATE_1_EXAMPLE = "2022-01-30";
-    public final static Boolean IMAGE_DATE_1_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_1_ID)
-            .iid(IMAGE_DATE_1_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
-            .example(IMAGE_DATE_1_EXAMPLE)
-            .hasTime(IMAGE_DATE_1_HAS_TIME)
-            .build();
-
-    public final static ImageDateDto IMAGE_DATE_1_DTO = ImageDateDto.builder()
-            .id(IMAGE_DATE_1_ID)
-            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
-            .hasTime(IMAGE_DATE_1_HAS_TIME)
-            .build();
-
     public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
             .registry(IMAGE_1_REGISTRY)
             .name(IMAGE_1_NAME)
@@ -949,75 +922,6 @@ public abstract class BaseTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
-    public final static Long IMAGE_DATE_2_ID = 2L;
-    public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
-    public final static String IMAGE_DATE_2_DATABASE_FORMAT = "%d.%c.%y";
-    public final static String IMAGE_DATE_2_EXAMPLE = "30.01.2022";
-    public final static Boolean IMAGE_DATE_2_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_2 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_2_ID)
-            .iid(IMAGE_DATE_2_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
-            .example(IMAGE_DATE_2_EXAMPLE)
-            .hasTime(IMAGE_DATE_2_HAS_TIME)
-            .build();
-
-    public final static ImageDateDto IMAGE_DATE_2_DTO = ImageDateDto.builder()
-            .id(IMAGE_DATE_2_ID)
-            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
-            .hasTime(IMAGE_DATE_2_HAS_TIME)
-            .build();
-
-    public final static Long IMAGE_DATE_3_ID = 3L;
-    public final static Long IMAGE_DATE_3_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_3_UNIX_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
-    public final static String IMAGE_DATE_3_DATABASE_FORMAT = "%Y-%c-%dT%H:%i:%S.%f";
-    public final static String IMAGE_DATE_3_EXAMPLE = "2022-01-30T13:44:25.499";
-    public final static Boolean IMAGE_DATE_3_HAS_TIME = true;
-
-    public final static ContainerImageDate IMAGE_DATE_3 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_3_ID)
-            .iid(IMAGE_DATE_3_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
-            .example(IMAGE_DATE_3_EXAMPLE)
-            .hasTime(IMAGE_DATE_3_HAS_TIME)
-            .build();
-
-    public final static ImageDateDto IMAGE_DATE_3_DTO = ImageDateDto.builder()
-            .id(IMAGE_DATE_3_ID)
-            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
-            .hasTime(IMAGE_DATE_3_HAS_TIME)
-            .build();
-
-    public final static Long IMAGE_DATE_4_ID = 4L;
-    public final static Long IMAGE_DATE_4_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_4_UNIX_FORMAT = "HH:mm:ss";
-    public final static String IMAGE_DATE_4_DATABASE_FORMAT = "%H:%i:%S";
-    public final static String IMAGE_DATE_4_EXAMPLE = "14:44:25";
-    public final static Boolean IMAGE_DATE_4_HAS_TIME = true;
-
-    public final static ContainerImageDate IMAGE_DATE_4 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_4_ID)
-            .iid(IMAGE_DATE_4_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
-            .example(IMAGE_DATE_4_EXAMPLE)
-            .hasTime(IMAGE_DATE_4_HAS_TIME)
-            .build();
-
-    public final static ImageDateDto IMAGE_DATE_4_DTO = ImageDateDto.builder()
-            .id(IMAGE_DATE_4_ID)
-            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
-            .hasTime(IMAGE_DATE_4_HAS_TIME)
-            .build();
-
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
@@ -1028,7 +932,6 @@ public abstract class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
-            .dateFormats(new LinkedList<>(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3, IMAGE_DATE_4)))
             .build();
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
@@ -1041,7 +944,6 @@ public abstract class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
-            .dateFormats(List.of(IMAGE_DATE_1_DTO, IMAGE_DATE_2_DTO, IMAGE_DATE_3_DTO))
             .build();
 
     public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
@@ -1252,12 +1154,6 @@ public abstract class BaseTest {
     public final static UUID DATABASE_1_CREATED_BY = USER_1_ID;
     public final static UserDto DATABASE_1_CREATOR_DTO = USER_1_DTO;
     public final static UserDto DATABASE_1_OWNER_DTO = USER_1_DTO;
-
-    public final static GrantExchangePermissionsDto USER_1_RABBITMQ_GRANT_TOPIC_DTO = GrantExchangePermissionsDto.builder()
-            .exchange("dbrepo")
-            .read("^(dbrepo\\." + DATABASE_1_INTERNALNAME + "\\..)$")
-            .write("^(dbrepo\\." + DATABASE_1_INTERNALNAME + "\\..)$")
-            .build();
 
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
@@ -1498,25 +1394,21 @@ public abstract class BaseTest {
                             .name("col25")
                             .type(ColumnTypeDto.DATE)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_1_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col26")
                             .type(ColumnTypeDto.DATETIME)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col27")
                             .type(ColumnTypeDto.TIMESTAMP)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col28")
                             .type(ColumnTypeDto.TIME)
                             .nullAllowed(true)
-                            .dfid(IMAGE_DATE_4_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col29")
@@ -1617,9 +1509,8 @@ public abstract class BaseTest {
                     .name("id")
                     .internalName("id")
                     .ordinalPosition(0)
-                    .columnType(ColumnTypeDto.BIGINT)
+                    .columnType(ColumnTypeDto.SERIAL)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -1632,9 +1523,7 @@ public abstract class BaseTest {
                     .internalName("date")
                     .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DATE)
-                    .dateFormat(IMAGE_DATE_1_DTO)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -1649,7 +1538,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -1665,7 +1553,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -1683,7 +1570,6 @@ public abstract class BaseTest {
                     .concept(CONCEPT_1_DTO)
                     .unit(UNIT_1_DTO)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build());
@@ -2198,7 +2084,6 @@ public abstract class BaseTest {
                     .internalName("timestamp")
                     .columnType(TableColumnType.TIMESTAMP)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_2_ID)
@@ -2208,13 +2093,11 @@ public abstract class BaseTest {
                     .internalName("value")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(ColumnCreateDto.builder()
                     .name("Timestamp")
                     .type(ColumnTypeDto.TIMESTAMP)
-                    .dfid(IMAGE_DATE_4_ID)
                     .nullAllowed(false)
                     .build(),
             ColumnCreateDto.builder()
@@ -2253,9 +2136,7 @@ public abstract class BaseTest {
                     .name("Timestamp")
                     .internalName("timestamp")
                     .columnType(ColumnTypeDto.TIMESTAMP)
-                    .dateFormat(IMAGE_DATE_3_DTO)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_4_2_ID)
@@ -2264,9 +2145,7 @@ public abstract class BaseTest {
                     .name("Value")
                     .internalName("value")
                     .columnType(ColumnTypeDto.DECIMAL)
-                    .dateFormat(null)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static Long TABLE_8_ID = 8L;
@@ -2504,7 +2383,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE)
                     .isNullAllowed(COLUMN_8_1_NULL)
-                    .autoGenerated(COLUMN_8_1_AUTO_GENERATED)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_8_2_ID)
@@ -2514,7 +2392,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE)
                     .isNullAllowed(COLUMN_8_2_NULL)
-                    .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
                     .size(COLUMN_8_2_SIZE)
                     .d(COLUMN_8_2_D)
                     .build(),
@@ -2526,7 +2403,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
                     .columnType(COLUMN_8_3_TYPE)
                     .isNullAllowed(COLUMN_8_3_NULL)
-                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -2537,7 +2413,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_1_NULL)
-                    .autoGenerated(COLUMN_8_1_AUTO_GENERATED)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_8_2_ID)
@@ -2547,7 +2422,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_2_NULL)
-                    .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_8_3_ID)
@@ -2557,7 +2431,6 @@ public abstract class BaseTest {
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
                     .columnType(COLUMN_8_3_TYPE_DTO)
                     .isNullAllowed(COLUMN_8_3_NULL)
-                    .autoGenerated(COLUMN_8_3_AUTO_GENERATED)
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
@@ -2882,9 +2755,8 @@ public abstract class BaseTest {
                     .table(TABLE_1)
                     .name("id")
                     .internalName("id")
-                    .columnType(TableColumnType.BIGINT)
+                    .columnType(TableColumnType.SERIAL)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_2_ID)
@@ -2893,9 +2765,7 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_3_ID)
@@ -2906,7 +2776,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_4_ID)
@@ -2918,7 +2787,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_5_ID)
@@ -2932,7 +2800,6 @@ public abstract class BaseTest {
                     .concept(CONCEPT_1)
                     .unit(UNIT_1)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<ColumnCreateDto> TABLE_1_COLUMNS_CREATE_DTO = List.of(ColumnCreateDto.builder()
@@ -2946,14 +2813,12 @@ public abstract class BaseTest {
                     .name("Date")
                     .type(ColumnTypeDto.DATE)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("Location")
                     .type(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("MinTemp")
@@ -2961,7 +2826,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .build(),
             ColumnCreateDto.builder()
                     .name("Rainfall")
@@ -2969,7 +2833,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .nullAllowed(true)
-                    .dfid(IMAGE_DATE_1_ID)
                     .conceptUri(CONCEPT_1_URI)
                     .unitUri(UNIT_1_URI)
                     .build());
@@ -3025,7 +2888,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3040,7 +2902,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3055,7 +2916,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build());
@@ -3085,7 +2945,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3100,7 +2959,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3115,7 +2973,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .enums(null)
                     .sets(null)
                     .build());
@@ -3201,12 +3058,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_1_ID)
                     .table(TABLE_3)
                     .ordinalPosition(0)
-                    .autoGenerated(true)
                     .columnType(TableColumnType.BIGINT)
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3214,12 +3069,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_2_ID)
                     .table(TABLE_3)
                     .ordinalPosition(1)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3227,12 +3080,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_3_ID)
                     .table(TABLE_3)
                     .ordinalPosition(2)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3240,7 +3091,6 @@ public abstract class BaseTest {
                     .id(COLUMN_3_4_ID)
                     .table(TABLE_3)
                     .ordinalPosition(3)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
                     .name("betriebsdatum")
                     .internalName("betriebsdatum")
@@ -3252,12 +3102,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_5_ID)
                     .table(TABLE_3)
                     .ordinalPosition(4)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3265,12 +3113,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_6_ID)
                     .table(TABLE_3)
                     .ordinalPosition(5)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3278,12 +3124,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_7_ID)
                     .table(TABLE_3)
                     .ordinalPosition(6)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3291,12 +3135,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_8_ID)
                     .table(TABLE_3)
                     .ordinalPosition(7)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3304,12 +3146,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_9_ID)
                     .table(TABLE_3)
                     .ordinalPosition(8)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3317,12 +3157,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_10_ID)
                     .table(TABLE_3)
                     .ordinalPosition(9)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3330,7 +3168,6 @@ public abstract class BaseTest {
                     .id(COLUMN_3_11_ID)
                     .table(TABLE_3)
                     .ordinalPosition(10)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
                     .name("datum_von")
                     .internalName("datum_von")
@@ -3342,12 +3179,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_12_ID)
                     .table(TABLE_3)
                     .ordinalPosition(11)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3355,12 +3190,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_13_ID)
                     .table(TABLE_3)
                     .ordinalPosition(12)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3368,12 +3201,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_14_ID)
                     .table(TABLE_3)
                     .ordinalPosition(13)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3381,12 +3212,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_15_ID)
                     .table(TABLE_3)
                     .ordinalPosition(14)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3394,12 +3223,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_16_ID)
                     .table(TABLE_3)
                     .ordinalPosition(15)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3407,12 +3234,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_17_ID)
                     .table(TABLE_3)
                     .ordinalPosition(16)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3420,12 +3245,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_18_ID)
                     .table(TABLE_3)
                     .ordinalPosition(17)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3433,12 +3256,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_19_ID)
                     .table(TABLE_3)
                     .ordinalPosition(18)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3446,7 +3267,6 @@ public abstract class BaseTest {
                     .id(COLUMN_3_20_ID)
                     .table(TABLE_3)
                     .ordinalPosition(19)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
                     .name("datum_nach")
                     .internalName("datum_nach")
@@ -3458,12 +3278,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_21_ID)
                     .table(TABLE_3)
                     .ordinalPosition(20)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3471,12 +3289,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_22_ID)
                     .table(TABLE_3)
                     .ordinalPosition(21)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3484,12 +3300,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_23_ID)
                     .table(TABLE_3)
                     .ordinalPosition(22)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3497,12 +3311,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_24_ID)
                     .table(TABLE_3)
                     .ordinalPosition(23)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3510,12 +3322,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_25_ID)
                     .table(TABLE_3)
                     .ordinalPosition(24)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3523,12 +3333,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_26_ID)
                     .table(TABLE_3)
                     .ordinalPosition(25)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3536,12 +3344,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_27_ID)
                     .table(TABLE_3)
                     .ordinalPosition(26)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3549,12 +3355,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_28_ID)
                     .table(TABLE_3)
                     .ordinalPosition(27)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3562,12 +3366,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_29_ID)
                     .table(TABLE_3)
                     .ordinalPosition(28)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3575,12 +3377,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_30_ID)
                     .table(TABLE_3)
                     .ordinalPosition(29)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3588,12 +3388,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_31_ID)
                     .table(TABLE_3)
                     .ordinalPosition(30)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3601,12 +3399,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_32_ID)
                     .table(TABLE_3)
                     .ordinalPosition(31)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3614,12 +3410,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_33_ID)
                     .table(TABLE_3)
                     .ordinalPosition(32)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3627,12 +3421,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_34_ID)
                     .table(TABLE_3)
                     .ordinalPosition(33)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3640,12 +3432,10 @@ public abstract class BaseTest {
                     .id(COLUMN_3_35_ID)
                     .table(TABLE_3)
                     .ordinalPosition(34)
-                    .autoGenerated(false)
                     .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build());
@@ -3655,12 +3445,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(true)
                     .columnType(ColumnTypeDto.BIGINT)
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3669,12 +3457,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3683,12 +3469,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3697,12 +3481,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.DATE)
                     .name("betriebsdatum")
                     .internalName("betriebsdatum")
                     .isNullAllowed(true)
-                    .dateFormat(IMAGE_DATE_2_DTO)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3711,12 +3493,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3725,12 +3505,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3739,12 +3517,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3753,12 +3529,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3767,12 +3541,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3781,12 +3553,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3795,12 +3565,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.DATE)
                     .name("datum_von")
                     .internalName("datum_von")
                     .isNullAllowed(true)
-                    .dateFormat(IMAGE_DATE_2_DTO)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3809,12 +3577,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3823,12 +3589,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3837,12 +3601,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3851,12 +3613,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3865,12 +3625,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3879,12 +3637,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3893,12 +3649,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3907,12 +3661,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3921,12 +3673,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.DATE)
                     .name("datum_nach")
                     .internalName("datum_nach")
                     .isNullAllowed(true)
-                    .dateFormat(IMAGE_DATE_2_DTO)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3935,12 +3685,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3949,12 +3697,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3963,12 +3709,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3977,12 +3721,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -3991,12 +3733,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4005,12 +3745,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4019,12 +3757,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4033,12 +3769,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4047,12 +3781,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4061,12 +3793,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4075,12 +3805,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4089,12 +3817,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4103,12 +3829,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4117,12 +3841,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build(),
@@ -4131,12 +3853,10 @@ public abstract class BaseTest {
                     .tableId(TABLE_3_ID)
                     .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
-                    .autoGenerated(false)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
-                    .dateFormat(null)
                     .enums(new LinkedList<>())
                     .sets(new LinkedList<>())
                     .build());
@@ -4198,7 +3918,6 @@ public abstract class BaseTest {
                     .internalName("id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(true)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_2_ID)
@@ -4208,7 +3927,6 @@ public abstract class BaseTest {
                     .internalName("animal_name")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_3_ID)
@@ -4218,7 +3936,6 @@ public abstract class BaseTest {
                     .internalName("hair")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_4_ID)
@@ -4228,7 +3945,6 @@ public abstract class BaseTest {
                     .internalName("feathers")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_5_ID)
@@ -4238,7 +3954,6 @@ public abstract class BaseTest {
                     .internalName("bread")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_6_ID)
@@ -4248,7 +3963,6 @@ public abstract class BaseTest {
                     .internalName("eggs")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_7_ID)
@@ -4258,7 +3972,6 @@ public abstract class BaseTest {
                     .internalName("milk")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_8_ID)
@@ -4268,7 +3981,6 @@ public abstract class BaseTest {
                     .internalName("water")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_9_ID)
@@ -4278,7 +3990,6 @@ public abstract class BaseTest {
                     .internalName("airborne")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_10_ID)
@@ -4288,7 +3999,6 @@ public abstract class BaseTest {
                     .internalName("waterborne")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_11_ID)
@@ -4298,7 +4008,6 @@ public abstract class BaseTest {
                     .internalName("aquantic")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_12_ID)
@@ -4308,7 +4017,6 @@ public abstract class BaseTest {
                     .internalName("predator")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_13_ID)
@@ -4318,7 +4026,6 @@ public abstract class BaseTest {
                     .internalName("backbone")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_14_ID)
@@ -4328,7 +4035,6 @@ public abstract class BaseTest {
                     .internalName("breathes")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_15_ID)
@@ -4338,7 +4044,6 @@ public abstract class BaseTest {
                     .internalName("venomous")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_16_ID)
@@ -4348,7 +4053,6 @@ public abstract class BaseTest {
                     .internalName("fin")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_17_ID)
@@ -4358,7 +4062,6 @@ public abstract class BaseTest {
                     .internalName("legs")
                     .columnType(TableColumnType.INT)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_18_ID)
@@ -4368,7 +4071,6 @@ public abstract class BaseTest {
                     .internalName("tail")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_19_ID)
@@ -4378,7 +4080,6 @@ public abstract class BaseTest {
                     .internalName("domestic")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_20_ID)
@@ -4388,7 +4089,6 @@ public abstract class BaseTest {
                     .internalName("catsize")
                     .columnType(TableColumnType.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_21_ID)
@@ -4398,7 +4098,6 @@ public abstract class BaseTest {
                     .internalName("class_type")
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -4410,7 +4109,6 @@ public abstract class BaseTest {
                     .internalName("id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(true)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_2_ID)
@@ -4421,7 +4119,6 @@ public abstract class BaseTest {
                     .internalName("animal_name")
                     .columnType(ColumnTypeDto.VARCHAR)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_3_ID)
@@ -4432,7 +4129,6 @@ public abstract class BaseTest {
                     .internalName("hair")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_4_ID)
@@ -4443,7 +4139,6 @@ public abstract class BaseTest {
                     .internalName("feathers")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_5_ID)
@@ -4454,7 +4149,6 @@ public abstract class BaseTest {
                     .internalName("bread")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_6_ID)
@@ -4465,7 +4159,6 @@ public abstract class BaseTest {
                     .internalName("eggs")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_7_ID)
@@ -4476,7 +4169,6 @@ public abstract class BaseTest {
                     .internalName("milk")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_8_ID)
@@ -4487,7 +4179,6 @@ public abstract class BaseTest {
                     .internalName("water")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_9_ID)
@@ -4498,7 +4189,6 @@ public abstract class BaseTest {
                     .internalName("airborne")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_10_ID)
@@ -4509,7 +4199,6 @@ public abstract class BaseTest {
                     .internalName("waterborne")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_11_ID)
@@ -4520,7 +4209,6 @@ public abstract class BaseTest {
                     .internalName("aquantic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_12_ID)
@@ -4531,7 +4219,6 @@ public abstract class BaseTest {
                     .internalName("predator")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_13_ID)
@@ -4542,7 +4229,6 @@ public abstract class BaseTest {
                     .internalName("backbone")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_14_ID)
@@ -4553,7 +4239,6 @@ public abstract class BaseTest {
                     .internalName("breathes")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_15_ID)
@@ -4564,7 +4249,6 @@ public abstract class BaseTest {
                     .internalName("venomous")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_16_ID)
@@ -4575,7 +4259,6 @@ public abstract class BaseTest {
                     .internalName("fin")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_17_ID)
@@ -4586,7 +4269,6 @@ public abstract class BaseTest {
                     .internalName("legs")
                     .columnType(ColumnTypeDto.INT)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_18_ID)
@@ -4597,7 +4279,6 @@ public abstract class BaseTest {
                     .internalName("tail")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_19_ID)
@@ -4608,7 +4289,6 @@ public abstract class BaseTest {
                     .internalName("domestic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_20_ID)
@@ -4619,7 +4299,6 @@ public abstract class BaseTest {
                     .internalName("catsize")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_5_21_ID)
@@ -4630,7 +4309,6 @@ public abstract class BaseTest {
                     .internalName("class_type")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<ForeignKeyCreateDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
@@ -4778,7 +4456,6 @@ public abstract class BaseTest {
                     .internalName("id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(true)
                     .build(),
             TableColumn.builder()
                     .id(68L)
@@ -4788,7 +4465,6 @@ public abstract class BaseTest {
                     .internalName("firstname")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(69L)
@@ -4798,7 +4474,6 @@ public abstract class BaseTest {
                     .internalName("lastname")
                     .columnType(TableColumnType.VARCHAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(70L)
@@ -4808,7 +4483,6 @@ public abstract class BaseTest {
                     .internalName("birth")
                     .columnType(TableColumnType.YEAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(71L)
@@ -4817,9 +4491,7 @@ public abstract class BaseTest {
                     .name("reminder")
                     .internalName("reminder")
                     .columnType(TableColumnType.TIME)
-                    .dateFormat(IMAGE_DATE_4)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(72L)
@@ -4829,7 +4501,6 @@ public abstract class BaseTest {
                     .internalName("ref_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
@@ -4848,7 +4519,6 @@ public abstract class BaseTest {
                     .internalName("id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(true)
                     .build(),
             ColumnDto.builder()
                     .id(68L)
@@ -4859,7 +4529,6 @@ public abstract class BaseTest {
                     .internalName("firstname")
                     .columnType(ColumnTypeDto.VARCHAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(69L)
@@ -4870,7 +4539,6 @@ public abstract class BaseTest {
                     .internalName("lastname")
                     .columnType(ColumnTypeDto.VARCHAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(70L)
@@ -4881,7 +4549,6 @@ public abstract class BaseTest {
                     .internalName("birth")
                     .columnType(ColumnTypeDto.YEAR)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(71L)
@@ -4891,9 +4558,7 @@ public abstract class BaseTest {
                     .name("reminder")
                     .internalName("reminder")
                     .columnType(ColumnTypeDto.TIME)
-                    .dateFormat(IMAGE_DATE_4_DTO)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(72L)
@@ -4904,7 +4569,6 @@ public abstract class BaseTest {
                     .internalName("ref_id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<List<String>> TABLE_6_UNIQUES_CREATE = List.of(
@@ -4971,7 +4635,6 @@ public abstract class BaseTest {
                     .internalName("name_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_7_2_ID)
@@ -4981,7 +4644,6 @@ public abstract class BaseTest {
                     .internalName("zoo_id")
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build());
 
     public final static List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -4993,7 +4655,6 @@ public abstract class BaseTest {
                     .internalName("name_id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_7_2_ID)
@@ -5004,7 +4665,6 @@ public abstract class BaseTest {
                     .internalName("zoo_id")
                     .columnType(ColumnTypeDto.BIGINT)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build());
 
     public final static Long VIEW_1_ID = 1L;
@@ -5027,7 +4687,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(2L)
@@ -5038,7 +4697,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(3L)
@@ -5049,8 +4707,7 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .build()    );
+                    .build());
 
     public final static View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
@@ -5101,7 +4758,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .view(VIEW_1)
                     .build(),
             ViewColumn.builder()
@@ -5114,7 +4770,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_1)
                     .build(),
             ViewColumn.builder()
@@ -5127,7 +4782,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_1)
                     .build()
     );
@@ -5195,20 +4849,16 @@ public abstract class BaseTest {
                     .internalName("date")
                     .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DATE)
-                    .dateFormat(IMAGE_DATE_1_DTO)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(5L)
                     .name("loc")
                     .internalName("loc")
-                    .alias("loc")
                     .ordinalPosition(2)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(6L)
@@ -5219,7 +4869,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(7L)
@@ -5230,7 +4879,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build()
     );
 
@@ -5254,20 +4902,17 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
                     .id(5L)
                     .ordinalPosition(1)
-                    .name("Location")
-                    .internalName("location")
+                    .name("loc")
+                    .internalName("loc")
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
@@ -5279,7 +4924,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
@@ -5291,7 +4935,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_2)
                     .build()
     );
@@ -5357,7 +5000,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(9L)
@@ -5370,7 +5012,6 @@ public abstract class BaseTest {
                     .concept(CONCEPT_1_DTO)
                     .unit(UNIT_1_DTO)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(10L)
@@ -5380,7 +5021,6 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(11L)
@@ -5388,9 +5028,7 @@ public abstract class BaseTest {
                     .internalName("date")
                     .ordinalPosition(3)
                     .columnType(ColumnTypeDto.DATE)
-                    .dateFormat(IMAGE_DATE_1_DTO)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build()
     );
 
@@ -5431,7 +5069,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
@@ -5443,7 +5080,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
@@ -5454,7 +5090,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
@@ -5463,9 +5098,7 @@ public abstract class BaseTest {
                     .name("Date")
                     .internalName("date")
                     .columnType(TableColumnType.DATE)
-                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_3)
                     .build()
     );
@@ -5515,7 +5148,6 @@ public abstract class BaseTest {
                     .internalName("animal_name")
                     .columnType(ColumnTypeDto.VARCHAR)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(13L)
@@ -5524,7 +5156,6 @@ public abstract class BaseTest {
                     .internalName("hair")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(14L)
@@ -5533,7 +5164,6 @@ public abstract class BaseTest {
                     .internalName("feathers")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(15L)
@@ -5542,7 +5172,6 @@ public abstract class BaseTest {
                     .internalName("eggs")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(16L)
@@ -5551,7 +5180,6 @@ public abstract class BaseTest {
                     .internalName("milk")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(17L)
@@ -5560,7 +5188,6 @@ public abstract class BaseTest {
                     .internalName("airborne")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(18L)
@@ -5569,7 +5196,6 @@ public abstract class BaseTest {
                     .internalName("aquantic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(19L)
@@ -5578,7 +5204,6 @@ public abstract class BaseTest {
                     .internalName("predator")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(20L)
@@ -5587,7 +5212,6 @@ public abstract class BaseTest {
                     .internalName("backbone")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(21L)
@@ -5596,7 +5220,6 @@ public abstract class BaseTest {
                     .internalName("breathes")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(22L)
@@ -5605,7 +5228,6 @@ public abstract class BaseTest {
                     .internalName("venomous")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(23L)
@@ -5614,7 +5236,6 @@ public abstract class BaseTest {
                     .internalName("fin")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(24L)
@@ -5623,7 +5244,6 @@ public abstract class BaseTest {
                     .internalName("legs")
                     .columnType(ColumnTypeDto.INT)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(25L)
@@ -5632,7 +5252,6 @@ public abstract class BaseTest {
                     .internalName("tail")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(26L)
@@ -5641,7 +5260,6 @@ public abstract class BaseTest {
                     .internalName("domestic")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(27L)
@@ -5650,7 +5268,6 @@ public abstract class BaseTest {
                     .internalName("catsize")
                     .columnType(ColumnTypeDto.BOOL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(28L)
@@ -5659,7 +5276,6 @@ public abstract class BaseTest {
                     .internalName("class_type")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .build());
 
     public final static View VIEW_4 = View.builder()
@@ -5687,6 +5303,161 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .columns(VIEW_4_COLUMNS_DTO)
             .build();
+
+    public final static List<ViewColumn> VIEW_4_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(12L)
+                    .ordinalPosition(0)
+                    .name("Animal Name")
+                    .internalName("animal_name")
+                    .columnType(TableColumnType.VARCHAR)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(13L)
+                    .ordinalPosition(1)
+                    .name("Hair")
+                    .internalName("hair")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(14L)
+                    .ordinalPosition(2)
+                    .name("Feathers")
+                    .internalName("feathers")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(15L)
+                    .ordinalPosition(3)
+                    .name("Eggs")
+                    .internalName("eggs")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(16L)
+                    .ordinalPosition(4)
+                    .name("Milk")
+                    .internalName("milk")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(17L)
+                    .ordinalPosition(5)
+                    .name("Airborne")
+                    .internalName("airborne")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(18L)
+                    .ordinalPosition(6)
+                    .name("Aquantic")
+                    .internalName("aquantic")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(19L)
+                    .ordinalPosition(7)
+                    .name("Predator")
+                    .internalName("predator")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(20L)
+                    .ordinalPosition(8)
+                    .name("Backbone")
+                    .internalName("backbone")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(21L)
+                    .ordinalPosition(9)
+                    .name("Breathes")
+                    .internalName("breathes")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(22L)
+                    .ordinalPosition(10)
+                    .name("Venomous")
+                    .internalName("venomous")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(23L)
+                    .ordinalPosition(11)
+                    .name("Fin")
+                    .internalName("fin")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(24L)
+                    .ordinalPosition(12)
+                    .name("Legs")
+                    .internalName("legs")
+                    .columnType(TableColumnType.INT)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(25L)
+                    .ordinalPosition(13)
+                    .name("Tail")
+                    .internalName("tail")
+                    .columnType(TableColumnType.DECIMAL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(26L)
+                    .ordinalPosition(14)
+                    .name("Domestic")
+                    .internalName("domestic")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(27L)
+                    .ordinalPosition(15)
+                    .name("Catsize")
+                    .internalName("catsize")
+                    .columnType(TableColumnType.BOOL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(28L)
+                    .ordinalPosition(16)
+                    .name("Class Type")
+                    .internalName("class_type")
+                    .columnType(TableColumnType.DECIMAL)
+                    .isNullAllowed(true)
+                    .view(VIEW_4)
+                    .build());
 
     public final static Long VIEW_5_ID = 5L;
     public final static Boolean VIEW_5_INITIAL_VIEW = false;
@@ -5734,7 +5505,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
-                    .autoGenerated(false)
                     .view(VIEW_5)
                     .build(),
             ViewColumn.builder()
@@ -5747,7 +5517,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_5)
                     .build(),
             ViewColumn.builder()
@@ -5760,7 +5529,6 @@ public abstract class BaseTest {
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
-                    .autoGenerated(false)
                     .view(VIEW_5)
                     .build());
 

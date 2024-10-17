@@ -125,40 +125,6 @@
           },
           "image": {
             "properties": {
-              "date_formats": {
-                "properties": {
-                  "created_at": {
-                    "type": "date"
-                  },
-                  "database_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "long"
-                  },
-                  "unix_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
-              "default_port": {
-                "type": "long"
-              },
               "dialect": {
                 "type": "text",
                 "fields": {
@@ -639,37 +605,6 @@
               "database_id": {
                 "type": "long"
               },
-              "date_format": {
-                "properties": {
-                  "created_at": {
-                    "type": "date"
-                  },
-                  "database_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "long"
-                  },
-                  "unix_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
               "id": {
                 "type": "long"
               },
@@ -958,37 +893,6 @@
               },
               "database_id": {
                 "type": "long"
-              },
-              "date_format": {
-                "properties": {
-                  "created_at": {
-                    "type": "date"
-                  },
-                  "database_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "long"
-                  },
-                  "unix_format": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
               },
               "id": {
                 "type": "long"

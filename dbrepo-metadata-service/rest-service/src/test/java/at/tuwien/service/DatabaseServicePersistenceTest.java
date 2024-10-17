@@ -82,8 +82,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(IMAGE_1_DRIVER, response.getContainer().getImage().getDriverClass());
         assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
         assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
-        assertNotNull(response.getContainer().getImage().getDateFormats());
-        assertEquals(4, response.getContainer().getImage().getDateFormats().size());
         /* creator */
         assertNotNull(response.getCreator());
         assertEquals(USER_1_ID, response.getCreator().getId());
@@ -124,8 +122,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(IMAGE_1_DRIVER, response.getContainer().getImage().getDriverClass());
         assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
         assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
-        assertNotNull(response.getContainer().getImage().getDateFormats());
-        assertEquals(4, response.getContainer().getImage().getDateFormats().size());
         /* creator */
         assertNotNull(response.getCreator());
         assertEquals(USER_1_ID, response.getCreator().getId());

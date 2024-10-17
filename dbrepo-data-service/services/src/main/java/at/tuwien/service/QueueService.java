@@ -12,6 +12,7 @@ public interface QueueService {
      *
      * @param table    The table.
      * @param data     The data.
+     * @throws SQLException The connection to the database could not be established.
      */
     void insert(PrivilegedTableDto table, Map<String, Object> data) throws SQLException;
 }

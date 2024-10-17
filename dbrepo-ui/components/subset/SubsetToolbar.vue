@@ -166,11 +166,17 @@ export default {
       }
       return this.subset.creator.username === this.username
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     canGetPid () {
       if (!this.user || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || (this.subset.creator.id === this.user.id && UserUtils.hasReadAccess(this.access))
+      return this.database.owner.id === this.user.id || (this.subset.creator.id === this.user.id && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

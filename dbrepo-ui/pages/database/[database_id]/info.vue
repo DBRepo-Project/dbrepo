@@ -45,22 +45,30 @@
               <v-list-item
                 :title="$t('pages.database.name.title')"
                 density="compact">
-                <div v-text="database.name" />
+                <div>
+                  {{ database.name }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.internal-name.title')"
                 density="compact">
-                <div v-text="database.internal_name" />
+                <div>
+                  {{ database.internal_name }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.visibility.title')"
                 density="compact">
-                <div v-text="`${database.is_public ? 'Public' : 'Private'}`" />
+                <div>
+                  {{ database.is_public ? 'Public' : 'Private' }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.size.title')"
                 density="compact">
-                <div v-text="databaseSize" />
+                <div>
+                  {{ databaseSize }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.owner.title')"
@@ -74,7 +82,9 @@
               <v-list-item
                 :title="$t('pages.database.created.title')"
                 density="compact">
-                <div v-text="createdUTC" />
+                <div>
+                  {{ createdUTC }}
+                </div>
               </v-list-item>
               <v-list-item
                 v-if="access && access.type"
@@ -87,9 +97,14 @@
                       inline
                       :content="databaseExtraInfo"
                       color="secondary">
-                      <span v-text="accessDescription.text" />
+                      <span>
+                        {{ accessDescription.text }}
+                      </span>
                     </v-badge>
-                    <span v-else v-text="accessDescription.text" />
+                    <span
+                      v-else>
+                      {{ accessDescription.text }}
+                    </span>
                   </span>
                 </div>
               </v-list-item>
@@ -97,9 +112,8 @@
                 v-if="access"
                 :title="$t('pages.database.connection.title')"
                 density="compact">
-                <div>
-                  <pre class="pb-1" v-text="jdbcString" />
-                </div>
+                <pre
+                  class="pb-1">{{ jdbcString }}</pre>
               </v-list-item>
               <v-list-item
                 v-if="database.contact"
@@ -131,29 +145,39 @@
               <v-list-item
                 :title="$t('pages.container.name.title')"
                 density="compact">
-                <div v-text="container_name" />
+                <div>
+                  {{ container_name }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.container.internal-name.title')"
                 density="compact">
-                <div v-text="container_internal_name" />
+                <div>
+                  {{ container_internal_name }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.container.image-name.title')"
                 density="compact">
-                <div v-text="image_name" />
+                <div>
+                  {{ image_name }}
+                </div>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.container.image-tag.title')"
                 density="compact">
-                <div v-text="image_version" />
+                <div>
+                  {{ image_version }}
+                </div>
               </v-list-item>
             </v-list>
           </v-card-text>
         </v-card>
       </v-window-item>
     </v-window>
-    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
+    <v-breadcrumbs
+      :items="items"
+      class="pa-0 mt-2" />
   </div>
 </template>
 

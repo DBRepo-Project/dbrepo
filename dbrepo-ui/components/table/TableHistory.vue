@@ -28,6 +28,10 @@
           :options="chartOptions"
           :height="200"
           :width="400" />
+        <pre>{{ history }}</pre>
+        <p>
+          {{ $t('pages.table.subpages.versioning.chart.legend') }}
+        </p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -52,9 +56,9 @@
 </template>
 
 <script>
+import { UTCDate } from '@date-fns/utc'
 import { Bar } from 'vue-chartjs'
 import { format } from 'date-fns'
-import { useCacheStore } from '~/stores/cache.js'
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale)
@@ -69,6 +73,7 @@ export default {
       loading: true,
       datetime: null,
       history: null,
+      chartData: null,
       chartOptions: {
         responsive: true,
         onClick: this.handle,
@@ -92,7 +97,7 @@ export default {
             },
           },
           x: {
-            display: true,
+            display: false,
             ticks: {
               min: 0,
               stepSize: 1
@@ -118,15 +123,6 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
-    },
-    chartData () {
-      return {
-        labels: this.history ? this.history.map(d => format(new Date(d.timestamp), 'yyyy-MM-dd HH:mm:ss')) : [],
-        datasets: [
-          this.history ? { backgroundColor: this.$vuetify.theme.current.colors.success, data: this.history.filter(d => d.event === 'INSERT').map(d => d.total) } : { data: [] },
-          this.history ? { backgroundColor: this.$vuetify.theme.current.colors.error, data: this.history.filter(d => d.event === 'DELETE').map(d => d.total) } : { data: [] },
-        ]
-      }
     }
   },
   mounted() {
@@ -153,13 +149,28 @@ export default {
       this.datetime = this.chartData.labels[idx]
       console.debug('date time', this.datetime, 'idx', idx)
     },
+    filterHistoryEventType (history, type) {
+      return history.map(d => {
+        if (d.event === type) {
+          return d.total
+        }
+        return null
+      })
+    },
     loadHistory () {
       this.loading = true
       const tableService = useTableService()
       tableService.history(this.table.database_id, this.table.id)
         .then((history) => {
           this.loading = false
-          this.history = history
+          this.chartData = {
+            // labels: history ? history.map(d => format(new UTCDate(d.timestamp), 'yyyy-MM-dd HH:mm:ss.SSS')) : [],
+            labels: history ? history.map(d => format(new UTCDate(d.timestamp), 'yyyy-MM-dd HH:mm:ss')) : [],
+            datasets: [
+              { backgroundColor: this.$vuetify.theme.current.colors.success, data: this.filterHistoryEventType(history, 'INSERT') },
+              { backgroundColor: this.$vuetify.theme.current.colors.error, data: this.filterHistoryEventType(history, 'DELETE') }
+            ]
+          }
         })
         .catch(({message}) => {
           const toast = useToastInstance()

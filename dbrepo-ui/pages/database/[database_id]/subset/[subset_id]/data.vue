@@ -11,8 +11,9 @@
           color="secondary"
           width="500" />
         <span
-          v-else
-          v-text="executionUTC" />
+          v-else>
+          {{ executionUTC }}
+        </span>
       </v-toolbar-title>
       <v-spacer />
       <v-btn

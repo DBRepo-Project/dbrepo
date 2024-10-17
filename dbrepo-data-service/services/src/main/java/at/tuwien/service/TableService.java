@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.query.ImportCsvDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
@@ -104,18 +104,66 @@ public interface TableService {
     Long getCount(PrivilegedTableDto table, Instant timestamp) throws SQLException,
             QueryMalformedException;
 
-    void importDataset(PrivilegedTableDto table, ImportCsvDto data) throws SidecarImportException,
+    /**
+     * Imports a dataset by metadata into the sidecar of the target database by given table.
+     * @param table The table.
+     * @param data The dataset metadata.
+     * @throws SidecarImportException The sidecar of the target database failed to import the dataset.
+     * @throws StorageNotFoundException The storage service was not able to find the dataset for import.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException The import query is malformed, likely due to a bug in the application.
+     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
+     */
+    void importDataset(PrivilegedTableDto table, ImportDto data) throws SidecarImportException,
             StorageNotFoundException, SQLException, QueryMalformedException, RemoteUnavailableException;
 
+    /**
+     * Imports a dataset by metadata into the sidecar of the target database by given table.
+     * @param table The table.
+     * @param data The dataset metadata.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws TableMalformedException The tuple is malformed and does not fit the table schema.
+     * @throws QueryMalformedException The delete query is malformed, likely due to a bug in the application.
+     */
     void deleteTuple(PrivilegedTableDto table, TupleDeleteDto data) throws SQLException,
             TableMalformedException, QueryMalformedException;
 
+    /**
+     * Creates a tuple in a table.
+     * @param table The table.
+     * @param data The tuple.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException The create query is malformed, likely due to a bug in the application.
+     * @throws TableMalformedException The tuple is malformed and does not fit the table schema.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException The storage service was not able to find the dataset for import.
+     */
     void createTuple(PrivilegedTableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException;
 
+    /**
+     * Updates a tuple in a table.
+     * @param table The table.
+     * @param data The tuple.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException The update query is malformed, likely due to a bug in the application.
+     * @throws TableMalformedException  The tuple is malformed and does not fit the table schema.
+     */
     void updateTuple(PrivilegedTableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
 
+    /**
+     * Exports a table at given system-versioning time.
+     * @param table The table.
+     * @param timestamp The system-versioning time.
+     * @return The exported resource.
+     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SidecarExportException The sidecar of the target database failed to export the dataset.
+     * @throws StorageNotFoundException The storage service was not able to find the dataset for export.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws QueryMalformedException The export query is malformed, likely due to a bug in the application.
+     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
+     */
     ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp)
             throws SQLException, SidecarExportException, StorageNotFoundException, StorageUnavailableException,
             QueryMalformedException, RemoteUnavailableException;

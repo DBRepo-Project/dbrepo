@@ -50,7 +50,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-update' : null"
         variant="flat"
         :text="$t('toolbars.table.data.version')"
-        class="ml-2"
+        class="ml-2 mr-2"
         @click.stop="pick" />
     </v-toolbar>
     <TimeDrift />
@@ -60,8 +60,9 @@
       <v-card
         v-if="error"
         variant="flat">
-        <v-card-text
-          v-text="$t('error.table.connection')" />
+        <v-card-text>
+          {{ $t('error.table.connection') }}
+        </v-card-text>
       </v-card>
       <v-data-table-server
         v-if="!error"
@@ -75,6 +76,7 @@
         :loading="loadingData || loadingCount"
         :options.sync="options"
         :footer-props="footerProps"
+        :items-per-page-options="footerProps.itemsPerPageOptions"
         @update:options="loadData">
         <template
           v-for="(blobColumn, idx) in blobColumns"
@@ -346,6 +348,7 @@ export default {
         const tableService = useTableService()
         tableService.exportData(this.$route.params.database_id, this.$route.params.table_id)
           .then((data) => {
+            this.downloadLoading = false
             const url = URL.createObjectURL(data)
             const link = document.createElement('a')
             link.href = url

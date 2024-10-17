@@ -16,12 +16,14 @@
           v-if="hasRor(personOrOrg)"
           class="mr-1"
           :ror="personOrOrg.name_identifier" />
-        <span
-          v-text="personOrOrg.creator_name" />
+        <span>
+          {{ personOrOrg.creator_name }}
+        </span>
         <sup
           v-if="hasAffiliation(personOrOrg)"
-          v-text="personOrOrg.affiliation_index"
-          class="ml-1" />
+          class="ml-1">
+          {{ personOrOrg.affiliation_index }}
+        </sup>
         <span
           v-if="!isLast(creators, i)">;&nbsp;</span>
       </span>
@@ -30,7 +32,9 @@
       <span
         v-for="(affiliation, i) in affiliations"
         :key="`c-${i}`">
-        <sup v-text="i+1" />
+        <sup>
+          {{ i+1 }}
+        </sup>
         {{ affiliation.name }}
         <RorIcon
           v-if="hasRor(affiliation)"

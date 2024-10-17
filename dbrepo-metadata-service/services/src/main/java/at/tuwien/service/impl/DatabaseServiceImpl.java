@@ -11,9 +11,11 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
+import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
@@ -165,7 +167,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     public Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* update in metadata database */
+        database.setOwner(user);
         database.setOwnedBy(user.getId());
+        database.setContact(user);
+        database.setContactPerson(user.getId());
         database = databaseRepository.save(database);
         /* save in search service */
         searchServiceGateway.update(database);
@@ -212,12 +217,14 @@ public class DatabaseServiceImpl implements DatabaseService {
                                 .forEach(column -> {
                                     column.setTable(tableEntity);
                                 });
+                        log.trace("mapped unique constraint: {} ({})", tableEntity.getName(), uk.getColumns().stream().map(TableColumn::getInternalName).toList());
                     });
             /* map foreign key constraint(s) */
             tableEntity.getConstraints()
                     .getForeignKeys()
                     .forEach(fk -> {
                         fk.setTable(tableEntity);
+                        log.trace("mapped foreign key constraint: {} ({}) -> {} ({})", fk.getTable().getInternalName(), fk.getReferences().stream().map(r -> r.getColumn().getInternalName()).toList(), fk.getReferencedTable().getInternalName(), fk.getReferences().stream().map(r -> r.getReferencedColumn().getInternalName()).toList());
                     });
             /* map primary key constraint */
             for (PrimaryKey key : tableEntity.getConstraints().getPrimaryKey()) {
@@ -237,7 +244,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         }
         /* update referenced tables after they are known to the service */
         for (ForeignKey foreignKey : database.getTables().stream().map(t -> t.getConstraints().getForeignKeys()).flatMap(List::stream).toList()) {
-            log.trace("lookup table {} in tables: {}", foreignKey.getReferencedTable().getInternalName(), database.getTables().stream().map(Table::getInternalName).toList());
             final Optional<Table> optional = database.getTables()
                     .stream()
                     .filter(t -> t.getInternalName().equals(foreignKey.getReferencedTable().getInternalName()))
@@ -275,15 +281,25 @@ public class DatabaseServiceImpl implements DatabaseService {
                 reference.setReferencedColumn(optional2.get());
             }
         }
-        database.getTables()
-                .stream()
-                .filter(t -> t.getConstraints().getForeignKeys().size() > 0)
-                .map(t -> t.getConstraints().getForeignKeys())
-                .flatMap(List::stream)
-                .filter(fk -> fk.getReferences().size() > 1)
-                .forEach(fk -> {
-                    log.debug("");
-                });
+        /* correct the unique constraint columns */
+        for (Table table : database.getTables()) {
+            for (Unique uniqueConstraint : table.getConstraints().getUniques()) {
+                uniqueConstraint.setColumns(new LinkedList<>(uniqueConstraint.getColumns()
+                        .stream()
+                        .map(column -> {
+                            final Optional<TableColumn> optional = table.getColumns()
+                                    .stream()
+                                    .filter(c -> c.getInternalName().equals(column.getInternalName()))
+                                    .findFirst();
+                            if (optional.isEmpty()) {
+                                log.error("Failed to find unique constraint column: {}", column.getInternalName());
+                                throw new IllegalArgumentException("Failed to find unique constraint column: " + column.getInternalName());
+                            }
+                            return optional.get();
+                        })
+                        .toList()));
+            }
+        }
         /* update in metadata database */
         database = databaseRepository.save(database);
         /* save in search service */
