@@ -2,3 +2,4 @@
 omit =
     */test/*
     */omlib/*
+    */init/*

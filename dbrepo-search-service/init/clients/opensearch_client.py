@@ -8,7 +8,7 @@ import logging
 from dbrepo.api.dto import Database
 from collections.abc import MutableMapping
 
-from opensearchpy import OpenSearch, TransportError, RequestError
+from opensearchpy import OpenSearch, TransportError, RequestError, NotFoundError
 
 from omlib.measure import om
 from omlib.constants import OM_IDS
@@ -67,16 +67,8 @@ class OpenSearchClient:
         @throws: opensearchpy.exceptions.NotFoundError If the database was not found in the Search Database.
         """
         logging.debug(f"updating database with id: {database_id} in search database")
-        try:
-            self._instance().index(index="database", id=database_id, body=dumps(data.model_dump()))
-        except RequestError as e:
-            logging.error(f"Failed to update in search database: {e.info}")
-            raise e
-        try:
-            response: dict = self._instance().get(index="database", id=database_id)
-        except TransportError as e:
-            logging.error(f"Failed to get updated database in search database: {e.status_code}")
-            raise e
+        self._instance().index(index="database", id=database_id, body=dumps(data.model_dump()))
+        response: dict = self._instance().get(index="database", id=database_id)
         database = Database.parse_obj(response["_source"])
         logging.info(f"Updated database with id {database_id} in index 'database'")
         return database
@@ -118,10 +110,10 @@ class OpenSearchClient:
         results = [hit["_source"] for hit in response["hits"]["hits"]]
         return results
 
-    def get_fields_for_index(self, type: str):
+    def get_fields_for_index(self, field_type: str):
         """
         returns a list of attributes of the data for a specific index.
-        :param type: The search type
+        :param field_type: The search type
         :return: list of fields
         """
         fields = {
@@ -134,8 +126,10 @@ class OpenSearchClient:
             "view": "views.*",
             "user": "creator.*",
         }
-        logging.debug(f'requesting field(s) {fields[type]} for filter: {type}')
-        fields = self._instance().indices.get_field_mapping(fields[type])
+        if field_type not in fields.keys():
+            raise NotFoundError(f"Failed to find field type: {field_type}")
+        logging.debug(f'requesting field(s) {fields[field_type]} for filter: {field_type}')
+        fields = self._instance().indices.get_field_mapping(fields[field_type])
         fields_list = []
         fd = flatten_dict(fields)
         for key in fd.keys():
@@ -169,13 +163,13 @@ class OpenSearchClient:
         logging.info(f"Found {len(response['hits']['hits'])} result(s)")
         return response
 
-    def general_search(self, type: str = None, field_value_pairs: dict = None):
+    def general_search(self, field_type: str = None, field_value_pairs: dict = None):
         """
         Main method for searching stuff in the opensearch db
 
         all parameters are optional
 
-        :param type: The index to be searched. Optional.
+        :param field_type: The index to be searched. Optional.
         :param field_value_pairs: The key-value pair of properties that need to match. Optional.
         :return: The object of results and HTTP status code. e.g. { "hits": { "hits": [] } }, 200
         """
@@ -204,7 +198,7 @@ class OpenSearchClient:
         body = {
             "query": {"bool": {"must": musts}}
         }
-        logging.debug(f'search in index database for type: {type}')
+        logging.debug(f'search in index database for type: {field_type}')
         logging.debug(f'search body: {dumps(body)}')
         response = self._instance().search(
             index="database",
@@ -213,11 +207,9 @@ class OpenSearchClient:
         results = [hit["_source"] for hit in response["hits"]["hits"]]
         return results
 
-    def unit_independent_search(self, t1=None, t2=None, field_value_pairs=None):
+    def unit_independent_search(self, t1: float, t2: float, field_value_pairs):
         """
         Main method for searching stuff in the opensearch db
-
-        all parameters are optional
 
         :param t1: start value
         :param t2: end value
@@ -240,6 +232,8 @@ class OpenSearchClient:
         )
         unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
         logging.debug(f"found {len(unit_uris)} unit(s) in column index")
+        if len(unit_uris) == 0:
+            raise NotFoundError("Failed to search: no unit assigned")
         base_unit = unit_uri_to_unit(field_value_pairs["unit.uri"])
         for unit_uri in unit_uris:
             gte = t1
