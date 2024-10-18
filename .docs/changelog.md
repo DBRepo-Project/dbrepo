@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.4.7 (???)
+## v1.4.7 (2024-10-21)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.7)
 
@@ -19,12 +19,19 @@ author: Martin Weise
 
 #### Changes
 
+* Allow anonymous users to create subsets for public databases
+  in [#449](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/449).
+* Show file upload progress
+  in [#448](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/448).
 * Change the Docker image of the Auth Service to Bitnami-maintained similar to Kubernetes deployment with accompanying
   Auth Database change to PostgreSQL
   in [#455](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/455)
 
 #### Fixes
 
+* Multiple UI errors in [#453](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/453).
+* Fixed install script.sh
+  in [#444](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/444)
 * No hardcoded data type metadata in UI but instead added it hardcoded (associated with `image_id`) Metadata Database.
 
 ## v1.4.6 (2024-10-11)
