@@ -11,14 +11,6 @@ Timestamp = Annotated[
 ]
 
 
-class ImageDate(BaseModel):
-    id: int
-    database_format: str
-    unix_format: str
-    has_time: bool
-    created_at: Timestamp
-
-
 class JwtAuth(BaseModel):
     access_token: str
     refresh_token: str
@@ -40,7 +32,7 @@ class Image(BaseModel):
     driver_class: str
     jdbc_method: str
     default_port: int
-    date_formats: Optional[List[ImageDate]] = field(default_factory=list)
+    data_types: List[DataType] = field(default_factory=list)
 
 
 class ImageBrief(BaseModel):
@@ -520,7 +512,6 @@ class CreateTableColumn(BaseModel):
     index_length: Optional[int] = None
     size: Optional[int] = None
     d: Optional[int] = None
-    dfid: Optional[int] = None
     enums: Optional[List[str]] = None
     sets: Optional[List[str]] = None
 
@@ -883,6 +874,24 @@ class UpdateQuery(BaseModel):
     persist: bool
 
 
+class DataType(BaseModel):
+    display_name: str
+    value: str
+    documentation: str
+    is_quoted:  bool
+    is_buildable:  bool
+    size_min: Optional[int] = None
+    size_max: Optional[int] = None
+    size_default: Optional[int] = None
+    size_required: Optional[bool] = None
+    d_min: Optional[int] = None
+    d_max: Optional[int] = None
+    d_default: Optional[int] = None
+    d_required: Optional[bool] = None
+    data_hint:  Optional[str] = None
+    type_hint:  Optional[str] = None
+
+
 class Column(BaseModel):
     id: int
     name: str
@@ -902,7 +911,6 @@ class Column(BaseModel):
     unit: Optional[Unit] = None
     enums: Optional[List[str]] = field(default_factory=list)
     sets: Optional[List[str]] = field(default_factory=list)
-    date_format: Optional[ImageDate] = None
     index_length: Optional[int] = None
     length: Optional[int] = None
     data_length: Optional[int] = None
@@ -928,7 +936,6 @@ class ViewColumn(BaseModel):
     median: Optional[float] = None
     concept: Optional[Concept] = None
     unit: Optional[Unit] = None
-    date_format: Optional[ImageDate] = None
     index_length: Optional[int] = None
     length: Optional[int] = None
 

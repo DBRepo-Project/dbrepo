@@ -6,7 +6,6 @@ from typing import List
 import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
 from logging.config import dictConfig
-from pathlib import Path
 
 from dbrepo.api.dto import Database
 from opensearchpy import OpenSearch
@@ -68,9 +67,6 @@ class App:
             logging.debug(f"create instance {self.search_host}:{self.search_port}")
         return self.search_instance
 
-    def index_exists(self):
-        return self._instance().indices.exists(index="database")
-
     def database_exists(self, database_id: int):
         try:
             self._instance().get(index="database", id=database_id)
@@ -78,28 +74,13 @@ class App:
         except opensearchpy.exceptions.NotFoundError:
             return False
 
-    def index_update(self, is_created: bool) -> bool:
-        """
-
-        :param is_created:
-        :return: True if the index was updated
-        """
-        if is_created:
-            logging.debug(f"index 'database' does not exist, creating...")
-            with open('./database.json', 'r') as f:
-                self._instance().indices.create(index="database", body=json.load(f))
-            logging.info(f"Created index 'database'")
-            return True
-        mapping = dict(self._instance().indices.get_mapping(index="database"))
-        identifier_props = mapping["database"]["mappings"]["properties"]["identifiers"]["properties"]
-        if "status" in identifier_props:
-            logging.debug(f"found mapping database.identifiers.status: detected current mapping")
-            return False
-        logging.debug(f"index 'database' exists, updating mapping...")
+    def index_update(self) -> None:
+        if self._instance().indices.exists(index="database"):
+            logging.debug(f"index 'database' exists, removing...")
+            self._instance().indices.delete(index="database")
         with open('./database.json', 'r') as f:
-            self._instance().indices.put_mapping(index="database", body=json.load(f))
-        logging.info(f"Updated index 'database'")
-        return True
+            self._instance().indices.create(index="database", body=json.load(f))
+        logging.info(f"Created index 'database'")
 
     def fetch_databases(self) -> List[Database]:
         logging.debug(f"fetching database from endpoint: {self.metadata_service_endpoint}")
@@ -126,7 +107,6 @@ class App:
 
 if __name__ == "__main__":
     app = App()
-    create = not app.index_exists()
-    update = app.index_update(is_created=create)
+    update = app.index_update()
     app.save_databases(databases=app.fetch_databases())
     logging.info("Finished. Exiting.")

@@ -45,7 +45,7 @@ database:
   #        VALUES ('MariaDB Galera TEST', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 80, 'root', 'dbrepo');
   #      COMMIT;
   ## @param database.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
-  replicaCount: 3
+  replicaCount: 1
   persistence:
     ## @param database.persistence.enabled Enable persistent storage.
     enabled: true
@@ -59,7 +59,7 @@ database:
   ## @skip database.sidecars
   sidecars:
     - name: sidecar
-      image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.5
+      image: registry.datalab.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.6
       imagePullPolicy: Always
       securityContext:
         runAsUser: 1001

@@ -4,10 +4,11 @@ import unittest
 import opensearchpy
 from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Table, Column, ColumnType, Constraints, \
     PrimaryKey, TableMinimal, ColumnMinimal, Concept, Unit
+from opensearchpy import NotFoundError
 
 from app import app
 
-from clients.opensearch_client import OpenSearchClient
+from init.clients.opensearch_client import OpenSearchClient
 
 req = Database(id=1,
                name="Test",
@@ -73,9 +74,8 @@ class OpenSearchClientTest(unittest.TestCase):
 
     def test_update_database_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
             # mock
-            client.update_database(database_id=1, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
             req.tables = [Table(id=1,
@@ -87,9 +87,10 @@ class OpenSearchClientTest(unittest.TestCase):
                                 database_id=req.id,
                                 constraints=Constraints(uniques=[], foreign_keys=[], checks=[],
                                                         primary_key=[PrimaryKey(id=1,
-                                                                                table=TableMinimal(id=1, database_id=1),
+                                                                                table=TableMinimal(id=1,
+                                                                                                   database_id=req.id),
                                                                                 column=ColumnMinimal(id=1, table_id=1,
-                                                                                                     database_id=1))]),
+                                                                                                     database_id=req.id))]),
                                 is_versioned=True,
                                 created_by="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                                 creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
@@ -107,7 +108,7 @@ class OpenSearchClientTest(unittest.TestCase):
                                                 column_type=ColumnType.BIGINT,
                                                 is_public=True,
                                                 is_null_allowed=False)])]
-            database = client.update_database(database_id=1, data=req)
+            database = OpenSearchClient().update_database(database_id=req.id, data=req)
             self.assertEqual(1, database.id)
             self.assertEqual("Test", database.name)
             self.assertEqual("test_tuw1", database.internal_name)
@@ -157,10 +158,8 @@ class OpenSearchClientTest(unittest.TestCase):
 
     def test_update_database_create_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # test
-            database = client.update_database(database_id=1, data=req)
+            database = OpenSearchClient().update_database(database_id=req.id, data=req)
             self.assertEqual(1, database.id)
             self.assertEqual("Test", database.name)
             self.assertEqual("test_tuw1", database.internal_name)
@@ -185,124 +184,87 @@ class OpenSearchClientTest(unittest.TestCase):
     def test_update_database_malformed_fails(self):
         with app.app_context():
             app.config['OPENSEARCH_USERNAME'] = 'i_do_not_exist'
-            client = OpenSearchClient()
 
             # test
             try:
-                database = client.update_database(database_id=1, data=req)
+                database = OpenSearchClient().update_database(database_id=req.id, data=req)
             except opensearchpy.exceptions.TransportError:
                 pass
 
     def test_delete_database_fails(self):
         with app.app_context():
-            client = OpenSearchClient()
 
             # test
             try:
-                client.delete_database(database_id=9999)
+                OpenSearchClient().delete_database(database_id=9999)
             except opensearchpy.exceptions.NotFoundError:
                 pass
 
     def test_delete_database_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # mock
-            client.update_database(database_id=req.id, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            client.delete_database(database_id=req.id)
+            OpenSearchClient().delete_database(database_id=req.id)
 
-    def test_find_database_succeeds(self):
+    def test_get_database_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # mock
-            client.update_database(database_id=req.id, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            client.get_database(database_id=req.id)
+            database = OpenSearchClient().get_database(database_id=req.id)
+            self.assertEqual(req.id, database.id)
 
-    def test_find_database_fails(self):
+    def test_get_database_fails(self):
         with app.app_context():
-            client = OpenSearchClient()
 
             # mock
-            client.update_database(database_id=1, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
             try:
-                client.get_database(database_id=1)
+                OpenSearchClient().get_database(database_id=req.id)
             except opensearchpy.exceptions.NotFoundError:
                 pass
 
-    # def test_query_index_by_term_opensearch_contains_succeeds(self):
-    #     with app.app_context():
-    #         client = OpenSearchClient()
-    #
-    #         # mock
-    #         client.update_database(database_id=1, data=req)
-    #
-    #         # test
-    #         response = client.query_index_by_term_opensearch(term="test", mode="contains")
-    #         self.assertEqual(1, len(response))
-    #         self.assertEqual(1, response[0]['id'])
-    #         self.assertEqual('Test', response[0]['name'])
-
-    # def test_query_index_by_term_opensearch_exact_succeeds(self):
-    #     with app.app_context():
-    #         client = OpenSearchClient()
-    #
-    #         # mock
-    #         client.update_database(database_id=1, data=req)
-    #
-    #         # test
-    #         response = client.query_index_by_term_opensearch(term="test", mode="exact")
-    #         self.assertEqual(1, len(response))
-    #         self.assertEqual(1, response[0]['id'])
-    #         self.assertEqual('Test', response[0]['name'])
-
     def test_get_fields_for_index_database_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # mock
-            client.update_database(database_id=1, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            response = client.get_fields_for_index(type="database")
+            response = OpenSearchClient().get_fields_for_index(field_type="database")
             self.assertTrue(len(response) > 0)
 
     def test_get_fields_for_index_user_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # mock
-            client.update_database(database_id=1, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            response = client.get_fields_for_index(type="user")
+            response = OpenSearchClient().get_fields_for_index(field_type="user")
             self.assertTrue(len(response) > 0)
 
     def test_fuzzy_search_succeeds(self):
         with app.app_context():
-            client = OpenSearchClient()
-
             # mock
-            client.update_database(database_id=1, data=req)
+            OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            response = client.fuzzy_search(search_term="test")
+            response = OpenSearchClient().fuzzy_search(search_term="test")
             self.assertTrue(len(response) > 0)
 
-    # def test_general_search_succeeds(self):
-    #     with app.app_context():
-    #         client = OpenSearchClient()
-    #
-    #         # mock
-    #         client.update_database(database_id=1, data=req)
-    #
-    #         # test
-    #         response = client.general_search(type="database", field_value_pairs={"name": "Test",
-    #                                                                              "id": None})
-    #         self.assertTrue(len(response) > 0)
+    def test_unit_independent_search_fails(self):
+        with app.app_context():
+            # mock
+            OpenSearchClient().update_database(database_id=req.id, data=req)
+
+            # test
+            try:
+                OpenSearchClient().unit_independent_search(0, 100, {
+                    "unit.uri": "http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"})
+                self.fail()
+            except NotFoundError:
+                pass

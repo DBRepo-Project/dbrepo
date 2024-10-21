@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: database-setup
-  namespace: {{ .Values.namespace }}
+  namespace: {{ include "common.names.namespace" . | quote }}
 data:
   {{- with .Values.database.extraInitDbScripts }}
   {{ toYaml . | nindent 2 }}

@@ -29,5 +29,5 @@ dependencies:
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 1.3.22
-digest: sha256:840d2ea4b1e36fe8fa399fc4170b6274a3de161c13a4a1a3b18ce3107ab71f79
-generated: "2024-10-01T07:48:55.174297756+02:00"
+digest: sha256:10e81a48c99d3ff8bd04b735f3039d8ac0cb5eefe7b45c4096242ca988afad64
+generated: "2024-10-20T19:37:42.898952802+02:00"

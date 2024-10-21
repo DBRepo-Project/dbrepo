@@ -260,10 +260,37 @@ test-search-service:
     - build-search-service
   dependencies:
     - build-search-service
+  before_script:
+    - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
+    - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_opensearch_client.py --junitxml=report.xml && coverage html --omit="test/*,omlib/*" && coverage report --omit="test/*,omlib/*" > ./coverage.txt
+    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_app.py test/test_jwt.py test/test_opensearch_client.py test/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.txt
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-search-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-search-service-init:
+  image: docker.io/python:3.11-alpine
+  stage: test
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
+  needs:
+    - build-search-service
+  dependencies:
+    - build-search-service
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
