@@ -530,6 +530,21 @@
                             },
                             "type": "object"
                         },
+                        "extraVolumes": {
+                            "items": {
+                                "properties": {
+                                    "emptyDir": {
+                                        "properties": {},
+                                        "type": "object"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
                         "image": {
                             "properties": {
                                 "debug": {
