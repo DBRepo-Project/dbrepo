@@ -270,7 +270,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
     public void create_forbiddenKeyword_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT * FROM tbl")
+                .statement("SELECT COUNT(id) FROM tbl")
                 .build();
 
         /* test */

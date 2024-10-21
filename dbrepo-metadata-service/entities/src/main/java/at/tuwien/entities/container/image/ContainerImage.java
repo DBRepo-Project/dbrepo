@@ -71,7 +71,11 @@ public class ContainerImage {
     private Instant lastModified;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
     private List<DataType> dataTypes;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "image")
+    private List<Operator> operators;
 
 }

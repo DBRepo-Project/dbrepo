@@ -50,9 +50,9 @@
             <pre>{{ subset.query }}</pre>
           </v-list-item>
           <v-list-item
-            :title="$t('pages.subset.query-hash.title')"
+            :title="`${$t('pages.subset.query.title')} ${$t('pages.subset.hash.title')}`"
             density="compact">
-            <pre>{{ $t('pages.subset.query-hash.prefix') }}{{ subset.query_hash }}</pre>
+            <pre>{{ $t('pages.subset.hash.prefix') }}:{{ subset.query_hash }}</pre>
           </v-list-item>
           <v-list-item
             v-if="executionUTC"
@@ -61,9 +61,9 @@
             {{ executionUTC }}
           </v-list-item>
           <v-list-item
-            :title="$t('pages.subset.result-hash.title')"
+            :title="`${$t('pages.subset.result.title')} ${$t('pages.subset.hash.title')}`"
             density="compact">
-            <pre>{{ result_hash }}</pre>
+            <pre>{{ $t('pages.subset.hash.prefix') }}:{{ result_hash }}</pre>
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.result-rows.title')"
@@ -215,7 +215,7 @@ export default {
       if (!this.subset.result_hash) {
         return '(none)'
       }
-      return `sha256:${this.subset.result_hash}`
+      return this.subset.result_hash
     },
     publisher () {
       if (this.database.publisher === null) {
