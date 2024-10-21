@@ -29,6 +29,8 @@ author: Martin Weise
 
 #### Fixes
 
+* Preventing the semicolon `;` to be used in UI and fixed cryptic subset execution error messages
+  in [#456](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/456).
 * Multiple UI errors in [#453](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/453).
 * Fixed install script.sh
   in [#444](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/444)
