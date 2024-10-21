@@ -63,6 +63,7 @@ import at.tuwien.api.user.*;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.Operator;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -952,6 +953,15 @@ public abstract class BaseTest {
             .version(IMAGE_1_VERSION)
             .isDefault(IMAGE_1_IS_DEFAULT)
             .build();
+
+    public final static List<Operator> IMAGE_1_OPERATORS = List.of(
+            Operator.builder()
+                    .id(1L)
+                    .image(IMAGE_1)
+                    .displayName("XOR")
+                    .value("XOR")
+                    .documentation("https://mariadb.com/kb/en/xor/")
+                    .build());
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;

@@ -9,6 +9,7 @@ import java.util.List;
 public abstract class AbstractUnitTest extends BaseTest {
 
     public void genesis() {
+        IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
         CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* USER_1 */

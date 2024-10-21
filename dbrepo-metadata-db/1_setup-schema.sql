@@ -535,6 +535,18 @@ CREATE TABLE IF NOT EXISTS `mdb_image_types`
     UNIQUE (value)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `mdb_image_operators`
+(
+    id            SERIAL,
+    image_id      BIGINT UNSIGNED NOT NULL,
+    display_name  varchar(255)    NOT NULL,
+    value         varchar(255)    NOT NULL,
+    documentation TEXT            NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
+    UNIQUE (value)
+) WITH SYSTEM VERSIONING;
+
 COMMIT;
 
 BEGIN;
@@ -618,6 +630,37 @@ VALUES (1, 'BIGINT(size)', 'bigint', 0, null, null, false, 1, null, null, null, 
         null, 'https://mariadb.com/kb/en/varbinary/', false, true, false),
        (1, 'VARCHAR(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null, null,
         null, 'https://mariadb.com/kb/en/varchar/', false, true, false);
+
+INSERT INTO `mdb_image_operators` (image_id, display_name, value, documentation)
+VALUES (1, 'Equal operator', '=', 'https://mariadb.com/kb/en/assignment-operators-assignment-operator/'),
+       (1, 'NULL-safe equal operator', '<=>', 'https://mariadb.com/kb/en/null-safe-equal/'),
+       (1, 'Less-than operator', '<', 'https://mariadb.com/kb/en/less-than/'),
+       (1, 'Less than or equal operator', '<=', 'https://mariadb.com/kb/en/less-than-or-equal/'),
+       (1, 'Greater-than operator', '>', 'https://mariadb.com/kb/en/greater-than/'),
+       (1, 'Greater than or equal operator', '>=', 'https://mariadb.com/kb/en/greater-than-or-equal/'),
+       (1, 'Not equal operator', '!=', 'https://mariadb.com/kb/en/not-equal/'),
+       (1, 'Addition operator', '+', 'https://mariadb.com/kb/en/addition-operator/'),
+       (1, 'Division operator', '/', 'https://mariadb.com/kb/en/division-operator/'),
+       (1, 'Modulo operator', '%', 'https://mariadb.com/kb/en/modulo-operator/'),
+       (1, 'Multiplication operator', '*', 'https://mariadb.com/kb/en/multiplication-operator/'),
+       (1, 'Subtraction operator', '-', 'https://mariadb.com/kb/en/subtraction-operator-/'),
+       (1, 'LIKE', 'LIKE', 'https://mariadb.com/kb/en/like/'),
+       (1, 'NOT LIKE', 'NOT LIKE', 'https://mariadb.com/kb/en/not-like/'),
+       (1, 'IN', 'IN', 'https://mariadb.com/kb/en/in/'),
+       (1, 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
+       (1, 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
+       (1, 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
+       (1, 'IS NOT NULL', 'IS NOT NULL', 'https://mariadb.com/kb/en/is-not-null/'),
+       (1, 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
+       (1, 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
+       (1, 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
+       (1, 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/'),
+       (1, 'Bitwise AND', '&', 'https://mariadb.com/kb/en/bitwise_and/'),
+       (1, 'Bitwise OR', '|', 'https://mariadb.com/kb/en/bitwise-or/'),
+       (1, 'Bitwise XOR', '^', 'https://mariadb.com/kb/en/bitwise-xor/'),
+       (1, 'Bitwise NOT', '~', 'https://mariadb.com/kb/en/bitwise-not/'),
+       (1, 'Left shift', '<<', 'https://mariadb.com/kb/en/shift-left/'),
+       (1, 'Right shift', '>>', 'https://mariadb.com/kb/en/shift-right/');
 
 INSERT
 INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)

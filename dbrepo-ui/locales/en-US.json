@@ -920,17 +920,17 @@
       "query": {
         "title": "Query"
       },
-      "query-hash": {
-        "prefix": "sha256",
-        "title": "Query Hash"
+      "hash": {
+        "title": "Hash",
+        "prefix": "sha256"
       },
       "executed": {
         "title": "Created"
       },
-      "result-hash": {
-        "title": "Result Hash"
+      "result": {
+        "title": "Result"
       },
-      "result-rows": {
+      "rows": {
         "title": "Result Rows"
       },
       "tabs": {
@@ -946,7 +946,7 @@
           },
           "expert": {
             "text": "Expert",
-            "warn": "It is not recommended to use comments, aggregation functions and the following operations"
+            "warn": "It is not recommended to use comments, aggregation functions, the semicolon and the following operations"
           },
           "name": {
             "label": ""
