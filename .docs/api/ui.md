@@ -27,26 +27,15 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
     
     ```yaml title=".env"
     NUXT_PUBLIC_TITLE="My overriden title"
-    NUXT_PUBLIC_LOGO="/my_logo.png"
-    NUXT_PUBLIC_ICON="/favicon.ico"
+    NUXT_PUBLIC_LOGO="https://mydomain/my_logo.png"
+    NUXT_PUBLIC_ICON="https://mydomain/my_favicon.ico"
     ...
     ```
 
-    To work, you need to mount the `my_logo.png` file into the `dbrepo-ui` container via the `docker-compose.yml` file.
-
-    ```yaml title="docker-compose.yml"
-    services:
-      dbrepo-ui:
-        image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.7
-        volumes:
-          - ./my_logo.png:/app/.output/public/my_logo.png
-          - ./favicon.ico:/app/.output/public/favicon.ico
-        environment:
-          ...
-      ...
-    ```
-
-    If you want to override more environment variables, extend the dictionary in `environment:`
+    To work, you need to serve the `my_logo.png` and `my_favicon.ico` from a separate webserver. Note that simply
+    copying the files into the Nuxt [`public/`](https://nuxt.com/docs/guide/directory-structure/public) directory will 
+    not work as the content length is calculated only during build time. The development 
+    team [#19263](https://github.com/nuxt/nuxt/issues/19263) does not plan to fix this.
 
 === "Kubernetes"
 
