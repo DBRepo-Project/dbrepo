@@ -587,9 +587,6 @@
         "properties": {
           "columns": {
             "properties": {
-              "auto_generated": {
-                "type": "boolean"
-              },
               "column_type": {
                 "type": "text",
                 "fields": {
@@ -879,9 +876,6 @@
         "properties": {
           "columns": {
             "properties": {
-              "auto_generated": {
-                "type": "boolean"
-              },
               "column_type": {
                 "type": "text",
                 "fields": {
