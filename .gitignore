@@ -60,9 +60,6 @@ ready
 *.key
 *.p12
 
-# Environment
-.env
-
 # X509
 root.crt
 intermediate.crt

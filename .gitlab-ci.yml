@@ -3,8 +3,8 @@ variables:
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
-  APP_VERSION: "1.4.7"
-  CHART_VERSION: "1.4.7"
+  APP_VERSION: "1.4.6"
+  CHART_VERSION: "1.4.6"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
