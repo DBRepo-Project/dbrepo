@@ -17,7 +17,6 @@
               <v-text-field
                 v-if="isNumber(column)"
                 v-model.number="tuple[column.internal_name]"
-                :disabled="!edit"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
@@ -48,7 +47,6 @@
               <v-text-field
                 v-if="isTextField(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 :clearable="!required(column)"
                 :counter="maxLength(column) !== null"
                 :maxlength="maxLength(column)"
@@ -82,7 +80,6 @@
               <v-text-field
                 v-if="isFloatingPoint(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 step=".1"
                 :clearable="!required(column)"
                 :rules="rules(column)"
@@ -115,7 +112,6 @@
               <v-textarea
                 v-if="isTextArea(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 rows="3"
                 :clearable="!required(column)"
                 :rules="rules(column)"
@@ -360,7 +356,7 @@ export default {
       if (!is_null_allowed) {
         hint += this.$t('pages.table.subpages.data.required.hint')
       }
-      if (column.column_type === 'sequence') {
+      if (column.column_type === 'serial') {
         hint += ' ' + this.$t('pages.table.subpages.data.auto.hint')
       }
       if (is_primary_key) {
@@ -399,7 +395,7 @@ export default {
       return ['bool'].includes(column.column_type)
     },
     isNumber (column) {
-      return ['int', 'binary', 'bit', 'tinyint', 'smallint', 'mediumint', 'bigint'].includes(column.column_type)
+      return ['int', 'binary', 'bit', 'tinyint', 'smallint', 'mediumint', 'bigint', 'serial'].includes(column.column_type)
     },
     isFloatingPoint (column) {
       return ['float', 'double', 'decimal'].includes(column.column_type)
@@ -414,7 +410,7 @@ export default {
       return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
     },
     rules (column) {
-      if (column.is_null_allowed) {
+      if (column.is_null_allowed || column.column_type === 'serial') {
         return []
       }
       const rules = []
@@ -433,9 +429,6 @@ export default {
     },
     required (column) {
       return column.is_null_allowed === false
-    },
-    disabled (column) {
-      return (this.edit && column.is_primary_key) || !this.edit
     },
     updateTuple () {
       const constraints = {}
