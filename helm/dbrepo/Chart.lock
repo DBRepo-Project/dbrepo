@@ -7,7 +7,7 @@ dependencies:
   version: 21.6.1
 - name: dbrepo-mariadb-galera
   repository: file://../dbrepo-mariadb-galera
-  version: 1.4.7
+  version: 1.4.6
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 10.1.3
