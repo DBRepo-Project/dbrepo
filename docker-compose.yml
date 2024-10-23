@@ -328,9 +328,6 @@ services:
         COMMIT: ${CI_COMMIT_SHA:-}
       network: host
     environment:
-#      NUXT_APP_BASE_URL: "/dbrepo/"
-      NUXT_PUBLIC_LOGO: "https://upload.wikimedia.org/wikipedia/de/7/72/IFS_Logo_2013_RGB.jpg"
-#      NUXT_PUBLIC_ICON: "/dbrepo/favicon.ico"
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
