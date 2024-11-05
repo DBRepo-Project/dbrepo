@@ -10,6 +10,12 @@ author: Martin Weise
 
     * Ports: 1389/tcp, 1636/tcp
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/identity-service 1389:389
+    ```
+
 ## Overview
 
 This optional service holds the user identities which we simply call identities in the following. It is integrated into

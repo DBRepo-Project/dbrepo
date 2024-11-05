@@ -3,7 +3,7 @@ FROM dbrepo-metadata-service:build AS dependency
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 ###### SECOND STAGE ######
-FROM maven:3-openjdk-17 AS build
+FROM maven:3-amazoncorretto-17 AS build
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
@@ -28,6 +28,8 @@ RUN apk add --no-cache curl bash jq
 
 WORKDIR /app
 
+RUN adduser -S -u 1001 data-service
+
 USER 1001
 
 COPY --from=build --chown=1001 ./rest-service/target/rest-service-*.jar ./data-service.jar
@@ -35,4 +37,6 @@ COPY --from=build --chown=1001 ./rest-service/target/rest-service-*.jar ./data-s
 # non-root port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./data-service.jar"]
+ENV JAVA_OPTS="-XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false -Dio.netty.tryReflectionSetAccessible=true"
+
+ENTRYPOINT exec java $JAVA_OPTS -jar ./data-service.jar

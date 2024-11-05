@@ -18,7 +18,7 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataDatabaseSidecarGateway;
+import at.tuwien.gateway.AnalyseServiceGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -59,7 +59,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     private MetadataServiceGateway metadataServiceGateway;
 
     @MockBean
-    private DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
+    private AnalyseServiceGateway dataDatabaseSidecarGateway;
 
     @MockBean
     private StorageService storageService;
@@ -675,10 +675,10 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getData_succeeds() throws SQLException, TableMalformedException {
+    public void getPaginatedData_succeeds() throws SQLException, TableMalformedException {
 
         /* test */
-        final QueryResultDto response = tableService.getData(TABLE_1_PRIVILEGED_DTO, null, 0L, 10L);
+        final QueryResultDto response = tableService.getPaginatedData(TABLE_1_PRIVILEGED_DTO, null, 0L, 10L);
         assertEquals(TABLE_1_ID, response.getId());
         final List<Map<String, Integer>> headers = response.getHeaders();
         assertEquals(5, headers.size());
@@ -706,14 +706,14 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getData_notFound_fails() throws SQLException {
+    public void getPaginatedData_notFound_fails() throws SQLException {
 
         /* mock */
         MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.getData(TABLE_5_PRIVILEGED_DTO, null, 0L, 10L);
+            tableService.getPaginatedData(TABLE_5_PRIVILEGED_DTO, null, 0L, 10L);
         });
     }
 
@@ -742,8 +742,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void exportDataset_succeeds() throws SQLException, QueryMalformedException, RemoteUnavailableException,
-            StorageNotFoundException, StorageUnavailableException, SidecarExportException {
+    public void exportTable_succeeds() throws QueryMalformedException, RemoteUnavailableException,
+            StorageNotFoundException, StorageUnavailableException, AnalyseServiceException, TableNotFoundException,
+            MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("weather_aus.csv")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -752,7 +753,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         doNothing()
                 .when(dataDatabaseSidecarGateway)
-                .exportFile(anyString(), anyInt(), eq("weather_aus.csv"));
+                .exportTable(anyLong(), anyLong());
         when(storageService.getResource("weather_aus.csv"))
                 .thenReturn(mock);
 

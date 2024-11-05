@@ -1,0 +1,62 @@
+tags:
+  - analyse-endpoint
+summary: "Determine datatypes"
+operationId: analyse_datatypes
+description: "Determines MySQL 8 datatypes of a given dataset. Requires role `table-semantic-analyse`."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - name: filename
+    in: query
+    required: true
+    example: filename_s3_key
+    schema:
+      type: string
+  - name: separator
+    in: query
+    required: true
+    example: ","
+    schema:
+      type: string
+  - name: enum
+    in: query
+    required: false
+    example: "false"
+    schema:
+      type: boolean
+  - name: enum_tol
+    in: query
+    required: false
+    example: "2.5"
+    schema:
+      type: float
+responses:
+  202:
+    description: Determined data types successfully
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/AnalysisDto'
+  400:
+    description: "Failed to determine data types"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+  404:
+    description: "Failed to find file in Storage Service"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+  500:
+    description: "Unexpected system error"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]

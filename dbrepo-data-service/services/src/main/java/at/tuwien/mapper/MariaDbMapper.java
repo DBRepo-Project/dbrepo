@@ -16,8 +16,10 @@ import org.mapstruct.Named;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.sql.Date;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.text.Normalizer;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -491,23 +493,14 @@ public interface MariaDbMapper {
         return "DROP TABLE `" + tableName + "`;";
     }
 
-    default String tableOrViewToRawExportQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
-                                               Instant timestamp, String filePath) {
-        final StringBuilder statement = new StringBuilder("SELECT ");
-        int[] idx = new int[]{0};
-        columns.forEach(column -> {
-            statement.append(idx[0] != 0 ? "," : "")
-                    .append("'")
-                    .append(column.getInternalName())
-                    .append("'");
-            idx[0]++;
-        });
-        statement.append(" UNION ALL SELECT ");
+    default String tableOrViewToRawExportQuery(String databaseName, String tableOrView, List<String> columns,
+                                               Instant timestamp) {
+        final StringBuilder statement = new StringBuilder("(SELECT ");
         int[] jdx = new int[]{0};
         columns.forEach(column -> {
             statement.append(jdx[0] != 0 ? "," : "")
                     .append("`")
-                    .append(column.getInternalName())
+                    .append(column)
                     .append("`");
             jdx[0]++;
         });
@@ -522,10 +515,7 @@ public interface MariaDbMapper {
                     .append(mariaDbFormatter.format(timestamp))
                     .append("'");
         }
-        statement.append(" INTO OUTFILE '")
-                .append(filePath)
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
-        statement.append(";");
+        statement.append(") as tbl_alias");
         log.debug("mapped table/view export query: {}", statement);
         return statement.toString();
     }
@@ -540,49 +530,37 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String subsetToRawExportQuery(String viewName, Instant timestamp, String filePath) {
-        final StringBuilder statement = new StringBuilder("SELECT * FROM `")
+    default String subsetToRawExportQuery(String viewName, Instant timestamp) {
+        final StringBuilder statement = new StringBuilder("(SELECT * FROM `")
                 .append(viewName)
                 .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(mariaDbFormatter.format(timestamp))
-                .append("'")
-                .append(" INTO OUTFILE '")
-                .append(filePath)
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
+                .append("') as tbl");
         log.debug("mapped export query: {}", statement);
         return statement.toString();
     }
 
-    default String datasetToRawInsertQuery(String databaseName, PrivilegedTableDto table, ImportDto data) {
-        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '")
-                .append(data.getLocation())
-                .append("' REPLACE INTO TABLE `")
-                .append(databaseName)
+    default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {
+        final StringBuilder statement = new StringBuilder("INSERT INTO `")
+                .append(table)
+                .append("` SELECT * FROM `")
+                .append(tmp)
+                .append("` ON DUPLICATE KEY UPDATE ");
+        final int[] idx = new int[]{0};
+        columns.forEach(column -> statement.append(idx[0]++ > 0 ? ", " : "")
+                .append("`")
+                .append(table)
                 .append("`.`")
-                .append(table.getInternalName())
-                .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
-                .append(data.getSeparator())
-                .append("'");
-        if (data.getQuote() != null) {
-            statement.append(" OPTIONALLY ENCLOSED BY '")
-                    .append(data.getQuote())
-                    .append("'");
-        }
-        if (data.getLineTermination() != null) {
-            statement.append(" LINES TERMINATED BY '")
-                    .append(data.getLineTermination())
-                    .append("'");
-        }
-        if (data.getSkipLines() != null) {
-            statement.append(" IGNORE ")
-                    .append(data.getSkipLines())
-                    .append(" LINES");
-        }
+                .append(column)
+                .append("` = `")
+                .append(tmp)
+                .append("`.`")
+                .append(column)
+                .append("`"));
         statement.append(";");
         log.trace("mapped insert statement: {}", statement);
         return statement.toString();
     }
-
 
     default String tupleToRawDeleteQuery(PrivilegedTableDto table, TupleDeleteDto data) throws TableMalformedException {
         log.trace("table csv to delete query, table.id={}, data.keys={}", table.getId(), data.getKeys());

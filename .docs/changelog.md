@@ -19,6 +19,7 @@ author: Martin Weise
 
 #### Changes
 
+* Remove the Data Database Sidecar and replace it with Apache Spark 4.
 * Allow anonymous users to create subsets for public databases
   in [#449](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/449).
 * Show file upload progress

@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -10,29 +11,35 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.config.S3Config;
+import at.tuwien.config.SparkConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.SubsetService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.instrument.Counter;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
+import org.sparkproject.guava.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.testcontainers.shaded.com.google.common.hash.Hashing;
 
 import java.nio.charset.Charset;
 import java.sql.*;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 @Log4j2
@@ -40,27 +47,27 @@ import java.util.UUID;
 public class SubsetServiceMariaDbImpl extends HibernateConnector implements SubsetService {
 
     private final Counter httpDataAccessCounter;
-    private final S3Config s3Config;
     private final DataMapper dataMapper;
+    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
+    private final SchemaService schemaService;
     private final MetadataMapper metadataMapper;
     private final StorageService storageService;
     private final MetadataServiceGateway metadataServiceGateway;
-    private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
-                                    MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
-                                    StorageService storageService, MetadataServiceGateway metadataServiceGateway,
-                                    DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+    public SubsetServiceMariaDbImpl(Counter httpDataAccessCounter, DataMapper dataMapper, SparkSession sparkSession,
+                                    MariaDbMapper mariaDbMapper, SchemaService schemaService,
+                                    MetadataMapper metadataMapper, StorageService storageService,
+                                    MetadataServiceGateway metadataServiceGateway) {
         this.httpDataAccessCounter = httpDataAccessCounter;
-        this.s3Config = s3Config;
         this.dataMapper = dataMapper;
+        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
+        this.schemaService = schemaService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.metadataServiceGateway = metadataServiceGateway;
-        this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
     }
 
     @Override
@@ -171,14 +178,14 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
-            throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException, RemoteUnavailableException {
-        final String filePath = s3Config.getS3FilePath() + "/" + filename;
+    public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp)
+            throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
+            RemoteUnavailableException, ViewNotFoundException, MalformedException {
         final String viewName = "ex_" + Hashing.sha512()
                 .hashString(new String(RandomUtils.nextBytes(256), Charset.defaultCharset()), Charset.defaultCharset())
                 .toString()
                 .substring(0, 60);
+        final ExportResourceDto export;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -186,15 +193,23 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.subsetToRawTemporaryViewQuery(viewName, query.getQuery()))
                     .executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.debug("executed create view statement in {} ms", System.currentTimeMillis() - start);
             start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.subsetToRawExportQuery(viewName, timestamp, filePath))
-                    .executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            final List<String> columns = schemaService.inspectView(database, viewName)
+                    .getColumns()
+                    .stream()
+                    .map(ViewColumnDto::getInternalName)
+                    .toList();
+            log.debug("executed inspect view columns statement in {} ms", System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+            final Dataset<Row> dataset = getData(database, viewName, timestamp)
+                    .selectExpr(columns.toArray(new String[0]));
+            export = storageService.transformDataset(dataset);
+            log.debug("executed extract statement in {} ms", System.currentTimeMillis() - start);
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(viewName))
                     .executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.debug("executed drop view statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -203,9 +218,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
         } finally {
             dataSource.close();
         }
-        dataDatabaseSidecarGateway.exportFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), filename);
         httpDataAccessCounter.increment();
-        return storageService.getResource(filename);
+        return export;
     }
 
     public QueryResultDto executeNonPersistent(PrivilegedDatabaseDto database, String statement,
@@ -347,6 +361,29 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             throw new QueryStoreGCException("Failed to delete stale queries: " + e.getMessage(), e);
         } finally {
             dataSource.close();
+        }
+    }
+
+    @Override
+    public Dataset<Row> getData(@NotNull PrivilegedDatabaseDto database, String viewName, Instant timestamp)
+            throws ViewNotFoundException, QueryMalformedException {
+        log.debug("get data from view: {}", viewName);
+        try {
+            final Properties properties = new Properties();
+            properties.setProperty("user", database.getContainer().getUsername());
+            properties.setProperty("password", database.getContainer().getPassword());
+            return sparkSession.read()
+                    .jdbc(getSparkUrl(database.getContainer(), database.getInternalName()),
+                            mariaDbMapper.subsetToRawExportQuery(viewName, timestamp), properties);
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
+                    log.error("Failed to find temporary view {}: {}", viewName, exception.getSimpleMessage());
+                    throw new ViewNotFoundException("Failed to find temporary view " + viewName + ": " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                }
+            }
+            log.error("Failed to find get data from view: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to find get data from view: " + e.getMessage(), e);
         }
     }
 

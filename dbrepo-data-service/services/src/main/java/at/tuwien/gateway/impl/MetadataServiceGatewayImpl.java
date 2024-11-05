@@ -87,8 +87,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ResponseEntity<PrivilegedDatabaseDto> response;
+        final String url = "/api/database/" + id;
+        log.debug("find privileged database from url: {}", url);
         try {
-            response = restTemplate.exchange("/api/database/" + id, HttpMethod.GET, HttpEntity.EMPTY,
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
                     PrivilegedDatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database with id {}: {}", id, e.getMessage());
@@ -123,8 +125,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<PrivilegedDatabaseDto[]> response;
+        final String url = "/api/database/";
+        log.debug("find privileged database from url: {}", url);
         try {
-            response = restTemplate.exchange("/api/database/", HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto[].class);
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database with internal name {}: {}", internalName, e.getMessage());
             throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
@@ -152,8 +156,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
+        final String url = "/api/database/" + databaseId + "/table/" + id;
+        log.debug("find privileged table from url: {}", url);
         try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/table/" + id, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find table with id {}: {}", id, e.getMessage());
             throw new RemoteUnavailableException("Failed to find table: " + e.getMessage(), e);
@@ -165,7 +171,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port");
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Table");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged table headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -183,8 +189,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         table.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         table.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
         table.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
-        table.getDatabase().getContainer().setSidecarHost(response.getHeaders().get("X-Sidecar-Host").get(0));
-        table.getDatabase().getContainer().setSidecarPort(Integer.parseInt(response.getHeaders().get("X-Sidecar-Port").get(0)));
+        table.setInternalName(response.getHeaders().get("X-Table").get(0));
         log.debug("found privileged database username={}", table.getDatabase().getContainer().getUsername());
         return table;
     }
@@ -193,8 +198,10 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException,
             ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
+        final String url = "/api/database/" + databaseId + "/view/" + id;
+        log.debug("find privileged view from url: {}", url);
         try {
-            response = restTemplate.exchange("/api/database/" + databaseId + "/view/" + id, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find view with id {}: {}", id, e.getMessage());
             throw new RemoteUnavailableException("Failed to find view: " + e.getMessage(), e);
@@ -206,7 +213,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database");
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-View");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged view headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -217,14 +224,15 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find view with id {}: body is empty", id);
             throw new MetadataServiceException("Failed to find view with id " + id + ": body is empty");
         }
-        final PrivilegedViewDto table = metadataMapper.viewDtoToPrivilegedViewDto(response.getBody());
-        table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
-        table.getDatabase().getContainer().setHost(response.getHeaders().get("X-Host").get(0));
-        table.getDatabase().getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
-        table.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
-        table.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
-        table.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
-        return table;
+        final PrivilegedViewDto view = metadataMapper.viewDtoToPrivilegedViewDto(response.getBody());
+        view.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
+        view.getDatabase().getContainer().setHost(response.getHeaders().get("X-Host").get(0));
+        view.getDatabase().getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
+        view.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
+        view.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
+        view.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
+        view.setInternalName(response.getHeaders().get("X-View").get(0));
+        return view;
     }
 
     @Override

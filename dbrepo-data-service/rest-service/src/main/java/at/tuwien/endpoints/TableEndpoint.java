@@ -144,8 +144,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                       @NotBlank @PathVariable("tableId") Long tableId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, MetadataServiceException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
@@ -194,8 +194,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryResultDto> getData(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                  @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<QueryResultDto> getData(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                  @NotNull @PathVariable("tableId") Long tableId,
                                                   @RequestParam(required = false) Instant timestamp,
                                                   @RequestParam(required = false) Long page,
                                                   @RequestParam(required = false) Long size,
@@ -237,7 +237,7 @@ public class TableEndpoint {
                         .headers(headers)
                         .build();
             }
-            final QueryResultDto dto = tableService.getData(table, timestamp, page, size);
+            final QueryResultDto dto = tableService.getPaginatedData(table, timestamp, page, size);
             return ResponseEntity.ok()
                     .body(dto);
         } catch (SQLException e) {
@@ -276,8 +276,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> insertRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                               @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @PathVariable("tableId") Long tableId,
                                                @Valid @RequestBody TupleDto data,
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
@@ -328,8 +328,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> updateRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                               @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @PathVariable("tableId") Long tableId,
                                                @Valid @RequestBody TupleUpdateDto data,
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
@@ -380,8 +380,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> deleteRawTuple(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                               @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @PathVariable("tableId") Long tableId,
                                                @Valid @RequestBody TupleDeleteDto data,
                                                @NotNull Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
@@ -503,7 +503,7 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<List<TableDto>> getSchema(@NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint inspect table schemas, databaseId={}", databaseId);
@@ -548,13 +548,12 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                             @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                             @NotNull @PathVariable("tableId") Long tableId,
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
-            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            NotAllowedException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
-            StorageNotFoundException, MetadataServiceException {
+            throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, StorageUnavailableException,
+            QueryMalformedException, MetadataServiceException, MalformedException {
         log.debug("endpoint export table data, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
         /* parameters */
         if (timestamp == null) {
@@ -569,19 +568,13 @@ public class TableEndpoint {
             }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
-        try {
-            final HttpHeaders headers = new HttpHeaders();
-            final ExportResourceDto resource = tableService.exportDataset(table, timestamp);
-            headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-            log.trace("export table resulted in resource {}", resource);
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(resource.getResource());
-
-        } catch (SQLException e) {
-            log.error("Failed to establish connection to database: {}", e.getMessage());
-            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
-        }
+        final HttpHeaders headers = new HttpHeaders();
+        final ExportResourceDto resource = tableService.exportDataset(table, timestamp);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+        log.trace("export table resulted in resource {}", resource);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource.getResource());
     }
 
     @PostMapping("/{tableId}/data/import")
@@ -614,13 +607,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> importDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                              @NotBlank @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> importDataset(@NotNull @PathVariable("databaseId") Long databaseId,
+                                              @NotNull @PathVariable("tableId") Long tableId,
                                               @Valid @RequestBody ImportDto data,
                                               @NotNull Principal principal)
-            throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            QueryMalformedException, StorageNotFoundException, SidecarImportException, NotAllowedException,
-            MetadataServiceException {
+            throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
+            StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
+            DatabaseUnavailableException {
         log.debug("endpoint insert table data, databaseId={}, tableId={}, data.location={}", databaseId, tableId, data.getLocation());
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         final DatabaseAccessDto access = metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
@@ -631,13 +624,13 @@ public class TableEndpoint {
         }
         try {
             tableService.importDataset(table, data);
-            metadataServiceGateway.updateTableStatistics(databaseId, tableId);
-            return ResponseEntity.accepted()
-                    .build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
+        metadataServiceGateway.updateTableStatistics(databaseId, tableId);
+        return ResponseEntity.accepted()
+                .build();
     }
 
     @GetMapping("/{tableId}/statistic")
@@ -666,8 +659,8 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableStatisticDto> statistic(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                       @NotBlank @PathVariable("tableId") Long tableId)
+    public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                       @NotNull @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);

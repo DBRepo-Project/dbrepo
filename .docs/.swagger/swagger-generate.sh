@@ -4,12 +4,11 @@ services[4000]=search
 services[5000]=analyse
 services[9093]=data
 services[9099]=metadata
-services[3305]=sidecar
 
 # requires https://github.com/mikefarah/yq/ -> v4.44.3
 
 function retrieve () {
-  if [[ "$2" == analyse ]] || [[ "$2" == search ]] || [[ "$2" == sidecar ]]; then
+  if [[ "$2" == analyse ]] || [[ "$2" == search ]]; then
     echo "... retrieve json api from localhost:$1"
     curl -sSL "http://localhost:$1/api-$2.json" | yq -p=json > "./.docs/.swagger/api-$2.yaml"
   else

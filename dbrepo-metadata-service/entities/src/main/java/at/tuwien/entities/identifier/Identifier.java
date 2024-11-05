@@ -66,7 +66,7 @@ public class Identifier implements Serializable {
     @Column(nullable = false)
     private String publisher;
 
-    @Column(nullable = false, columnDefinition = "enum('DRAFT', 'PUBLISHED')")
+    @Column(nullable = false, columnDefinition = "ENUM('DRAFT', 'PUBLISHED')")
     @Enumerated(EnumType.STRING)
     private IdentifierStatusType status;
 
@@ -106,7 +106,7 @@ public class Identifier implements Serializable {
     )
     private List<License> licenses;
 
-    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW', 'TABLE')")
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "ENUM('SUBSET', 'DATABASE', 'VIEW', 'TABLE')")
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 

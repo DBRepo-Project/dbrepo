@@ -62,8 +62,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Database", DATABASE_1_INTERNALNAME);
-        headers.set("X-Sidecar-Host", CONTAINER_1_SIDECAR_HOST);
-        headers.set("X-Sidecar-Port", "" + CONTAINER_1_SIDECAR_PORT);
+        headers.set("X-Table", TABLE_1_INTERNALNAME);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
@@ -79,8 +78,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getDatabase().getContainer().getUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getDatabase().getContainer().getPassword());
         assertEquals(DATABASE_1_INTERNALNAME, response.getDatabase().getInternalName());
-        assertEquals(CONTAINER_1_SIDECAR_HOST, response.getDatabase().getContainer().getSidecarHost());
-        assertEquals(CONTAINER_1_SIDECAR_PORT, response.getDatabase().getContainer().getSidecarPort());
+        assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
     }
 
     @Test
@@ -155,8 +153,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Database", DATABASE_1_INTERNALNAME);
-        headers.set("X-Sidecar-Host", CONTAINER_1_SIDECAR_HOST);
-        headers.set("X-Sidecar-Port", "" + CONTAINER_1_SIDECAR_PORT);
+        headers.set("X-Table", TABLE_1_INTERNALNAME);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
@@ -450,6 +447,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Database", DATABASE_1_INTERNALNAME);
+        headers.set("X-View", VIEW_1_INTERNAL_NAME);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(ViewDto.class)))

@@ -16,7 +16,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,14 +25,14 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
+public class AnalyseServiceGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
     @Qualifier("restTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
-    private DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
+    private AnalyseServiceGateway dataDatabaseSidecarGateway;
 
     @BeforeEach
     public void beforeEach() {
@@ -41,8 +40,8 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void importFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
-            SidecarImportException {
+    public void importDataset_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
+            AnalyseServiceException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -50,11 +49,11 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        dataDatabaseSidecarGateway.importFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+        dataDatabaseSidecarGateway.importDataset(DATABASE_1_ID, TABLE_1_ID, "filename");
     }
 
     @Test
-    public void importFile_unavailable_fails() {
+    public void importDataset_unavailable_fails() {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
@@ -63,12 +62,12 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            dataDatabaseSidecarGateway.importFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+            dataDatabaseSidecarGateway.importDataset(DATABASE_1_ID, TABLE_1_ID, "filename");
         });
     }
 
     @Test
-    public void importFile_statusCode_fails() {
+    public void importDataset_statusCode_fails() {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -76,13 +75,13 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(SidecarImportException.class, () -> {
-            dataDatabaseSidecarGateway.importFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+        assertThrows(AnalyseServiceException.class, () -> {
+            dataDatabaseSidecarGateway.importDataset(DATABASE_1_ID, TABLE_1_ID, "filename");
         });
     }
 
     @Test
-    public void importFile_s3_fails() {
+    public void importDataset_s3_fails() {
 
         /* mock */
         doThrow(HttpClientErrorException.BadRequest.class)
@@ -91,13 +90,13 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            dataDatabaseSidecarGateway.importFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+            dataDatabaseSidecarGateway.importDataset(DATABASE_1_ID, TABLE_1_ID, "filename");
         });
     }
 
     @Test
-    public void exportFile_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
-            SidecarExportException {
+    public void exportTable_succeeds() throws RemoteUnavailableException, StorageNotFoundException,
+            AnalyseServiceException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -105,11 +104,11 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        dataDatabaseSidecarGateway.exportFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+        dataDatabaseSidecarGateway.exportTable(DATABASE_1_ID, TABLE_1_ID);
     }
 
     @Test
-    public void exportFile_unavailable_fails() {
+    public void exportTable_unavailable_fails() {
 
         /* mock */
         doThrow(HttpServerErrorException.class)
@@ -118,12 +117,12 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            dataDatabaseSidecarGateway.exportFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+            dataDatabaseSidecarGateway.exportTable(DATABASE_1_ID, TABLE_1_ID);
         });
     }
 
     @Test
-    public void exportFile_statusCode_fails() {
+    public void exportTable_statusCode_fails() {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(HttpEntity.EMPTY), eq(Void.class)))
@@ -131,13 +130,13 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        assertThrows(SidecarExportException.class, () -> {
-            dataDatabaseSidecarGateway.exportFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+        assertThrows(AnalyseServiceException.class, () -> {
+            dataDatabaseSidecarGateway.exportTable(DATABASE_1_ID, TABLE_1_ID);
         });
     }
 
     @Test
-    public void exportFile_s3_fails() {
+    public void exportTable_s3_fails() {
 
         /* mock */
         doThrow(HttpClientErrorException.BadRequest.class)
@@ -146,7 +145,7 @@ public class DataDatabaseGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(StorageNotFoundException.class, () -> {
-            dataDatabaseSidecarGateway.exportFile(CONTAINER_1_HOST, CONTAINER_1_PORT, "filename");
+            dataDatabaseSidecarGateway.exportTable(DATABASE_1_ID, TABLE_1_ID);
         });
     }
 

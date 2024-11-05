@@ -27,7 +27,7 @@ public class BannerMessage {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "enum('ERROR','WARNING','INFO')")
+    @Column(nullable = false, columnDefinition = "ENUM('ERROR','WARNING','INFO')")
     @Enumerated(EnumType.STRING)
     private BannerMessageType type;
 

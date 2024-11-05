@@ -61,10 +61,10 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             throw new AuthServiceConnectionException("Failed to obtain user token: " + e.getMessage(), e);
         } catch (HttpClientErrorException.BadRequest e) {
             if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
-                final KeycloakErrorDto error = e.getResponseBodyAs(KeycloakErrorDto.class);
-                if (error != null && error.getError().equals("invalid_grant")) {
-                    log.error("Failed to obtain user token: {}", error.getErrorDescription());
-                    throw new AccountNotSetupException("Failed to obtain user token: " + error.getErrorDescription(), e);
+                final String error = e.getResponseBodyAsString();
+                if (error != null && error.contains("invalid_grant")) {
+                    log.error("Failed to obtain user token: {}", error);
+                    throw new AccountNotSetupException("Failed to obtain user token: " + error, e);
                 }
             }
             log.error("Failed to obtain user token: bad request");

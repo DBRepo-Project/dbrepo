@@ -16,7 +16,7 @@ scrape_configs:
   - job_name: 'metrics scrape'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['ui:3000', 'auth-service:9000', 'analyse-service:8080', 'search-service:8080', 'data-db-sidecar:8080', 'broker-service:15692', 'storage-service:9090', 'upload-service:8080', 'dashboard-service:3000']
+      - targets: ['ui:3000', 'compute-service:8080', 'auth-service:9000', 'analyse-service:8080', 'search-service:8080', 'data-db-sidecar:8080', 'broker-service:15692', 'storage-service:9090', 'upload-service:8080', 'dashboard-service:3000']
 #  - job_name: 'gateway scrape'
 #    metrics_path: '/metrics'
 #    static_configs:

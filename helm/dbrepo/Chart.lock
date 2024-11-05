@@ -5,9 +5,9 @@ dependencies:
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
   version: 21.6.1
-- name: dbrepo-mariadb-galera
-  repository: file://../dbrepo-mariadb-galera
-  version: 1.4.7
+- name: mariadb-galera
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.1.3
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
   version: 10.1.3
@@ -29,5 +29,5 @@ dependencies:
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 1.3.22
-digest: sha256:840d2ea4b1e36fe8fa399fc4170b6274a3de161c13a4a1a3b18ce3107ab71f79
-generated: "2024-10-01T07:48:55.174297756+02:00"
+digest: sha256:54cb4dc867a23b7b265fba49608a0aaa8add75ec697c2446fbf013169c4489cd
+generated: "2024-11-02T18:34:23.0903882+01:00"

@@ -1,7 +1,7 @@
 package at.tuwien.config;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.net.URI;
 
-@Slf4j
+@Log4j2
 @Getter
 @Configuration
 public class S3Config {
@@ -29,9 +29,6 @@ public class S3Config {
 
     @Value("${dbrepo.s3.bucket}")
     private String s3Bucket;
-
-    @Value("${dbrepo.s3.filePath}")
-    private String s3FilePath;
 
     @Bean
     public S3Client s3client() {

@@ -6,12 +6,18 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.5`](https://hub.docker.com/r/dbrepo/search-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/search-service:1.4.7`](https://hub.docker.com/r/dbrepo/search-service)
 
     * Ports: 4000/tcp
     * Health: `http://<hostname>:4000/api/search/health`
     * Prometheus: `http://<hostname>:4000/metrics`
-    * Swagger UI: `http://<hostname>:4000/swagger-ui/`
+    * Swagger UI: `http://<hostname>:4000/swagger-ui/` <a href="../../rest/" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/search-service 4000:80
+    ```
 
 ## Overview
 

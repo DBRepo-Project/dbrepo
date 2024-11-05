@@ -33,14 +33,14 @@ public class Creator {
     @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
-    @Column(columnDefinition = "enum('PERSONAL', 'ORGANIZATIONAL')")
+    @Column(columnDefinition = "ENUM('PERSONAL', 'ORGANIZATIONAL')")
     @Enumerated(EnumType.STRING)
     private NameType nameType;
 
     @Column
     private String nameIdentifier;
 
-    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI', 'ORCID')")
+    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI', 'ORCID')")
     @Enumerated(EnumType.STRING)
     private NameIdentifierSchemeType nameIdentifierScheme;
 
@@ -53,7 +53,7 @@ public class Creator {
     @Column
     private String affiliationIdentifier;
 
-    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI')")
+    @Column(columnDefinition = "ENUM('ROR', 'GRID', 'ISNI')")
     @Enumerated(EnumType.STRING)
     private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
 
