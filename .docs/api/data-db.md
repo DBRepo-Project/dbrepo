@@ -9,11 +9,11 @@ author: Martin Weise
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
 
-!!! debug "Debug Information"
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
 
-    Image: [`dbrepo/data-db-sidecar:1.4.5`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
-
-    * Ports: 8080/tcp
+    ```shell
+    kubectl [-n namespace] port-forward svc/data-db 3306:3306
+    ```
 
 ## Overview
 
@@ -21,20 +21,6 @@ The Data Database contains the research data. In the default configuration, only
 Any number of MariaDB ata databases can be integrated into DBRepo, even non-empty databases. The database needs to be
 registered in the Metadata Database to be visible in the [User Interface](../ui) and usable from e.g. the Python 
 Library.
-
-## Architecture
-
-### Sidecar
-
-We deploy a sidecar that handles the CSV-file upload/download operations between
-the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and
-the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
-natively.
-
-<figure markdown>
-![Sidecar architecture detailed](../images/architecture-data-db.svg)
-<figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
-</figure>
 
 ## Data
 

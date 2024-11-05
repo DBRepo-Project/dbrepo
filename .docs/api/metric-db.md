@@ -8,6 +8,14 @@ author: Martin Weise
 
     Image: [`bitnami/prometheus:2.54.1-debian-12-r4`](https://hub.docker.com/r/bitnami/prometheus)
 
+    * Ports: 8080/tcp
+
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine on port `8080`:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/data-db 8080:80
+    ```
+
 ## Overview
 
 The Metric Database is responsible for saving time-series data for the [Dashboard Service](../../api/dashboard-service).
@@ -139,8 +147,6 @@ The [Data Database Sidecar](#) metrics are:
 | `dbrepo_search_type`            | Time needed to search by type                           |
 | `dbrepo_search_update_database` | Time needed to update a database in the search database |
 | `dbrepo_search_delete_database` | Time needed to delete a database in the search database |
-
-
 
 ## Limitations
 

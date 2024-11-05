@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.13</version>
+        <version>3.3.5</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
@@ -23,7 +23,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -34,11 +34,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <spring-cloud.version>4.1.4</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
-        <commons-io.version>2.15.0</commons-io.version>
+        <commons-io.version>2.17.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
         <jacoco.version>0.8.12</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
@@ -54,13 +54,16 @@
         <aws-s3.version>2.25.23</aws-s3.version>
         <minio.version>8.5.7</minio.version>
         <guava.version>33.3.0-jre</guava.version>
+        <spark.version>4.0.0-preview2</spark.version>
+        <scala.version>2.13</scala.version>
+        <antlr-runtime.version>3.5.2</antlr-runtime.version>
+        <micrometer.version>1.10.0</micrometer.version>
+        <!-- see https://github.com/apache/spark/blob/cde8e4a82e20a363861f451ebd5138efb3194ab8/pom.xml -->
+        <hadoop.version>3.4.0</hadoop.version>
+        <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -91,6 +94,44 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+        <!-- Spark -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr-runtime</artifactId>
+            <version>${antlr-runtime.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta-servlet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-aws</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
         <!-- Open API -->
         <dependency>
@@ -167,6 +208,11 @@
             <artifactId>jackson-datatype-hibernate6</artifactId>
             <version>${jackson-datatype.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsql.version}</version>
+        </dependency>
         <!-- Authentication -->
         <dependency>
             <groupId>com.auth0</groupId>
@@ -203,11 +249,6 @@
         </dependency>
         <!-- Testing -->
         <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>${jsql.version}</version>
-        </dependency>
-        <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-service-test</artifactId>
             <version>${project.version}</version>
@@ -240,11 +281,13 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>minio</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -255,6 +298,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/jars/*.jar</include>
                 </includes>
             </resource>
         </resources>

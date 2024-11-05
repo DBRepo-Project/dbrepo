@@ -12,6 +12,12 @@ author: Martin Weise
     * Prometheus: `http://<hostname>:1080/api/upload/metrics`
     * API: `http://<hostname>:1080/api/upload`
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/upload-service 1080:80
+    ```
+
 ## Overview
 
 We use the [TUS](https://tus.io/) open protocol for resume-able file uploads which based entirely on HTTP. Even though

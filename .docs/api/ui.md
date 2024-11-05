@@ -10,6 +10,12 @@ author: Martin Weise
 
     * Ports: 3000/tcp
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/ui 3000:80
+    ```
+
 The User Interface is configured in the `runtimeConfig` section of the `nuxt.config.ts` file during build time. For the
 runtime, you need to override those values through environment variables or by mounting a `.env` file. As a small
 example, you can configure the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as

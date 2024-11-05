@@ -44,12 +44,6 @@ public class Container {
     private Integer port;
 
     @Column
-    private String sidecarHost;
-
-    @Column
-    private Integer sidecarPort;
-
-    @Column
     private String uiHost;
 
     @Column

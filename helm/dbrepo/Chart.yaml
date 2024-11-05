@@ -26,11 +26,11 @@ dependencies:
     version: 21.6.1  # app version: 24.0.5
     repository: https://charts.bitnami.com/bitnami
     condition: authservice.enabled
-  - name: dbrepo-mariadb-galera
+  - name: mariadb-galera
     alias: datadb
-    version: 1.4.7
-    repository: file://../dbrepo-mariadb-galera
-    condition: datadb.enabled
+    version: 10.1.3  # app version: 11.1.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: database.enabled
   - name: mariadb-galera
     alias: metadatadb
     version: 10.1.3  # app version: 11.1.3

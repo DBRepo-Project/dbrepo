@@ -11,7 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Log4j2
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Value("${dbrepo.jwt.public_key}")

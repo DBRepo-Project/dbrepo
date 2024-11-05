@@ -234,7 +234,6 @@ export default {
       rules: {
         required: value => !!value || 'validation.required'
       },
-      dateFormats: [],
       tables: [],
       tableCreate: {
         name: null,
@@ -246,7 +245,7 @@ export default {
         quote: '"',
         separator: ',',
         line_termination: null,
-        skip_lines: 1
+        header: true
       },
       loading: false,
       url: null,
@@ -303,28 +302,10 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
-  mounted() {
-    this.loadDateFormats()
-  },
   methods: {
     notEmpty,
     submit() {
       this.$refs.form.validate()
-    },
-    async loadDateFormats() {
-      this.loading = true
-      const databaseService = useDatabaseService()
-      databaseService.findOne(this.$route.params.database_id)
-        .then((database) => {
-          this.dateFormats = database.container.image.date_formats
-          this.loading = false
-        })
-        .catch(() => {
-          this.loading = false
-        })
-        .finally(() => {
-          this.loading = false
-        })
     },
     createEmptyTableAndImport({success, columns, constraints}) {
       if (!success) {
@@ -356,13 +337,13 @@ export default {
           this.loading = false
         })
     },
-    onAnalyse({columns, filename, line_termination, separator, skip_lines, quote, null_element, true_element, false_element}) {
+    onAnalyse({columns, filename, line_termination, separator, header, quote}) {
       console.debug('analysed', columns)
       this.tableCreate.columns = columns
       this.tableImport.location = filename
       this.tableImport.line_termination = line_termination
       this.tableImport.separator = separator
-      this.tableImport.skip_lines = skip_lines
+      this.tableImport.header = header
       this.tableImport.quote = quote
       if (filename) {
         this.step = 4

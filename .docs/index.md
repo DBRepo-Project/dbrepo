@@ -31,11 +31,12 @@ Installing DBRepo is very easy or
 ## Who is using DBRepo?
 
 - [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
+- TU Graz
 - TU Darmstadt
 - [Universit&auml;t Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
 - [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
 - University of the Philippines
-- [Universiti Sains Malaysia](https://dbrepo.wrfexpress.com/)
+- [Universiti Sains Malaysia](https://atmosfera.usm.my/dbrepo/)
 
 ## How can I try DBRepo?
 

@@ -6,12 +6,18 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.5`](https://hub.docker.com/r/dbrepo/analyse-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.4.7`](https://hub.docker.com/r/dbrepo/analyse-service)
 
     * Ports: 5000/tcp
     * Prometheus: `http://<hostname>:5000/metrics`
     * Health: `http://<hostname>:5000/health`
-    * Swagger UI: `http://<hostname>:5000/swagger-ui/` <a href="./swagger/analyse" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Swagger UI: `http://<hostname>:5000/swagger-ui/` <a href="../../rest/" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/analyse-service 5000:80
+    ```
 
 ## Overview
 

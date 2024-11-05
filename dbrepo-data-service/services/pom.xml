@@ -15,11 +15,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>auth</artifactId>
-            <version>2.25.23</version>
-        </dependency>
-        <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-data-service-querystore</artifactId>
             <version>1.4.7</version>

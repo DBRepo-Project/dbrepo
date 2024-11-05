@@ -366,8 +366,8 @@
             }
           },
           "skip": {
-            "label": "Skip Rows",
-            "hint": "Optional. Number of rows to skip, e.g. when the first one contains header and no data"
+            "label": "Column Headers",
+            "hint": "Required. First line contains only data"
           },
           "storage": {
             "text": "Dataset from Storage Service"
@@ -1076,6 +1076,7 @@
     },
     "axios": {
       "connection": "Failed to contact backend",
+      "malformed": "Malformed request",
       "timeout": "Connection timed out"
     },
     "concept": {

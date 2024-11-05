@@ -13,9 +13,8 @@ class S3Client:
         endpoint_url = current_app.config['S3_ENDPOINT']
         aws_access_key_id = current_app.config['S3_ACCESS_KEY_ID']
         aws_secret_access_key = current_app.config['S3_SECRET_ACCESS_KEY']
-        logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
-                     endpoint_url, aws_access_key_id)
-        self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
+        logging.info(f"retrieve file from S3, endpoint_url={current_app.config['S3_PROTO']}://{endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden)")
+        self.client = boto3.client(service_name='s3', endpoint_url=f"{current_app.config['S3_PROTO']}://{endpoint_url}", aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
         self.bucket_exists_or_exit(current_app.config['S3_BUCKET'])
 

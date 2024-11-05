@@ -1,9 +1,11 @@
 FROM python:3.11-alpine
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk add bash curl
-
-WORKDIR /home/alpine
+RUN apk --no-cache \
+    add \
+    bash \
+    curl \
+    openjdk8-jre
 
 COPY Pipfile Pipfile.lock ./
 
@@ -13,14 +15,16 @@ RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
-USER 1001
+RUN adduser -D analyse-service --uid 1000
 
 WORKDIR /app
 
-COPY --chown=1001 ./api ./api
-COPY --chown=1001 ./as-yml ./as-yml
-COPY --chown=1001 ./clients ./clients
-COPY --chown=1001 ./*.py ./
+USER 1000
+
+COPY --chown=1000 ./api ./api
+COPY --chown=1000 ./as-yml ./as-yml
+COPY --chown=1000 ./clients ./clients
+COPY --chown=1000 ./*.py ./
 
 # non-root port
 EXPOSE 8080

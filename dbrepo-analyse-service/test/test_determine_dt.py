@@ -7,7 +7,7 @@ from determine_dt import determine_datatypes
 
 
 class DetermineDatatypesTest(unittest.TestCase):
-    # @Test
+
     def test_determine_datatypesDateTime_succeeds(self):
         exp = AnalysisDto(separator=",", line_termination="\n", columns={
             "Datum": {
@@ -36,8 +36,6 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 40,
-                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -47,14 +45,13 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
         })
 
+
         # mock
         S3Client().upload_file("datetime.csv", './data/test_dt/', 'dbrepo')
 
         # test
         response = determine_datatypes(filename="datetime.csv", separator=",")
         self.assertEqual(exp, response)
-
-        # @Test
 
     def test_determine_datatypesDateTimeWithTimezone_succeeds(self):
         exp = AnalysisDto(separator=",", line_termination="\n", columns={
@@ -84,8 +81,6 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 40,
-                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -101,8 +96,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         # test
         response = determine_datatypes(filename="datetime_tz.csv", separator=",")
         self.assertEqual(exp, response)
-
-        # @Test
 
     def test_determine_datatypesDateTimeWithT_succeeds(self):
         exp = AnalysisDto(separator=",", line_termination="\n", columns={
@@ -132,8 +125,6 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "Wert": {
                 "type": "decimal",
-                "size": 40,
-                "d": 10,
                 "null_allowed": False,
             },
             "Status": {
@@ -150,18 +141,14 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="datetime_t.csv", separator=",")
         self.assertEqual(exp, response)
 
-    # @Test
     def test_determine_datatypes_succeeds(self):
         exp = AnalysisDto(separator=",", line_termination="\n", columns={
             "int": {
                 "type": "bigint",
-                "size": 255,
                 "null_allowed": False,
             },
             "float": {
                 "type": "decimal",
-                "size": 40,
-                "d": 10,
                 "null_allowed": False,
             },
             "string": {
@@ -171,7 +158,6 @@ class DetermineDatatypesTest(unittest.TestCase):
             },
             "boolean": {
                 "type": "bool",
-                "size": None,
                 "null_allowed": False,
             },
             "bool": {
@@ -179,7 +165,7 @@ class DetermineDatatypesTest(unittest.TestCase):
                 "null_allowed": False,
             },
             "date": {
-                "type": "timestamp",
+                "type": "date",
                 "null_allowed": False,
             },
             "time": {
@@ -200,7 +186,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="datatypes.csv", separator=",")
         self.assertEqual(exp, response)
 
-    # @Test
     def test_determine_datatypes_fileDoesNotExist_fails(self):
 
         # test
@@ -213,7 +198,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         else:
             self.fail("ExpectedException not raised")
 
-    # @Test
     def test_determine_datatypes_fileEmpty_succeeds(self):
 
         # mock
@@ -224,7 +208,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         self.assertEqual({}, response.columns)
         self.assertEqual(",", response.separator)
 
-    # @Test
     def test_determine_datatypes_separatorSemicolon_succeeds(self):
 
         # mock
@@ -234,7 +217,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="separator.csv", separator=";")
         self.assertEqual(";", response.separator)
 
-    # @Test
     def test_determine_datatypes_separatorGuess_succeeds(self):
 
         # mock
@@ -244,7 +226,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="separator.csv")
         self.assertEqual(";", response.separator)
 
-    # @Test
     def test_determine_datatypes_separatorGuessLargeDataset_succeeds(self):
 
         # mock
@@ -254,12 +235,10 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="large.csv")
         self.assertEqual(",", response.separator)
 
-    # @Test
     def test_determine_datatypes_separatorGuessText_succeeds(self):
         exp = AnalysisDto(separator=";", line_termination="\n", columns={
             "id": {
                 "type": "bigint",
-                "size": 255,
                 "null_allowed": False
             },
             "author": {

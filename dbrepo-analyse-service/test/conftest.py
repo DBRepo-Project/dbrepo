@@ -31,12 +31,7 @@ def session(request, app_context):
     logging.debug("[fixture] starting container")
     container.start()
     # set the environment for the client
-    endpoint = (
-            "http://"
-            + container.get_container_host_ip()
-            + ":"
-            + container.get_exposed_port(9000)
-    )
+    endpoint = f"{container.get_container_host_ip()}:{container.get_exposed_port(9000)}"
     logging.debug(f"[fixture] setting s3 endpoint {endpoint}")
     app.config["S3_ENDPOINT"] = endpoint
     client = container.get_client()

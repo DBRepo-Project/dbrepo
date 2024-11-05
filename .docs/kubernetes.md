@@ -26,6 +26,15 @@ helm upgrade --install dbrepo \
 * Kubernetes 3.8.0+
 * PV provisioner support in the underlying infrastructure
 
+### Resource Quota
+
+* `requests.cpu=8`
+* `requests.memory=8Gi`
+* `requests.storage` >= 25
+* `pods` >= 50
+* `services` >= 50
+* `secrets` >= 50
+
 ## Limitations
 
 1. The entire Helm deployment is rootless (=`runAsNonRoot=true`) except for
