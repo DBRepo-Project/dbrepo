@@ -60,8 +60,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findAll_publicAnonymous_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            AccessNotFoundException, DatabaseNotFoundException {
+    public void findAll_publicAnonymous_succeeds() throws UserNotFoundException, AccessNotFoundException,
+            DatabaseNotFoundException {
 
         /* test */
         findAll_generic(DATABASE_3_ID, DATABASE_3, null, null, null, null);
@@ -69,8 +69,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
-    public void findAll_publicHasRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            AccessNotFoundException, DatabaseNotFoundException {
+    public void findAll_publicHasRole_succeeds() throws UserNotFoundException, AccessNotFoundException,
+            DatabaseNotFoundException {
 
         /* test */
         findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
@@ -78,8 +78,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
-    public void findAll_publicHasRoleHasAccess_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            AccessNotFoundException, DatabaseNotFoundException {
+    public void findAll_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, AccessNotFoundException,
+            DatabaseNotFoundException {
 
         /* test */
         findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_3_USER_2_READ_ACCESS);
@@ -87,8 +87,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void findAll_publicNoRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            AccessNotFoundException, DatabaseNotFoundException {
+    public void findAll_publicNoRole_succeeds() throws UserNotFoundException, AccessNotFoundException,
+            DatabaseNotFoundException {
 
         /* test */
         findAll_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
@@ -136,8 +136,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_publicAnonymous_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_publicAnonymous_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_3_ID, DATABASE_3, null, null, null, null);
@@ -145,8 +145,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
-    public void find_publicHasRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_publicHasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -154,8 +154,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void find_publicNoRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_publicNoRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -163,8 +163,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void find_publicHasRoleHasAccess_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -203,8 +203,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-database-view"})
     public void delete_publicOwner_succeeds() throws NotAllowedException, DataServiceException,
-            DataServiceConnectionException, ViewNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+            DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
 
         /* test */
         delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_5_ID, VIEW_5, USER_3_PRINCIPAL, USER_3_ID, USER_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS);
@@ -216,7 +216,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findAll_privateAnonymous_succeeds() throws ViewNotFoundException, UserNotFoundException,
+    public void findAll_privateAnonymous_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
@@ -225,7 +225,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
-    public void findAll_privateHasRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
+    public void findAll_privateHasRole_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
@@ -234,7 +234,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
-    public void findAll_privateHasRoleHasAccess_succeeds() throws ViewNotFoundException, UserNotFoundException,
+    public void findAll_privateHasRoleHasAccess_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
@@ -243,7 +243,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void findAll_privateNoRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
+    public void findAll_privateNoRole_succeeds() throws UserNotFoundException,
             AccessNotFoundException, DatabaseNotFoundException {
 
         /* test */
@@ -292,8 +292,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_privateAnonymous_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_privateAnonymous_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_1_ID, DATABASE_1, null, null, null, null);
@@ -301,8 +301,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
-    public void find_privateHasRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_privateHasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -310,8 +310,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void find_privateNoRole_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_privateNoRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -319,8 +319,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void find_privateHasRoleHasAccess_succeeds() throws ViewNotFoundException, UserNotFoundException,
-            DatabaseNotFoundException, AccessNotFoundException {
+    public void find_privateHasRoleHasAccess_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
 
         /* test */
         find_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -358,9 +358,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-view"})
-    public void delete_privateOwner_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, AccessNotFoundException, ViewNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+    public void delete_privateOwner_succeeds() throws NotAllowedException, DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, ViewNotFoundException {
 
         /* test */
         delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
@@ -476,7 +476,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     protected void delete_generic(Long databaseId, Database database, Long viewId, View view, Principal principal,
                                   UUID userId, User user, DatabaseAccess access) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
-            ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.findById(databaseId))

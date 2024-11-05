@@ -288,7 +288,7 @@ export const useIdentifierService = (): any => {
     if (!data) {
       return null
     }
-    return data.doi !== null ? 'DOI' : 'URI'
+    return data.doi ? 'DOI' : 'URI'
   }
 
   function creatorToCreatorJsonLd(creator: CreatorDto) {

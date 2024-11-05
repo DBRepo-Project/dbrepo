@@ -75,18 +75,18 @@ interface ImageDto {
   version: string;
   dialect: string;
   driver_class: string;
-  date_formats: ImageDateDto[];
+  data_types: DataTypeDto[];
+  operators: OperatorDto[];
   jdbc_method: string;
   default_port: number;
 }
 
-interface ImageDateDto {
+interface OperatorDto {
   id: number;
-  example: string;
-  database_format: string;
-  unix_format: string;
-  has_time: boolean;
-  created_at: Date;
+  image_id: number;
+  display_name: string;
+  documentation: string;
+  value: string;
 }
 
 interface TableBriefDto {

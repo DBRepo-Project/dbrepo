@@ -6,7 +6,6 @@ spring:
     password: dbrepo
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.MariaDBDialect
     open-in-view: false
     properties:
       hibernate:

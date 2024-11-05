@@ -33,7 +33,7 @@ spec:
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metadataservice.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               protocol: TCP
           envFrom:
             - secretRef:

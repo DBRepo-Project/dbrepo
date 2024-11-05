@@ -115,6 +115,24 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
 
 
     @Test
+    public void handle_AnalyseServiceException_succeeds() {
+        final AnalyseServiceException request = new AnalyseServiceException("msg");
+
+        /* test */
+        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);
+        assertNotNull(response);
+        assertNotNull(request.getClass().getDeclaredAnnotation(ResponseStatus.class).code());
+        final HttpStatus httpStatus = request.getClass().getDeclaredAnnotation(ResponseStatus.class).code();
+        Assertions.assertNotEquals(httpStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+        assertEquals(httpStatus, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getCode());
+        assertEquals(httpStatus, response.getBody().getStatus());
+        assertEquals("msg", response.getBody().getMessage());
+    }
+
+
+    @Test
     public void handle_AuthServiceConnectionException_succeeds() {
         final AuthServiceConnectionException request = new AuthServiceConnectionException("msg");
 
@@ -927,42 +945,6 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
     @Test
     public void handle_DataServiceException_succeeds() {
         final DataServiceException request = new DataServiceException("msg");
-
-        /* test */
-        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);
-        assertNotNull(response);
-        assertNotNull(request.getClass().getDeclaredAnnotation(ResponseStatus.class).code());
-        final HttpStatus httpStatus = request.getClass().getDeclaredAnnotation(ResponseStatus.class).code();
-        Assertions.assertNotEquals(httpStatus, HttpStatus.INTERNAL_SERVER_ERROR);
-        assertEquals(httpStatus, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getCode());
-        assertEquals(httpStatus, response.getBody().getStatus());
-        assertEquals("msg", response.getBody().getMessage());
-    }
-
-
-    @Test
-    public void handle_SidecarExportException_succeeds() {
-        final SidecarExportException request = new SidecarExportException("msg");
-
-        /* test */
-        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);
-        assertNotNull(response);
-        assertNotNull(request.getClass().getDeclaredAnnotation(ResponseStatus.class).code());
-        final HttpStatus httpStatus = request.getClass().getDeclaredAnnotation(ResponseStatus.class).code();
-        Assertions.assertNotEquals(httpStatus, HttpStatus.INTERNAL_SERVER_ERROR);
-        assertEquals(httpStatus, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getCode());
-        assertEquals(httpStatus, response.getBody().getStatus());
-        assertEquals("msg", response.getBody().getMessage());
-    }
-
-
-    @Test
-    public void handle_SidecarImportException_succeeds() {
-        final SidecarImportException request = new SidecarImportException("msg");
 
         /* test */
         final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(request);

@@ -10,6 +10,12 @@ author: Martin Weise
 
     * Ports: 3000/tcp
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/ui 3000:80
+    ```
+
 The User Interface is configured in the `runtimeConfig` section of the `nuxt.config.ts` file during build time. For the
 runtime, you need to override those values through environment variables or by mounting a `.env` file. As a small
 example, you can configure the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as
@@ -27,26 +33,15 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
     
     ```yaml title=".env"
     NUXT_PUBLIC_TITLE="My overriden title"
-    NUXT_PUBLIC_LOGO="/my_logo.png"
-    NUXT_PUBLIC_ICON="/favicon.ico"
+    NUXT_PUBLIC_LOGO="https://mydomain/my_logo.png"
+    NUXT_PUBLIC_ICON="https://mydomain/my_favicon.ico"
     ...
     ```
 
-    To work, you need to mount the `my_logo.png` file into the `dbrepo-ui` container via the `docker-compose.yml` file.
-
-    ```yaml title="docker-compose.yml"
-    services:
-      dbrepo-ui:
-        image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.4.7
-        volumes:
-          - ./my_logo.png:/app/.output/public/my_logo.png
-          - ./favicon.ico:/app/.output/public/favicon.ico
-        environment:
-          ...
-      ...
-    ```
-
-    If you want to override more environment variables, extend the dictionary in `environment:`
+    To work, you need to serve the `my_logo.png` and `my_favicon.ico` from a separate webserver. Note that simply
+    copying the files into the Nuxt [`public/`](https://nuxt.com/docs/guide/directory-structure/public) directory will 
+    not work as the content length is calculated only during build time. The development 
+    team [#19263](https://github.com/nuxt/nuxt/issues/19263) does not plan to fix this.
 
 === "Kubernetes"
 

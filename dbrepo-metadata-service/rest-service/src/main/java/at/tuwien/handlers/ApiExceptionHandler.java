@@ -31,6 +31,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(AnalyseServiceException.class)
+    public ResponseEntity<ApiErrorDto> handle(AnalyseServiceException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(AuthServiceConnectionException.class)
     public ResponseEntity<ApiErrorDto> handle(AuthServiceConnectionException e) {
@@ -356,20 +363,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(DataServiceException.class)
     public ResponseEntity<ApiErrorDto> handle(DataServiceException e) {
-        return generic_handle(e.getClass(), e.getLocalizedMessage());
-    }
-
-    @Hidden
-    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
-    @ExceptionHandler(SidecarExportException.class)
-    public ResponseEntity<ApiErrorDto> handle(SidecarExportException e) {
-        return generic_handle(e.getClass(), e.getLocalizedMessage());
-    }
-
-    @Hidden
-    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
-    @ExceptionHandler(SidecarImportException.class)
-    public ResponseEntity<ApiErrorDto> handle(SidecarImportException e) {
         return generic_handle(e.getClass(), e.getLocalizedMessage());
     }
 

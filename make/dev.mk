@@ -2,6 +2,8 @@
 
 .PHONY: start-dev
 start-dev: build-images ## Start the development deployment.
+	docker container stop dbrepo-gateway-service || true
+	docker container rm dbrepo-gateway-service || true
 	docker compose up -d
 
 

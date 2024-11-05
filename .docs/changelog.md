@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.4.7 (2024-10-21)
+## v1.4.7 (2024-11-06)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.4.7)
 
@@ -19,6 +19,8 @@ author: Martin Weise
 
 #### Changes
 
+* Remove the Data Database Sidecar and replace it with Apache Spark
+  in [#458](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/458).
 * Allow anonymous users to create subsets for public databases
   in [#449](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/449).
 * Show file upload progress
@@ -29,6 +31,8 @@ author: Martin Weise
 
 #### Fixes
 
+* Preventing the semicolon `;` to be used in UI and fixed cryptic subset execution error messages
+  in [#456](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/456).
 * Multiple UI errors in [#453](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/453).
 * Fixed install script.sh
   in [#444](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/444)

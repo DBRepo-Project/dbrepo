@@ -29,7 +29,6 @@ settings.
 - min. 8 vCPU cores
 - min. 8GB free RAM memory
 - min. 200GB free SSD storage
-- min. 100Mbit/s connection
 
 Since DBRepo is intended to be a publicly available repository, an optional fixed/static IP-address with optional
 SSL/TLS certificate is recommended. Follow the [secure install](#secure-install) guide.

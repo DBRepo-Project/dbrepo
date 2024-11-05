@@ -8,6 +8,9 @@ import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.exception.*;
+import jakarta.validation.constraints.NotNull;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -17,10 +20,11 @@ public interface TableService {
 
     /**
      * Get table schemas from the information_schema in the data database.
+     *
      * @param database The data database privileged object.
      * @return List of tables, if successful.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
-     * @throws TableNotFoundException The table could not be inspected in the data database.
+     * @throws SQLException               Failed to parse SQL query, contains invalid syntax.
+     * @throws TableNotFoundException     The table could not be inspected in the data database.
      * @throws DatabaseMalformedException The database inspection was unsuccessful, likely due to a bug in the mapping.
      */
     List<TableDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, TableNotFoundException,
@@ -28,22 +32,24 @@ public interface TableService {
 
     /**
      * Generate table statistic for a given table. Only numerical columns are calculated.
+     *
      * @param table The table.
      * @return The table statistic, if successful.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The table statistic generation was unsuccessful, likely due to a bug in the mapping.
-     * @throws TableNotFoundException The table could not be inspected in the data database.
+     * @throws TableNotFoundException  The table could not be inspected in the data database.
      */
     TableStatisticDto getStatistics(PrivilegedTableDto table) throws SQLException, TableMalformedException,
             TableNotFoundException;
 
     /**
      * Finds a table with given data database and table name.
-     * @param database The data database.
+     *
+     * @param database  The data database.
      * @param tableName The table name.
      * @return The table, if successful.
-     * @throws TableNotFoundException The table could not be inspected in the data database.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws TableNotFoundException  The table could not be inspected in the data database.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The inspection query is malformed.
      */
     TableDto find(PrivilegedDatabaseDto database, String tableName) throws TableNotFoundException, SQLException,
@@ -51,12 +57,13 @@ public interface TableService {
 
     /**
      * Creates a table in given data database with table definition.
+     *
      * @param database The data database privileged object.
-     * @param data The table definition.
+     * @param data     The table definition.
      * @return The created table, if successful.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException           Failed to parse SQL query, contains invalid syntax.
      * @throws TableNotFoundException The table could not be inspected in the data database.
-     * @throws TableExistsException The table name already exists in the information_schema.
+     * @throws TableExistsException   The table name already exists in the information_schema.
      * @throws TableNotFoundException The table could not be inspected in the data database.
      */
     TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
@@ -64,64 +71,71 @@ public interface TableService {
 
     /**
      * Drops a table in given table object.
+     *
      * @param table The table object.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The drop table query is malformed.
      */
     void delete(PrivilegedTableDto table) throws SQLException, QueryMalformedException;
 
     /**
      * Obtains data from a table with given table object at timestamp, loaded as page number and length size.
-     * @param table The table object.
+     *
+     * @param table     The table object.
      * @param timestamp The timestamp.
-     * @param page The page number.
-     * @param size The page size/length.
+     * @param page      The page number.
+     * @param size      The page size/length.
      * @return The data.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The table schema is malformed, likely due to a bug in the application.
      */
-    QueryResultDto getData(PrivilegedTableDto table, Instant timestamp, Long page, Long size) throws SQLException,
-            TableMalformedException;
+    QueryResultDto getPaginatedData(PrivilegedTableDto table, Instant timestamp, Long page, Long size)
+            throws SQLException, TableMalformedException;
 
     /**
      * Obtains the table history for a given table object.
+     *
      * @param table The table object.
-     * @param size The maximum size.
+     * @param size  The maximum size.
      * @return The table history.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException           Failed to parse SQL query, contains invalid syntax.
      * @throws TableNotFoundException The table could not be found in the data database.
      */
     List<TableHistoryDto> history(PrivilegedTableDto table, Long size) throws SQLException, TableNotFoundException;
 
     /**
      * Obtains the table data tuples count at time.
-     * @param table The table object.
+     *
+     * @param table     The table object.
      * @param timestamp The timestamp.
      * @return Number of tuples, if successful.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The count query is malformed, likely due to a bug in the application.
      */
     Long getCount(PrivilegedTableDto table, Instant timestamp) throws SQLException,
             QueryMalformedException;
 
     /**
-     * Imports a dataset by metadata into the sidecar of the target database by given table.
+     * Imports a dataset into the database by given table. By default, an <code>upsert</code> operation is performed
+     * that updates duplicate values (identified by their primary key) or inserts values if no duplicate is detected.
+     *
      * @param table The table.
-     * @param data The dataset metadata.
-     * @throws SidecarImportException The sidecar of the target database failed to import the dataset.
-     * @throws StorageNotFoundException The storage service was not able to find the dataset for import.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
-     * @throws QueryMalformedException The import query is malformed, likely due to a bug in the application.
-     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
+     * @param data  The dataset metadata.
+     * @throws MalformedException          The dataset is malformed.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException     The import query is malformed, likely due to a bug in the application.
      */
-    void importDataset(PrivilegedTableDto table, ImportDto data) throws SidecarImportException,
-            StorageNotFoundException, SQLException, QueryMalformedException, RemoteUnavailableException;
+    void importDataset(PrivilegedTableDto table, ImportDto data) throws MalformedException, StorageNotFoundException,
+            StorageUnavailableException, SQLException, QueryMalformedException;
 
     /**
      * Imports a dataset by metadata into the sidecar of the target database by given table.
+     *
      * @param table The table.
-     * @param data The dataset metadata.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @param data  The dataset metadata.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The tuple is malformed and does not fit the table schema.
      * @throws QueryMalformedException The delete query is malformed, likely due to a bug in the application.
      */
@@ -130,41 +144,52 @@ public interface TableService {
 
     /**
      * Creates a tuple in a table.
+     *
      * @param table The table.
-     * @param data The tuple.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
-     * @throws QueryMalformedException The create query is malformed, likely due to a bug in the application.
-     * @throws TableMalformedException The tuple is malformed and does not fit the table schema.
+     * @param data  The tuple.
+     * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
+     * @throws QueryMalformedException     The create query is malformed, likely due to a bug in the application.
+     * @throws TableMalformedException     The tuple is malformed and does not fit the table schema.
      * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
-     * @throws StorageNotFoundException The storage service was not able to find the dataset for import.
+     * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
      */
     void createTuple(PrivilegedTableDto table, TupleDto data) throws SQLException,
             QueryMalformedException, TableMalformedException, StorageUnavailableException, StorageNotFoundException;
 
     /**
      * Updates a tuple in a table.
+     *
      * @param table The table.
-     * @param data The tuple.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
+     * @param data  The tuple.
+     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException The update query is malformed, likely due to a bug in the application.
-     * @throws TableMalformedException  The tuple is malformed and does not fit the table schema.
+     * @throws TableMalformedException The tuple is malformed and does not fit the table schema.
      */
     void updateTuple(PrivilegedTableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
 
     /**
      * Exports a table at given system-versioning time.
-     * @param table The table.
+     *
+     * @param table     The table.
      * @param timestamp The system-versioning time.
      * @return The exported resource.
-     * @throws SQLException Failed to parse SQL query, contains invalid syntax.
-     * @throws SidecarExportException The sidecar of the target database failed to export the dataset.
-     * @throws StorageNotFoundException The storage service was not able to find the dataset for export.
+     * @throws TableNotFoundException      The table was not found in the data database.
+     * @throws QueryMalformedException     The export query is malformed, likely due to a bug in the application.
      * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
-     * @throws QueryMalformedException The export query is malformed, likely due to a bug in the application.
-     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
      */
-    ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp)
-            throws SQLException, SidecarExportException, StorageNotFoundException, StorageUnavailableException,
-            QueryMalformedException, RemoteUnavailableException;
+    ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
+            QueryMalformedException, StorageUnavailableException, MalformedException;
+
+    /**
+     * Get data from a given table at timestamp.
+     *
+     * @param table     The table.
+     * @param timestamp The timestamp.
+     * @return The data.
+     * @throws TableNotFoundException  The table was not found in the data database.
+     * @throws QueryMalformedException The export query is malformed, likely due to a bug in the application.
+     */
+    Dataset<Row> getData(@NotNull PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
+            QueryMalformedException;
 }

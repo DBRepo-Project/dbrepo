@@ -59,15 +59,6 @@ build-analyse-service:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
-build-data-db-sidecar:
-  image: docker.io/python:3.11-alpine
-  stage: build
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-data-db/sidecar/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
 build-lib:
   image: docker.io/python:3.11-alpine
   stage: build
@@ -147,7 +138,6 @@ lint-docker-compose:
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-db-sidecar'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"

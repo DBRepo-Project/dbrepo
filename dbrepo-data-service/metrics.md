@@ -16,4 +16,5 @@
 | `dbrepo_table_schema_list`  | Find tables                               |
 | `dbrepo_table_statistic`    | Get table statistic                       |
 | `dbrepo_view_data`          | Get view data                             |
+| `dbrepo_view_data_export`   | Get view data                             |
 | `dbrepo_view_schema_list`   | Find views                                |

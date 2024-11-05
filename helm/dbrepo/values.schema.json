@@ -516,16 +516,18 @@
             "properties": {
                 "database": {
                     "properties": {
-                        "auth": {
+                        "galera": {
                             "properties": {
-                                "replicationPassword": {
-                                    "type": "string"
-                                },
-                                "replicationUser": {
-                                    "type": "string"
-                                },
-                                "rootPassword": {
-                                    "type": "string"
+                                "mariabackup": {
+                                    "properties": {
+                                        "password": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"
@@ -546,10 +548,13 @@
                             },
                             "type": "object"
                         },
-                        "secondary": {
+                        "rootUser": {
                             "properties": {
-                                "replicaCount": {
-                                    "type": "integer"
+                                "password": {
+                                    "type": "string"
+                                },
+                                "user": {
+                                    "type": "string"
                                 }
                             },
                             "type": "object"

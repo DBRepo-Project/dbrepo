@@ -15,6 +15,7 @@ import at.tuwien.service.ViewService;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -161,6 +162,14 @@ public class ViewEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find view successfully",
+                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Host", description = "The database hostname", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Port", description = "The database port number", schema = @Schema(implementation = Integer.class)),
+                            @Header(name = "X-Type", description = "The JDBC connection type", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Database", description = "The database internal name", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-View", description = "The view internal name", schema = @Schema(implementation = String.class)),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ViewDto.class))}),
@@ -190,7 +199,8 @@ public class ViewEndpoint {
             headers.set("X-Port", "" + view.getDatabase().getContainer().getPort());
             headers.set("X-Type", view.getDatabase().getContainer().getImage().getJdbcMethod());
             headers.set("X-Database", view.getDatabase().getInternalName());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database");
+            headers.set("X-View", view.getInternalName());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)

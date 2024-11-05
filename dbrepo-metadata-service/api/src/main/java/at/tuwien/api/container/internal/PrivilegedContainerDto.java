@@ -37,14 +37,6 @@ public class PrivilegedContainerDto {
 
     private Integer port;
 
-    @NotBlank
-    @JsonProperty("sidecar_host")
-    private String sidecarHost;
-
-    @NotNull
-    @JsonProperty("sidecar_port")
-    private Integer sidecarPort;
-
     @JsonProperty("ui_host")
     private String uiHost;
 

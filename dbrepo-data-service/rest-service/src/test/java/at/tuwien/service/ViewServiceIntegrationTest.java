@@ -105,8 +105,7 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getSchemas_succeeds() throws ViewMalformedException, SQLException, ViewNotFoundException,
-            DatabaseMalformedException, ViewSchemaException {
+    public void getSchemas_succeeds() throws SQLException, ViewNotFoundException, DatabaseMalformedException {
 
         /* test */
         final List<ViewDto> response = viewService.getSchemas(DATABASE_1_PRIVILEGED_DTO);

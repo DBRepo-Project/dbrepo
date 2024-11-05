@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.5`](https://hub.docker.com/r/dbrepo/metadata-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.4.7`](https://hub.docker.com/r/dbrepo/metadata-service)
 
     * Ports: 9099/tcp
     * Info: `http://<hostname>:9099/actuator/info`
@@ -14,7 +14,13 @@ author: Martin Weise
         - Readiness: `http://<hostname>:9099/actuator/health/readiness`
         - Liveness: `http://<hostname>:9099/actuator/health/liveness`
     * Prometheus: `http://<hostname>:9099/actuator/prometheus`
-    * Swagger UI: `http://<hostname>:9099/swagger-ui/index.html`
+    * Swagger UI: `http://<hostname>:9099/swagger-ui/index.html` <a href="../../rest/" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/metadata-service 9099:80
+    ```
 
 ## Overview
 

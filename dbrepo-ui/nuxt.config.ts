@@ -27,6 +27,7 @@ export default defineNuxtConfig({
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       meta: [
+        {'ref': 'icon', type: 'image/x-icon', href: '/favicon.ico'},
         {'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests'}
       ],
       htmlAttrs: {
@@ -86,7 +87,7 @@ export default defineNuxtConfig({
         prefix: '/'
       },
       database: {
-        unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
+        unsupported: 'AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
         image: {
           width: 200,
           height: 200

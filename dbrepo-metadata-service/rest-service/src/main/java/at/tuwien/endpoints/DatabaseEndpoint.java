@@ -448,6 +448,9 @@ public class DatabaseEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Database found successfully",
+                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),

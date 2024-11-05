@@ -7,6 +7,9 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.exception.*;
+import jakarta.validation.constraints.NotNull;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -99,23 +102,21 @@ public interface SubsetService {
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
-     * Exports a subset by re-executing the query in a given database with given timestamp to a given filename.
+     * Exports a subset by re-executing the query in a given database with given timestamp to a given s3key.
      *
      * @param database  The database.
      * @param query     The query.
      * @param timestamp The timestamp.
-     * @param filename  The filename.
      * @return The exported subset.
      * @throws SQLException                The connection to the database could not be established.
      * @throws QueryMalformedException     The mapped export query produced a database error.
-     * @throws SidecarExportException      The sidecar of the given database failed to communicate.
      * @throws StorageNotFoundException    The exported subset was not found from the key provided by the sidecar in the Storage Service.
      * @throws StorageUnavailableException The communication to the Storage Service failed.
      * @throws RemoteUnavailableException  The privileged database information could not be found in the Metadata Service.
      */
-    ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp, String filename)
-            throws SQLException, QueryMalformedException, SidecarExportException, StorageNotFoundException,
-            StorageUnavailableException, RemoteUnavailableException;
+    ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp) throws SQLException,
+            QueryMalformedException, StorageNotFoundException, StorageUnavailableException, RemoteUnavailableException,
+            ViewNotFoundException, MalformedException;
 
     /**
      * Executes a subset query without saving it.
@@ -180,4 +181,7 @@ public interface SubsetService {
      * @throws QueryStoreGCException The query store failed to delete stale queries.
      */
     void deleteStaleQueries(PrivilegedDatabaseDto database) throws SQLException, QueryStoreGCException;
+
+    Dataset<Row> getData(@NotNull PrivilegedDatabaseDto database, String viewName, Instant timestamp) throws ViewNotFoundException,
+            QueryMalformedException;
 }

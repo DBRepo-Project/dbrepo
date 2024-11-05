@@ -13,6 +13,12 @@ author: Martin Weise
     * Prometheus: `http://<hostname>:15692/metrics`
     * Management: `http://<hostname>:15672`
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/broker-service 15672:15672
+    ```
+
 ## Overview
 
 It holds exchanges and topics responsible for holding AMQP messages for later consumption. We

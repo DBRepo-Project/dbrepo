@@ -11,6 +11,12 @@ author: Martin Weise
     * Ports: 8080/tcp
     * UI: `http://<hostname>:8080/`
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/auth-service 8080:80
+    ```
+
 ## Overview
 
 By default, users are created using the [User Interface](../ui) and the sign-up page in the User Interface.

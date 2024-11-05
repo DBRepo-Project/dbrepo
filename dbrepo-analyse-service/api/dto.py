@@ -27,6 +27,7 @@ class DataTypeDto(str, Enum):
     MEDIUMINT = "mediumint"
     MEDIUMTEXT = "mediumtext"
     SET = "set"
+    SERIAL = "serial"
     SMALLINT = "smallint"
     TEXT = "text"
     TIMESTAMP = "timestamp"

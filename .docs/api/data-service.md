@@ -6,7 +6,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.5`](https://hub.docker.com/r/dbrepo/data-service)
+    Image: [`registry.datalab.tuwien.ac.at/dbrepo/data-service:1.4.7`](https://hub.docker.com/r/dbrepo/data-service)
 
     * Ports: 9093/tcp
     * Info: `http://<hostname>:9093/actuator/info`
@@ -14,7 +14,13 @@ author: Martin Weise
         - Readiness: `http://<hostname>:9093/actuator/health/readiness`
         - Liveness: `http://<hostname>:9093/actuator/health/liveness`
     * Prometheus: `http://<hostname>:9093/actuator/prometheus`
-    * Swagger UI: `http://<hostname>:9093/swagger-ui/index.html` <a href="./swagger/data" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Swagger UI: `http://<hostname>:9093/swagger-ui/index.html` <a href="../../rest/" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/data-service 9093:80
+    ```
 
 ## Overview
 

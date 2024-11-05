@@ -1,10 +1,11 @@
-![Java 17](https://img.shields.io/badge/Java-17-white?style=flat)
+![Java 21](https://img.shields.io/badge/Java-21-white?style=flat)
 ![Python 3.11](https://img.shields.io/badge/Python-3.11-white?style=flat)
 ![RabbitMQ 3.12](https://img.shields.io/badge/RabbitMQ-3.12-white?style=flat)
 ![MariaDB 11.2](https://img.shields.io/badge/MariaDB-11.2-white?style=flat)
 ![OpenSearch 2.10](https://img.shields.io/badge/OpenSearch-2.10-white?style=flat)
 ![SeaweedFS 3.59](https://img.shields.io/badge/SeaweedFS-3.59-white?style=flat)
 ![OpenLDAP 2.6](https://img.shields.io/badge/OpenLDAP-2.6-white?style=flat)
+![Spark 3.4](https://img.shields.io/badge/Spark-3.4-white?style=flat)
 ![Keycloak 24.0](https://img.shields.io/badge/Keycloak-24.0-white?style=flat)
 
 <img src="./dbrepo-ui/public/logo.png" width="200" alt="DBRepo &mdash; Repository for Data in Databases" />

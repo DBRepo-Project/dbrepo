@@ -6,7 +6,6 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -94,7 +93,7 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<ViewDto>> getSchema(@NotBlank @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<List<ViewDto>> getSchema(@NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             ViewNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
@@ -182,8 +181,8 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                       @NotBlank @PathVariable("viewId") Long viewId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("viewId") Long viewId)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, MetadataServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
@@ -237,8 +236,8 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryResultDto> getData(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                  @NotBlank @PathVariable("viewId") Long viewId,
+    public ResponseEntity<QueryResultDto> getData(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                  @NotNull @PathVariable("viewId") Long viewId,
                                                   @RequestParam(required = false) Long page,
                                                   @RequestParam(required = false) Long size,
                                                   @RequestParam(required = false) Instant timestamp,
@@ -318,12 +317,11 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                             @NotBlank @PathVariable("viewId") Long viewId,
+    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                             @NotNull @PathVariable("viewId") Long viewId,
                                                              Principal principal)
-            throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            NotAllowedException, MetadataServiceException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException {
+            throws RemoteUnavailableException, ViewNotFoundException, NotAllowedException, MetadataServiceException,
+            StorageUnavailableException, QueryMalformedException, MalformedException {
         log.debug("endpoint export view data, databaseId={}, viewId={}", databaseId, viewId);
         /* parameters */
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
@@ -334,19 +332,13 @@ public class ViewEndpoint {
             }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
-        try {
-            final HttpHeaders headers = new HttpHeaders();
-            final ExportResourceDto resource = viewService.exportDataset(view);
-            headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-            log.trace("export table resulted in resource {}", resource);
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(resource.getResource());
-
-        } catch (SQLException e) {
-            log.error("Failed to establish connection to database: {}", e.getMessage());
-            throw new DatabaseUnavailableException("Failed to establish connection to database", e);
-        }
+        final HttpHeaders headers = new HttpHeaders();
+        final ExportResourceDto resource = viewService.exportDataset(view);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+        log.trace("export table resulted in resource {}", resource);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource.getResource());
     }
 
 }

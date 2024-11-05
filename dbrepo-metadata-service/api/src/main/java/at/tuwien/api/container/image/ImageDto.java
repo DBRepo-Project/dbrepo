@@ -61,4 +61,7 @@ public class ImageDto {
     @JsonProperty("data_types")
     private List<DataTypeDto> dataTypes;
 
+    @NotNull
+    private List<OperatorDto> operators;
+
 }

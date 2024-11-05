@@ -70,8 +70,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(CONTAINER_1_UI_HOST, response.getContainer().getUiHost());
         assertEquals(CONTAINER_1_UI_PORT, response.getContainer().getUiPort());
         assertEquals(CONTAINER_1_UI_ADDITIONAL_FLAGS, response.getContainer().getUiAdditionalFlags());
-        assertEquals(CONTAINER_1_SIDECAR_HOST, response.getContainer().getSidecarHost());
-        assertEquals(CONTAINER_1_SIDECAR_PORT, response.getContainer().getSidecarPort());
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getContainer().getPrivilegedUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getContainer().getPrivilegedPassword());
         assertNotNull(response.getContainer().getImage());
@@ -110,8 +108,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(CONTAINER_1_UI_HOST, response.getContainer().getUiHost());
         assertEquals(CONTAINER_1_UI_PORT, response.getContainer().getUiPort());
         assertEquals(CONTAINER_1_UI_ADDITIONAL_FLAGS, response.getContainer().getUiAdditionalFlags());
-        assertEquals(CONTAINER_1_SIDECAR_HOST, response.getContainer().getSidecarHost());
-        assertEquals(CONTAINER_1_SIDECAR_PORT, response.getContainer().getSidecarPort());
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getContainer().getPrivilegedUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getContainer().getPrivilegedPassword());
         assertNotNull(response.getContainer().getImage());

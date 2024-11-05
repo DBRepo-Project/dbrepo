@@ -194,8 +194,10 @@ services:
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-storage-service:9000}"
+      S3_PROTO: "${S3_PROTO:-http}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     volumes:
@@ -289,32 +291,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-
-  dbrepo-data-db-sidecar:
-    restart: "no"
-    container_name: dbrepo-data-db-sidecar
-    hostname: data-db-sidecar
-    image: dbrepo-data-db-sidecar:latest
-    build:
-      context: ./dbrepo-data-db/sidecar
-      network: host
-    ports:
-      - "3305:8080"
-    environment:
-      S3_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
-      S3_BUCKET: "${S3_BUCKET:-dbrepo}"
-      S3_ENDPOINT: "${S3_ENDPOINT:-http://storage-service:9000}"
-      S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
-      S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
-    volumes:
-      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
-    healthcheck:
-      test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    logging:
-      driver: json-file
 
   dbrepo-ui:
     restart: "no"
@@ -551,6 +527,7 @@ services:
       BROKER_USERNAME: "${SYSTEM_USERNAME:-admin}"
       BROKER_VIRTUALHOST: "${BROKER_VIRTUALHOST:-dbrepo}"
       CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+      COMPUTE_SERVICE_ENDPOINT: "${COMPUTE_SERVICE_ENDPOINT:-local[2]}"
       EXCHANGE_NAME: "${EXCHANGE_NAME:-dbrepo}"
       METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
       GRANT_DEFAULT_READ: "${GRANT_DEFAULT_READ:-SELECT}"
@@ -568,6 +545,7 @@ services:
       S3_FILE_PATH: "${S3_FILE_PATH:-/tmp}"
       S3_IMPORT_BUCKET: "${S3_IMPORT_BUCKET:-dbrepo-upload}"
       S3_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
+      SPARK_USER: "${COMPUTE_SERVICE_USERNAME:-spark}"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
       SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:

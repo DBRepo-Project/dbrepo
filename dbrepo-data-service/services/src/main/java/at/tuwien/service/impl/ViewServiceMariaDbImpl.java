@@ -1,16 +1,18 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.config.S3Config;
+import at.tuwien.config.SparkConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
@@ -20,8 +22,13 @@ import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.instrument.Counter;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,35 +41,34 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 @Log4j2
 @Service
 public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewService {
 
     private final Counter httpDataAccessCounter;
-    private final S3Config s3Config;
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
+    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final SchemaService schemaService;
     private final StorageService storageService;
     private final MetadataMapper metadataMapper;
-    private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public ViewServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
-                                  QueryConfig queryConfig, MariaDbMapper mariaDbMapper, SchemaService schemaService,
-                                  StorageService storageService, MetadataMapper metadataMapper,
-                                  DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+    public ViewServiceMariaDbImpl(Counter httpDataAccessCounter, DataMapper dataMapper,
+                                  QueryConfig queryConfig, SparkSession sparkSession, MariaDbMapper mariaDbMapper,
+                                  SchemaService schemaService, StorageService storageService,
+                                  MetadataMapper metadataMapper) {
         this.httpDataAccessCounter = httpDataAccessCounter;
-        this.s3Config = s3Config;
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
+        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
         this.schemaService = schemaService;
         this.storageService = storageService;
         this.metadataMapper = metadataMapper;
-        this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
     }
 
     @Override
@@ -228,35 +234,35 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     }
 
     @Override
-    public ExportResourceDto exportDataset(PrivilegedViewDto view) throws SQLException, QueryMalformedException,
-            SidecarExportException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException {
-        final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
-        final String filePath = s3Config.getS3FilePath() + File.separator + fileName;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(view.getDatabase());
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* export to data database sidecar */
-            final List<ColumnDto> columns = view.getColumns()
-                    .stream()
-                    .map(metadataMapper::viewColumnDtoToColumnDto)
-                    .toList();
-            final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(view.getDatabase().getInternalName(),
-                            view.getInternalName(), columns, null, filePath))
-                    .executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to execute query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to execute query: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        dataDatabaseSidecarGateway.exportFile(view.getDatabase().getContainer().getSidecarHost(),
-                view.getDatabase().getContainer().getSidecarPort(), fileName);
+    public ExportResourceDto exportDataset(PrivilegedViewDto view) throws QueryMalformedException,
+            StorageUnavailableException, ViewNotFoundException, MalformedException {
+        final Dataset<Row> dataset = getData(view);
         httpDataAccessCounter.increment();
-        return storageService.getResource(fileName);
+        return storageService.transformDataset(dataset);
+    }
+
+    @Override
+    public Dataset<Row> getData(@NotNull PrivilegedViewDto view) throws ViewNotFoundException,
+            QueryMalformedException {
+        try {
+            final Properties properties = new Properties();
+            properties.setProperty("user", view.getDatabase().getContainer().getUsername());
+            properties.setProperty("password", view.getDatabase().getContainer().getPassword());
+            return sparkSession.read()
+                    .jdbc(getSparkUrl(view.getDatabase().getContainer(), view.getDatabase().getInternalName()),
+                            mariaDbMapper.tableOrViewToRawExportQuery(view.getDatabase().getInternalName(),
+                                    view.getInternalName(), view.getColumns().stream()
+                                            .map(ViewColumnDto::getInternalName).toList(), Instant.now()), properties);
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
+                    log.error("Failed to find view {}: {}", view.getInternalName(), exception.getSimpleMessage());
+                    throw new ViewNotFoundException("Failed to find view " + view.getInternalName() + ": " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                }
+            }
+            log.error("Failed to export dataset: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to export dataset: " + e.getMessage(), e);
+        }
     }
 
 }

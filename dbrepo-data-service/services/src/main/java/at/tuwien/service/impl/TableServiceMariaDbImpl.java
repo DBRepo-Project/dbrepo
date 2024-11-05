@@ -11,8 +11,8 @@ import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.config.S3Config;
+import at.tuwien.config.SparkConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataDatabaseSidecarGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.SchemaService;
@@ -21,12 +21,16 @@ import at.tuwien.service.TableService;
 import at.tuwien.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.instrument.Counter;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.spark.sql.*;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
+import org.apache.spark.sql.types.StructField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -36,25 +40,22 @@ import java.util.*;
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {
 
     private final Counter httpDataAccessCounter;
-    private final S3Config s3Config;
     private final DataMapper dataMapper;
+    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final SchemaService schemaService;
     private final StorageService storageService;
-    private final DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
 
     @Autowired
-    public TableServiceMariaDbImpl(Counter httpDataAccessCounter, S3Config s3Config, DataMapper dataMapper,
+    public TableServiceMariaDbImpl(Counter httpDataAccessCounter, DataMapper dataMapper, SparkSession sparkSession,
                                    MariaDbMapper mariaDbMapper, SchemaService schemaService,
-                                   StorageService storageService,
-                                   DataDatabaseSidecarGateway dataDatabaseSidecarGateway) {
+                                   StorageService storageService) {
         this.httpDataAccessCounter = httpDataAccessCounter;
-        this.s3Config = s3Config;
         this.dataMapper = dataMapper;
+        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
         this.schemaService = schemaService;
         this.storageService = storageService;
-        this.dataDatabaseSidecarGateway = dataDatabaseSidecarGateway;
     }
 
     @Override
@@ -190,7 +191,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public QueryResultDto getData(PrivilegedTableDto table, Instant timestamp, Long page, Long size) throws SQLException,
+    public QueryResultDto getPaginatedData(PrivilegedTableDto table, Instant timestamp, Long page, Long size) throws SQLException,
             TableMalformedException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
@@ -273,20 +274,43 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public void importDataset(PrivilegedTableDto table, ImportDto data) throws StorageNotFoundException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, SidecarImportException {
-        /* import .csv from blob storage to sidecar */
-        dataDatabaseSidecarGateway.importFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), data.getLocation());
+    public void importDataset(PrivilegedTableDto table, ImportDto data) throws MalformedException,
+            StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException {
+        final List<String> columns = table.getColumns()
+                .stream()
+                .map(ColumnDto::getInternalName)
+                .toList();
+        final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(), data.getHeader());
+        final Properties properties = new Properties();
+        properties.setProperty("user", table.getDatabase().getContainer().getUsername());
+        properties.setProperty("password", table.getDatabase().getContainer().getPassword());
+        final String temporaryTable = table.getInternalName() + "_tmp";
+        try {
+            log.trace("import dataset to temporary table: {}", temporaryTable);
+            dataset.write()
+                    .mode(SaveMode.Overwrite)
+                    .option("header", data.getHeader())
+                    .option("inferSchema", "true")
+                    .jdbc(getSparkUrl(table.getDatabase().getContainer(), table.getDatabase().getInternalName()),
+                            temporaryTable, properties);
+        } catch (Exception e) {
+            if (e instanceof AnalysisException exception) {
+                final String message = exception.getSimpleMessage()
+                        .replaceAll(" Some\\(.*", "");
+                log.error("Failed to write dataset: schema malformed: {}", message);
+                throw new MalformedException("Failed to write dataset: schema malformed: " + message) /* remove throwable on purpose, clutters the output */;
+            }
+            log.error("Failed to write dataset: {}", e.getMessage());
+            throw new MalformedException("Failed to write dataset: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
+        }
         /* import .csv from sidecar to database */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* import tuple */
-            data.setLocation(s3Config.getS3FilePath() + File.separator + data.getLocation());
-            final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.datasetToRawInsertQuery(table.getDatabase().getInternalName(), table, data))
+            connection.prepareStatement(mariaDbMapper.temporaryTableToRawMergeQuery(temporaryTable,
+                            table.getInternalName(), table.getColumns().stream().map(c -> c.getInternalName()).toList()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -420,31 +444,35 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws SQLException,
-            StorageNotFoundException, StorageUnavailableException, QueryMalformedException, RemoteUnavailableException,
-            SidecarExportException {
-        final String fileName = RandomStringUtils.randomAlphabetic(40) + ".csv";
-        final String filePath = s3Config.getS3FilePath() + "/" + fileName;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
-        final Connection connection = dataSource.getConnection();
-        try {
-            /* export to data database sidecar */
-            final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableOrViewToRawExportQuery(table.getDatabase().getInternalName(),
-                            table.getInternalName(), table.getColumns(), timestamp, filePath))
-                    .executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to execute query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to execute query: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        dataDatabaseSidecarGateway.exportFile(table.getDatabase().getContainer().getSidecarHost(), table.getDatabase().getContainer().getSidecarPort(), fileName);
+    public ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
+            QueryMalformedException, StorageUnavailableException, MalformedException {
+        final Dataset<Row> dataset = getData(table, timestamp);
         httpDataAccessCounter.increment();
-        return storageService.getResource(fileName);
+        return storageService.transformDataset(dataset);
+    }
+
+    @Override
+    public Dataset<Row> getData(@NotNull PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
+            QueryMalformedException {
+        try {
+            final Properties properties = new Properties();
+            properties.setProperty("user", table.getDatabase().getContainer().getUsername());
+            properties.setProperty("password", table.getDatabase().getContainer().getPassword());
+            return sparkSession.read()
+                    .jdbc(getSparkUrl(table.getDatabase().getContainer(), table.getDatabase().getInternalName()),
+                            mariaDbMapper.tableOrViewToRawExportQuery(table.getDatabase().getInternalName(),
+                                    table.getInternalName(), table.getColumns().stream()
+                                            .map(ColumnDto::getInternalName).toList(), timestamp), properties);
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
+                    log.error("Failed to find table {}: {}", table.getInternalName(), exception.getSimpleMessage());
+                    throw new TableNotFoundException("Failed to find table " + table.getInternalName() + ": " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                }
+            }
+            log.error("Failed to export dataset: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to export dataset: " + e.getMessage(), e);
+        }
     }
 
 }

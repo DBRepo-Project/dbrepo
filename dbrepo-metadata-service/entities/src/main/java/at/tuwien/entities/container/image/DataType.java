@@ -68,7 +68,8 @@ public class DataType {
     @Column(name = "is_buildable", nullable = false)
     private Boolean buildable;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST})
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })

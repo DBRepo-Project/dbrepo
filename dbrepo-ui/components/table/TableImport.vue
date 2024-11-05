@@ -32,18 +32,17 @@
           </v-row>
           <v-row dense>
             <v-col md="8">
-              <v-text-field
-                v-model.number="tableImport.skip_lines"
-                :rules="[
-                          v => isNonNegativeInteger(v) || $t('validation.integer')
-                        ]"
-                type="number"
+              <v-select
+                v-model="tableImport.header"
+                :items="headers"
+                item-title="key"
+                item-value="value"
                 required
                 clearable
                 persistent-hint
                 :variant="inputVariant"
                 :hint="$t('pages.table.subpages.import.skip.hint')"
-                :label="$t('pages.table.subpages.import.skip.label')"/>
+                :label="$t('pages.table.subpages.import.skip.label')" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -265,7 +264,6 @@
 </template>
 
 <script>
-import { isNonNegativeInteger } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -304,7 +302,7 @@ export default {
         quote: '"',
         separator: ',',
         line_termination: '\\n',
-        skip_lines: 1
+        header: true
       },
       separators: [
         {key: ',', value: ','},
@@ -314,6 +312,10 @@ export default {
       quotes: [
         {key: 'Double "', value: '"'},
         {key: 'Single \'', value: '\''}
+      ],
+      headers: [
+        {key: 'First line is header', value: true},
+        {key: 'Data only', value: false}
       ],
       lineTerminationItems: [
         {name: '\\r\\n (Windows)', value: '\r\n'},
@@ -329,7 +331,7 @@ export default {
     this.setQueryParamSafely('quote')
     this.setQueryParamSafely('separator')
     this.setQueryParamSafely('line_termination')
-    this.setQueryParamSafely('skip_lines')
+    this.setQueryParamSafely('header', true)
     if (this.$route.query.location) {
       this.step = 2
       this.validStep2 = true
@@ -407,13 +409,16 @@ export default {
     }
   },
   methods: {
-    isNonNegativeInteger,
     submit() {
       this.$refs.form.validate()
     },
-    setQueryParamSafely(name) {
+    setQueryParamSafely(name, parse_bool = false) {
       if (this.$route.query[name]) {
-        this.tableImport[name] = this.$route.query[name]
+        var value = this.$route.query[name]
+        if (parse_bool) {
+          value = this.$route.query[name] === 'true'
+        }
+        this.tableImport[name] = value
       }
     },
     importCsv() {
@@ -485,7 +490,7 @@ export default {
           this.columns = Object.entries(columns)
             .map(([name, analyse]) => {
               return {
-                name: name,
+                name: name.trim(),
                 type: analyse.type,
                 null_allowed: analyse.null_allowed,
                 primary_key: false,
@@ -507,7 +512,7 @@ export default {
             filename,
             line_termination: line_termination === '\\n' ? '\n' : JSON.stringify(line_termination).replaceAll('"', ''),
             separator: this.tableImport.separator,
-            skip_lines: this.tableImport.skip_lines,
+            header: this.tableImport.header,
             quote: this.tableImport.quote,
           })
           this.loading = false

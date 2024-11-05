@@ -383,4 +383,56 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"view-database-view-data"})
+    public void exportDataset_privateNoAccess_fails() throws RemoteUnavailableException, ViewNotFoundException,
+            NotAllowedException, MetadataServiceException {
+
+        /* mock */
+        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        doThrow(NotAllowedException.class)
+                .when(metadataServiceGateway)
+                .getAccess(DATABASE_1_ID, USER_3_ID);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_3_ID, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
+    public void exportDataset_viewNotFound_fails() throws RemoteUnavailableException, ViewNotFoundException,
+            MetadataServiceException {
+
+        /* mock */
+        doThrow(ViewNotFoundException.class)
+                .when(metadataServiceGateway)
+                .getViewById(DATABASE_1_ID, VIEW_1_ID);
+
+        /* test */
+        assertThrows(ViewNotFoundException.class, () -> {
+            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, USER_4_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
+    public void exportDataset_privateNoAccess_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
+            NotAllowedException, MetadataServiceException {
+
+        /* mock */
+        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        doThrow(NotAllowedException.class)
+                .when(metadataServiceGateway)
+                .getAccess(DATABASE_1_ID, USER_1_ID);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_3_ID, USER_1_PRINCIPAL);
+        });
+    }
+
 }
