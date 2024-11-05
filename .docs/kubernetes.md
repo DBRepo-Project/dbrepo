@@ -2,8 +2,6 @@
 author: Martin Weise
 ---
 
-[![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
-
 ## TL;DR
 
 To install DBRepo in your existing cluster, download the
