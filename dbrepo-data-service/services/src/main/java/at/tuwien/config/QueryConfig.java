@@ -13,13 +13,4 @@ public class QueryConfig {
     @Value("${dbrepo.sql.forbidden}")
     private String[] forbiddenKeywords;
 
-    @Value("${dbrepo.defaultDateFormatId}")
-    private Long defaultDateFormatId;
-
-    @Value("${dbrepo.defaultTimeFormatId}")
-    private Long defaultTimeFormatId;
-
-    @Value("${dbrepo.defaultTimestampFormatId}")
-    private Long defaultTimestampFormatId;
-
 }

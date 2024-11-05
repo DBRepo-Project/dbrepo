@@ -63,6 +63,7 @@ import at.tuwien.api.user.*;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.Operator;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -953,6 +954,15 @@ public abstract class BaseTest {
             .isDefault(IMAGE_1_IS_DEFAULT)
             .build();
 
+    public final static List<Operator> IMAGE_1_OPERATORS = List.of(
+            Operator.builder()
+                    .id(1L)
+                    .image(IMAGE_1)
+                    .displayName("XOR")
+                    .value("XOR")
+                    .documentation("https://mariadb.com/kb/en/xor/")
+                    .build());
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static ImageDto CONTAINER_1_IMAGE_DTO = IMAGE_1_DTO;
@@ -966,8 +976,6 @@ public abstract class BaseTest {
     public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
-    public final static String CONTAINER_1_SIDECAR_HOST = "localhost";
-    public final static Integer CONTAINER_1_SIDECAR_PORT = 33081;
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629L) /* 2023-02-26 08:20:29 (UTC) */;
@@ -986,8 +994,6 @@ public abstract class BaseTest {
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
-            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
@@ -1017,8 +1023,6 @@ public abstract class BaseTest {
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
-            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .username(CONTAINER_1_PRIVILEGED_USERNAME)
             .password(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
@@ -1031,8 +1035,6 @@ public abstract class BaseTest {
     public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static String CONTAINER_2_HOST = "localhost";
     public final static Integer CONTAINER_2_PORT = 3309;
-    public final static String CONTAINER_2_SIDECAR_HOST = "localhost";
-    public final static Integer CONTAINER_2_SIDECAR_PORT = 33091;
     public final static Integer CONTAINER_2_QUOTA = 3;
     public final static Integer CONTAINER_2_COUNT = 3;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
@@ -1079,8 +1081,6 @@ public abstract class BaseTest {
     public final static String CONTAINER_3_HOST = "localhost";
     public final static Integer CONTAINER_3_PORT = 3310;
     public final static Integer CONTAINER_3_QUOTA = 20;
-    public final static String CONTAINER_3_SIDECAR_HOST = "localhost";
-    public final static Integer CONTAINER_3_SIDECAR_PORT = 33101;
     public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_3_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672L) /* 2023-02-26 08:21:12 (UTC) */;
@@ -1107,8 +1107,6 @@ public abstract class BaseTest {
     public final static String CONTAINER_4_HOST = "localhost";
     public final static Integer CONTAINER_4_PORT = 3311;
     public final static Integer CONTAINER_4_QUOTA = 0;
-    public final static String CONTAINER_4_SIDECAR_HOST = "localhost";
-    public final static Integer CONTAINER_4_SIDECAR_PORT = 33111;
     public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_4_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688L) /* 2023-02-26 08:21:28 (UTC) */;

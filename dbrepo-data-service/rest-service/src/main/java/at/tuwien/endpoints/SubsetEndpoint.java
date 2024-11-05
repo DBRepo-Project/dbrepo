@@ -146,7 +146,8 @@ public class SubsetEndpoint {
                                       @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException, UserNotFoundException, MetadataServiceException {
+            StorageNotFoundException, UserNotFoundException, MetadataServiceException, ViewNotFoundException,
+            MalformedException {
         String accept = httpServletRequest.getHeader("Accept");
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
@@ -173,9 +174,8 @@ public class SubsetEndpoint {
                 return ResponseEntity.ok(query);
             case "text/csv":
                 log.trace("accept header matches csv");
-                final String filename = RandomStringUtils.randomAlphabetic(20).toLowerCase();
                 try {
-                    final ExportResourceDto resource = subsetService.export(database, query, timestamp, filename);
+                    final ExportResourceDto resource = subsetService.export(database, query, timestamp);
                     final HttpHeaders headers = new HttpHeaders();
                     headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
                     log.trace("export table resulted in resource {}", resource);
@@ -240,9 +240,9 @@ public class SubsetEndpoint {
                                                  @RequestParam(required = false) Long size,
                                                  @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            QueryNotFoundException, StorageUnavailableException, QueryMalformedException, SidecarExportException,
-            StorageNotFoundException, QueryStoreInsertException, TableMalformedException, PaginationException,
-            QueryNotSupportedException, NotAllowedException, UserNotFoundException, MetadataServiceException {
+            QueryNotFoundException, StorageUnavailableException, QueryMalformedException, StorageNotFoundException,
+            QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
+            NotAllowedException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint create subset in database, databaseId={}, data.statement={}, page={}, size={}, " +
                         "timestamp={}", databaseId, data.getStatement(), page, size,
                 timestamp);

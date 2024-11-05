@@ -91,8 +91,8 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> create(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                    @NotBlank @PathVariable("userId") UUID userId,
+    public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                    @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
                                                     @Valid @RequestBody UpdateDatabaseAccessDto data,
                                                     @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
@@ -154,8 +154,8 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> update(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                       @NotBlank @PathVariable("userId") UUID userId,
+    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto data,
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
@@ -199,8 +199,8 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                                  @NotBlank @PathVariable("userId") UUID userId,
+    public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                  @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
@@ -256,8 +256,8 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
-                                       @NotBlank @PathVariable("userId") UUID userId,
+    public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
                                        @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {

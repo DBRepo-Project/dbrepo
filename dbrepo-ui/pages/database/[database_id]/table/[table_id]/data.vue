@@ -344,8 +344,8 @@ export default {
     },
     download () {
       this.downloadLoading = true
+      const tableService = useTableService()
       if (!this.version) {
-        const tableService = useTableService()
         tableService.exportData(this.$route.params.database_id, this.$route.params.table_id)
           .then((data) => {
             this.downloadLoading = false
@@ -359,18 +359,15 @@ export default {
           .catch(({code}) => {
             this.downloadLoading = false
             const toast = useToastInstance()
-            if (typeof code !== 'string') {
-              return
-            }
             toast.error(this.$t(code))
           })
           .finally(() => {
             this.downloadLoading = false
           })
       } else {
-        const tableService = useTableService()
         tableService.exportData(this.$route.params.database_id, this.$route.params.table_id, this.versionISO)
           .then((data) => {
+            this.downloadLoading = false
             const url = URL.createObjectURL(data)
             const link = document.createElement('a')
             link.href = url
@@ -378,8 +375,10 @@ export default {
             document.body.appendChild(link)
             link.click()
           })
-          .catch(() => {
+          .catch(({code}) => {
             this.downloadLoading = false
+            const toast = useToastInstance()
+            toast.error(this.$t(code))
           })
           .finally(() => {
             this.downloadLoading = false
@@ -420,9 +419,6 @@ export default {
         console.debug('date columns are', this.dateColumns)
       } catch ({code}) {
         const toast = useToastInstance()
-        if (typeof code !== 'string') {
-          return
-        }
         toast.error(this.$t(code))
       }
       this.loading = false
@@ -439,8 +435,10 @@ export default {
           this.total = count
           this.loadingCount = false
         })
-        .catch((error) => {
+        .catch(({code}) => {
           this.loadingCount = false
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
         })
     },
     loadData({ page, itemsPerPage, sortBy }) {
@@ -470,9 +468,6 @@ export default {
           this.error = true
           this.loadingData = false
           const toast = useToastInstance()
-          if (typeof code !== 'string' || typeof message !== 'string') {
-            return
-          }
           toast.error(this.$t(code) + ": " + message)
         })
     },

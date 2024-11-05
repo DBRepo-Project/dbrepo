@@ -187,11 +187,6 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "422",
-                    description = "Failed to retrieve from database sidecar",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
                     description = "Connection to data service failed",
                     content = {@Content(

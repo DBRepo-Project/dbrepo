@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseAccessDto;
+import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
@@ -276,7 +277,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.getData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
+        when(tableService.getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
                 .thenReturn(TABLE_8_DATA_DTO);
 
         /* test */
@@ -299,7 +300,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("HEAD");
         when(tableService.getCount(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
                 .thenReturn(3L);
-        when(tableService.getData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
+        when(tableService.getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
                 .thenReturn(TABLE_8_DATA_DTO);
 
         /* test */
@@ -355,7 +356,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
-                .getData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L));
+                .getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -393,7 +394,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(tableService.getData(eq(TABLE_1_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
+        when(tableService.getPaginatedData(eq(TABLE_1_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
                 .thenReturn(TABLE_1_DATA_DTO);
 
         /* test */
@@ -1126,8 +1127,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void exportData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, NotAllowedException,
-            StorageUnavailableException, QueryMalformedException, SidecarExportException, RemoteUnavailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+            StorageUnavailableException, QueryMalformedException, RemoteUnavailableException, StorageNotFoundException,
+            SQLException, MetadataServiceException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -1148,9 +1149,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @WithMockUser(username = USER_2_USERNAME)
     @MethodSource("anyAccess_parameters")
-    public void exportData_private_succeeds(String name, DatabaseAccessDto access) throws DatabaseUnavailableException, TableNotFoundException, NotAllowedException,
-            StorageUnavailableException, QueryMalformedException, SidecarExportException, RemoteUnavailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+    public void exportData_private_succeeds(String name, DatabaseAccessDto access) throws TableNotFoundException,
+            NotAllowedException, StorageUnavailableException, QueryMalformedException, RemoteUnavailableException,
+            MetadataServiceException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -1185,25 +1186,6 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void exportData_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, StorageUnavailableException, SQLException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException {
-
-        /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        doThrow(SQLException.class)
-                .when(tableService)
-                .exportDataset(eq(TABLE_1_PRIVILEGED_DTO), any(Instant.class));
-
-        /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
-            tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, USER_1_PRINCIPAL);
         });
     }
 
@@ -1264,11 +1246,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
-    public void importDataset_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
-            SidecarImportException, NotAllowedException, QueryMalformedException, RemoteUnavailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+    public void importDataset_succeeds() throws TableNotFoundException, NotAllowedException, RemoteUnavailableException,
+            MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException, SQLException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination(null)
                 .location("deadbeef")
                 .build();
@@ -1294,7 +1275,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void importDataset_noRole_fails() {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1310,7 +1291,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     public void importDataset_tableNotFound_fails() throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1328,11 +1309,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void importDataset_unavailable_fails() throws RemoteUnavailableException, SidecarImportException,
-            SQLException, QueryMalformedException, StorageNotFoundException, TableNotFoundException,
-            MetadataServiceException, NotAllowedException {
+    public void importDataset_unavailable_fails() throws RemoteUnavailableException, TableNotFoundException,
+            MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, SQLException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1354,11 +1335,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void importDataset_writeOwnAccess_fails() throws RemoteUnavailableException, SidecarImportException,
-            SQLException, QueryMalformedException, StorageNotFoundException, TableNotFoundException,
-            MetadataServiceException, NotAllowedException {
+    public void importDataset_writeOwnAccess_fails() throws RemoteUnavailableException, TableNotFoundException,
+            MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, SQLException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1383,7 +1364,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     public void importDataset_readAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1403,10 +1384,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_writeOwnAccess_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException, MetadataServiceException {
+            NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1426,7 +1407,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     public void importDataset_writeOwnAccessForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1445,11 +1426,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
-    public void importDataset_writeAllAccessForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException, MetadataServiceException {
+    public void importDataset_writeAllAccessForeign_succeeds() throws TableNotFoundException,
+            RemoteUnavailableException, NotAllowedException, MetadataServiceException, StorageNotFoundException,
+            MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1467,10 +1448,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_privateForeign_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException, MetadataServiceException {
+            NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1488,10 +1469,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_private_succeeds() throws TableNotFoundException, RemoteUnavailableException,
-            NotAllowedException, DatabaseUnavailableException, SidecarImportException, QueryMalformedException,
-            StorageNotFoundException, MetadataServiceException {
+            NotAllowedException, MetadataServiceException, StorageNotFoundException, MalformedException,
+            StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1511,7 +1492,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     public void importDataset_privateForeign_fails() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();
@@ -1533,7 +1514,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     public void importDataset_privateReadAccess_fails() throws TableNotFoundException, RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ImportDto request = ImportDto.builder()
-                .skipLines(1L)
+                .header(true)
                 .lineTermination("\\n")
                 .location("deadbeef")
                 .build();

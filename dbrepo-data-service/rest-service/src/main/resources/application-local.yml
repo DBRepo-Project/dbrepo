@@ -49,16 +49,18 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
   endpoints:
-    metadataService: http://localhost
-    storageService: http://localhost/api/storage
-    authService: http://localhost/api/auth
+    metadataService: "http://localhost:9099"
+    analyseService: "http://localhost"
+    storageService: "http://localhost:9000"
+    authService: "http://localhost:8080"
+    computeService: "local[2]"
   s3:
-    accessKeyId: seaweedfsadmin
-    secretAccessKey: seaweedfsadmin
-    bucket: dbrepo
+    accessKeyId: "seaweedfsadmin"
+    secretAccessKey: "seaweedfsadmin"
+    bucket: "dbrepo"
   system:
-    username: admin
-    password: admin
+    username: "admin"
+    password: "admin"
   jwt:
     public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB
   keycloak:
@@ -66,6 +68,3 @@ dbrepo:
     password: admin
     client: dbrepo-client
     clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
-  defaultDateFormatId: 1
-  defaultTimeFormatId: 4
-  defaultTimestampFormatId: 3

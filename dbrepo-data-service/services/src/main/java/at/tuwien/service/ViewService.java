@@ -6,7 +6,11 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.exception.*;
+import jakarta.validation.constraints.NotNull;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -16,11 +20,12 @@ public interface ViewService {
 
     /**
      * Gets the metadata schema for a given database.
+     *
      * @param database The database.
      * @return The list of view metadata.
-     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws SQLException               The connection to the data database was unsuccessful.
      * @throws DatabaseMalformedException The columns that are referenced in the views are unknown to the Metadata Database. Call {@link TableService#getSchemas(PrivilegedDatabaseDto)} beforehand.
-     * @throws ViewNotFoundException The view with given name was not found.
+     * @throws ViewNotFoundException      The view with given name was not found.
      */
     List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
             ViewNotFoundException;
@@ -52,33 +57,44 @@ public interface ViewService {
 
     /**
      * Deletes a view.
+     *
      * @param view The view.
-     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws SQLException           The connection to the data database was unsuccessful.
      * @throws ViewMalformedException The query is malformed and was rejected by the data database.
      */
     void delete(PrivilegedViewDto view) throws SQLException, ViewMalformedException;
 
     /**
      * Counts tuples in a view at system-versioned timestamp.
-     * @param view The view.
+     *
+     * @param view      The view.
      * @param timestamp The system-versioned timestamp.
      * @return The number of tuples.
-     * @throws SQLException The connection to the data database was unsuccessful.
+     * @throws SQLException            The connection to the data database was unsuccessful.
      * @throws QueryMalformedException The query is malformed and was rejected by the data database.
      */
     Long count(PrivilegedViewDto view, Instant timestamp) throws SQLException, QueryMalformedException;
 
     /**
      * Exports view data into a dataset.
+     *
      * @param view The view.
      * @return The dataset.
-     * @throws SQLException The connection to the data database was unsuccessful.
-     * @throws QueryMalformedException The query is malformed and was rejected by the data database.
-     * @throws SidecarExportException The sidecar of the target database failed to export the dataset.
-     * @throws RemoteUnavailableException Failed to establish connection to the sidecar.
-     * @throws StorageNotFoundException The storage service was not able to find the dataset for export.
+     * @throws QueryMalformedException     The query is malformed and was rejected by the data database.
      * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
+     * @throws ViewNotFoundException       The view with given name was not found.
      */
-    ExportResourceDto exportDataset(PrivilegedViewDto view) throws SQLException, QueryMalformedException,
-            SidecarExportException, RemoteUnavailableException, StorageNotFoundException, StorageUnavailableException;
+    ExportResourceDto exportDataset(PrivilegedViewDto view) throws QueryMalformedException,
+            StorageUnavailableException, ViewNotFoundException, MalformedException;
+
+    /**
+     * Get data from a given view.
+     *
+     * @param view The view.
+     * @return The data.
+     * @throws ViewNotFoundException   The view with given name was not found.
+     * @throws QueryMalformedException The query is malformed and was rejected by the data database.
+     */
+    Dataset<Row> getData(@NotNull PrivilegedViewDto view) throws ViewNotFoundException,
+            QueryMalformedException;
 }

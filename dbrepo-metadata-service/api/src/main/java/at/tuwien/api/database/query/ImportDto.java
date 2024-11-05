@@ -1,11 +1,9 @@
 package at.tuwien.api.database.query;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
@@ -23,9 +21,9 @@ public class ImportDto {
     @Schema(example = "file.csv")
     private String location;
 
-    @Min(value = 0L)
-    @JsonProperty("skip_lines")
-    private Long skipLines;
+    @NotNull
+    @Schema(description = "If true, the first line contains the column names, otherwise it contains only data")
+    private Boolean header;
 
     @NotNull
     @Schema(example = ",")

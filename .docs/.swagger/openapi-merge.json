@@ -14,9 +14,6 @@
     },
     {
       "inputFile": "./api-search.yaml"
-    },
-    {
-      "inputFile": "./api-sidecar.yaml"
     }
   ],
   "output": "./api.yaml"

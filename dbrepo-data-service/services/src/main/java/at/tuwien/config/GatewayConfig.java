@@ -19,6 +19,9 @@ public class GatewayConfig {
     @Value("${dbrepo.endpoints.metadataService}")
     private String metadataEndpoint;
 
+    @Value("${dbrepo.endpoints.analyseService}")
+    private String analyseEndpoint;
+
     @Value("${dbrepo.system.username}")
     private String systemUsername;
 

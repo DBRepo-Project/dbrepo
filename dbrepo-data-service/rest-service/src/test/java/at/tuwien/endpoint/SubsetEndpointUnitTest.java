@@ -107,9 +107,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseUnavailableException, StorageUnavailableException, NotAllowedException, QueryMalformedException,
-            QueryNotFoundException, SidecarExportException, FormatNotAvailableException, StorageNotFoundException,
-            SQLException, MetadataServiceException {
+            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
+            FormatNotAvailableException, StorageNotFoundException, SQLException, MetadataServiceException,
+            ViewNotFoundException, MalformedException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
@@ -124,7 +124,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_format_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
-            UserNotFoundException, NotAllowedException, QueryNotFoundException, MetadataServiceException {
+            UserNotFoundException, QueryNotFoundException, MetadataServiceException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
@@ -141,9 +141,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_acceptCsv_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, NotAllowedException,
-            QueryMalformedException, QueryNotFoundException, SidecarExportException, FormatNotAvailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
+            QueryNotFoundException, FormatNotAvailableException, StorageNotFoundException, SQLException,
+            MetadataServiceException, ViewNotFoundException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -154,7 +154,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class), anyString()))
+        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -164,9 +164,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_timestamp_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, NotAllowedException,
-            QueryMalformedException, QueryNotFoundException, SidecarExportException, FormatNotAvailableException,
-            StorageNotFoundException, SQLException, MetadataServiceException {
+            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
+            QueryNotFoundException, FormatNotAvailableException, StorageNotFoundException, SQLException,
+            MetadataServiceException, ViewNotFoundException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -177,7 +177,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class), anyString()))
+        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -202,7 +202,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, SQLException, UserNotFoundException, NotAllowedException, QueryNotFoundException {
+            MetadataServiceException, SQLException, UserNotFoundException, QueryNotFoundException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
@@ -221,8 +221,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void findById_unavailableExport_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, SQLException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, StorageNotFoundException, UserNotFoundException, NotAllowedException,
-            QueryNotFoundException {
+            StorageNotFoundException, UserNotFoundException, QueryNotFoundException, ViewNotFoundException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("deadbeef")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
@@ -233,11 +232,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class), anyString()))
+        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
                 .thenReturn(mock);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .export(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), any(Instant.class), anyString());
+                .export(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), any(Instant.class));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -247,8 +246,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-    public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException, TableMalformedException,
-            NotAllowedException, SidecarExportException, QueryNotSupportedException, PaginationException,
+    public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException,
+            TableMalformedException, NotAllowedException, QueryNotSupportedException, PaginationException,
             StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException {
@@ -270,7 +269,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
     public void create_forbiddenKeyword_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT * FROM tbl")
+                .statement("SELECT COUNT(id) FROM tbl")
                 .build();
 
         /* test */
@@ -282,7 +281,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
     public void create_noPageSize_succeeds() throws UserNotFoundException, QueryStoreInsertException,
-            TableMalformedException, NotAllowedException, SidecarExportException, QueryNotSupportedException,
+            TableMalformedException, NotAllowedException, QueryNotSupportedException,
             PaginationException, StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
             QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             SQLException, MetadataServiceException {
@@ -343,7 +342,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException, NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, SidecarExportException, QueryNotSupportedException, PaginationException, StorageNotFoundException {
+    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
+            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
+            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
+            StorageNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_5_STATEMENT)
                 .build();
@@ -360,7 +363,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void create_anonymous_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException, NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, SidecarExportException, QueryNotSupportedException, PaginationException, StorageNotFoundException {
+    public void create_anonymous_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
+            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
+            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
+            StorageNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_5_STATEMENT)
                 .build();
@@ -645,9 +652,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void generic_findById(Long subsetId, MediaType accept, Instant timestamp) throws UserNotFoundException,
-            DatabaseUnavailableException, StorageUnavailableException, NotAllowedException, QueryMalformedException,
-            QueryNotFoundException, DatabaseNotFoundException, SidecarExportException, RemoteUnavailableException,
-            FormatNotAvailableException, StorageNotFoundException, MetadataServiceException {
+            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, FormatNotAvailableException,
+            StorageNotFoundException, MetadataServiceException, ViewNotFoundException, MalformedException {
 
         /* mock */
         when(mockHttpServletRequest.getHeader("Accept"))

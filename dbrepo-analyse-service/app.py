@@ -218,14 +218,19 @@ swagger = Swagger(app, config=swagger_config, template=template)
 app.config["JWT_ALGORITHM"] = "HS256"
 app.config["JWT_PUBKEY"] = '-----BEGIN PUBLIC KEY-----\n' + os.getenv("JWT_PUBKEY",
                                                                       "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB") + '\n-----END PUBLIC KEY-----'
+app.config["ANALYSE_NROWS"] = int(os.getenv('ANALYSE_NROWS', '10000'))
 app.config["AUTH_SERVICE_ENDPOINT"] = os.getenv("AUTH_SERVICE_ENDPOINT", "http://localhost/api/auth")
 app.config["AUTH_SERVICE_CLIENT"] = os.getenv("AUTH_SERVICE_CLIENT", "dbrepo-client")
 app.config["AUTH_SERVICE_CLIENT_SECRET"] = os.getenv("AUTH_SERVICE_CLIENT_SECRET", "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG")
 app.config["S3_ACCESS_KEY_ID"] = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
 app.config["S3_BUCKET"] = os.getenv('S3_BUCKET', 'dbrepo')
-app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'http://localhost:9000')
+app.config["S3_ENDPOINT"] = os.getenv('S3_ENDPOINT', 'localhost:9000')
+app.config["S3_PROTO"] = os.getenv('S3_PROTO', 'http')
 app.config["S3_SECRET_ACCESS_KEY"] = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
-app.config["ANALYSE_NROWS"] = int(os.getenv('ANALYSE_NROWS', '10000'))
+app.config["SPARK_ENDPOINT"] = os.getenv('SPARK_ENDPOINT', 'local[2]')
+app.config["METADATA_SERVICE_ENDPOINT"] = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://localhost')
+app.config["SYSTEM_USERNAME"] = os.getenv('SYSTEM_USERNAME', 'admin')
+app.config["SYSTEM_PASSWORD"] = os.getenv('SYSTEM_PASSWORD', 'admin')
 
 app.json_encoder = LazyJSONEncoder
 

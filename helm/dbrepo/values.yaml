@@ -27,7 +27,7 @@ clusterDomain: cluster.local
 ## @section Metadata Database
 
 metadatadb:
-  ## @param metadatadb.enabled Enable the Metadata Database.
+  ## @param metadatadb.enabled Enable the Metadata datadb.
   enabled: true
   ## @skip metadatadb.fullnameOverride
   fullnameOverride: metadata-db
@@ -122,32 +122,39 @@ authservice:
 ## @section Data Database
 
 datadb:
-  ## @param datadb.enabled Enable the Data Database.
-  enabled: true
   ## @skip datadb.fullnameOverride
   fullnameOverride: data-db
-  database:
-    image:
-      ## @param datadb.database.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-      debug: false
-    metrics:
-      ## @skip datadb.database.metrics.enabled
-      enabled: true
-    ## @skip datadb.database.secondary
-    secondary:
-      replicaCount: 2
-    auth:
-      ## @param datadb.auth.rootPassword The root user password.
-      rootPassword: dbrepo
-      ## @param datadb.auth.replicationUser The database replication user password
-      replicationUser: replication
-      ## @param datadb.auth.replicationPassword The database replication user password
-      replicationPassword: replication
+  ## @param datadb.host The hostname for the microservices.
+  host: data-db
+  rootUser:
+    ## @param datadb.rootUser.user The root username.
+    user: root
+    ## @param datadb.rootUser.password The root user password.
+    password: dbrepo
+  db:
+    ## @param datadb.db.name The database name.
+    name: dbrepo
+  galera:
+    mariabackup:
+      ## @param datadb.galera.mariabackup.user The database backup username.
+      user: backup
+      ## @param datadb.galera.mariabackup.password The database backup user password
+      password: backup
+  ## @param datadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
+  jdbcExtraArgs: ""
+  metrics:
+    ## @skip datadb.metrics.enabled The Prometheus settings.
+    enabled: false
+  ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
+  replicaCount: 3
+  persistence:
+    ## @param datadb.persistence.enabled Enable persistent storage.
+    enabled: true
 
 ## @section Search Database
 
 searchdb:
-  ## @param searchdb.enabled Enable the Data Database.
+  ## @param searchdb.enabled Enable the Data datadb.
   enabled: true
   ## @skip searchdb.fullnameOverride
   fullnameOverride: search-db
@@ -335,8 +342,10 @@ analyseservice:
   ## @param analyseservice.endpoint The url of the endpoint.
   endpoint: http://analyse-service
   s3:
-    ## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
-    endpoint: http://storage-service-s3:8333
+    ## @param analyseservice.s3.proto The protocol of the storage service endpoint.
+    proto: http
+    ## @param analyseservice.s3.endpoint The hostname and port of the storage service endpoint.
+    endpoint: storage-service-s3:8333
   ## @param analyseservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -490,13 +499,6 @@ dataservice:
     read: SELECT
     ## @param dataservice.grant.write The default database permissions for users with write access.
     write: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
-  default:
-    ## @param dataservice.default.date The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).
-    date: 3
-    ## @param dataservice.default.time The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).
-    time: 4
-    ## @param dataservice.default.timestamp The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42).
-    timestamp: 1
   rabbitmq:
     ## @param dataservice.rabbitmq.consumerConcurrentMin The minimal number of RabbitMQ consumers.
     consumerConcurrentMin: 2
@@ -649,6 +651,9 @@ identityservice:
     adminPassword: admin
     ## @skip identityservice.global.configUserEnabled
     configUserEnabled: false
+  containerSecurityContext:
+    ## @skip identityservice.containerSecurityContext.enabled
+    enabled: true
   ## @param identityservice.users The admin username for internal authentication.
   users: admin
   ## @param identityservice.userPasswords The admin user password for internal authentication.
@@ -767,7 +772,7 @@ ui:
       ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:
-      ## @param ui.public.database.extra Extra metadata displayed.
+      ## @param ui.public.datadb.extra Extra metadata displayed.
       extra: ""
     ## @skip ui.public.links
     links:

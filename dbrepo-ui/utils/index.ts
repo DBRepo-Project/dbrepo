@@ -1056,6 +1056,14 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
       message: error.message
     }
     return errorObj
+  } else if (error.code === 'ERR_BAD_REQUEST') {
+    /* timeout */
+    const errorObj: ApiErrorDto = {
+      status: error.code,
+      code: 'error.axios.malformed',
+      message: error.message
+    }
+    return errorObj
   }
   if (error.response?.data) {
     const errorObj: ApiErrorDto = (error.response?.data as ApiErrorDto)

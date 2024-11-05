@@ -30,7 +30,7 @@ public class IdentifierFunder implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String funderIdentifier;
 
-    @Column(name="funder_identifier_type", columnDefinition = "enum('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
+    @Column(name="funder_identifier_type", columnDefinition = "ENUM('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private IdentifierFunderType funderIdentifierType;
 

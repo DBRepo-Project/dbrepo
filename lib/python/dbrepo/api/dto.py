@@ -52,8 +52,6 @@ class CreateContainer(BaseModel):
     name: str
     host: str
     image_id: int
-    sidecar_host: str
-    sidecar_port: int
     privileged_username: str
     privileged_password: str
     ui_host: Optional[str] = None
@@ -94,8 +92,6 @@ class Container(BaseModel):
     port: int
     image: Image
     created: Timestamp
-    sidecar_host: Optional[str] = None
-    sidecar_port: Optional[int] = None
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
 
@@ -478,8 +474,8 @@ class DeleteData(BaseModel):
 class Import(BaseModel):
     location: str
     separator: str
+    header: bool
     quote: Optional[str] = None
-    skip_lines: Optional[int] = None
     line_termination: Optional[str] = None
 
 

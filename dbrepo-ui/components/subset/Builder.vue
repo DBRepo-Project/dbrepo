@@ -44,7 +44,7 @@
             v-if="isView"
             class="mt-1"
             dense>
-            <v-col md="8">
+            <v-col lg="8">
               <v-text-field
                 v-model="view.name"
                 :disabled="isExecuted"
@@ -74,7 +74,7 @@
           <v-row
             v-if="isView"
             dense>
-            <v-col md="8">
+            <v-col lg="8">
               <v-select
                 v-model="view.is_public"
                 :items="visibilities"
@@ -95,7 +95,7 @@
             <v-window-item
               value="0">
               <v-row dense>
-                <v-col md="4">
+                <v-col lg="4">
                   <v-select
                     v-model="table"
                     :disabled="isExecuted"
@@ -109,7 +109,7 @@
                     :hint="$t('pages.view.subpages.create.table.hint')"
                     :rules="[v => !!v || $t('validation.required')]" />
                 </v-col>
-                <v-col md="4">
+                <v-col lg="4">
                   <v-select
                     v-model="select"
                     item-title="internal_name"
@@ -143,7 +143,7 @@
                 </v-col>
               </v-row>
               <v-row v-if="select.length > 0">
-                <v-col md="8">
+                <v-col lg="8">
                   <v-btn
                     v-if="clauses.length === 0"
                     size="small"
@@ -157,15 +157,15 @@
               <div class="mb-5">
                 <v-row v-if="clauses.length > 0">
                   <v-col
-                    md="8"
+                    lg="8"
                     class="text-center">
-                    <pre>WHERE</pre>
+                    <pre>FILTER</pre>
                   </v-col>
                 </v-row>
                 <div v-for="(clause, idx) in clauses" :key="idx">
                   <v-row
                     v-if="clause.type === 'where'">
-                    <v-col md="3">
+                    <v-col lg="3">
                       <v-select
                         v-model="clause.params[0]"
                         :disabled="clausesDisabled"
@@ -177,16 +177,36 @@
                         :hint="$t('pages.subset.subpages.create.filter.column.hint')"
                         :items="select" />
                     </v-col>
-                    <v-col md="1">
+                    <v-col lg="2">
                       <v-select
                         v-model="clause.params[1]"
                         :disabled="clausesDisabled"
+                        item-title="value"
+                        item-value="value"
                         persistent-hint
-                        :label="$t('pages.subset.subpages.create.filter.operator.label')"
-                        :hint="$t('pages.subset.subpages.create.filter.operator.hint')"
-                        :items="operators" />
+                        :label="operatorHint(clause.params[1])"
+                        :hint="$t('pages.subset.subpages.create.filter.operator.label')"
+                        :items="operators">
+                        <template
+                          v-slot:append>
+                          <NuxtLink
+                            target="_blank"
+                            :href="documentationLink(clause.params[1])">
+                            <v-tooltip
+                              location="bottom">
+                              <template
+                                v-slot:activator="{ props }">
+                                <v-icon
+                                  v-bind="props"
+                                  icon="mdi-help-circle-outline" />
+                              </template>
+                              {{ $t('navigation.help') }}
+                            </v-tooltip>
+                          </NuxtLink>
+                        </template>
+                      </v-select>
                     </v-col>
-                    <v-col md="3">
+                    <v-col lg="3">
                       <v-text-field
                         v-model="clause.params[2]"
                         :disabled="clausesDisabled"
@@ -194,7 +214,7 @@
                         :label="$t('pages.subset.subpages.create.filter.value.label')"
                         :hint="$t('pages.subset.subpages.create.filter.value.hint')" />
                     </v-col>
-                    <v-col md="1">
+                    <v-col lg="1">
                       <v-btn
                         :disabled="clausesDisabled"
                         class="mt-4"
@@ -208,7 +228,7 @@
                   <v-row
                     v-else>
                     <v-col
-                      md="8"
+                      lg="8"
                       class="text-center">
                       <pre>{{ clause.type.toUpperCase() }}</pre>
                     </v-col>
@@ -308,48 +328,6 @@ export default {
         { title: this.$t('toolbars.database.public'), value: true },
         { title: this.$t('toolbars.database.private'), value: false },
       ],
-      operators: [
-        '=',
-        '<',
-        '>',
-        '<=',
-        '>=',
-        '<>',
-        '!=',
-        'like',
-        'not like',
-        'between',
-        'not between',
-        'ilike',
-        'not ilike',
-        'exists',
-        'not exist',
-        'rlike',
-        'not rlike',
-        'regexp',
-        'not regexp',
-        'match',
-        '&',
-        '|',
-        '^',
-        '<<',
-        '>>',
-        '~',
-        '~=',
-        '~*',
-        '!~',
-        '!~*',
-        '#',
-        '&&',
-        '@>',
-        '<@',
-        '||',
-        '&<',
-        '&>',
-        '-|-',
-        '@@',
-        '!!'
-      ],
       tableDetails: null,
       resultId: null,
       valid: false,
@@ -374,6 +352,12 @@ export default {
   computed: {
     columnNames () {
       return this.columns && this.columns.map(s => s.internal_name)
+    },
+    operators () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.container.image.operators
     },
     columns () {
       if (!this.table) {
@@ -451,13 +435,13 @@ export default {
           return true
         }
       }
-      return false
+      return this.sql.includes(';')
     },
     canExecute () {
       if (this.isView) {
         return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
       }
-      return this.query.raw !== null
+      return this.sql !== null && !this.sql.includes(';')
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -523,13 +507,13 @@ export default {
           await this.$router.push(`/database/${this.$route.params.database_id}/subset/${subset.id}/data`)
           this.loadingQuery = false
         })
-        .catch(({code}) => {
+        .catch(({code, message}) => {
           this.loadingQuery = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
             return
           }
-          toast.error(this.$t(code))
+          toast.error(`${this.$t(code)}: ${message}`)
         })
     },
     createView () {
@@ -618,6 +602,20 @@ export default {
       } else {
         this.select = []
       }
+    },
+    documentationLink (value) {
+      const filter = this.operators.filter(o => o.value === value)
+      if (filter.length !== 1) {
+        return null
+      }
+      return filter[0].documentation
+    },
+    operatorHint (value) {
+      const filter = this.operators.filter(o => o.value === value)
+      if (filter.length !== 1) {
+        return null
+      }
+      return filter[0].display_name
     }
   }
 }

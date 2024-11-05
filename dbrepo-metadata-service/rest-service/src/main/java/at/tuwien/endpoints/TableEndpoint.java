@@ -22,6 +22,7 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -361,11 +362,19 @@ public class TableEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_find")
     @Operation(summary = "Find table",
-            description = "Finds a table with id.",
+            description = "Finds a table with id. When the `system` role is present, the endpoint responds with additional connection metadata in the header.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table successfully",
+                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Host", description = "The database hostname", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Port", description = "The database port number", schema = @Schema(implementation = Integer.class)),
+                            @Header(name = "X-Type", description = "The JDBC connection type", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Database", description = "The database internal name", schema = @Schema(implementation = String.class)),
+                            @Header(name = "X-Table", description = "The table internal name", schema = @Schema(implementation = String.class)),
+                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TableDto.class))}),
@@ -405,9 +414,8 @@ public class TableEndpoint {
             headers.set("X-Port", "" + table.getDatabase().getContainer().getPort());
             headers.set("X-Type", table.getDatabase().getContainer().getImage().getJdbcMethod());
             headers.set("X-Database", table.getDatabase().getInternalName());
-            headers.set("X-Sidecar-Host", table.getDatabase().getContainer().getSidecarHost());
-            headers.set("X-Sidecar-Port", "" + table.getDatabase().getContainer().getSidecarPort());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Sidecar-Host X-Sidecar-Port");
+            headers.set("X-Table", table.getInternalName());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)

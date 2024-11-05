@@ -2,14 +2,13 @@
 """
 @author: Martin Weise
 """
-import json
 import logging
 import io
 import pandas
 
 from numpy import dtype, max, min
 from flask import current_app
-from pandas import DataFrame
+from pandas import DataFrame, NaT
 from pandas.errors import EmptyDataError, ParserError
 
 from api.dto import ColumnAnalysisDto, DataTypeDto, AnalysisDto
@@ -67,14 +66,14 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
         r = {}
 
         for name, dataType in df.dtypes.items():
+            # trim leading/trailing whitespaces
+            column_name = name.strip()
             col = ColumnAnalysisDto(type=DataTypeDto.TEXT, null_allowed=contains_null(df[name]))
-            r[name] = col
+            r[column_name] = col
             if dataType == dtype('float64'):
                 if pandas.to_numeric(df[name], errors='coerce').notnull().all():
                     logging.debug(f"mapped column {name} from float64 to decimal")
                     col.type = DataTypeDto.DECIMAL
-                    col.size = 40
-                    col.d = 10
                 else:
                     logging.debug(f"mapped column {name} from float64 to text")
                     col.type = DataTypeDto.TEXT
@@ -87,12 +86,15 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
                     continue
                 logging.debug(f"mapped column {name} from int64 to bigint")
                 col.type = DataTypeDto.BIGINT
-                col.size = 255
             elif dataType == dtype('O'):
                 try:
                     pandas.to_datetime(df[name], format='mixed')
-                    logging.debug(f"mapped column {name} from O to timestamp")
-                    col.type = DataTypeDto.TIMESTAMP
+                    if df[name].str.contains(':').any():
+                        logging.debug(f"mapped column {name} from O to timestamp")
+                        col.type = DataTypeDto.TIMESTAMP
+                        continue
+                    logging.debug(f"mapped column {name} from O to date")
+                    col.type = DataTypeDto.DATE
                     continue
                 except ValueError:
                     pass

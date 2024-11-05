@@ -9,6 +9,12 @@ author: Martin Weise
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
 
+    To directly access in Kubernetes (for e.g. debugging), forward the svc port to your local machine:
+
+    ```shell
+    kubectl [-n namespace] port-forward svc/metadata-db 3306:3306
+    ```
+
 ## Overview
 
 The metadata database is the single, central source of truth within DBRepo and holds all metadata information for

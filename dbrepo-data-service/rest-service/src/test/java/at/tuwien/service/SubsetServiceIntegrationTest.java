@@ -8,15 +8,13 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataDatabaseSidecarGateway;
+import at.tuwien.gateway.AnalyseServiceGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.utils.FileUtils;
-import com.google.common.hash.Hashing;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,11 +26,8 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -56,7 +51,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     private MetadataServiceGateway metadataServiceGateway;
 
     @MockBean
-    private DataDatabaseSidecarGateway dataDatabaseSidecarGateway;
+    private AnalyseServiceGateway dataDatabaseSidecarGateway;
 
     @MockBean
     private StorageService storageService;
@@ -208,8 +203,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findAll_succeeds() throws SQLException, QueryNotFoundException, NotAllowedException,
-            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
+    public void findAll_succeeds() throws SQLException, QueryNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* test */
         final List<QueryDto> response = findAll_generic(null);
@@ -219,7 +214,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findAll_onlyPersisted_succeeds() throws SQLException, QueryNotFoundException, NotAllowedException,
+    public void findAll_onlyPersisted_succeeds() throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* test */
@@ -229,7 +224,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findAll_onlyNonPersisted_succeeds() throws SQLException, QueryNotFoundException, NotAllowedException,
+    public void findAll_onlyNonPersisted_succeeds() throws SQLException, QueryNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* test */
@@ -240,8 +235,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void findById_succeeds() throws SQLException, QueryNotFoundException, UserNotFoundException,
-            NotAllowedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
-            InterruptedException {
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
         /* test */
         findById_generic(QUERY_1_ID);
@@ -258,8 +252,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void persist_succeeds() throws SQLException, QueryStorePersistException, QueryNotFoundException,
-            UserNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
-            DatabaseNotFoundException, InterruptedException {
+            UserNotFoundException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
+            InterruptedException {
 
         /* mock */
         when(metadataServiceGateway.getUserById(QUERY_2_CREATED_BY))
@@ -274,8 +268,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void persist_unPersist_succeeds() throws SQLException, QueryStorePersistException, QueryNotFoundException,
-            UserNotFoundException, NotAllowedException, RemoteUnavailableException, MetadataServiceException,
-            DatabaseNotFoundException, InterruptedException {
+            UserNotFoundException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
+            InterruptedException {
 
         /* mock */
         when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
@@ -309,8 +303,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @Test
     public void export_succeeds() throws SQLException, StorageUnavailableException, QueryMalformedException,
-            SidecarExportException, MetadataServiceException, RemoteUnavailableException, IOException,
-            StorageNotFoundException, InterruptedException {
+            RemoteUnavailableException, IOException, StorageNotFoundException, InterruptedException,
+            AnalyseServiceException, ViewNotFoundException, MalformedException {
 
         /* mock */
         MariaDbConfig.dropQueryStore(DATABASE_1_PRIVILEGED_DTO);
@@ -319,7 +313,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         export_generic();
     }
 
-    protected void findById_generic(Long queryId) throws NotAllowedException, RemoteUnavailableException, SQLException,
+    protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
             UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
 
@@ -340,7 +334,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     }
 
     protected List<QueryDto> findAll_generic(Boolean filterPersisted) throws SQLException, QueryNotFoundException,
-            NotAllowedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
 
         /* pre-condition */
@@ -385,9 +379,9 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(0, response.size());
     }
 
-    protected void export_generic() throws StorageUnavailableException, SQLException,
-            QueryMalformedException, SidecarExportException, MetadataServiceException, RemoteUnavailableException,
-            StorageNotFoundException, IOException, InterruptedException {
+    protected void export_generic() throws StorageUnavailableException, SQLException, RemoteUnavailableException,
+            QueryMalformedException, StorageNotFoundException, IOException, InterruptedException,
+            AnalyseServiceException, ViewNotFoundException, MalformedException {
         final String filename = RandomStringUtils.randomAlphanumeric(40).toLowerCase() + ".tmp";
         EXPORT_RESOURCE_DTO.setFilename(filename);
 
@@ -397,12 +391,12 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         doNothing()
                 .when(dataDatabaseSidecarGateway)
-                .exportFile(anyString(), anyInt(), eq(filename));
-        when(storageService.getResource(anyString()))
+                .exportTable(anyLong(), anyLong());
+        when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
 
         /* test */
-        final ExportResourceDto response = queryService.export(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, Instant.now(), filename);
+        final ExportResourceDto response = queryService.export(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, Instant.now());
         assertEquals(filename, response.getFilename());
         assertNotNull(response.getResource().getInputStream());
     }
