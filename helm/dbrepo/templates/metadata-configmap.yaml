@@ -16,7 +16,7 @@ data:
     COMMIT;
   01-setup-schema.sql: |
     BEGIN;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_users`
     (
         id               character varying(36)  NOT NULL,
@@ -33,7 +33,7 @@ data:
         UNIQUE (username),
         UNIQUE (email)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_images`
     (
         id            SERIAL,
@@ -51,7 +51,7 @@ data:
         UNIQUE (name, version),
         UNIQUE (is_default)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_containers`
     (
         id                  SERIAL,
@@ -72,7 +72,7 @@ data:
         quota               integer                NOT NULL DEFAULT 50,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_data`
     (
         ID           SERIAL,
@@ -83,7 +83,7 @@ data:
         Seperator    text,
         PRIMARY KEY (ID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_licenses`
     (
         identifier  character varying(255) NOT NULL,
@@ -92,7 +92,7 @@ data:
         PRIMARY KEY (identifier),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_databases`
     (
         id             SERIAL,
@@ -115,14 +115,14 @@ data:
         FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
         FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
     (
         dbid     BIGINT                 NOT NULL,
         subjects character varying(255) NOT NULL,
         PRIMARY KEY (dbid, subjects)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_tables`
     (
         ID              SERIAL,
@@ -154,7 +154,7 @@ data:
         FOREIGN KEY (created_by) REFERENCES mdb_users (id),
         FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns`
     (
         ID               SERIAL,
@@ -180,7 +180,7 @@ data:
         PRIMARY KEY (ID),
         UNIQUE (tID, internal_name)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
     (
         id        SERIAL,
@@ -189,7 +189,7 @@ data:
         FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
     (
         id        SERIAL,
@@ -198,7 +198,7 @@ data:
         FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
     (
         cID           BIGINT UNSIGNED,
@@ -209,7 +209,7 @@ data:
         PRIMARY KEY (cID),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
     (
         cID           BIGINT UNSIGNED,
@@ -221,7 +221,7 @@ data:
         PRIMARY KEY (cID),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
     (
         fkid      SERIAL,
@@ -235,7 +235,7 @@ data:
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
         FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
     (
         pkid SERIAL,
@@ -245,7 +245,7 @@ data:
         FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
         FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
     (
         id   SERIAL,
@@ -258,7 +258,7 @@ data:
         FOREIGN KEY (cid) REFERENCES mdb_columns (id),
         FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
     (
         uid      SERIAL,
@@ -268,7 +268,7 @@ data:
         PRIMARY KEY (uid),
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
     );
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
     (
         id  SERIAL,
@@ -278,7 +278,7 @@ data:
         FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
         FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
     (
         id     SERIAL,
@@ -287,8 +287,8 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
     ) WITH SYSTEM VERSIONING;
-
-
+    
+    
     CREATE TABLE IF NOT EXISTS `mdb_concepts`
     (
         id          SERIAL,
@@ -299,7 +299,7 @@ data:
         PRIMARY KEY (id),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_units`
     (
         id          SERIAL,
@@ -310,7 +310,7 @@ data:
         PRIMARY KEY (id),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
     (
         id      BIGINT UNSIGNED NOT NULL,
@@ -319,7 +319,7 @@ data:
         PRIMARY KEY (id, cid),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_columns_units`
     (
         id      BIGINT UNSIGNED NOT NULL,
@@ -328,7 +328,7 @@ data:
         PRIMARY KEY (id, cID),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_view`
     (
         id            SERIAL,
@@ -346,7 +346,7 @@ data:
         FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
         FOREIGN KEY (created_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
     (
         id            SERIAL,
@@ -358,7 +358,7 @@ data:
         display_end   timestamp                         NULL,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_ontologies`
     (
         id              SERIAL,
@@ -373,7 +373,7 @@ data:
         UNIQUE (uri(200)),
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     (
         id               SERIAL,
@@ -389,7 +389,7 @@ data:
         FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
         UNIQUE (view_id, internal_name)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     (
         id                SERIAL,
@@ -418,7 +418,7 @@ data:
         FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
         FOREIGN KEY (created_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
     (
         pid        BIGINT UNSIGNED NOT NULL,
@@ -427,7 +427,7 @@ data:
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
         FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
     (
         id         SERIAL,
@@ -438,7 +438,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
     (
         id                     SERIAL,
@@ -453,7 +453,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
     (
         id               SERIAL,
@@ -464,19 +464,19 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
     (
         id       SERIAL,
-        pid      BIGINT UNSIGNED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      NOT NULL,
-        value    varchar(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
+        pid      BIGINT UNSIGNED NOT NULL,
+        value    varchar(255)    NOT NULL,
         type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
         relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
         PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
         UNIQUE (pid, value)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
     (
         id                                SERIAL,
@@ -495,7 +495,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_update`
     (
         uUserID character varying(255) NOT NULL,
@@ -504,7 +504,7 @@ data:
         PRIMARY KEY (uUserID, uDBID),
         FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_access`
     (
         aUserID  character varying(255) NOT NULL,
@@ -514,7 +514,7 @@ data:
         created  timestamp              NOT NULL DEFAULT NOW(),
         PRIMARY KEY (aUserID, aDBID)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_have_access`
     (
         user_id     character varying(36)                   NOT NULL,
@@ -524,7 +524,7 @@ data:
         PRIMARY KEY (user_id, database_id),
         FOREIGN KEY (user_id) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-
+    
     CREATE TABLE IF NOT EXISTS `mdb_image_types`
     (
         id            SERIAL,
@@ -551,21 +551,33 @@ data:
         FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
         UNIQUE (value)
     ) WITH SYSTEM VERSIONING;
-
+    
+    CREATE TABLE IF NOT EXISTS `mdb_image_operators`
+    (
+        id            SERIAL,
+        image_id      BIGINT UNSIGNED NOT NULL,
+        display_name  varchar(255)    NOT NULL,
+        value         varchar(255)    NOT NULL,
+        documentation TEXT            NOT NULL,
+        PRIMARY KEY (id),
+        FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
+        UNIQUE (value)
+    ) WITH SYSTEM VERSIONING;
+    
     COMMIT;
-
+    
     BEGIN;
-
+    
     INSERT INTO `mdb_licenses` (identifier, uri, description)
     VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
             'CC0 waives copyright interest in a work you''ve created and dedicates it to the world-wide public domain. Use CC0 to opt out of copyright entirely and ensure your work has the widest reach.'),
            ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
             'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
-
+    
     INSERT INTO `mdb_images` (name, registry, version, default_port, dialect, driver_class, jdbc_method)
     VALUES ('mariadb', 'docker.io', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver',
             'mariadb');
-
+    
     INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
                                    size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
                                    documentation, is_quoted, is_buildable, is_generated)
@@ -635,7 +647,38 @@ data:
             null, 'https://mariadb.com/kb/en/varbinary/', false, true, false),
            (1, 'VARCHAR(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null, null,
             null, 'https://mariadb.com/kb/en/varchar/', false, true, false);
-
+    
+    INSERT INTO `mdb_image_operators` (image_id, display_name, value, documentation)
+    VALUES (1, 'Equal operator', '=', 'https://mariadb.com/kb/en/assignment-operators-assignment-operator/'),
+           (1, 'NULL-safe equal operator', '<=>', 'https://mariadb.com/kb/en/null-safe-equal/'),
+           (1, 'Less-than operator', '<', 'https://mariadb.com/kb/en/less-than/'),
+           (1, 'Less than or equal operator', '<=', 'https://mariadb.com/kb/en/less-than-or-equal/'),
+           (1, 'Greater-than operator', '>', 'https://mariadb.com/kb/en/greater-than/'),
+           (1, 'Greater than or equal operator', '>=', 'https://mariadb.com/kb/en/greater-than-or-equal/'),
+           (1, 'Not equal operator', '!=', 'https://mariadb.com/kb/en/not-equal/'),
+           (1, 'Addition operator', '+', 'https://mariadb.com/kb/en/addition-operator/'),
+           (1, 'Division operator', '/', 'https://mariadb.com/kb/en/division-operator/'),
+           (1, 'Modulo operator', '%', 'https://mariadb.com/kb/en/modulo-operator/'),
+           (1, 'Multiplication operator', '*', 'https://mariadb.com/kb/en/multiplication-operator/'),
+           (1, 'Subtraction operator', '-', 'https://mariadb.com/kb/en/subtraction-operator-/'),
+           (1, 'LIKE', 'LIKE', 'https://mariadb.com/kb/en/like/'),
+           (1, 'NOT LIKE', 'NOT LIKE', 'https://mariadb.com/kb/en/not-like/'),
+           (1, 'IN', 'IN', 'https://mariadb.com/kb/en/in/'),
+           (1, 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
+           (1, 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
+           (1, 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
+           (1, 'IS NOT NULL', 'IS NOT NULL', 'https://mariadb.com/kb/en/is-not-null/'),
+           (1, 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
+           (1, 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
+           (1, 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
+           (1, 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/'),
+           (1, 'Bitwise AND', '&', 'https://mariadb.com/kb/en/bitwise_and/'),
+           (1, 'Bitwise OR', '|', 'https://mariadb.com/kb/en/bitwise-or/'),
+           (1, 'Bitwise XOR', '^', 'https://mariadb.com/kb/en/bitwise-xor/'),
+           (1, 'Bitwise NOT', '~', 'https://mariadb.com/kb/en/bitwise-not/'),
+           (1, 'Left shift', '<<', 'https://mariadb.com/kb/en/shift-left/'),
+           (1, 'Right shift', '>>', 'https://mariadb.com/kb/en/shift-right/');
+    
     INSERT
     INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
     VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',

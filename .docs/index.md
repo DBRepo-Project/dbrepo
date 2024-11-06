@@ -10,7 +10,7 @@ author: Martin Weise
 [![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo){ tabindex=-1 }
 [![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services){ tabindex=-1 }
 
-Documentation for version: [v1.4.7](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
+Documentation for version: [v1.5](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
 DBRepo is a repository for data in databases that are used from the beginning until the end of a research 
 project supporting data evolution, -citation and -versioning. It implements the query store of the 
