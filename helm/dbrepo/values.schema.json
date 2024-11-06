@@ -123,6 +123,9 @@
                     "properties": {
                         "endpoint": {
                             "type": "string"
+                        },
+                        "proto": {
+                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -514,41 +517,23 @@
         },
         "datadb": {
             "properties": {
-                "database": {
+                "db": {
                     "properties": {
-                        "galera": {
-                            "properties": {
-                                "mariabackup": {
-                                    "properties": {
-                                        "password": {
-                                            "type": "string"
-                                        },
-                                        "user": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "image": {
-                            "properties": {
-                                "debug": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "metrics": {
-                            "properties": {
-                                "enabled": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "rootUser": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "extraFlags": {
+                    "type": "string"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "galera": {
+                    "properties": {
+                        "mariabackup": {
                             "properties": {
                                 "password": {
                                     "type": "string"
@@ -562,11 +547,41 @@
                     },
                     "type": "object"
                 },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "fullnameOverride": {
+                "host": {
                     "type": "string"
+                },
+                "jdbcExtraArgs": {
+                    "type": "string"
+                },
+                "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "persistence": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "rootUser": {
+                    "properties": {
+                        "password": {
+                            "type": "string"
+                        },
+                        "user": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
@@ -615,20 +630,6 @@
                                 }
                             },
                             "type": "object"
-                        }
-                    },
-                    "type": "object"
-                },
-                "default": {
-                    "properties": {
-                        "date": {
-                            "type": "integer"
-                        },
-                        "time": {
-                            "type": "integer"
-                        },
-                        "timestamp": {
-                            "type": "integer"
                         }
                     },
                     "type": "object"
@@ -769,6 +770,14 @@
         },
         "identityservice": {
             "properties": {
+                "containerSecurityContext": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
                 "customSchemaFiles": {
                     "properties": {
                         "00-memberof.ldif": {
@@ -945,6 +954,9 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "extraFlags": {
+                    "type": "string"
                 },
                 "extraInitDbScripts": {
                     "properties": {},

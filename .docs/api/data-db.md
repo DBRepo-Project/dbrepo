@@ -19,29 +19,15 @@ author: Martin Weise
 
 The Data Database contains the research data. In the default configuration, only one database of this type is deployed.
 Any number of MariaDB ata databases can be integrated into DBRepo, even non-empty databases. The database needs to be
-registered in the Metadata Database to be visible in the [User Interface](../ui) and usable from e.g. the Python 
+registered in the Metadata Database to be visible in the [User Interface](../ui) and usable from e.g. the Python
 Library.
 
 ## Data
 
-The procedures require the user-generated databases to have the same collation (because of comparison operations).
-Ensure that the Data Database has the character set `utf8mb4` and collation `utf8mb4_general_ci` in your `my.cfg`:
-
-```ini
-[mysqld]
-character_set_server=utf8mb4
-collation_server=utf8mb4_general_ci
-```
-
-We observed this unexpected behavior for
+The procedures requires the in parameter of the `hash_table` stored procedure to have the same collation as the
+`information_schema.columns` table. We observed this unexpected behavior for
 the [MariaDB Galera chart](https://artifacthub.io/packages/helm/bitnami/mariadb-galera) powered by Bitnami and had to
-set extra flags. We could not observe this behavior with
-the [MariaDB Galera container image](https://hub.docker.com/r/bitnami/mariadb-galera) itself.
-
-```yaml
-mariadb-galera:
-  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
-```
+set extra flags.
 
 ### Backup
 
