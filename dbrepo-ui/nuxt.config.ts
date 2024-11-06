@@ -1,4 +1,5 @@
 import {transformAssetUrls} from 'vite-plugin-vuetify'
+import vuetify from 'vite-plugin-vuetify'
 
 const proxy: any = {}
 
@@ -117,7 +118,12 @@ export default defineNuxtConfig({
     '@artmizu/nuxt-prometheus',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
-    '@pinia-plugin-persistedstate/nuxt'
+    '@pinia-plugin-persistedstate/nuxt',
+    async (options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
+        vuetify()
+      ))
+    },
   ],
 
   pinia: {
