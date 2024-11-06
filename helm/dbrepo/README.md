@@ -49,14 +49,14 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Global parameters
 
 | Name                                                  | Description                                                                                                                                                                                                                                                                                                                                                         | Value  |
-|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `global.compatibility.openshift.adaptSecurityContext` | Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation) | `auto` |
 | `global.storageClass`                                 | Global StorageClass for Persistent Volume(s)                                                                                                                                                                                                                                                                                                                        | `""`   |
 
 ### Common parameters
 
 | Name            | Description           | Value                 |
-|-----------------|-----------------------|-----------------------|
+| --------------- | --------------------- | --------------------- |
 | `hostname`      | The hostname.         | `example.com`         |
 | `gateway`       | The gateway endpoint. | `https://example.com` |
 | `strategyType`  | The image pull        | `RollingUpdate`       |
@@ -64,24 +64,25 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Metadata Database
 
-| Name                                     | Description                                                      | Value         |
-|------------------------------------------|------------------------------------------------------------------|---------------|
-| `metadatadb.enabled`                     | Enable the Metadata Database.                                    | `true`        |
-| `metadatadb.host`                        | The hostname for the microservices.                              | `metadata-db` |
-| `metadatadb.rootUser.user`               | The root username.                                               | `root`        |
-| `metadatadb.rootUser.password`           | The root user password.                                          | `dbrepo`      |
-| `metadatadb.db.name`                     | The database name.                                               | `dbrepo`      |
-| `metadatadb.galera.mariabackup.user`     | The database backup username.                                    | `backup`      |
-| `metadatadb.galera.mariabackup.password` | The database backup user password                                | `backup`      |
-| `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.   | `""`          |
-| `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start. | `{}`          |
-| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1          | `3`           |
-| `metadatadb.persistence.enabled`         | Enable persistent storage.                                       | `true`        |
+| Name                                     | Description                                                                                                                            | Value                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `metadatadb.enabled`                     | Enable the Metadata datadb.                                                                                                            | `true`                                                                 |
+| `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
+| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
+| `metadatadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
+| `metadatadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
+| `metadatadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
+| `metadatadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
+| `metadatadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
+| `metadatadb.extraInitDbScripts`          | Additional init.db scripts that are executed on the first start.                                                                       | `{}`                                                                   |
+| `metadatadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
+| `metadatadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Auth Service
 
 | Name                             | Description                                                  | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
-|----------------------------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `authservice.enabled`            | Enable the Auth Service.                                     | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `authservice.image.debug`        | Set the logging level to `trace`. Otherwise, set to `info`.  | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `authservice.endpoint`           | The hostname for the microservices.                          | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -93,19 +94,24 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Data Database
 
-| Name                              | Description                                                 | Value         |
-|-----------------------------------|-------------------------------------------------------------|---------------|
-| `datadb.enabled`                  | Enable the Data Database.                                   | `true`        |
-| `datadb.database.image.debug`     | Set the logging level to `trace`. Otherwise, set to `info`. | `false`       |
-| `datadb.auth.rootPassword`        | The root user password.                                     | `dbrepo`      |
-| `datadb.auth.replicationUser`     | The database replication user password                      | `replication` |
-| `datadb.auth.replicationPassword` | The database replication user password                      | `replication` |
+| Name                                 | Description                                                                                                                            | Value                                                                  |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
+| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
+| `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
+| `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
+| `datadb.galera.mariabackup.user`     | The database backup username.                                                                                                          | `backup`                                                               |
+| `datadb.galera.mariabackup.password` | The database backup user password                                                                                                      | `backup`                                                               |
+| `datadb.jdbcExtraArgs`               | The extra arguments for JDBC connections in the microservices.                                                                         | `""`                                                                   |
+| `datadb.replicaCount`                | The number of cluster nodes, should be uneven i.e. 2n+1                                                                                | `3`                                                                    |
+| `datadb.persistence.enabled`         | Enable persistent storage.                                                                                                             | `true`                                                                 |
 
 ### Search Database
 
 | Name                   | Description                         | Value       |
-|------------------------|-------------------------------------|-------------|
-| `searchdb.enabled`     | Enable the Data Database.           | `true`      |
+| ---------------------- | ----------------------------------- | ----------- |
+| `searchdb.enabled`     | Enable the Data datadb.             | `true`      |
 | `searchdb.host`        | The hostname for the microservices. | `search-db` |
 | `searchdb.port`        | The port for the microservices.     | `9200`      |
 | `searchdb.clusterName` | The cluster name.                   | `search-db` |
@@ -113,61 +119,62 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Upload Service
 
 | Name                         | Description                | Value  |
-|------------------------------|----------------------------|--------|
+| ---------------------------- | -------------------------- | ------ |
 | `uploadservice.enabled`      | Enable the Upload Service. | `true` |
 | `uploadservice.replicaCount` | The number of replicas.    | `2`    |
 
 ### Broker Service
 
-| Name                                | Description                                                                                                                      | Value                                                                        |
-|-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| `brokerservice.enabled`             | Enable the Broker Service.                                                                                                       | `true`                                                                       |
-| `brokerservice.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                       |
-| `brokerservice.endpoint`            | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                |
-| `brokerservice.host`                | The hostname for the microservices.                                                                                              | `broker-service`                                                             |
-| `brokerservice.port`                | The port for the microservices.                                                                                                  | `5672`                                                                       |
-| `brokerservice.virtualHost`         | The default virtual host name.                                                                                                   | `dbrepo`                                                                     |
-| `brokerservice.queueName`           | The default queue name.                                                                                                          | `dbrepo`                                                                     |
-| `brokerservice.exchangeName`        | The default exchange name.                                                                                                       | `dbrepo`                                                                     |
-| `brokerservice.routingKey`          | The default routing key binding from the default queue to the default exchange.                                                  | `dbrepo.#`                                                                   |
-| `brokerservice.connectionTimeout`   | The connection timeout in ms.                                                                                                    | `60000`                                                                      |
-| `brokerservice.ldap.binddn`         | The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`. | `cn=admin,dc=dbrepo,dc=at`                                                   |
-| `brokerservice.ldap.bindpw`         | The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.       | `admin`                                                                      |
-| `brokerservice.ldap.uidField`       | The field containing the user id.                                                                                                | `uid`                                                                        |
-| `brokerservice.ldap.basedn`         | The base domain name containing the users.                                                                                       | `dc=dbrepo,dc=at`                                                            |
-| `brokerservice.ldap.userDnPattern`  | The pattern to determine the user.                                                                                               | `${username}`                                                                |
-| `brokerservice.extraPlugins`        | The list of plugins to be activated.                                                                                             | `rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl` |
-| `brokerservice.persistence.enabled` | If set to true, a PVC will be created.                                                                                           | `false`                                                                      |
-| `brokerservice.replicaCount`        | The number of replicas.                                                                                                          | `1`                                                                          |
+| Name                                | Description                                                                                                                      | Value                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `brokerservice.enabled`             | Enable the Broker Service.                                                                                                       | `true`                                                                                     |
+| `brokerservice.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`.                                                                      | `true`                                                                                     |
+| `brokerservice.endpoint`            | The management api endpoint for the microservices.                                                                               | `http://broker-service:15672`                                                              |
+| `brokerservice.host`                | The hostname for the microservices.                                                                                              | `broker-service`                                                                           |
+| `brokerservice.port`                | The port for the microservices.                                                                                                  | `5672`                                                                                     |
+| `brokerservice.virtualHost`         | The default virtual host name.                                                                                                   | `dbrepo`                                                                                   |
+| `brokerservice.queueName`           | The default queue name.                                                                                                          | `dbrepo`                                                                                   |
+| `brokerservice.exchangeName`        | The default exchange name.                                                                                                       | `dbrepo`                                                                                   |
+| `brokerservice.routingKey`          | The default routing key binding from the default queue to the default exchange.                                                  | `dbrepo.#`                                                                                 |
+| `brokerservice.connectionTimeout`   | The connection timeout in ms.                                                                                                    | `60000`                                                                                    |
+| `brokerservice.ldap.binddn`         | The domain name the broker service should bind to. In many cases this is the admin user from `identityservice.global.adminUser`. | `cn=admin,dc=dbrepo,dc=at`                                                                 |
+| `brokerservice.ldap.bindpw`         | The password to bind on the identity service. In many cases this value is equal to `identityservice.global.adminPassword`.       | `admin`                                                                                    |
+| `brokerservice.ldap.uidField`       | The field containing the user id.                                                                                                | `uid`                                                                                      |
+| `brokerservice.ldap.basedn`         | The base domain name containing the users.                                                                                       | `dc=dbrepo,dc=at`                                                                          |
+| `brokerservice.ldap.userDnPattern`  | The pattern to determine the user.                                                                                               | `${username}`                                                                              |
+| `brokerservice.extraPlugins`        | The list of plugins to be activated.                                                                                             | `rabbitmq_prometheus rabbitmq_auth_backend_ldap rabbitmq_auth_mechanism_ssl rabbitmq_mqtt` |
+| `brokerservice.persistence.enabled` | If set to true, a PVC will be created.                                                                                           | `false`                                                                                    |
+| `brokerservice.replicaCount`        | The number of replicas.                                                                                                          | `1`                                                                                        |
 
 ### Analyse Service
 
-| Name                                                               | Description                                                 | Value                            |
-|--------------------------------------------------------------------|-------------------------------------------------------------|----------------------------------|
-| `analyseservice.enabled`                                           | Enable the Broker Service.                                  | `true`                           |
-| `analyseservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                          |
-| `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                               | `true`                           |
-| `analyseservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                          | `Always`                         |
-| `analyseservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface              | `[]`                             |
-| `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`                             |
-| `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`                           |
-| `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`                           |
-| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `{}`                             |
-| `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`                           |
-| `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`                           |
-| `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`                           |
-| `analyseservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                        | `false`                          |
-| `analyseservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem     | `false`                          |
-| `analyseservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot               | `["ALL"]`                        |
-| `analyseservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile            | `RuntimeDefault`                 |
-| `analyseservice.endpoint`                                          | The url of the endpoint.                                    | `http://analyse-service`         |
-| `analyseservice.s3.endpoint`                                       | The S3-capable endpoint the microservice connects to.       | `http://storage-service-s3:8333` |
-| `analyseservice.replicaCount`                                      | The number of replicas.                                     | `2`                              |
+| Name                                                               | Description                                                 | Value                     |
+| ------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------- |
+| `analyseservice.enabled`                                           | Enable the Broker Service.                                  | `true`                    |
+| `analyseservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`                   |
+| `analyseservice.podSecurityContext.enabled`                        | Enable pods' Security Context                               | `true`                    |
+| `analyseservice.podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                          | `Always`                  |
+| `analyseservice.podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface              | `[]`                      |
+| `analyseservice.podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                 | `[]`                      |
+| `analyseservice.podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                 | `1001`                    |
+| `analyseservice.containerSecurityContext.enabled`                  | Enabled containers' Security Context                        | `true`                    |
+| `analyseservice.containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                            | `{}`                      |
+| `analyseservice.containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser         | `1001`                    |
+| `analyseservice.containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup        | `1001`                    |
+| `analyseservice.containerSecurityContext.runAsNonRoot`             | Set RabbitMQ container's Security Context runAsNonRoot      | `true`                    |
+| `analyseservice.containerSecurityContext.allowPrivilegeEscalation` | Set container's privilege escalation                        | `false`                   |
+| `analyseservice.containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem     | `false`                   |
+| `analyseservice.containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot               | `["ALL"]`                 |
+| `analyseservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile            | `RuntimeDefault`          |
+| `analyseservice.endpoint`                                          | The url of the endpoint.                                    | `http://analyse-service`  |
+| `analyseservice.s3.proto`                                          | The protocol of the storage service endpoint.               | `http`                    |
+| `analyseservice.s3.endpoint`                                       | The hostname and port of the storage service endpoint.      | `storage-service-s3:8333` |
+| `analyseservice.replicaCount`                                      | The number of replicas.                                     | `2`                       |
 
 ### Metadata Service
 
 | Name                                                                | Description                                                                        | Value                            |
-|---------------------------------------------------------------------|------------------------------------------------------------------------------------|----------------------------------|
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------- |
 | `metadataservice.enabled`                                           | Enable the Broker Service.                                                         | `true`                           |
 | `metadataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                        | `false`                          |
 | `metadataservice.podSecurityContext.enabled`                        | Enable pods' Security Context                                                      | `true`                           |
@@ -205,7 +212,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Data Service
 
 | Name                                                            | Description                                                                                                                                      | Value                                                                                                                       |
-|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `dataservice.enabled`                                           | Enable the Broker Service.                                                                                                                       | `true`                                                                                                                      |
 | `dataservice.endpoint`                                          | Absolute URL to the data service in the form of http://host:port                                                                                 | `http://data-service`                                                                                                       |
 | `dataservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                                                                                      | `false`                                                                                                                     |
@@ -225,9 +232,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | `dataservice.containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                                                                                 | `RuntimeDefault`                                                                                                            |
 | `dataservice.grant.read`                                        | The default database permissions for users with read access.                                                                                     | `SELECT`                                                                                                                    |
 | `dataservice.grant.write`                                       | The default database permissions for users with write access.                                                                                    | `SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE` |
-| `dataservice.default.date`                                      | The default date format id for dates. Default: YYYY-MM-dd (e.g. 2024-06-15).                                                                     | `3`                                                                                                                         |
-| `dataservice.default.time`                                      | The default date format id for times. Default: HH:mm:ss (e.g. 14:23:42).                                                                         | `4`                                                                                                                         |
-| `dataservice.default.timestamp`                                 | The default date format id for timestamps. Default: YYYY-MM-dd HH:mm:ss (e.g. 2024-06-15 14:23:42).                                              | `1`                                                                                                                         |
 | `dataservice.rabbitmq.consumerConcurrentMin`                    | The minimal number of RabbitMQ consumers.                                                                                                        | `2`                                                                                                                         |
 | `dataservice.rabbitmq.consumerConcurrentMax`                    | The maximal number of RabbitMQ consumers.                                                                                                        | `6`                                                                                                                         |
 | `dataservice.rabbitmq.requeueRejected`                          | If set to true, rejected tuples will be re-queued.                                                                                               | `false`                                                                                                                     |
@@ -243,7 +247,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Search Service
 
 | Name                                                              | Description                                                        | Value                   |
-|-------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------|
+| ----------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------- |
 | `searchservice.enabled`                                           | Enable the Broker Service.                                         | `true`                  |
 | `searchservice.endpoint`                                          | Absolute URL to the search service in the form of http://host:port | `http://search-service` |
 | `searchservice.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.        | `false`                 |
@@ -266,7 +270,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Storage Service
 
 | Name                                          | Description                                                                            | Value            |
-|-----------------------------------------------|----------------------------------------------------------------------------------------|------------------|
+| --------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------- |
 | `storageservice.enabled`                      | Enable the Storage Service.                                                            | `true`           |
 | `storageservice.mariadb.auth.rootPassword`    | The user password for the root user.                                                   | `seaweedfsdb`    |
 | `storageservice.filer.enabled`                | Enable the storage service filer which is required for S3.                             | `true`           |
@@ -279,7 +283,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Identity Service
 
 | Name                                   | Description                                                                                                   | Value             |
-|----------------------------------------|---------------------------------------------------------------------------------------------------------------|-------------------|
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------- |
 | `identityservice.enabled`              | Enable the Identity Service.                                                                                  | `true`            |
 | `identityservice.global.ldapDomain`    | The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.                        | `dc=dbrepo,dc=at` |
 | `identityservice.global.adminUser`     | The admin username that is used to bind.                                                                      | `admin`           |
@@ -294,7 +298,7 @@ The command removes all the Kubernetes components associated with the chart and 
 ### User Interface
 
 | Name                                                   | Description                                                                                          | Value                   |
-|--------------------------------------------------------|------------------------------------------------------------------------------------------------------|-------------------------|
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------------------- |
 | `ui.enabled`                                           | Enable the Broker Service.                                                                           | `true`                  |
 | `ui.image.debug`                                       | Set the logging level to `trace`. Otherwise, set to `info`.                                          | `false`                 |
 | `ui.podSecurityContext.enabled`                        | Enable pods' Security Context                                                                        | `true`                  |
@@ -331,20 +335,20 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Dashboard Service
 
 | Name                                          | Description                                                                                                            | Value  |
-|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|--------|
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------ |
 | `dashboardservice.enabled`                    | Enable the Dashboard Service.                                                                                          | `true` |
 | `dashboardservice.dashboardsProvider.enabled` | Enable the default dashboard provisioning provider to routinely import dashboards from /opt/bitnami/grafana/dashboards | `true` |
 
 ### Metric Service
 
 | Name               | Description                | Value  |
-|--------------------|----------------------------|--------|
+| ------------------ | -------------------------- | ------ |
 | `metricdb.enabled` | Enable the Metric Service. | `true` |
 
 ### Ingress
 
 | Name                     | Description                                                                                                     | Value          |
-|--------------------------|-----------------------------------------------------------------------------------------------------------------|----------------|
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------- |
 | `ingress.enabled`        | Enable the ingress.                                                                                             | `false`        |
 | `ingress.className`      | The ingress class name.                                                                                         | `nginx`        |
 | `ingress.tls.enabled`    | Enable the ingress.                                                                                             | `true`         |
