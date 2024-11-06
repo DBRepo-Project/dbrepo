@@ -416,7 +416,7 @@ release-docs:
       - /^release-.*/
   before_script:
     - "pip install pipenv"
-    - "pipenv install --dev --system --deploy
+    - "pipenv install --dev --system --deploy"
     - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
   script:
