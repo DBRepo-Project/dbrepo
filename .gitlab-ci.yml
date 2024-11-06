@@ -415,9 +415,9 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add --update alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
-    - "pip install -r ./requirements.txt"
+    - "pipenv install --dev --system --deploy
+    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
   script:
     - "make gen-lib-doc gen-docs-doc package-config"
