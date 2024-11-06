@@ -5,7 +5,7 @@ author: Martin Weise
 ## TL;DR
 
 To install DBRepo in your existing cluster, download the
-sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.4.7/helm/dbrepo/values.yaml)
+sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/helm/dbrepo/values.yaml)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
@@ -13,7 +13,7 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.4.7" \
+  --version "1.5.0" \
   --create-namespace \
   --cleanup-on-fail
 ```
