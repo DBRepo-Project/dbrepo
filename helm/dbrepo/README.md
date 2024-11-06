@@ -1,17 +1,17 @@
 # DBRepo Helm chart
 
-[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/) is a database repository system that
+[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/) is a database repository system that
 allows researchers to ingest data into a central, versioned repository through common interfaces.
 
 ## TL;DR
 
 Download the
 sample [
-`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.4.7/helm-charts/dbrepo/values.yaml?inline=true)
+`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.5.0/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
-helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.4.7"
+helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo" --values ./values.yaml --version "1.5.0"
 ```
 
 ## Prerequisites
@@ -28,7 +28,7 @@ helm install my-release "oci://registry.datalab.tuwien.ac.at/dbrepo/helm/dbrepo"
 To install the chart with the release name `my-release`:
 
 ```bash
-helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.4.7"
+helm install my-release "oci://oci://registry.datalab.tuwien.ac.at/dbrepo/helm" --values ./values.yaml --version "1.5.0"
 ```
 
 The command deploys DBRepo on the Kubernetes cluster in the default configuration. The Parameters section lists the
