@@ -1,12 +1,10 @@
-![Java 21](https://img.shields.io/badge/Java-21-white?style=flat)
-![Python 3.11](https://img.shields.io/badge/Python-3.11-white?style=flat)
-![RabbitMQ 3.12](https://img.shields.io/badge/RabbitMQ-3.12-white?style=flat)
-![MariaDB 11.2](https://img.shields.io/badge/MariaDB-11.2-white?style=flat)
-![OpenSearch 2.10](https://img.shields.io/badge/OpenSearch-2.10-white?style=flat)
-![SeaweedFS 3.59](https://img.shields.io/badge/SeaweedFS-3.59-white?style=flat)
-![OpenLDAP 2.6](https://img.shields.io/badge/OpenLDAP-2.6-white?style=flat)
-![Spark 3.4](https://img.shields.io/badge/Spark-3.4-white?style=flat)
-![Keycloak 24.0](https://img.shields.io/badge/Keycloak-24.0-white?style=flat)
+[![CI/CD Status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![CI/CD Coverage](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![Latest Release](https://img.shields.io/gitlab/v/release/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org&display_name=release&style=flat)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
+[![PyPI Library version](https://img.shields.io/pypi/v/dbrepo)](https://pypi.org/project/dbrepo/)
+[![Image Pulls](https://img.shields.io/docker/pulls/dbrepo/data-service?style=flat)](https://hub.docker.com/u/dbrepo)
+[![Helm Chart version](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo)
+[![GitLab License](https://img.shields.io/gitlab/license/fair-data-austria-db-repository%2Ffda-services?gitlab_url=https%3A%2F%2Fgitlab.phaidra.org%2F&style=flat&cacheSeconds=3600)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services)
 
 <img src="./dbrepo-ui/public/logo.png" width="200" alt="DBRepo &mdash; Repository for Data in Databases" />
 

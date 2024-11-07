@@ -370,7 +370,7 @@
             "hint": "Required. First line contains only data"
           },
           "storage": {
-            "text": "Dataset from Storage Service"
+            "text": "Uploaded Dataset"
           },
           "quote": {
             "label": "Quote Encoding",

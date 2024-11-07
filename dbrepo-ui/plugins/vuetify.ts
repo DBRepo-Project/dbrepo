@@ -1,10 +1,8 @@
 // plugins/vuetify.js
 import { createVuetify, type ThemeDefinition } from 'vuetify'
 import colors from 'vuetify/util/colors'
-import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
-import {rgbParse} from "@kurkle/color";
 
 const tuwThemeLight: ThemeDefinition = {
   dark: false,
@@ -77,7 +75,6 @@ const tuwThemeDarkContrast: ThemeDefinition = {
 export default defineNuxtPlugin(app => {
   const vuetify : any = createVuetify({
     ssr: true,
-    components,
     directives,
     defaults: {
       VSelect: {
