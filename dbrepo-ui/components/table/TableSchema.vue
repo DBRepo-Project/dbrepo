@@ -5,6 +5,16 @@
       v-model="valid"
       :disabled="disabled">
       <v-row
+        v-if="showPrimaryKeyWarning">
+        <v-col md="8">
+          <v-alert
+            border="start"
+            color="warning">
+            {{ $t('pages.table.subpages.import.schema.primary.warn') }}
+          </v-alert>
+        </v-col>
+      </v-row>
+      <v-row
         v-for="(c, idx) in columns"
         :key="`r-${idx}`"
         class="column pa-2 ml-1 mr-1 mb-2"
@@ -79,7 +89,6 @@
             :min="columnType(c).size_min"
             :max="columnType(c).size_max"
             :step="columnType(c).size_step"
-            :value="columnType(c).size_required === true ? columnType(c).size_default : null"
             :hint="sizeHint(c)"
             :clearable="!columnType(c).size_required"
             persistent-hint
@@ -161,16 +170,6 @@
             :disabled="disabled"
             :text="$t('pages.table.subpages.schema.add.text')"
             @click="addColumn()" />
-        </v-col>
-      </v-row>
-      <v-row
-        v-if="showPrimaryKeyWarning">
-        <v-col md="8">
-          <v-alert
-            border="start"
-            color="warning">
-            {{ $t('pages.table.subpages.import.schema.primary.warn') }}
-          </v-alert>
         </v-col>
       </v-row>
       <v-row>
@@ -300,7 +299,7 @@ export default {
       this.columns.splice(idx, 1)
     },
     addColumn (name = '', type = null, null_allowed = true, primary_key = false, unique = false) {
-      this.columns.push({
+      const column = {
         name,
         type,
         null_allowed,
@@ -309,9 +308,10 @@ export default {
         sets_values: null,
         enums: [],
         enums_values: null,
-        size: 0,
         d: 0
-      })
+      }
+      column.size = this.columnType(column).size_required === true ? this.columnType(column).size_default : null
+      this.columns.push()
       this.$refs.form.validate()
     },
     formatValues (column) {

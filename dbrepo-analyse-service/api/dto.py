@@ -44,7 +44,6 @@ class ColumnAnalysisDto(BaseModel):
     null_allowed: bool
     size: Optional[int] = None
     d: Optional[int] = None
-    dfid: Optional[int] = None
     enums: Optional[list] = None
     sets: Optional[list] = None
 
