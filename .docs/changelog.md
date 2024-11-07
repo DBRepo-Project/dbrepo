@@ -8,7 +8,9 @@ author: Martin Weise
 
 !!! warning "Contains Breaking Changes"
 
-    This release updates the Metadata Database schema which is incompatible to v1.4.6!
+    This release updates the Metadata Database schema which is incompatible to v1.4.6! Use the migration
+    script [`schema_1.4.5-to-1.5.0.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/dbrepo-metadata-db/migration/schema_1.4.5-to-1.5.0.sql)
+    to apply the changes manually.
 
 ### What's Changed
 
