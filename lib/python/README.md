@@ -48,17 +48,17 @@ client.import_table_data(database_id=7, table_id=13, file_name_or_data_frame=df)
 ## Supported Features & Best-Practices
 
 - Manage user
-  account ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/api/#create-user-account))
+  account ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/#create-user-account))
 - Manage
-  databases ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#create-database))
+  databases ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/usage-overview/#create-database))
 - Manage database access &
-  visibility ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/api/#create-database))
+  visibility ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/#create-database))
 - Import
-  dataset ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/api/#import-dataset))
+  dataset ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/#import-dataset))
 - Create persistent
-  identifiers ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/api/#assign-database-pid))
+  identifiers ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/#assign-database-pid))
 - Execute
-  queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5.0/api/#export-subset))
+  queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/#export-subset))
 - Get data from tables/views/subsets
 
 ## Configure
