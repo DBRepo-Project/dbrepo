@@ -419,6 +419,7 @@ release-docs:
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
+    - "mkdir -p ./final/${APP_VERSION}"
   script:
     - "make gen-lib-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
@@ -427,6 +428,7 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${DOC_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${DOC_VERSION}/dist.tar.gz" # dist
+    - "cp .docs/redirect.html ./final/${APP_VERSION}/index.html" # redirect patch docs
     - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
