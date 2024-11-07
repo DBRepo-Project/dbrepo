@@ -33,6 +33,8 @@ metadatadb:
   fullnameOverride: metadata-db
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
+  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param metadatadb.rootUser.user The root username.
     user: root
@@ -126,6 +128,8 @@ datadb:
   fullnameOverride: data-db
   ## @param datadb.host The hostname for the microservices.
   host: data-db
+  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param datadb.rootUser.user The root username.
     user: root
@@ -772,7 +776,7 @@ ui:
       ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:
-      ## @param ui.public.datadb.extra Extra metadata displayed.
+      ## @param ui.public.database.extra Extra metadata displayed.
       extra: ""
     ## @skip ui.public.links
     links:

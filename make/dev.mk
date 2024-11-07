@@ -13,6 +13,7 @@ stop-dev: ## Stop the development deployment and remove all data.
 
 .PHONY: package-config
 package-config: ## Package the config files
+	mkdir -p ./.docker/config/{dashboards,provisioning}
 	cp ./dbrepo-auth-service/dbrepo-realm.json ./.docker/config
 	cp ./dbrepo-auth-service/import-realms.sh ./.docker/config
 	cp ./dbrepo-auth-service/master-realm.json ./.docker/config

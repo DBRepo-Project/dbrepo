@@ -360,9 +360,10 @@ docs-registry:
     refs:
       - /^release-.*/
   before_script:
+    - "pip install pipenv"
+    - "pipenv install --dev --system --deploy"
     - "apt-get update && apt-get install -y sed"
   script:
-    - pip install -r ./requirements.txt
     - python3 .docs/docker/release.py
 
 release-images:
@@ -414,9 +415,9 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add --update alpine-sdk bash sed wget openssh jq curl"
+    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
     - "pip install pipenv"
-    - "pip install -r ./requirements.txt"
+    - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
   script:
     - "make gen-lib-doc gen-docs-doc package-config"

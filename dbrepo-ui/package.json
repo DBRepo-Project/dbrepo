@@ -45,7 +45,7 @@
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "@types/qs": "^6.9.12",
     "sass": "^1.71.0",
-    "vite-plugin-vuetify": "^2.0.1"
+    "vite-plugin-vuetify": "^2.0.4"
   },
   "browserslist": [
     "defaults and fully supports es6-module",
