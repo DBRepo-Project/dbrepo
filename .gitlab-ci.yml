@@ -4,8 +4,8 @@ variables:
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
   DOC_VERSION: "1.5"
-  APP_VERSION: "1.5.0"
-  CHART_VERSION: "1.5.0"
+  APP_VERSION: "1.5.1"
+  CHART_VERSION: "1.5.1"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -419,6 +419,7 @@ release-docs:
     - "pip install pipenv"
     - "pipenv install --dev --system --deploy"
     - "mkdir -p ./final/${DOC_VERSION}/rest"
+    - "mkdir -p ./final/${APP_VERSION}"
   script:
     - "make gen-lib-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
@@ -427,6 +428,7 @@ release-docs:
     - "cp .docs/.swagger/custom.css ./final/${DOC_VERSION}/rest/custom.css" # swagger
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${DOC_VERSION}/dist.tar.gz" # dist
+    - "cp .docs/redirect.html ./final/${APP_VERSION}/index.html" # redirect patch docs
     - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
@@ -437,7 +439,7 @@ release-docs:
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/redirect.html $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; rm -rf ./final"'
+    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; rm -rf ./final"'
 
 release-libs:
   stage: release

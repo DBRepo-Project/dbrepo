@@ -282,8 +282,10 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:6e3c7731b432a238de12044669db1deeca693b2086abcd7d483ddb9829b9b782"
+                "sha256:88f9dd1e7d4c06a7be637c6ee5695d742d3f641ff511fc18f567617631f2ca23",
+                "sha256:d454727bf524f546d63ffa89b263c2f34bfa13024f4f26ae99c5098ff29887ae"
             ],
+            "markers": "python_version >= '3.11'",
             "path": "./lib/dbrepo-1.5.0.tar.gz"
         },
         "docker": {
