@@ -59,7 +59,9 @@
             :variant="inputVariant"
             :counter-value="() => c.sets.length"
             :hint="$t('pages.table.subpages.schema.set.hint')"
-            :rules="[v => !!v || $t('validation.required')]"
+            :rules="[
+              v => !!v || $t('validation.required')
+            ]"
             :label="$t('pages.table.subpages.schema.set.label')"
             @focusout="formatValues(c)" />
         </v-col>
@@ -94,7 +96,9 @@
             persistent-hint
             :variant="inputVariant"
             :rules="[
-              v => !(columnType(c).size_required && (v === null || v === '')) || $t('validation.required')
+              v => !(columnType(c).size_required && (v === null || v === '')) || $t('validation.required'),
+              v => !(columnType(c).size_min ? Number(v) < columnType(c).size_min : false) || $t('validation.min'),
+              v => !(columnType(c).size_max ? Number(v) > columnType(c).size_max : false) || $t('validation.max')
             ]"
             :error-messages="sizeErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.size.label')" />
@@ -113,7 +117,9 @@
             persistent-hint
             :variant="inputVariant"
             :rules="[
-              v => !(columnType(c).d_required && (v === null || v === '')) || $t('validation.required')
+              v => !(columnType(c).d_required && (v === null || v === '')) || $t('validation.required'),
+              v => !(columnType(c).d_min ? Number(v) < columnType(c).d_min : false) || $t('validation.min'),
+              v => !(columnType(c).d_max ? Number(v) > columnType(c).d_max : false) || $t('validation.max')
             ]"
             :error-messages="dErrorMessages(c)"
             :label="$t('pages.table.subpages.schema.d.label')" />
@@ -168,6 +174,7 @@
             :color="disabled ? '' : 'tertiary'"
             :variant="buttonVariant"
             :disabled="disabled"
+            :loading="loadColumn"
             :text="$t('pages.table.subpages.schema.add.text')"
             @click="addColumn()" />
         </v-col>
@@ -221,6 +228,7 @@ export default {
   data () {
     return {
       valid: false,
+      loadColumn: false,
       tableColumns: [],
       cacheStore: useCacheStore()
     }
@@ -299,6 +307,7 @@ export default {
       this.columns.splice(idx, 1)
     },
     addColumn (name = '', type = null, null_allowed = true, primary_key = false, unique = false) {
+      this.loadColumn = true
       const column = {
         name,
         type,
@@ -311,8 +320,9 @@ export default {
         d: 0
       }
       column.size = this.columnType(column).size_required === true ? this.columnType(column).size_default : null
-      this.columns.push()
+      this.columns.push(column)
       this.$refs.form.validate()
+      this.loadColumn = false
     },
     formatValues (column) {
       if (column.type === 'set') {
