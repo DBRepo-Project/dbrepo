@@ -2,13 +2,26 @@
 author: Martin Weise
 ---
 
+## v1.5.1 (2024-11-07)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1)
+
+### What's Changed
+
+#### Fixes
+
+* Bug where the schema could not be created manually 
+  in [#461](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/461).
+
 ## v1.5.0 (2024-11-06)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.0)
 
 !!! warning "Contains Breaking Changes"
 
-    This release updates the Metadata Database schema which is incompatible to v1.4.6!
+    This release updates the Metadata Database schema which is incompatible to v1.4.6! Use the migration
+    script [`schema_1.4.5-to-1.5.0.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/dbrepo-metadata-db/migration/schema_1.4.5-to-1.5.0.sql)
+    to apply the changes manually.
 
 ### What's Changed
 

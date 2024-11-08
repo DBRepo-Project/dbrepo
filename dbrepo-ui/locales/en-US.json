@@ -1435,6 +1435,8 @@
     "integer": "Greater or equal to zero",
     "max-length": "Maximum length is: ",
     "day": "Invalid day",
+    "min": "Value too small",
+    "max": "Value too big",
     "matching": "Not matching!",
     "doi": {
       "invalid": "Invalid DOI. Must start with 10.xyz"

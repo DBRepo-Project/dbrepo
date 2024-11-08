@@ -339,6 +339,8 @@ services:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy
+      dbrepo-dashboard-service:
+        condition: service_healthy
       dbrepo-ui:
         condition: service_healthy
     logging:
@@ -442,6 +444,8 @@ services:
     volumes:
       - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
+      GF_SERVER_DOMAIN: "dashboard-service"
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
