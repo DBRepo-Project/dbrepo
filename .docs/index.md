@@ -46,4 +46,7 @@ Installing DBRepo is very easy or
 
 ## How can I try DBRepo?
 
-[:fontawesome-solid-flask: &nbsp;Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }
+There's a hosted [demo environment](https://test.dbrepo.tuwien.ac.at) maintained 
+by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo without installing it locally.
+
+[:fontawesome-solid-flask: &nbsp;Demo Environment](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }
