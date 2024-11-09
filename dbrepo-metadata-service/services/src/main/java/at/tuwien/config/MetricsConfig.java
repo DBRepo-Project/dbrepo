@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Objects;
+
 @Log4j2
 @Configuration
 public class MetricsConfig {
@@ -70,7 +72,12 @@ public class MetricsConfig {
                     if (tableRepository.findAll().isEmpty()) {
                         return 0;
                     }
-                    return tableRepository.findAll().stream().map(Table::getDataLength).mapToLong(d -> d).sum();
+                    return tableRepository.findAll()
+                            .stream()
+                            .map(Table::getDataLength)
+                            .filter(Objects::nonNull)
+                            .mapToLong(d -> d)
+                            .sum();
                 })
                 .description("The total volume of available research data")
                 .strongReference(true)

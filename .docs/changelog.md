@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.5.1 (2024-11-07)
+## v1.5.1 (2024-11-09)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1)
 
@@ -10,6 +10,8 @@ author: Martin Weise
 
 #### Fixes
 
+* Bug where the data volume could not be calculated when the data length column in the Metadata Database is `null`
+  in [#462](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/462).
 * Bug where the schema could not be created manually 
   in [#461](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/461).
 
