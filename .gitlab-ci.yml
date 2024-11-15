@@ -162,9 +162,18 @@ verify-install-script:
   variables:
     SKIP_CHECKS: 1
   script:
-    - apk add bash curl
-    - bash install.sh
-    - exit 0
+    - "apk add bash curl"
+    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
+
+verify-dist:
+  image: docker.io/alpine:3.20
+  stage: verify
+  only:
+    refs:
+      - /^release-.*/
+  script:
+    - "apk add curl"
+    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
 
 lint-helm-chart:
   image: docker.io/alpine:3.20

@@ -43,12 +43,18 @@ if [[ $SKIP_CHECKS -eq 0 ]] && [[ $DOWNLOAD_ONLY -ne 1 ]]; then
   fi
   MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
   if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
-    echo "You do not have enough max. map counts:"
-    echo ""
-    echo "  - we found max. ${MAX_MAP_COUNT} map count instead of necessary ${MIN_MAP_COUNT}"
-    echo "  - update your /etc/sysctl.conf file and add the line 'vm.max_map_count=${MIN_MAP_COUNT}' at the end and apply it with 'sysctl -p'"
-    echo "  - if you believe this is a mistake, skip startup checks with the SKIP_CHECKS=1 flag"
-    exit 4
+    echo "You do not have enough max. map counts: found ${MAX_MAP_COUNT} instead of minimum ${MIN_MAP_COUNT}"
+    if [ $(id -u) -eq 0 ]; then
+        echo "  - attempt to update the /etc/sysctl.conf file  and add the line 'vm.max_map_count=${MIN_MAP_COUNT}' at the end"
+        echo "vm.max_map_count=${MIN_MAP_COUNT}" >> /etc/sysctl.conf
+        sysctl -p
+        if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
+            exit 4
+        fi
+    else
+        echo "  - you need to re-run the install.sh script as root to fix this"
+        exit 4
+    fi
   else
     echo "MAP COUNT ${MAX_MAP_COUNT} OK"
   fi
