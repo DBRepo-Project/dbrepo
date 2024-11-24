@@ -10,8 +10,6 @@ import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
-import at.tuwien.config.S3Config;
-import at.tuwien.config.SparkConfig;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
@@ -23,15 +21,15 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.micrometer.core.instrument.Counter;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
-import org.apache.spark.sql.types.StructField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 

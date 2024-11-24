@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 setup(name="dbrepo",
-      version="1.5.1",
+      version="1.5.2",
       description="A library for communicating with DBRepo",
       url="https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/",
       author="Martin Weise",

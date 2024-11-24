@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
@@ -33,18 +32,15 @@ import net.sf.jsqlparser.statement.select.*;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
-import org.apache.spark.Partition;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SaveMode;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
-import org.springframework.core.io.InputStreamResource;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -217,20 +213,20 @@ public interface DataMapper {
     /**
      * Parse columns from a SQL statement of a known database.
      *
-     * @param database The database.
-     * @param query    The SQL statement.
+     * @param databaseId The database id.
+     * @param tables     The list of tables.
+     * @param query      The SQL statement.
      * @return The list of columns.
      * @throws JSQLParserException The table/view or column was not found in the database.
      */
-    default List<ColumnDto> parseColumns(DatabaseDto database, String query) throws JSQLParserException {
+    default List<ColumnDto> parseColumns(Long databaseId, List<TableDto> tables, String query) throws JSQLParserException {
         final List<ColumnDto> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final net.sf.jsqlparser.statement.Statement statement = parserRealSql.parse(new StringReader(query));
         log.trace("parse columns from query: {}", query);
         /* bi-directional mapping */
-        database.getTables()
-                .forEach(table -> table.getColumns()
-                        .forEach(column -> column.setTable(table)));
+        tables.forEach(table -> table.getColumns()
+                .forEach(column -> column.setTable(table)));
         /* check */
         if (!(statement instanceof Select selectStatement)) {
             log.error("Query attempts to update the dataset, not a SELECT statement");
@@ -250,8 +246,7 @@ public interface DataMapper {
                 }
             }
         }
-        final List<ColumnDto> allColumns = database.getTables()
-                .stream()
+        final List<ColumnDto> allColumns = tables.stream()
                 .map(TableDto::getColumns)
                 .flatMap(List::stream)
                 .toList();
@@ -310,7 +305,7 @@ public interface DataMapper {
             if (item.getAlias() != null) {
                 resultColumn.setAlias(item.getAlias().getName().replace("`", ""));
             }
-            resultColumn.setDatabaseId(database.getId());
+            resultColumn.setDatabaseId(databaseId);
             resultColumn.setTable(resultColumn.getTable());
             resultColumn.setTableId(resultColumn.getTable().getId());
             log.trace("found column with internal name {} and alias {}", resultColumn.getInternalName(), resultColumn.getAlias());
@@ -509,7 +504,6 @@ public interface DataMapper {
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .creator(database.getOwner())
-                .createdBy(database.getOwner().getId())
                 .owner(database.getOwner())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
