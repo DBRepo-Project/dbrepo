@@ -8499,14 +8499,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       required:
         - id
@@ -8837,11 +8837,11 @@ components:
           type: string
         identifier:
           $ref: '#/components/schemas/Identifier'
-        apaName:
-          type: string
         bibtexName:
           type: string
         ieeeName:
+          type: string
+        apaName:
           type: string
     DataType:
       type: object
