@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.4.7
+  version: 1.5.2
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.7/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/'
 paths:
   /api/analyse/datatypes:
     get:
@@ -8499,14 +8499,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       required:
         - id
@@ -8837,11 +8837,11 @@ components:
           type: string
         identifier:
           $ref: '#/components/schemas/Identifier'
-        apaName:
-          type: string
         bibtexName:
           type: string
         ieeeName:
+          type: string
+        apaName:
           type: string
     DataType:
       type: object

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.12</version>
+    </parent>
+
+    <groupId>at.tuwien</groupId>
+    <artifactId>dbrepo-upload-service</artifactId>
+    <name>dbrepo-upload-service</name>
+    <version>1.5.2</version>
+
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/</url>
+    <developers>
+        <developer>
+            <name>Martin Weise</name>
+            <email>martin.weise@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+    </developers>
+
+    <properties>
+        <java.version>17</java.version>
+        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <rabbitmq.version>5.20.0</rabbitmq.version>
+        <jackson-datatype.version>2.15.0</jackson-datatype.version>
+        <commons-io.version>2.15.0</commons-io.version>
+        <commons-validator.version>1.8.0</commons-validator.version>
+        <guava.version>33.0.0-jre</guava.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <jwt.version>4.3.0</jwt.version>
+        <c3p0.version>0.9.5.5</c3p0.version>
+        <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
+        <apache-jena.version>4.10.0</apache-jena.version>
+        <opencsv.version>5.7.1</opencsv.version>
+        <super-csv.version>2.4.0</super-csv.version>
+        <keycloak.version>21.0.2</keycloak.version>
+        <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
+        <testcontainers.version>1.19.1</testcontainers.version>
+        <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
+        <aws-s3.version>2.25.23</aws-s3.version>
+        <jackson.version>2.15.2</jackson.version>
+        <minio.version>8.5.7</minio.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-api</artifactId>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-repositories</artifactId>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- IDE -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Mapping -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${mapstruct.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-datatype.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${commons-validator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-hibernate6</artifactId>
+            <version>${jackson-datatype.version}</version>
+        </dependency>
+        <!-- Authentication -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-common</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>minio</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>${keycloak-testcontainer.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                    <include>**/init/dbrepo-realm.json</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+</project>

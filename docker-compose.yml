@@ -327,7 +327,6 @@ services:
     image: docker.io/nginx:1.27.0-alpine3.19-slim
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
@@ -483,10 +482,13 @@ services:
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: docker.io/tusproject/tusd:v2.4.0
+    volumes:
+      - "./dbrepo-upload-service/pre-create.sh:/srv/tusd-hooks/pre-create:ro"
     command:
       - "-behind-proxy"
       - "-max-size=2000000000"
       - "-base-path=/api/upload/files/"
+      - "-hooks-dir=/srv/tusd-hooks/"
       - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
       - "-s3-bucket=dbrepo"
     environment:

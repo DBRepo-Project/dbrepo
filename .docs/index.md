@@ -14,7 +14,7 @@ author: Martin Weise
 ![Maintainability Rating](./images/maintainability.svg)
 ![Security Rating](./images/security.svg)
 
-Documentation for version: [v1.5.1](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
+Documentation for version: [v1.5.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/releases).
 
 DBRepo is a repository for data in databases that are used from the beginning until the end of a research 
 project supporting data evolution, -citation and -versioning. It implements the query store of the 
@@ -37,8 +37,8 @@ Installing DBRepo is very easy or
 ## Who is using DBRepo?
 
 - [TU Wien](https://dbrepo1.ec.tuwien.ac.at)
-- TU Graz
-- TU Darmstadt
+- [TU Graz](https://dbrepo.cyverse.at)
+- [TU Darmstadt](https://tudatabases.ulb.tu-darmstadt.de)
 - [Universit&auml;t Hamburg](https://dbrepo.fdm.uni-hamburg.de/)
 - [Universiti Teknikal Malaysia Melaka](https://dbrepo.utem.edu.my/)
 - University of the Philippines
@@ -46,4 +46,7 @@ Installing DBRepo is very easy or
 
 ## How can I try DBRepo?
 
-[:fontawesome-solid-flask: &nbsp;Demonstration Instance](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }
+There's a hosted [demo environment](https://test.dbrepo.tuwien.ac.at) maintained 
+by [DS-IFS](https://informatics.tuwien.ac.at/orgs/e194-04) where you can explore DBRepo without installing it locally.
+
+[:fontawesome-solid-flask: &nbsp;Demo Environment](https://test.dbrepo.tuwien.ac.at){ .md-button .md-button--primary target="_blank" }

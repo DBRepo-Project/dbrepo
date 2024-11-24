@@ -10,8 +10,6 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.config.SparkConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
@@ -126,7 +124,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             SQLException {
         final List<ColumnDto> columns;
         try {
-            columns = dataMapper.parseColumns(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database), query.getQuery());
+            columns = dataMapper.parseColumns(database.getId(), database.getTables(), query.getQuery());
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new TableMalformedException("Failed to map/parse columns: " + e.getMessage(), e);
@@ -277,9 +275,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
-            final UserDto creator = metadataServiceGateway.getUserById(query.getCreatedBy());
-            log.debug("retrieved creator from metadata service: creator.id={}, creator.username={}", creator.getId(), creator.getUsername());
-            query.setCreator(creator);
+            query.setCreator(database.getOwner());
             query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {
