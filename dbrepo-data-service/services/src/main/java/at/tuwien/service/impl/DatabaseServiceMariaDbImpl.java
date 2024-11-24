@@ -1,26 +1,20 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.RabbitConfig;
-import at.tuwien.exception.*;
+import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.SchemaService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Log4j2

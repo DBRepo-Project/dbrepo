@@ -1,0 +1,82 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:fda;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS FDA;NON_KEYWORDS=value
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: dbrepo
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+  application:
+    name: metadata-service
+  rabbitmq:
+    host: localhost
+    virtual-host: dbrepo
+    username: admin
+    password: admin
+    port: 5672
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 19099
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: trace
+    org.springframework.security.web.FilterChainProxy: debug
+#    org.hibernate.resource.jdbc: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+dbrepo:
+  repository-name: Database Repository
+  base-url: http://localhost
+  admin-email: noreply@example.com
+  deleted-record: persistent
+  granularity: YYYY-MM-DDThh:mm:ssZ
+  exchangeName: dbrepo
+  queueName: dbrepo
+  connectionTimeout: 10000
+  s3:
+    accessKeyId: seaweedfsadmin
+    secretAccessKey: seaweedfsadmin
+    bucket: dbrepo
+  system:
+    username: admin
+    password: admin
+  endpoints:
+    searchService: http://localhost
+    analyseService: http://localhost
+    dataService: http://localhost:9093
+    brokerService: http://localhost:15672
+    authService: http://localhost/api/auth
+    storageService: http://localhost/api/storage
+    rorService: https://api.ror.org
+    crossRefService: http://data.crossref.org
+  pid:
+    base: http://localhost/pid/
+  jwt:
+    public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB
+  keycloak:
+    username: admin
+    password: admin
+    client: dbrepo-client
+    clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  website: http://localhost

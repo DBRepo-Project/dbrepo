@@ -2,7 +2,23 @@
 author: Martin Weise
 ---
 
-## v1.5.1 (2024-11-07)
+## v1.5.2 (2024-11-19)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2)
+
+### What's Changed
+
+#### Changes
+
+* Require authentication for uploading files
+  in [#466](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/466).
+
+#### Fixes
+
+* Fixed the `dist.tar.gz` file not being found in the CI/CD pipeline on `release-` branches
+  in [#465](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/465).
+
+## v1.5.1 (2024-11-09)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.1)
 
@@ -10,7 +26,9 @@ author: Martin Weise
 
 #### Fixes
 
-* Bug where the schema could not be created manually 
+* Bug where the data volume could not be calculated when the data length column in the Metadata Database is `null`
+  in [#462](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/462).
+* Bug where the schema could not be created manually
   in [#461](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/461).
 
 ## v1.5.0 (2024-11-06)
