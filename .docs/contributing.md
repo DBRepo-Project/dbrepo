@@ -114,6 +114,6 @@ For consistency reasons across the documentation, the resolution needs to be 128
 ## Roadmap
 
 - [x] Q1: Python library, versioning in every component, bumping frontend versions, i18n
-- [ ] Q2: Kubernetes deployment guidelines for OpenShift
+- [x] Q2: Kubernetes deployment guidelines for OpenShift
 - [ ] Q3: Frontend tests, database dashboards
 - [ ] Q4: Release of 2.0.0

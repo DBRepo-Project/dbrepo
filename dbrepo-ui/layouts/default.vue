@@ -158,7 +158,11 @@
 <script setup>
 const config = useRuntimeConfig()
 useServerHead({
-  title: config.public.title
+  title: config.public.title,
+  meta: [
+    {'ref': 'icon', type: 'image/x-icon', href: config.public.icon},
+    {'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests'}
+  ]
 })
 </script>
 <script>

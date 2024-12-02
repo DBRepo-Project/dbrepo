@@ -28,7 +28,6 @@ export default defineNuxtConfig({
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       meta: [
-        {'ref': 'icon', type: 'image/x-icon', href: '/favicon.ico'},
         {'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests'}
       ],
       htmlAttrs: {
