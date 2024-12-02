@@ -35,26 +35,27 @@ spec:
           envFrom:
             - secretRef:
                 name: search-service-secret
+          {{- if .Values.searchservice.init.resources }}
+          resources: {{- toYaml .Values.searchservice.init.resources | nindent 12 }}
+          {{- else if ne .Values.searchservice.init.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.init.resourcesPreset) | nindent 12 }}
+          {{- end }}
       containers:
         - name: search-service
           image: {{ .Values.searchservice.image.name }}
           imagePullPolicy: {{ .Values.searchservice.image.pullPolicy | default "IfNotPresent" }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            runAsGroup: 1001
-            seccompProfile:
-              type: {{ .Values.searchservice.profileType | default "RuntimeDefault" }}
-            capabilities:
-              drop:
-                - ALL
+          {{- if .Values.searchservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.searchservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 8080
               protocol: TCP
           envFrom:
             - secretRef:
                 name: search-service-secret
+          volumeMounts:
+            - mountPath: /tmp
+              name: cache
           livenessProbe:
             exec:
               command:
@@ -73,7 +74,11 @@ spec:
             periodSeconds: 10
           {{- if .Values.searchservice.resources }}
           resources: {{- toYaml .Values.searchservice.resources | nindent 12 }}
+          {{- else if ne .Values.searchservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.searchservice.resourcesPreset) | nindent 12 }}
           {{- end }}
-          volumeMounts: [ ]
-      volumes: [ ]
+      volumes:
+        - name: cache
+          emptyDir:
+            sizeLimit: 100Mi
 {{- end }}

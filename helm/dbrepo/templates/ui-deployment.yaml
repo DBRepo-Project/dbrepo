@@ -56,6 +56,8 @@ spec:
             periodSeconds: 10
           {{- if .Values.ui.resources }}
           resources: {{- toYaml .Values.ui.resources | nindent 12 }}
+          {{- else if ne .Values.ui.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.ui.resourcesPreset) | nindent 12 }}
           {{- end }}
       volumes:
         {{- if .Values.ui.extraVolumes }}

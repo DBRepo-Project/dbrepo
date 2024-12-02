@@ -1,6 +1,6 @@
 #!/bin/bash
 REQUEST_RAW=$(cat /dev/stdin)
-AUTH_SERVICE_ENDPOINT="${AUTH_SERVICE_ENDPOINT:-http://data-service:8080}"
+AUTH_SERVICE_ENDPOINT="${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
 
 echo "[DEBUG] [pre-create hook] request started" >&2
 if [ "$(echo "$REQUEST_RAW" | jq '.Event.HTTPRequest.Header | has("Authorization")')" == "false" ]; then

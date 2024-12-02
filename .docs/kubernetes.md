@@ -5,7 +5,8 @@ author: Martin Weise
 ## TL;DR
 
 To install DBRepo in your existing cluster, download the
-sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/helm/dbrepo/values.yaml)
+sample [
+`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.5/helm/dbrepo/values.yaml)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
@@ -20,18 +21,36 @@ helm upgrade --install dbrepo \
 
 ## Prerequisites
 
-* Kubernetes 1.24+
-* Kubernetes 3.8.0+
+* Kubernetes 1.30+
 * PV provisioner support in the underlying infrastructure
 
 ### Resource Quota
 
-* `requests.cpu=8`
-* `requests.memory=8Gi`
-* `requests.storage` >= 25
-* `pods` >= 50
-* `services` >= 50
-* `secrets` >= 50
+By default, any service requests a minimum quota of cpu and memory by default. These values are based on the absolute
+minimum needed to start the service. From our experience your cluster needs to meet the following `ResourceQuota`:
+
+```yaml
+requests.cpu: 12000m
+requests.ephemeral-storage: 3072Mi
+secrets: '50'
+<storageClass>.storageclass.storage.k8s.io/persistentvolumeclaims: '20'
+<storageClass>.storageclass.storage.k8s.io/requests.storage: 150Gi
+persistentvolumeclaims: '20'
+requests.memory: 14336Mi
+pods: '40'
+requests.storage: 150Gi
+limits.memory: 20480Mi
+configmaps: '20'
+services: '40'
+```
+
+You can reduce the resources needed by disabling services and metric collection. You can disable e.g. the dashboard
+service:
+
+``` title="values.yaml"
+dashboardservice:
+  enabled: false
+```
 
 ## Limitations
 

@@ -18,18 +18,18 @@ author: Martin Weise
 
 The User Interface is configured in the `runtimeConfig` section of the `nuxt.config.ts` file during build time. For the
 runtime, you need to override those values through environment variables or by mounting a `.env` file. As a small
-example, you can configure the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as
-image as well, in this example we want to mount a custom logo `my_logo.png` into the container and specify the name.
+example, you can configure the logo :material-numeric-1-circle-outline: in [Figure 1](#fig1). Make sure you mount the logo 
+as image as well, in this example we want to mount a custom logo `my_logo.png` into the container and specify the name.
 
-<figure markdown>
+<figure id="fig1" markdown>
 ![Architecture of the UI microservice](../images/screenshots/ui-config-step-1.png){ .img-border }
 <figcaption>Figure 1: Architecture of the UI microservice</figcaption>
 </figure>
 
 === "Docker Compose"
 
-    Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
-    configured as well via the Nuxt runtime configuration through single environment variables or `.env` files.
+    Text values like the title :material-numeric-2-circle-outline: can be configured as well via the Nuxt runtime 
+    configuration through single environment variables or `.env` files.
     
     ```yaml title=".env"
     NUXT_PUBLIC_TITLE="My overriden title"
@@ -45,49 +45,50 @@ image as well, in this example we want to mount a custom logo `my_logo.png` into
 
 === "Kubernetes"
 
-    Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
-    configured as well via the Nuxt runtime configuration through setting the variables in the `values.yaml` file.
+    Text values like the title :material-numeric-2-circle-outline: can be configured as well via the Nuxt runtime
+    configuration through adding the logo file as `ConfigMap`.
+
+    ```console
+    kubectl [-n namespace] create configmap gateway-service-config \
+      --from-file=logo.png
+    ```
+
+    Then you need to mount the configmap into the [Gateway Service](../gateway-service) under `/etc/nginx/assets/assets`.
+
+    ```yaml title="dbrepo-ui-custom.yaml"
+    gatewayservice:
+      extraVolumes:
+        - name: config-map
+          configMap:
+            name: gateway-service-config
+      extraVolumeMounts:
+        - name: config-map
+          mountPath: /etc/nginx/assets/assets
+    ```
+
+    All files mounted that way are accessible through svc/gateway-service:80 (or ingress if you enabled it) with prefix
+    `/assets`, e.g. `https://<hostname>/assets/logo.png`. Therefore, set the logo path:
+
 
     ```yaml title="values.yaml"
     ui:
       public:
-        logo: "/my_logo.png"
-        icon: "/favicon.ico"
-      extraVolumes:
-        - name: images-map
-          configMap:
-            name: ui-config
-      extraVolumeMounts:
-        - name: images-map
-          mountPath: /static/
-    ```
-
-    To work, you need to mount the `my_logo.png` file into the dbrepo-ui deployment via a ConfigMap and Volumes. For this,
-    encode the files in base64 with `cat my_logo.png | base64`.
-
-    ```yaml title="dbrepo-ui-custom.yaml"
-    apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: ui-config
-    binaryData:
-      my_logo.png: |
-        <base64>
-      favicon.ico: |
-        <base64>
+        api:
+          logo: "https://<hostname>/assets/logo.png"
+    ...
     ```
 
 ### Architecture
 
-The server-client architecture of the User Interface is shown in [Figure 3](#fig3), it is supposed to help debug the
+The server-client architecture of the User Interface is shown in [Figure 2](#fig2), it is supposed to help debug the
 User Interface on development.
 
-<figure id="fig3" markdown>
+<figure id="fig2" markdown>
 ![Architecture of the UI microservice](../images/architecture-ui.svg)
 <figcaption>Figure 2: Architecture of the User Interface</figcaption>
 </figure>
 
-* Runtime: [Bun 1+](https://bun.sh/) (preferred), *alternatively* Node.js 18+
+* Runtime: Node.js 22 LTS
 * Builder: [Vite](https://vitejs.dev/)
 * Server: [Nuxt.js 3+](https://nuxt.com/)
 * Components: [Vue.js 3+](https://vuejs.org/)
