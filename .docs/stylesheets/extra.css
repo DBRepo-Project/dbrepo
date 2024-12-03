@@ -1,12 +1,14 @@
 :root,
 [data-md-color-accent=indigo] {
-  --md-hue: 230;
-  --md-default-bg-color: hsla(230, 15%, 21%, 1);
   --md-primary-fg-color: #006699;
   --md-accent-fg-color: #005c8a;
   /* darken 10% */
   --md-primary-fg-color--dark: #00537c;
   /* darken 10% */ }
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 230;
+  --md-default-bg-color: hsla(230, 15%, 21%, 1); }
 
 img.img-border {
   border: 1px solid #b3b3b3; }
@@ -30,3 +32,5 @@ img.img-border {
 
 .md-banner {
   background-color: var(--md-primary-fg-color--dark); }
+
+/*# sourceMappingURL=extra.css.map */
