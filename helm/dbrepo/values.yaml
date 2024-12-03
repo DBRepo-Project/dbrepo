@@ -87,6 +87,7 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+  ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   ## @skip authservice.extraStartupArgs
   extraStartupArgs: "--import-realm"
@@ -170,17 +171,21 @@ searchdb:
   ## @param searchdb.port The port for the microservices.
   port: 9200
   coordinating:
+    ## @param searchdb.coordinating.resourcesPreset The container resource preset
     resourcesPreset: "small"
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
+    ## @param searchdb.ingest.resourcesPreset The container resource preset
     resourcesPreset: "micro"
   master:
+    ## @param searchdb.master.resourcesPreset The container resource preset
     resourcesPreset: "small"
   data:
+    ## @param searchdb.data.resourcesPreset The container resource preset
     resourcesPreset: "medium"
-  ## @skip searchdb.security
   security:
+    ## @skip searchdb.security.enabled
     enabled: false
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
@@ -236,8 +241,7 @@ uploadservice:
   ## @param uploadservice.resourcesPreset The container resource preset
   resourcesPreset: "nano"
   ## @param uploadservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -350,6 +354,7 @@ brokerservice:
         port: 1883
         targetPort: 1883
     # loadBalancerIP:
+  ## @param brokerservice.extraConfiguration The extra configuration for MQTT
   extraConfiguration: |
     mqtt.vhost = dbrepo
     mqtt.exchange = dbrepo
@@ -364,7 +369,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
@@ -401,8 +406,7 @@ analyseservice:
   ## @param analyseservice.resourcesPreset The container resource preset
   resourcesPreset: "micro"
   ## @param analyseservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -426,7 +430,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -463,8 +467,7 @@ metadataservice:
   ## @param metadataservice.resourcesPreset The container resource preset
   resourcesPreset: "micro"
   ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -524,7 +527,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.2-rc0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -561,8 +564,7 @@ dataservice:
   ## @param dataservice.resourcesPreset The container resource preset
   resourcesPreset: "large"
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -593,9 +595,9 @@ dataservice:
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: dbrepo
     auth:
-      ## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
+      ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint username (or access key id).
       accessKeyId: seaweedfsadmin
-      ## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+      ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint user password (or access key secret).
       secretAccessKey: seaweedfsadmin
     ## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
     filePath: /s3
@@ -611,7 +613,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.1
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
@@ -648,23 +650,21 @@ searchservice:
   ## @param searchservice.resourcesPreset The container resource preset
   resourcesPreset: "micro"
   ## @param searchservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
   ##   limits:
   ##     cpu: 500m
   ##     memory: 1024Mi
-  ## @skip searchservice.init
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.1
+      ## @skip searchservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.2
     ## @param searchservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    ## Example:
-    ## resources:
+    resources: { }
     ##   requests:
     ##     cpu: 250m
     ##     memory: 64Mi
@@ -682,11 +682,15 @@ storageservice:
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
   mariadb:
+    ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
     enabled: true
+    ## @skip storageservice.mariadb.fullnameOverride
     fullnameOverride: storage-db
     auth:
+      ## @param storageservice.mariadb.auth.rootPassword The password for the root user.
       rootPassword: seaweedfsfiler
   postgresql:
+    ## @skip storageservice.postgresql.enabled
     enabled: false
   master:
     metrics:
@@ -717,12 +721,11 @@ storageservice:
   init:
     image:
       ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.1
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.2
     ## @param storageservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param storageservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    ## Example:
-    ## resources:
+    resources: { }
     ##   requests:
     ##     cpu: 250m
     ##     memory: 64Mi
@@ -736,6 +739,7 @@ identityservice:
   ## @param identityservice.enabled Enable the Identity Service.
   enabled: true
   image:
+    ## @skip identityservice.image.name
     name: docker.io/bitnami/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
@@ -784,8 +788,7 @@ identityservice:
   ## @param identityservice.resourcesPreset The container resource preset
   resourcesPreset: "nano"
   ## @param identityservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -824,7 +827,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.2-rc1
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context
@@ -861,8 +864,7 @@ ui:
   ## @param ui.resourcesPreset The container resource preset
   resourcesPreset: "micro"
   ## @param ui.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  ## Example:
-  ## resources:
+  resources: { }
   ##   requests:
   ##     cpu: 250m
   ##     memory: 64Mi
@@ -890,6 +892,7 @@ ui:
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
       host: example.com
+      ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
       connections:
         - protocol: "amqp"
           port: "5672"
@@ -970,6 +973,7 @@ metricdb:
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
   alertmanager:
+    ## @skip metricdb.alertmanager.enabled
     enabled: false
     service:
       ## @skip metricdb.alertmanager.service.type
@@ -1006,6 +1010,7 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
+  ## @param gatewayservice.serverBlock The extra configuration for the reverse proxy
   serverBlock: |
     # This is required to proxy Grafana Live WebSocket connections.
     map $http_upgrade $connection_upgrade {

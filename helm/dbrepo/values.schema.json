@@ -86,6 +86,10 @@
                 "replicaCount": {
                     "type": "integer"
                 },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
                 "resourcesPreset": {
                     "type": "string"
                 },
@@ -244,6 +248,9 @@
                                 },
                                 "existingSecret": {
                                     "type": "string"
+                                },
+                                "existingSecretFullChain": {
+                                    "type": "boolean"
                                 }
                             },
                             "type": "object"
@@ -261,6 +268,9 @@
                     "type": "string"
                 },
                 "exchangeName": {
+                    "type": "string"
+                },
+                "extraConfiguration": {
                     "type": "string"
                 },
                 "extraPlugins": {
@@ -698,6 +708,10 @@
                 "replicaCount": {
                     "type": "integer"
                 },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
                 "resourcesPreset": {
                     "type": "string"
                 },
@@ -892,6 +906,10 @@
                             "type": "array"
                         }
                     },
+                    "type": "object"
+                },
+                "resources": {
+                    "properties": {},
                     "type": "object"
                 },
                 "resourcesPreset": {
@@ -1142,6 +1160,10 @@
                 },
                 "repositoryName": {
                     "type": "string"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
                 },
                 "resourcesPreset": {
                     "type": "string"
@@ -1409,6 +1431,10 @@
                             },
                             "type": "object"
                         },
+                        "resources": {
+                            "properties": {},
+                            "type": "object"
+                        },
                         "resourcesPreset": {
                             "type": "string"
                         }
@@ -1437,6 +1463,10 @@
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
                 },
                 "resourcesPreset": {
                     "type": "string"
@@ -1468,6 +1498,10 @@
                                     "type": "string"
                                 }
                             },
+                            "type": "object"
+                        },
+                        "resources": {
+                            "properties": {},
                             "type": "object"
                         },
                         "resourcesPreset": {
@@ -1745,6 +1779,10 @@
                 "replicaCount": {
                     "type": "integer"
                 },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
+                },
                 "resourcesPreset": {
                     "type": "string"
                 }
@@ -1854,6 +1892,10 @@
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resources": {
+                    "properties": {},
+                    "type": "object"
                 },
                 "resourcesPreset": {
                     "type": "string"
