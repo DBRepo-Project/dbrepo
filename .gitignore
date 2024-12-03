@@ -59,9 +59,6 @@ ready
 *.crt
 *.p12
 
-# Environment
-.docker/.env
-
 # X509
 root.crt
 intermediate.crt
