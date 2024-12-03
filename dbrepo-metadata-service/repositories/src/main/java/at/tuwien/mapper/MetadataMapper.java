@@ -865,7 +865,7 @@ public interface MetadataMapper {
                 .internalName(data.getInternalName())
                 .description(data.getDescription())
                 .exchangeName(data.getExchangeName())
-                .image(data.getImage())
+                .previewImage(data.getImage() != null ? "/api/database/" + data.getId() + "/image" : null)
                 .isPublic(data.getIsPublic())
                 .container(containerToContainerDto(data.getContainer()))
                 .creator(userToUserDto(data.getCreator()))

@@ -91,10 +91,22 @@
         <v-list
           dense>
           <v-list-item
-            :title="$t('pages.table.protocol.title')">
-            <span>
-              {{ $t('pages.table.protocol.name') }}
-            </span>
+            :title="$t('pages.table.connection.title')">
+            <p
+              v-for="(connection, i) in brokerConnections"
+              :key="`p-${i}`">
+              <pre
+                v-if="!connection.encrypted"
+                class="pb-1">{{ connection.value }}</pre>
+              <v-badge
+                v-else
+                inline
+                :content="$t('pages.table.connection.secure')"
+                color="success">
+              <pre
+                class="pb-1">{{ connection.value }}</pre>
+              </v-badge>
+            </p>
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.exchange.title')">
@@ -109,20 +121,6 @@
             <div v-if="table.routing_key">
               <pre>{{ table.routing_key }}</pre>
             </div>
-          </v-list-item>
-          <v-list-item
-            :title="$t('pages.table.connection.title')">
-            <p
-              v-for="(port, i) in brokerPorts"
-              :key="`p-${i}`">
-              <v-badge
-                inline
-                :content="port.secure ? $t('pages.table.connection.secure') : $t('pages.table.connection.insecure')"
-                :color="port.secure ? 'success' : ''">
-              <pre
-                class="pb-1">{{ amqpString(port) }}</pre>
-              </v-badge>
-            </p>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -297,17 +295,20 @@ export default {
     brokerExtraInfo () {
       return this.$config.public.broker.extra
     },
-    brokerHost () {
-      return this.$config.public.broker.host
-    },
-    brokerPorts () {
-      if (!this.$config.public.broker.port) {
+    brokerConnections () {
+      if (!this.$config.public.broker.connections) {
         return []
       }
-      return Object.keys(this.$config.public.broker.port).map(key => {
+      return this.$config.public.broker.connections.split(',').map(c => {
+        if (c.startsWith('^')) {
+          return {
+            encrypted: true,
+            value: c.substring(1)
+          }
+        }
         return {
-          port: key,
-          secure: this.$config.public.broker.port[key]
+          encrypted: false,
+          value: c
         }
       })
     },
@@ -320,14 +321,6 @@ export default {
       } else if (this.canRead) {
         return this.$t('pages.table.connection.permissions.read')
       }
-    }
-  },
-  methods: {
-    amqpString (port) {
-      if (!this.user) {
-        return null
-      }
-      return `amqp://${this.brokerHost}:${port.port}/dbrepo`
     }
   }
 }

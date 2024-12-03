@@ -1,33 +1,30 @@
 dependencies:
 - name: opensearch
   repository: https://charts.bitnami.com/bitnami
-  version: 1.2.2
+  version: 1.4.0
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
   version: 21.6.1
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 10.1.3
+  version: 14.0.12
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 10.1.3
+  version: 14.0.12
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.0
 - name: seaweedfs
-  repository: https://charts.bitnami.com/bitnami
-  version: 0.4.5
-- name: tusd
-  repository: https://charts.sagikazarmark.dev
-  version: 0.1.2
-- name: openldap-stack-ha
-  repository: https://jp-gouin.github.io/helm-openldap/
-  version: 4.2.5
+  repository: file://../seaweedfs
+  version: 1.0.2
 - name: grafana
   repository: https://charts.bitnami.com/bitnami
   version: 10.1.1
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 1.3.22
-digest: sha256:54cb4dc867a23b7b265fba49608a0aaa8add75ec697c2446fbf013169c4489cd
-generated: "2024-11-02T18:34:23.0903882+01:00"
+- name: nginx
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.2.6
+digest: sha256:a61522ad12d742ba8ba763115111687426f9b7cc94d9d89bc0417c8b1034315b
+generated: "2024-12-02T08:42:55.669647829+01:00"

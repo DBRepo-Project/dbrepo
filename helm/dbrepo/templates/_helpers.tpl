@@ -60,3 +60,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Broker connections
+*/}}
+{{- define "dbrepo.broker.connections" -}}
+{{- $connections := "" }}
+{{- range .Values.ui.public.broker.connections }}
+{{- $connections = printf "%s%s%s%s://%s:%s" $connections (ternary "" "," (empty $connections)) (ternary "^" "" .encrypted) .protocol (.host | default $.Values.hostname) .port }}
+{{- end }}
+{{- printf "%s" $connections }}
+{{- end }}

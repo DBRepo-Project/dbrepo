@@ -5,8 +5,8 @@ metadata:
   name: auth-service-config
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
-  KC_HOSTNAME_PATH: "/api/auth"
-  KC_HOSTNAME_ADMIN_URL: "{{ .Values.gateway }}/api/auth"
+  KC_HOSTNAME_PATH: "/"
+  KC_HOSTNAME_ADMIN_URL: "{{ .Values.gateway }}/"
   dbrepo-realm.json: |
     {
       "id" : "82c39861-d877-4667-a0f3-4daa2ee230e0",

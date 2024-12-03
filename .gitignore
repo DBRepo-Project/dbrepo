@@ -55,13 +55,9 @@ fda-ui/
 # Generated
 ready
 
-# crt
+# Certificates
 *.crt
-*.key
 *.p12
-
-# Environment
-.docker/.env
 
 # X509
 root.crt

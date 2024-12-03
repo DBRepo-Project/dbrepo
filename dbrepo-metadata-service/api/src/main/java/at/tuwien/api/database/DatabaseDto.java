@@ -78,8 +78,8 @@ public class DatabaseDto {
     @NotNull
     private UserDto owner;
 
-    @ToString.Exclude
-    private byte[] image;
+    @JsonProperty("preview_image")
+    private String previewImage;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")

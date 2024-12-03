@@ -326,7 +326,7 @@ services:
     hostname: gateway-service
     image: docker.io/nginx:1.27.0-alpine3.19-slim
     ports:
-      - "80:80"
+      - "80:8080"
     volumes:
       - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:

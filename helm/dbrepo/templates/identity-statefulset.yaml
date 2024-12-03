@@ -1,0 +1,80 @@
+{{- if .Values.identityservice.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: identity-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: identity-service
+    service: identity-service
+spec:
+  replicas: {{ .Values.identityservice.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: identity-service
+      service: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+        service: identity-service
+    spec:
+      {{- if .Values.identityservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.identityservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: identity-service
+          image: {{ .Values.identityservice.image.name }}
+          imagePullPolicy: {{ .Values.identityservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.identityservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.identityservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 1389
+              protocol: TCP
+            - containerPort: 1636
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: identity-service-secret
+          {{- if .Values.identityservice.persistence.enabled }}
+          volumeMounts:
+            - name: openldap-data
+              mountPath: /bitnami/openldap
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "ldapwhoami -H ldap://localhost:1389 -D cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }} -w {{ .Values.identityservice.global.adminPassword }}"
+            initialDelaySeconds: 120
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "ldapwhoami -H ldap://localhost:1389 -D cn={{ .Values.identityservice.global.adminUser }},{{ .Values.identityservice.global.ldapDomain }} -w {{ .Values.identityservice.global.adminPassword }}"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.identityservice.resources }}
+          resources: {{- toYaml .Values.identityservice.resources | nindent 12 }}
+          {{- else if ne .Values.identityservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.identityservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+  {{- if .Values.identityservice.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: openldap-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass }}
+        storageClassName: {{ .Values.global.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: 8Gi
+  {{- end }}
+{{- end }}

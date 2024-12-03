@@ -26,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -437,6 +438,30 @@ public class DatabaseEndpoint {
         dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyImage(database, image));
         return ResponseEntity.accepted()
                 .body(dto);
+    }
+
+    @GetMapping("/{databaseId}/image")
+    @Transactional
+    @Observed(name = "dbrepo_database_image_view")
+    @Operation(summary = "Get database preview image",
+            description = "Gets the database with id on the preview image.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "View of image was successful"),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
+    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") Long databaseId)
+            throws DatabaseNotFoundException {
+        log.debug("endpoint get database preview image, databaseId={}", databaseId);
+        final Database database = databaseService.findById(databaseId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("image/webp"))
+                .body(database.getImage());
     }
 
     @GetMapping("/{databaseId}")

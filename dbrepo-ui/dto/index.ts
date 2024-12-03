@@ -12,8 +12,8 @@ interface DatabaseDto {
   container: ContainerBriefDto;
   identifiers: IdentifierDto[] | [];
   subsets: IdentifierDto[] | [];
-  image: string;
   accesses: DatabaseAccessDto[];
+  has_preview_image: boolean;
   identifier: IdentifierDto[];
   tables: TableDto[];
   views: ViewDto[];

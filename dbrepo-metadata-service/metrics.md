@@ -12,6 +12,7 @@
 | `dbrepo_database_find`             | Find database                 |
 | `dbrepo_database_findall`          | List databases                |
 | `dbrepo_database_image`            | Update database preview image |
+| `dbrepo_database_image_view`       | Get database preview image    |
 | `dbrepo_database_transfer`         | Update database owner         |
 | `dbrepo_database_visibility`       | Update database visibility    |
 | `dbrepo_identifier_create`         | Create identifier             |

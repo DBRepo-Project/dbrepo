@@ -56,5 +56,7 @@ spec:
             periodSeconds: 10
           {{- if .Values.analyseservice.resources }}
           resources: {{- toYaml .Values.analyseservice.resources | nindent 12 }}
+          {{- else if ne .Values.analyseservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.analyseservice.resourcesPreset) | nindent 12 }}
           {{- end }}
 {{- end }}
