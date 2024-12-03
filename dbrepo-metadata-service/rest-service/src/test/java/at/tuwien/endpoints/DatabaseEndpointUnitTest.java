@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -408,6 +409,52 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertEquals(2, accessList.size());
     }
 
+    @Test
+    @WithAnonymousUser
+    public void findPreviewImage_anonymous_succeeds() throws DatabaseNotFoundException {
+
+        /* test */
+        final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_1_ID, DATABASE_1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.parseMediaType("image/webp"), response.getHeaders().getContentType());
+        final byte[] body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findPreviewImage_noRoles_succeeds() throws DatabaseNotFoundException {
+
+        /* test */
+        final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_1_ID, DATABASE_1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.parseMediaType("image/webp"), response.getHeaders().getContentType());
+        final byte[] body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findPreviewImage_noImage_succeeds() throws DatabaseNotFoundException {
+
+        /* test */
+        final ResponseEntity<byte[]> response = findPreviewImage_generic(DATABASE_2_ID, DATABASE_2);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.parseMediaType("image/webp"), response.getHeaders().getContentType());
+        final byte[] body = response.getBody();
+        assertNull(body);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findPreviewImage_notFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            findPreviewImage_generic(DATABASE_1_ID, null);
+        });
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -494,6 +541,22 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         final DatabaseDto body = response.getBody();
         assertNotNull(body);
         return body;
+    }
+
+    public ResponseEntity<byte[]> findPreviewImage_generic(Long databaseId, Database database) throws DatabaseNotFoundException {
+
+        /* mock */
+        if (database != null) {
+            when(databaseService.findById(databaseId))
+                    .thenReturn(database);
+        } else {
+            doThrow(DatabaseNotFoundException.class)
+                    .when(databaseService)
+                    .findById(databaseId);
+        }
+
+        /* test */
+        return databaseEndpoint.findPreviewImage(databaseId);
     }
 
 }

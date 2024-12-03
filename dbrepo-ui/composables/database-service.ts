@@ -99,6 +99,22 @@ export const useDatabaseService = (): any => {
     });
   }
 
+  async function findPreviewImage(id: number): Promise<string> {
+    const axios = useAxiosInstance();
+    console.debug('find database preview image with id', id);
+    return new Promise((resolve, reject) => {
+      axios.get<string>(`/api/database/${id}/image`)
+        .then((response) => {
+          console.info('Found database preview image with id', id);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to find database preview image', error);
+          reject(axiosErrorToApiError(error));
+        });
+    });
+  }
+
   async function updateVisibility(id: number, payload: DatabaseModifyVisibilityDto): Promise<DatabaseDto | null> {
     const axios = useAxiosInstance()
     console.debug('update database visibility for database with id', id);
@@ -220,6 +236,7 @@ export const useDatabaseService = (): any => {
     refreshTablesMetadata,
     refreshViewsMetadata,
     findOne,
+    findPreviewImage,
     findCount,
     getServerTime,
     updateVisibility,
