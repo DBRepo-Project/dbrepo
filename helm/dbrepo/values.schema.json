@@ -500,6 +500,14 @@
                         }
                     },
                     "type": "object"
+                },
+                "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
