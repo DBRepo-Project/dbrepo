@@ -122,9 +122,6 @@ export default {
         .catch(({code}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            return
-          }
           toast.error(this.$t(code))
         })
         .finally(() => {

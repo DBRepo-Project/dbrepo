@@ -581,8 +581,8 @@
     "database": {
       "title": "Database",
       "image": {
-        "title": "Database Image",
-        "alt": "Database logo/default image"
+        "title": "Preview Image",
+        "alt": "Database preview image representing the dataset"
       },
       "name": {
         "title": "Name"
@@ -1122,7 +1122,8 @@
     "image": {
       "exists": "Image already exists in metadata database",
       "missing": "Failed to find image in metadata database",
-      "invalid": "Image metadata is malformed"
+      "invalid": "Image metadata is malformed",
+      "size": "Image size is too large"
     },
     "license": {
       "missing": "Failed to find license in metadata database"
@@ -1465,6 +1466,9 @@
     },
     "pattern": {
       "timestamp": "Must be in format yyyy-MM-dd HH:mm:ss"
+    },
+    "image": {
+      "size": "Image size is too large"
     }
   }
 }
