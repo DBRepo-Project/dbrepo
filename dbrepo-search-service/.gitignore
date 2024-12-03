@@ -7,16 +7,10 @@ __pycache__/
 *.so
 
 # Generated
+/clients/
 coverage.txt
 report.xml
-clients/
-omlib/
-
-# Libraries
-./lib/dbrepo-1.4.4*
-./lib/dbrepo-1.4.5*
-./lib/dbrepo-1.4.6*
-./lib/dbrepo-1.4.7rc*
+/omlib/
 
 # Distribution / packaging
 .Python

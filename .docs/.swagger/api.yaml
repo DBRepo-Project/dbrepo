@@ -3047,6 +3047,38 @@ paths:
         - bearerAuth: []
         - basicAuth: []
   '/api/database/{databaseId}/image':
+    get:
+      tags:
+        - database-endpoint
+      summary: Get database preview image
+      description: Gets the database with id on the preview image.
+      operationId: findPreviewImage
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: View of image was successful
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+        '404':
+          description: Database or user could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
     put:
       tags:
         - database-endpoint
@@ -6190,11 +6222,6 @@ components:
           $ref: '#/components/schemas/UserDto'
         owner:
           $ref: '#/components/schemas/UserDto'
-        image:
-          type: array
-          items:
-            type: string
-            format: byte
         created:
           type: string
           format: date-time
@@ -6211,6 +6238,8 @@ components:
         is_public:
           type: boolean
           example: true
+        preview_image:
+          type: string
     ForeignKeyBriefDto:
       type: object
       properties:
@@ -8499,14 +8528,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8837,11 +8866,11 @@ components:
           type: string
         identifier:
           $ref: '#/components/schemas/Identifier'
+        apaName:
+          type: string
         bibtexName:
           type: string
         ieeeName:
-          type: string
-        apaName:
           type: string
     DataType:
       type: object

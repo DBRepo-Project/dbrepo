@@ -291,7 +291,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         assertNotNull(response.getContact());
         assertNotNull(response.getCreatedBy());
         assertNotNull(response.getOwner());
-        assertNull(response.getImage());
+        assertNotNull(response.getImage());
         assertNotNull(response.getExchangeName());
         return response;
     }

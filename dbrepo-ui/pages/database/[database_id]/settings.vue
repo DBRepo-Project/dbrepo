@@ -18,14 +18,31 @@
               v-model="validUpload"
               @submit.prevent="submit">
               <v-row
-                v-if="databaseImage"
+                v-if="previewImage"
                 dense>
                 <v-col md="8">
+                  <v-alert
+                    v-if="file"
+                    border="start"
+                    color="warning">
+                    This is a only preview of your dataset image and changes are not yet saved.
+                  </v-alert>
                   <v-img
-                    :src="databaseImage"
+                    class="mt-2"
+                    :src="previewImage"
                     :alt="$t('pages.database.image.alt')"
+                    :title="$t('pages.database.image.alt')"
                     :max-width="maxWidth"
                     :max-height="maxHeight" />
+                  <v-btn
+                    v-if="database.preview_image"
+                    size="small"
+                    variant="flat"
+                    color="error"
+                    class="ml-2 mt-4"
+                    :text="$t('pages.database.subpages.settings.image-remove.text')"
+                    :loading="loadingDeleteImage"
+                    @click="removeDatabaseImage" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -39,6 +56,7 @@
                     :variant="inputVariant"
                     variant="underlined"
                     :loading="loadingUpload"
+                    :error-messages="uploadErrorMessages"
                     :show-size="1000"
                     counter
                     :label="$t('pages.database.subpages.settings.image.label')"
@@ -63,15 +81,6 @@
                     :text="$t('pages.database.subpages.settings.submit.text')"
                     :loading="loadingImage"
                     @click="updateDatabaseImage" />
-                  <v-btn
-                    v-if="database.image"
-                    size="small"
-                    variant="flat"
-                    color="error"
-                    class="ml-2 mt-4"
-                    :text="$t('pages.database.subpages.settings.image-remove.text')"
-                    :loading="loadingDeleteImage"
-                    @click="removeDatabaseImage" />
                 </v-col>
               </v-row>
             </v-form>
@@ -378,20 +387,26 @@ export default {
       }
       return this.roles.includes('modify-database-image')
     },
-    databaseImage () {
+    previewImage () {
       if (this.file) {
         return URL.createObjectURL(this.file)
       }
-      if (!this.database || !this.database.image) {
+      if (!this.database) {
         return null
       }
-      return `data:image/webp;base64,${this.database.image}`
+      return this.database.preview_image
     },
     maxWidth () {
       return this.$config.public.database.image.width
     },
     maxHeight () {
       return this.$config.public.database.image.height
+    },
+    uploadErrorMessages () {
+      if (!this.file || this.file.size < 1_000_000) {
+        return []
+      }
+      return [this.$t('validation.image.size')]
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -446,8 +461,12 @@ export default {
         })
     },
     uploadFile () {
-      this.loadingUpload = true
       console.debug('upload file', this.file)
+      if (this.file.size > 1_000_000) {
+        const toast = useToastInstance()
+        toast.error(this.$t('error.image.size'))
+      }
+      this.loadingUpload = true
       const uploadService = useUploadService()
       uploadService.create(this.file)
         .then((s3key) => {

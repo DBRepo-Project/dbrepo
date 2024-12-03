@@ -17,7 +17,6 @@ nav:
   - Concepts:
     - Overview: concepts/index.md
     - Authentication: concepts/authentication.md
-    - Database: concepts/database.md
     - Messaging: concepts/messaging.md
     - Monitoring: concepts/monitoring.md
     - Persistent Identifier: concepts/pid.md

@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.5.2 (2024-11-19)
+## v1.5.2 (2024-12-03)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2)
 
@@ -10,6 +10,9 @@ author: Martin Weise
 
 #### Changes
 
+* Adapt Helm chart to support `runAsNonRoot` throughout and specify `resource` presets for the highly-constrained
+  OpenShift Kubernetes environment 
+  in [#467](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/467).
 * Require authentication for uploading files
   in [#466](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/466).
 

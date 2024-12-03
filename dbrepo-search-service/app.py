@@ -1,23 +1,21 @@
+import logging
 import math
 import os
-import logging
-from ast import literal_eval
 from json import dumps
 from typing import List, Any
 
 import requests
+from clients.keycloak_client import User, KeycloakClient
+from clients.opensearch_client import OpenSearchClient
 from dbrepo.api.dto import Database, ApiError
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
 from jwt.exceptions import JWTDecodeError
-from opensearchpy import TransportError, NotFoundError
+from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
-
-from clients.keycloak_client import User, KeycloakClient
-from clients.opensearch_client import OpenSearchClient
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
