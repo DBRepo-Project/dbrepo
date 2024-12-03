@@ -60,7 +60,7 @@ ready
 *.p12
 
 # Environment
-.docker/.env
+/.env
 
 # X509
 root.crt
