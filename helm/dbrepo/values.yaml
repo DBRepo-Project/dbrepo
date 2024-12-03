@@ -320,11 +320,12 @@ brokerservice:
     ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
     userDnPattern: ${username}
   auth:
-    ## @skip brokerservice.auth.tls
     tls:
+      ## @param brokerservice.auth.tls.enabled Enable TLS support
       enabled: false
-      sslOptionsVerify: true
-      failIfNoPeerCert: true
+      ## @param brokerservice.auth.tls.existingSecretFullChain If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`
+      existingSecretFullChain: false
+      ## @param brokerservice.auth.tls.existingSecret Existing secret with certificate content
       existingSecret: ingress-cert
   rbac:
     ## @skip brokerservice.rbac.create
@@ -349,6 +350,10 @@ brokerservice:
         port: 1883
         targetPort: 1883
     # loadBalancerIP:
+  extraConfiguration: |
+    mqtt.vhost = dbrepo
+    mqtt.exchange = dbrepo
+    mqtt.prefetch = 10
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
 
@@ -885,11 +890,13 @@ ui:
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
       host: example.com
-      port:
-        ## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
-        5671: false
-        ## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
-        5672: true
+      connections:
+        - protocol: "amqp"
+          port: "5672"
+          encrypted: false
+        - protocol: "mqtt"
+          port: "1883"
+          encrypted: false
       ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:

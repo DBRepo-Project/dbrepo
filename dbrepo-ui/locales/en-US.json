@@ -279,12 +279,11 @@
         "title": "ID"
       },
       "broker": {
-        "title": "Broker"
+        "title": "Live Data"
       },
       "connection": {
         "title": "Connection Details",
-        "secure": "secure",
-        "insecure": "insecure",
+        "secure": "encrypted",
         "permissions": {
           "write": "You can write to this table",
           "read": "You can read all contents of this table"

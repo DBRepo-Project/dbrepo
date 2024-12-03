@@ -244,12 +244,6 @@
                                 },
                                 "existingSecret": {
                                     "type": "string"
-                                },
-                                "failIfNoPeerCert": {
-                                    "type": "boolean"
-                                },
-                                "sslOptionsVerify": {
-                                    "type": "boolean"
                                 }
                             },
                             "type": "object"
@@ -1667,22 +1661,28 @@
                         },
                         "broker": {
                             "properties": {
+                                "connections": {
+                                    "items": {
+                                        "properties": {
+                                            "encrypted": {
+                                                "type": "boolean"
+                                            },
+                                            "port": {
+                                                "type": "string"
+                                            },
+                                            "protocol": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                },
                                 "extra": {
                                     "type": "string"
                                 },
                                 "host": {
                                     "type": "string"
-                                },
-                                "port": {
-                                    "properties": {
-                                        "5671": {
-                                            "type": "boolean"
-                                        },
-                                        "5672": {
-                                            "type": "boolean"
-                                        }
-                                    },
-                                    "type": "object"
                                 }
                             },
                             "type": "object"

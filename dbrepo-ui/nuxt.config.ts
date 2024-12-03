@@ -58,10 +58,8 @@ export default defineNuxtConfig({
       touch: '/apple-touch-icon.png',
       version: 'bun-dev',
       broker: {
-        host: 'localhost',
-        port: {
-          '5672': false
-        },
+        /* mark encrypted connection with leading ^, e.g. ^amqp://localhost:5671/dbrepo will be displayed with (encrypted) suffix */
+        connections: "amqp://localhost:5672/dbrepo,mqtt://localhost:1883/dbrepo",
         extra: ''
       },
       variant: {
