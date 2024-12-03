@@ -18,10 +18,10 @@ environments.
 ## Architecture
 
 The repository is designed as a service-based architecture to ensure scalability and the utilization of various
-technologies. The conceptualized microservices operate the basic database operations, data versioning as well as
+technologies. The conceptualized microservices (c.f. [Fig. 1](#fig1)) operate the basic database operations, data versioning as well as
 *findability*, *accessability*, *interoperability* and *reuseability* (FAIR).
 
-<figure markdown>
+<figure id="fig1" markdown>
 ![DBRepo architecture](../images/architecture-docker-compose.svg)
-<figcaption>Architecture of the services deployed via Docker Compose</figcaption>
+<figcaption>Fig. 1: Architecture of the services deployed via Docker Compose</figcaption>
 </figure>

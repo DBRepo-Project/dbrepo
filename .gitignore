@@ -55,9 +55,8 @@ fda-ui/
 # Generated
 ready
 
-# crt
+# Certificates
 *.crt
-*.key
 *.p12
 
 # Environment
