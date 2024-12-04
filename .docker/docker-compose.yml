@@ -80,12 +80,12 @@ services:
     container_name: dbrepo-auth-service
     hostname: auth-service
     image: bitnami/keycloak:26.0.0-debian-12-r1
-    ports:
-      - "8080:8080"
     volumes:
       - ./config/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./config/master-realm.json:/opt/keycloak/data/import/master-realm.json
       - ./config/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
+    ports:
+      - "8080:8080"
     environment:
       KEYCLOAK_ENABLE_HTTPS: "false"
       KEYCLOAK_ENABLE_STATISTICS: "true"
@@ -299,8 +299,7 @@ services:
     hostname: gateway-service
     image: docker.io/nginx:1.27.0-alpine3.19-slim
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8080"
     volumes:
       - ./config/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
@@ -407,7 +406,6 @@ services:
       - dashboard-service-data:/opt/bitnami/grafana/data
     environment:
       GF_SERVER_DOMAIN: "dashboard-service"
-      GF_SERVER_ROOT_URL: "${BASE_URL:-http://localhost}"
       GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "true"
       LDAP_ADMIN_USERNAME: "${IDENTITY_SERVICE_ADMIN_USERNAME:-admin}"
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
