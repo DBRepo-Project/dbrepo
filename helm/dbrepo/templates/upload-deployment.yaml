@@ -1,0 +1,62 @@
+{{- if .Values.uploadservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    app: upload-service
+    service: upload-service
+spec:
+  replicas: {{ .Values.uploadservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: upload-service
+      service: upload-service
+  template:
+    metadata:
+      labels:
+        app: upload-service
+        service: upload-service
+    spec:
+      {{- if .Values.uploadservice.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.uploadservice.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: upload-service
+          image: {{ .Values.uploadservice.image.name }}
+          imagePullPolicy: {{ .Values.uploadservice.image.pullPolicy | default "IfNotPresent" }}
+          {{- if .Values.uploadservice.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.uploadservice.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          args:
+            - "-behind-proxy"
+            - "-max-size={{ .Values.uploadservice.s3.maxSize }}"
+            - "-base-path=/api/upload/files/"
+            - "-s3-endpoint={{ .Values.uploadservice.s3.endpoint}}"
+            - "-s3-bucket={{ .Values.uploadservice.s3.bucket }}"
+          ports:
+            - containerPort: 1080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: upload-service-secret
+          livenessProbe:
+            httpGet:
+              port: 1080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 1080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- if .Values.uploadservice.resources }}
+          resources: {{- toYaml .Values.uploadservice.resources | nindent 12 }}
+          {{- else if ne .Values.uploadservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.uploadservice.resourcesPreset) | nindent 12 }}
+          {{- end }}
+{{- end }}

@@ -1,9 +1,11 @@
 import * as tus from 'tus-js-client'
 import {useCacheStore} from '@/stores/cache'
+import {useUserStore} from '@/stores/user'
 
 export const useUploadService = (): any => {
 
   function create (data: File) {
+    const userStore = useUserStore()
     const config = useRuntimeConfig()
     const endpoint = config.public.upload.client
     return new Promise<string>((resolve, reject) => {
@@ -13,6 +15,9 @@ export const useUploadService = (): any => {
       }
       const uploadClient: tus.Upload = new tus.Upload(data, {
         endpoint,
+        headers: {
+          'Authorization': `Bearer ${userStore.getToken}`
+        },
         retryDelays: [0, 3000, 5000, 10000, 20000],
         onError (error) {
           console.error('Failed to upload:', error)

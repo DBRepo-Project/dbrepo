@@ -231,9 +231,14 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
+        try {
+            databaseEndpoint.findPreviewImage(DATABASE_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
 
         /* test */
-        for (String metric : List.of("dbrepo_database_findall", "dbrepo_database_create", "dbrepo_database_visibility", "dbrepo_database_transfer", "dbrepo_database_find", "dbrepo_database_image")) {
+        for (String metric : List.of("dbrepo_database_findall", "dbrepo_database_create", "dbrepo_database_visibility", "dbrepo_database_transfer", "dbrepo_database_find", "dbrepo_database_image", "dbrepo_database_image_view")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 requests = "~=2.31"
 pika = "*"
+paho-mqtt = "*"
 pydantic = "*"
 tuspy = "*"
 pandas = "*"

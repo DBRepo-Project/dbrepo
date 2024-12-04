@@ -13,7 +13,8 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: init
-          image: {{ .Values.storageservice.init.image }}
+          image: {{ .Values.storageservice.init.image.name }}
+          imagePullPolicy: {{ .Values.storageservice.init.image.pullPolicy | default "IfNotPresent" }}
           env:
             - name: WEED_CLUSTER_DEFAULT
               value: "sw"
@@ -49,6 +50,11 @@ spec:
               name: swfs-master
             - containerPort: 19333
               #name: swfs-master-grpc
+          {{- if .Values.storageservice.init.resources }}
+          resources: {{- toYaml .Values.storageservice.init.resources | nindent 12 }}
+          {{- else if ne .Values.storageservice.init.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.storageservice.init.resourcesPreset) | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config-users
           secret:

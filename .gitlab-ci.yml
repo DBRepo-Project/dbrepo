@@ -4,8 +4,8 @@ variables:
   TESTCONTAINERS_RYUK_DISABLED: "false"
   PYTHON_VERSION: "3.11"
   DOC_VERSION: "1.5"
-  APP_VERSION: "1.5.1"
-  CHART_VERSION: "1.5.1"
+  APP_VERSION: "1.5.2"
+  CHART_VERSION: "1.5.2"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -104,12 +104,13 @@ build-search-service:
 build-docker:
   image: docker.io/docker:24-dind
   stage: build
+  variables:
+    DOCKER_BUILDKIT: 0
   before_script:
+    - "apk add --no-cache make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker compose build --parallel"
+    - "make build-images"
 
 build-helm:
   image: docker.io/docker:24-dind
@@ -161,8 +162,9 @@ verify-install-script:
       - /^release-.*/
   variables:
     SKIP_CHECKS: 1
-  script:
+  before_script:
     - "apk add bash curl"
+  script:
     - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
 
 verify-dist:
@@ -171,8 +173,9 @@ verify-dist:
   only:
     refs:
       - /^release-.*/
-  script:
+  before_script:
     - "apk add curl"
+  script:
     - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
 
 lint-helm-chart:
@@ -226,6 +229,12 @@ test-data-service:
     reports:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+
+test-upload-service:
+  image: maven:3-openjdk-17
+  stage: test
+  script:
+    - "mvn -f ./dbrepo-upload-service/pom.xml clean test $MAVEN_OPTS"
 
 test-analyse-service:
   image: docker.io/python:3.11-alpine
@@ -334,7 +343,7 @@ test-ui:
   dependencies:
     - build-ui
   before_script:
-    - "apk add bash apache2-utils"
+    - "apk add --no-cache bash apache2-utils"
     - "docker compose build dbrepo-ui"
     - "docker run --name dbrepo-ui -e NODE_OPTIONS='--max_old_space_size=256' -p 3000:3000 -d dbrepo-ui:latest"
   script:
@@ -391,7 +400,7 @@ release-images:
     - "docker logout ${CI_REGISTRY2_URL}"
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
     - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
+    - "apk add --no-cache make bash"
   script:
     - "make release-images"
 
