@@ -4,7 +4,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.exception.*;
+import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.AccessService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;

@@ -5,7 +5,9 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.*;
+import at.tuwien.exception.DatabaseMalformedException;
+import at.tuwien.exception.ViewMalformedException;
+import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Log4j2
 @SpringBootTest

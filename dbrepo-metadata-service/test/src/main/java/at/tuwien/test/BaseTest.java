@@ -7049,6 +7049,7 @@ public abstract class BaseTest {
             .creator(USER_1)
             .ownedBy(DATABASE_1_OWNER)
             .owner(USER_1)
+            .image(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
             .contactPerson(USER_1_ID)
             .contact(USER_1)
             .subsets(new LinkedList<>())

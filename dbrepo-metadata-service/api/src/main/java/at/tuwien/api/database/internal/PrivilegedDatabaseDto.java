@@ -75,9 +75,6 @@ public class PrivilegedDatabaseDto {
     @NotNull
     private UserDto owner;
 
-    @ToString.Exclude
-    private byte[] image;
-
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

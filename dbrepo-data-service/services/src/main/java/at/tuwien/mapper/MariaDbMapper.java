@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.TupleDeleteDto;
 import at.tuwien.api.database.table.TupleDto;
 import at.tuwien.api.database.table.TupleUpdateDto;
@@ -292,9 +291,9 @@ public interface MariaDbMapper {
                         .append(column.getInternalName())
                         .append("`) as min, MAX(`")
                         .append(column.getInternalName())
-                        .append("`) as max, MEDIAN(`")
+                        .append("`) as max, AVG(`")
                         .append(column.getInternalName())
-                        .append("`) OVER () as median, AVG(`")
+                        .append("`) as median, AVG(`")
                         .append(column.getInternalName())
                         .append("`) as mean, STDDEV(`")
                         .append(column.getInternalName())

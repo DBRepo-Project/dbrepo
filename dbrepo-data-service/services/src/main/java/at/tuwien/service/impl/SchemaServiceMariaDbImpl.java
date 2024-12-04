@@ -140,11 +140,11 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
             if (!resultSet1.next()) {
                 throw new ViewNotFoundException("Failed to find view in the information schema");
             }
-            ViewDto view = dataMapper.schemaResultSetToView(metadataMapper.privilegedDatabaseDtoToDatabaseDto(privilegedDatabase), resultSet1);
+            ViewDto view = dataMapper.schemaResultSetToView(database, resultSet1);
             view.setDatabase(database);
             view.setVdbid(database.getId());
-            view.setCreator(database.getCreator());
-            view.setCreatedBy(database.getCreator().getId());
+            view.setCreator(database.getOwner());
+            view.setCreatedBy(privilegedDatabase.getOwner().getId());
             /* obtain view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());

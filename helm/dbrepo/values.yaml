@@ -87,6 +87,8 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+  ## @param authservice.resourcesPreset The container resource presets
+  resourcesPreset: "small"
   ## @skip authservice.extraStartupArgs
   extraStartupArgs: "--import-realm"
   jwt:
@@ -148,7 +150,7 @@ datadb:
   jdbcExtraArgs: ""
   metrics:
     ## @skip datadb.metrics.enabled The Prometheus settings.
-    enabled: false
+    enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
   persistence:
@@ -168,8 +170,22 @@ searchdb:
   host: search-db
   ## @param searchdb.port The port for the microservices.
   port: 9200
-  ## @skip searchdb.security
+  coordinating:
+    ## @param searchdb.coordinating.resourcesPreset The container resource preset
+    resourcesPreset: "small"
+  ingest:
+    ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
+    enabled: false
+    ## @param searchdb.ingest.resourcesPreset The container resource preset
+    resourcesPreset: "micro"
+  master:
+    ## @param searchdb.master.resourcesPreset The container resource preset
+    resourcesPreset: "small"
+  data:
+    ## @param searchdb.data.resourcesPreset The container resource preset
+    resourcesPreset: "medium"
   security:
+    ## @skip searchdb.security.enabled
     enabled: false
   ## @param searchdb.clusterName The cluster name.
   clusterName: search-db
@@ -179,34 +195,82 @@ searchdb:
 uploadservice:
   ## @param uploadservice.enabled Enable the Upload Service.
   enabled: true
-  ## @skip uploadservice.fullnameOverride
-  fullnameOverride: upload-service
   ## @skip uploadservice.image
   image:
-    repository: tusproject/tusd
-    tag: v1.12
-  ## @skip uploadservice.securityContext
-  securityContext:
-    allowPrivilegeEscalation: false
+    name: docker.io/tusproject/tusd:v1.12
+  s3:
+    ## @param uploadservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+    endpoint: http://storage-service-s3:8333
+    ## @param uploadservice.s3.bucket The S3 bucket name.
+    bucket: dbrepo
+    ## @param uploadservice.s3.maxSize The maximum file size in bytes.
+    maxSize: "2000000000"
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param uploadservice.podSecurityContext.enabled Enable pods' Security Context
+    enabled: true
+    ## @param uploadservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param uploadservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param uploadservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param uploadservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 0
+  containerSecurityContext:
+    ## @param uploadservice.containerSecurityContext.enabled Enable containers' Security Context
+    enabled: true
+    ## @param uploadservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param uploadservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
     runAsUser: 1000
+    ## @param uploadservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
     runAsGroup: 1000
+    ## @param uploadservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
     runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
+    ## @param uploadservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param uploadservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
     capabilities:
-      drop:
-        - ALL
+      ## @param uploadservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+    seccompProfile:
+      ## @param uploadservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param uploadservice.resourcesPreset The container resource preset
+  resourcesPreset: "nano"
+  ## @param uploadservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @skip uploadservice.containerArgs
   containerArgs:
     - "-behind-proxy"
     - "-max-size=2000000000"
     - "-base-path=/api/upload/files/"
+    - "-hooks-dir=/srv/tusd-hooks/"
     - "-s3-endpoint=http://storage-service-s3:8333"
     - "-s3-bucket=dbrepo"
   ## @skip uploadservice.envFrom
   envFrom:
     - secretRef:
         name: upload-service-secret
+  ## @skip uploadservice.volumes
+  volumes:
+    - name: config
+      configMap:
+        name: upload-service-setup
+        defaultMode: 0777
+  ## @skip uploadservice.volumeMounts
+  volumeMounts:
+    - name: config
+      mountPath: /srv/tusd-hooks/pre-create
+      subPath: pre-create
   ## @param uploadservice.replicaCount The number of replicas.
   replicaCount: 2
 
@@ -260,12 +324,16 @@ brokerservice:
     ## @param brokerservice.ldap.userDnPattern The pattern to determine the user.
     userDnPattern: ${username}
   auth:
-    ## @skip brokerservice.auth.tls
     tls:
+      ## @param brokerservice.auth.tls.enabled Enable TLS support
       enabled: false
-      sslOptionsVerify: true
-      failIfNoPeerCert: true
+      ## @param brokerservice.auth.tls.existingSecretFullChain If set to `true` the service uses the full chain in the certificate `tls.crt`, otherwise it attempts to read from `ca.crt`
+      existingSecretFullChain: false
+      ## @param brokerservice.auth.tls.existingSecret Existing secret with certificate content
       existingSecret: ingress-cert
+  rbac:
+    ## @skip brokerservice.rbac.create
+    create: false
   ## @skip brokerservice.advancedConfigurationExistingSecret
   advancedConfigurationExistingSecret: broker-service-secret
   ## @skip brokerservice.loadDefinition
@@ -286,6 +354,11 @@ brokerservice:
         port: 1883
         targetPort: 1883
     # loadBalancerIP:
+  ## @param brokerservice.extraConfiguration The extra configuration for MQTT
+  extraConfiguration: |
+    mqtt.vhost = dbrepo
+    mqtt.exchange = dbrepo
+    mqtt.prefetch = 10
   ## @param brokerservice.replicaCount The number of replicas.
   replicaCount: 1
 
@@ -296,11 +369,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.1
-    ## @skip analyseservice.image.pullPolicy
-    pullPolicy: Always
-    ## @param analyseservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
@@ -334,15 +403,16 @@ analyseservice:
     seccompProfile:
       ## @param analyseservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @skip analyseservice.resources
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 2048Mi
-
+  ## @param analyseservice.resourcesPreset The container resource preset
+  resourcesPreset: "micro"
+  ## @param analyseservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param analyseservice.endpoint The url of the endpoint.
   endpoint: http://analyse-service
   s3:
@@ -360,11 +430,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.1
-    ## @skip metadataservice.image.pullPolicy
-    pullPolicy: Always
-    ## @param metadataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -398,14 +464,16 @@ metadataservice:
     seccompProfile:
       ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @skip metadataservice.resources
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
+  ## @param metadataservice.resourcesPreset The container resource preset
+  resourcesPreset: "micro"
+  ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param metadataservice.endpoint The Metadata Service endpoint.
   endpoint: http://metadata-service
   crossref:
@@ -459,11 +527,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.1
-    ## @skip dataservice.image.pullPolicy
-    pullPolicy: Always
-    ## @param dataservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -497,6 +561,16 @@ dataservice:
     seccompProfile:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @param dataservice.resourcesPreset The container resource preset
+  resourcesPreset: "large"
+  ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
@@ -521,10 +595,10 @@ dataservice:
     ## @param dataservice.s3.bucket The S3 bucket name.
     bucket: dbrepo
     auth:
-      ## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
-      username: seaweedfsadmin
-      ## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
-      password: seaweedfsadmin
+      ## @param dataservice.s3.auth.accessKeyId The S3-capable endpoint username (or access key id).
+      accessKeyId: seaweedfsadmin
+      ## @param dataservice.s3.auth.secretAccessKey The S3-capable endpoint user password (or access key secret).
+      secretAccessKey: seaweedfsadmin
     ## @param dataservice.s3.filePath The local location to download/upload files from/to S3-capable endpoint.
     filePath: /s3
   ## @param dataservice.replicaCount The number of replicas.
@@ -539,11 +613,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.1
-    ## @skip searchservice.image.pullPolicy
-    pullPolicy: Always
-    ## @param searchservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
@@ -577,20 +647,31 @@ searchservice:
     seccompProfile:
       ## @param searchservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
-  ## @skip searchservice.resources
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
-  ## @skip searchservice.init
+  ## @param searchservice.resourcesPreset The container resource preset
+  resourcesPreset: "micro"
+  ## @param searchservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.1
-      pullPolicy: Always
-  ## @param searchservice.replicaCount The number of replicas.
+      ## @skip searchservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.2
+    ## @param searchservice.init.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param searchservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
+    ## @param searchservice.replicaCount The number of replicas.
   replicaCount: 2
 
 ## @section Storage Service
@@ -601,30 +682,29 @@ storageservice:
   ## @skip storageservice.fullnameOverride
   fullnameOverride: storage-service
   mariadb:
+    ## @param storageservice.mariadb.enabled Enables the MariaDB database needed for the filer.
+    enabled: true
     ## @skip storageservice.mariadb.fullnameOverride
-    fullnameOverride: storage-service-db
-    ## @skip storageservice.mariadb.enabled
-    enabled: true
+    fullnameOverride: storage-db
     auth:
-      ## @param storageservice.mariadb.auth.rootPassword The user password for the root user.
-      rootPassword: seaweedfsdb
+      ## @param storageservice.mariadb.auth.rootPassword The password for the root user.
+      rootPassword: seaweedfsfiler
+  postgresql:
+    ## @skip storageservice.postgresql.enabled
+    enabled: false
   master:
-    ## @skip storageservice.master.enabled
-    enabled: true
     metrics:
       ## @skip storageservice.master.metrics.enabled
       enabled: true
   filer:
-    ## @param storageservice.filer.enabled Enable the storage service filer which is required for S3.
+    ## @param storageservice.filer.enabled Cannot use the filer in the standard component since it's incompatible with OpenShift
     enabled: true
   volume:
     ## @skip storageservice.volume.enabled
-    enabled: false
+    enabled: true
   s3:
     ## @skip storageservice.s3.enabled
     enabled: true
-    ## @param storageservice.s3.replicaCount The number of replicas.
-    replicaCount: 2
     ## @param storageservice.s3.bucket The S3-bucket name.
     bucket: dbrepo
     auth:
@@ -634,18 +714,33 @@ storageservice:
       adminAccessKeyId: seaweedfsadmin
       ## @param storageservice.s3.auth.adminSecretAccessKey The S3 secret access key for the admin user. In some systems this is named `password`.
       adminSecretAccessKey: seaweedfsadmin
-  ## @skip storageservice.init
+      ## @param storageservice.s3.auth.readAccessKeyId The S3 access key id for the read only user.
+      readAccessKeyId: seaweedfsuser
+      ## @param storageservice.s3.auth.readSecretAccessKey The S3 secret access key for the read only user.
+      readSecretAccessKey: seaweedfsuser
   init:
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.1
-    pullPolicy: Always
+    image:
+      ## @skip storageservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.2
+    ## @param storageservice.init.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param storageservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
 
 ## @section Identity Service
 
 identityservice:
   ## @param identityservice.enabled Enable the Identity Service.
   enabled: true
-  ## @skip identityservice.fullnameOverride
-  fullnameOverride: identity-service
+  image:
+    ## @skip identityservice.image.name
+    name: docker.io/bitnami/openldap:2.6.8-debian-12-r1
   global:
     ## @param identityservice.global.ldapDomain The LDAP domain name in domain "dbrepo.at" form or explicit in "dc=dbrepo,dc=at" form.
     ldapDomain: dc=dbrepo,dc=at
@@ -655,22 +750,57 @@ identityservice:
     adminPassword: admin
     ## @skip identityservice.global.configUserEnabled
     configUserEnabled: false
-  containerSecurityContext:
-    ## @skip identityservice.containerSecurityContext.enabled
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    ## @param identityservice.podSecurityContext.enabled Enable pods' Security Context
     enabled: true
+    ## @param identityservice.podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+    fsGroupChangePolicy: Always
+    ## @param identityservice.podSecurityContext.sysctls Set kernel settings using the sysctl interface
+    sysctls: [ ]
+    ## @param identityservice.podSecurityContext.supplementalGroups Set filesystem extra groups
+    supplementalGroups: [ ]
+    ## @param identityservice.podSecurityContext.fsGroup Set RabbitMQ pod's Security Context fsGroup
+    fsGroup: 1001
+  containerSecurityContext:
+    ## @param identityservice.containerSecurityContext.enabled Enabled containers' Security Context
+    enabled: true
+    ## @param identityservice.containerSecurityContext.seLinuxOptions Set SELinux options in container
+    seLinuxOptions: { }
+    ## @param identityservice.containerSecurityContext.runAsUser Set RabbitMQ containers' Security Context runAsUser
+    runAsUser: 1001
+    ## @param identityservice.containerSecurityContext.runAsGroup Set RabbitMQ containers' Security Context runAsGroup
+    runAsGroup: 0
+    ## @param identityservice.containerSecurityContext.runAsNonRoot Set RabbitMQ container's Security Context runAsNonRoot
+    runAsNonRoot: true
+    ## @param identityservice.containerSecurityContext.allowPrivilegeEscalation Set container's privilege escalation
+    allowPrivilegeEscalation: false
+    ## @param identityservice.containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+    readOnlyRootFilesystem: false
+    capabilities:
+      ## @param identityservice.containerSecurityContext.capabilities.drop Set container's Security Context runAsNonRoot
+      drop: [ "ALL" ]
+      ## @param identityservice.containerSecurityContext.capabilities.add Set container's Security Context runAsNonRoot
+      add: [ "NET_BIND_SERVICE" ]
+    seccompProfile:
+      ## @param identityservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+      type: "RuntimeDefault"
+  ## @param identityservice.resourcesPreset The container resource preset
+  resourcesPreset: "nano"
+  ## @param identityservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @param identityservice.users The admin username for internal authentication.
   users: admin
   ## @param identityservice.userPasswords The admin user password for internal authentication.
   userPasswords: admin
   ## @param identityservice.group The group that contains the administrators for the broker service.
   group: system
-  ## @skip identityservice.ltb-passwd
-  ltb-passwd:
-    ingress:
-      enabled: false
-  ## @skip identityservice.phpldapadmin
-  phpldapadmin:
-    enabled: false
   ## @skip identityservice.customSchemaFiles
   customSchemaFiles:
     00-memberof.ldif: |-
@@ -689,11 +819,6 @@ identityservice:
   persistence:
     ## @param identityservice.persistence.enabled If set to true, a PVC will be created.
     enabled: true
-  replication:
-    ## @param identityservice.replication.enabled If set to true, the pods required a cluster. Needs `replicaCount` to be `3` or higher (of 2n+1).
-    enabled: false
-  ## @param identityservice.replicaCount The number of replicas. If `replicaCount` is set to more than 1, requires `replication.enabled` to be `true`.
-  replicaCount: 1
 
 ## @section User Interface
 
@@ -702,11 +827,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.1
-    ## @skip ui.image.pullPolicy
-    pullPolicy: Always
-    ## @param ui.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
-    debug: false
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.2
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context
@@ -740,14 +861,17 @@ ui:
     seccompProfile:
       ## @param ui.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
+  ## @param ui.resourcesPreset The container resource preset
+  resourcesPreset: "micro"
+  ## @param ui.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources: { }
+  ##   requests:
+  ##     cpu: 250m
+  ##     memory: 64Mi
+  ##   limits:
+  ##     cpu: 500m
+  ##     memory: 1024Mi
   ## @skip ui.resources
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 2048Mi
   public:
     api:
       ## @param ui.public.api.client The endpoint for the client api. Defaults to the value of `gateway`.
@@ -768,24 +892,19 @@ ui:
     broker:
       ## @param ui.public.broker.host The displayed broker hostname.
       host: example.com
-      port:
-        ## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
-        5671: false
-        ## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
-        5672: true
+      ## @skip ui.public.broker.connections The array of connections that should be displayed in the frontend.
+      connections:
+        - protocol: "amqp"
+          port: "5672"
+          encrypted: false
+        - protocol: "mqtt"
+          port: "1883"
+          encrypted: false
       ## @param ui.public.broker.extra Extra metadata displayed.
       extra: ""
     database:
       ## @param ui.public.database.extra Extra metadata displayed.
       extra: ""
-    ## @skip ui.public.links
-    links:
-      rabbitmq:
-        text: RabbitMQ Admin
-        href: /api/broker/
-      keycloak:
-        text: Keycloak Admin
-        href: /api/auth/
     pid:
       default:
         ## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
@@ -813,6 +932,9 @@ ui:
 dashboardservice:
   ## @param dashboardservice.enabled Enable the Dashboard Service.
   enabled: true
+  metrics:
+    ## @param dashboardservice.metrics.enabled Enable the metrics sidecar.
+    enabled: true
   ## @skip dashboardservice.fullnameOverride
   fullnameOverride: dashboard-service
   ldap:
@@ -851,10 +973,15 @@ metricdb:
   ## @skip metricdb.fullnameOverride
   fullnameOverride: metric-db
   alertmanager:
+    ## @skip metricdb.alertmanager.enabled
+    enabled: false
     service:
       ## @skip metricdb.alertmanager.service.type
       type: ClusterIP
   server:
+    rbac:
+      ## @skip metricdb.server.rbac.create
+      create: false
     service:
       ## @skip metricdb.server.service.type
       type: ClusterIP
@@ -866,15 +993,201 @@ metricdb:
       - job_name: 'actuator scrape'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: [ 'data-service', 'metadata-service', 'ui' ]
+          - targets: [ 'data-service:80', 'metadata-service:80' ]
       - job_name: 'metrics scrape'
         metrics_path: '/metrics'
         static_configs:
-          - targets: [ 'auth-service-metrics:8080', 'analyse-service', 'search-service', 'data-db:8080', 'data-db-metrics:9104', 'broker-service:9419', 'metadata-db-metrics:9104', 'storage-service-master-metrics:9327', 'upload-service' ]
+          - targets: [ 'ui:80', 'auth-service-metrics:8080', 'analyse-service:80', 'search-service:80', 'data-db-metrics:9104', 'broker-service:9419', 'metadata-db-metrics:9104', 'storage-service-master-metrics:9327', 'upload-service:80' ]
       - job_name: 'dashboard scrape'
         metrics_path: '/dashboard/metrics'
         static_configs:
           - targets: [ 'dashboard-service:3000' ]
+
+## @section Gateway Service
+
+gatewayservice:
+  ## @param gatewayservice.enabled Enable the Gateway Service.
+  enabled: true
+  ## @skip gatewayservice.fullnameOverride
+  fullnameOverride: gateway-service
+  ## @param gatewayservice.serverBlock The extra configuration for the reverse proxy
+  serverBlock: |
+    # This is required to proxy Grafana Live WebSocket connections.
+    map $http_upgrade $connection_upgrade {
+      default upgrade;
+      '' close;
+    }
+
+    upstream analyse {
+        server analyse-service;
+    }
+
+    upstream data {
+        server data-service;
+    }
+
+    upstream metadata {
+        server metadata-service;
+    }
+
+    upstream search {
+        server search-service;
+    }
+
+    upstream ui {
+        server ui;
+    }
+
+    upstream upload {
+        server upload-service;
+    }
+
+    upstream dashboard-service {
+        server dashboard-service:3000;
+    }
+
+    server {
+        listen 8080 default_server;
+        server_name _;
+
+        location /assets/ {
+            root                    /etc/nginx/assets;
+            expires                 max;
+            access_log              off;
+            autoindex               on;
+            autoindex_exact_size    off;
+            autoindex_format        html;
+            autoindex_localtime     on;
+        }
+
+        location /dashboard/ {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://dashboard-service;
+            proxy_read_timeout      90;
+        }
+
+        # Proxy Grafana Live WebSocket connections.
+        location /dashboard/api/live/ {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_set_header        Upgrade $http_upgrade;
+            proxy_set_header        Connection $connection_upgrade;
+            proxy_http_version      1.1;
+            proxy_pass              http://dashboard-service;
+            proxy_read_timeout      90;
+        }
+
+        location /api/search {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://search;
+            proxy_read_timeout      90;
+        }
+
+        location /api/upload {
+    #         allow 128.130.0.0/16;
+    #         deny all;
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_set_header        X-Forwarded-Host $host;
+            proxy_pass              http://upload;
+            proxy_read_timeout      90;
+            # Disable request and response buffering
+            proxy_request_buffering off;
+            proxy_buffering         off;
+            proxy_http_version      1.1;
+        }
+
+        location /api/analyse {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://analyse;
+            proxy_read_timeout      90;
+        }
+
+        location ~ /api/database/([0-9]+)/table/([0-9]+)/(data|history|export|statistic) {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://data;
+            proxy_read_timeout      90;
+        }
+
+        location ~ /api/database/([0-9]+)/view/([0-9]+)/(data|export) {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://data;
+            proxy_read_timeout      90;
+        }
+
+        location ~ /api/database/([0-9]+)/view {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://metadata;
+            proxy_read_timeout      90;
+        }
+
+        location ~ /api/database/([0-9]+)/subset {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://data;
+            proxy_read_timeout      600;
+        }
+
+        location ~ /api/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user) {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://metadata;
+            proxy_read_timeout      90;
+        }
+
+        location ~ /pid/([0-9]+) {
+            rewrite /pid/(.*) /api/identifier/$1 break;
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://metadata;
+            proxy_read_timeout      90;
+        }
+
+        location / {
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto $scheme;
+            proxy_pass              http://ui;
+            proxy_read_timeout      90;
+        }
+    }
+  ## @param gatewayservice.replicaCount The number of replicas.
+  replicaCount: 3
+
+## @section Analytics Service
+
+computeservice:
+  ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
+  endpoint: local[2]
 
 ## @section Ingress
 
@@ -888,35 +1201,8 @@ ingress:
     enabled: true
     ## @param ingress.tls.secretName The secret holding the SSL/TLS certificate. Needs to have keys `tls.crt` and `tls.key` and optionally `ca.crt`.
     secretName: ingress-cert
-  annotations:
-    ## @skip ingress.annotations.basic The ingress rules for proxying requests directly to services.
-    basic: { }
-    #      nginx.org/path-regex: "case_sensitive"
-    #      nginx.ingress.kubernetes.io/use-regex: "true"
-    #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-    ## @skip ingress.annotations.rewriteApi The ingress rules for rewriting certain paths to /api/.
-    rewriteApi:
-      #      nginx.org/path-regex: "case_sensitive"
-      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /api/$1
-    ## @skip ingress.annotations.rewriteRoot The ingress rules for rewriting certain paths to /.
-    rewriteRoot:
-      #      nginx.org/path-regex: "case_sensitive"
-      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /$1
-    ## @skip ingress.annotations.rewriteRootSecure The ingress rules for rewriting certain paths to / and force SSL/TLS encrypted traffic.
-    rewriteRootSecure:
-      #      nginx.org/path-regex: "case_sensitive"
-      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /$1
-    ## @skip ingress.annotations.rewritePid The ingress rules for rewriting certain paths to /api/identifier/.
-    rewritePid:
-      #      nginx.org/path-regex: "case_sensitive"
-      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /api/identifier/$1
+  ## @skip ingress.annotations The ingress rules for proxying requests directly to services.
+  ## @example
+  ## annotations:
+  ##   cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+  annotations: { }

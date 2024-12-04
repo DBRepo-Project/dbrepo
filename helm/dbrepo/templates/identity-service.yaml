@@ -1,0 +1,23 @@
+{{- if .Values.identityservice.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels:
+    service: identity-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "ldap"
+      port: 389
+      targetPort: 1389
+      protocol: TCP
+    - name: "sldap"
+      port: 636
+      targetPort: 1636
+      protocol: TCP
+  selector:
+    service: identity-service
+{{- end }}

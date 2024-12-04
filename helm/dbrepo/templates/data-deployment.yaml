@@ -56,7 +56,7 @@ spec:
             periodSeconds: 10
           {{- if .Values.dataservice.resources }}
           resources: {{- toYaml .Values.dataservice.resources | nindent 12 }}
+          {{- else if ne .Values.dataservice.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.dataservice.resourcesPreset) | nindent 12 }}
           {{- end }}
-          volumeMounts: []
-      volumes: []
 {{- end }}

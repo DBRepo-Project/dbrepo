@@ -33,12 +33,13 @@
               lines="two"
               dense>
               <v-list-item
-                v-if="databaseImage"
+                v-if="previewImage"
                 :title="$t('pages.database.image.title')"
                 density="compact">
                 <v-img
-                  :src="databaseImage"
+                  :src="previewImage"
                   :alt="$t('pages.database.image.alt')"
+                  :title="$t('pages.database.image.alt')"
                   :max-width="maxWidth"
                   :max-height="maxHeight" />
               </v-list-item>
@@ -209,10 +210,6 @@ export default {
   },
   data () {
     return {
-      loading: false,
-      loadingStart: false,
-      loadingStop: false,
-      editDialog: false,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -373,11 +370,11 @@ export default {
       this.database.tables.forEach((t) => { sum += t.data_length })
       return sizeToHumanLabel(sum)
     },
-    databaseImage () {
-      if (!this.database || !this.database.image) {
+    previewImage () {
+      if (!this.database) {
         return null
       }
-      return `data:image/webp;base64,${this.database.image}`
+      return this.database.preview_image
     }
   }
 }
