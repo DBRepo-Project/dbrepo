@@ -13,16 +13,6 @@
         :text="title" />
       <v-spacer />
       <v-btn
-        v-if="result_visibility && subset && subset.result_number"
-        class="mb-1 ml-2"
-        color="tertiary"
-        :variant="buttonVariant"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
-        :loading="downloadLoading"
-        @click.stop="downloadSubset">
-        {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.export.data.xl') + ' ' : '') + $t('toolbars.subset.export.data.permanent') }}
-      </v-btn>
-      <v-btn
         v-if="canPersistQuery"
         :loading="loadingSave"
         color="secondary"
@@ -157,15 +147,6 @@ export default {
       }
       return formatTimestampUTCLabel(this.subset.created)
     },
-    result_visibility () {
-      if (!this.database || !this.subset) {
-        return false
-      }
-      if (this.database.is_public) {
-        return true
-      }
-      return this.subset.creator.username === this.username
-    },
     hasReadAccess () {
       if (!this.access) {
         return false
@@ -238,25 +219,6 @@ export default {
         })
         .finally(() => {
           this.loading = false
-        })
-    },
-    downloadSubset () {
-      this.downloadLoading = true
-      const queryService = useQueryService()
-      queryService.exportCsv(this.$route.params.database_id, this.$route.params.subset_id)
-        .then((data) => {
-          const url = URL.createObjectURL(data)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = 'subset.csv'
-          document.body.appendChild(link)
-          link.click()
-        })
-        .catch(() => {
-          this.downloadLoading = false
-        })
-        .finally(() => {
-          this.downloadLoading = false
         })
     }
   }
