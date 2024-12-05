@@ -18,6 +18,8 @@ author: Martin Weise
 
 #### Fixes
 
+* Fixed a validation problem failing to validate UUIDs 
+  in [#471](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/471).
 * Fixed the `dist.tar.gz` file not being found in the CI/CD pipeline on `release-` branches
   in [#465](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/465).
 

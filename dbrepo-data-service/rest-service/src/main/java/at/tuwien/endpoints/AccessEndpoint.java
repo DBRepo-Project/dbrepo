@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +76,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                       @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
@@ -133,7 +132,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                       @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
@@ -190,7 +189,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId) throws NotAllowedException,
+                                       @PathVariable("userId") UUID userId) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
