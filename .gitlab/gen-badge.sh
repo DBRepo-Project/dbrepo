@@ -9,6 +9,6 @@ if [ "${PIPELINE_COVERAGE}" != "null" ]; then
 else
   echo "[WARNING] Skipping badge generation, displaying default badge text: unknown"
 fi
-curl "${SONARQUBE_URL}/api/project_badges/measure?project=fair-data-austria-db-repository_fda-services_a57fa043-ab99-4cdd-a721-162d9a916d77&metric=sqale_rating&token=${CI_SONAR_TOKEN}" > "./final/${DOC_VERSION}/images/maintainability.svg"
-curl "${SONARQUBE_URL}/api/project_badges/measure?project=fair-data-austria-db-repository_fda-services_a57fa043-ab99-4cdd-a721-162d9a916d77&metric=security_rating&token=${CI_SONAR_TOKEN}" > "./final/${DOC_VERSION}/images/security.svg"
+curl "${CI_SONAR_URL}/api/project_badges/measure?project=${CI_SONAR_PROJECT_KEY}&metric=sqale_rating&token=${CI_SONAR_TOKEN}" > "./final/${DOC_VERSION}/images/maintainability.svg"
+curl "${CI_SONAR_URL}/api/project_badges/measure?project=${CI_SONAR_PROJECT_KEY}&metric=security_rating&token=${CI_SONAR_TOKEN}" > "./final/${DOC_VERSION}/images/security.svg"
 echo "[INFO] retrieved SonarQube badges"
