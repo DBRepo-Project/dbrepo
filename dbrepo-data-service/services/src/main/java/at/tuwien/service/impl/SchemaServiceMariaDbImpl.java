@@ -105,9 +105,7 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                 }
             }
             table.setTdbid(database.getId());
-            database.getCreator().getAttributes().setMariadbPassword(null);
-            table.setCreator(database.getCreator());
-            table.setCreatedBy(database.getCreator().getId());
+            table.setOwner(database.getOwner());
             final TableDto tmpTable = table;
             tmpTable.getColumns()
                     .forEach(column -> {
@@ -143,8 +141,7 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
             ViewDto view = dataMapper.schemaResultSetToView(database, resultSet1);
             view.setDatabase(database);
             view.setVdbid(database.getId());
-            view.setCreator(database.getOwner());
-            view.setCreatedBy(privilegedDatabase.getOwner().getId());
+            view.setOwner(database.getOwner());
             /* obtain view columns */
             start = System.currentTimeMillis();
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());

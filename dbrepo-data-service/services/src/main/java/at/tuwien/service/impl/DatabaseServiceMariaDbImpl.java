@@ -3,7 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.RabbitConfig;
 import at.tuwien.exception.DatabaseMalformedException;
@@ -53,13 +53,10 @@ public class DatabaseServiceMariaDbImpl extends HibernateConnector implements Da
         return PrivilegedDatabaseDto.builder()
                 .internalName(data.getInternalName())
                 .exchangeName(rabbitConfig.getExchangeName())
-                .creator(UserDto.builder()
+                .owner(UserBriefDto.builder()
                         .id(data.getUserId())
                         .build())
-                .owner(UserDto.builder()
-                        .id(data.getUserId())
-                        .build())
-                .contact(UserDto.builder()
+                .contact(UserBriefDto.builder()
                         .id(data.getUserId())
                         .build())
                 .container(container)

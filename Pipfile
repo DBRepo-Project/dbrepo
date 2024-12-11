@@ -19,6 +19,7 @@ pydantic = "==2.6.4"
 tuspy = "==1.0.3"
 mike = "==2.0.0"
 anybadge = "==1.14.0"
+gunicorn = "*"
 
 [dev-packages]
 

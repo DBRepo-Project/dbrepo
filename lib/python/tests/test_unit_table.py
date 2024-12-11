@@ -1,5 +1,4 @@
 import unittest
-from json import dumps
 
 import requests_mock
 import datetime
@@ -7,9 +6,9 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, Result, \
-    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
-from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
+from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, Result, Concept, Unit, \
+    TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
+from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
     AuthenticationError, ExternalSystemError
 
 
@@ -21,16 +20,12 @@ class TableUnitTest(unittest.TestCase):
                     description="Test Table",
                     database_id=1,
                     internal_name="test",
-                    creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                 attributes=UserAttributes(theme='light')),
-                    owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                               attributes=UserAttributes(theme='light')),
-                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                    owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                     is_versioned=True,
-                    created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                     queue_name='test',
                     routing_key='dbrepo.test_database_1234.test',
                     is_public=True,
+                    is_schema_public=True,
                     constraints=Constraints(uniques=[],
                                             foreign_keys=[],
                                             checks=[],
@@ -54,6 +49,7 @@ class TableUnitTest(unittest.TestCase):
             # test
             client = RestClient(username="a", password="b")
             response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                           is_public=True, is_schema_public=True,
                                            constraints=CreateTableConstraints())
             self.assertEqual(exp, response)
 
@@ -65,6 +61,7 @@ class TableUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
                                                constraints=CreateTableConstraints())
             except MalformedError:
                 pass
@@ -77,6 +74,7 @@ class TableUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
                                                constraints=CreateTableConstraints())
             except ForbiddenError:
                 pass
@@ -89,6 +87,7 @@ class TableUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
                                                constraints=CreateTableConstraints())
             except NotExistsError:
                 pass
@@ -101,6 +100,7 @@ class TableUnitTest(unittest.TestCase):
             try:
                 client = RestClient(username="a", password="b")
                 response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
                                                constraints=CreateTableConstraints())
             except NameExistsError:
                 pass
@@ -112,6 +112,7 @@ class TableUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient().create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                                     is_public=True, is_schema_public=True,
                                                      constraints=CreateTableConstraints())
             except AuthenticationError:
                 pass
@@ -131,8 +132,9 @@ class TableUnitTest(unittest.TestCase):
                               description="Test Table",
                               database_id=1,
                               internal_name="test",
-                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                              attributes=UserAttributes(theme='light')),
+                              is_public=True,
+                              is_schema_public=True,
+                              owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                               is_versioned=True)]
             # mock
             mock.get('/api/database/1/table', json=[exp[0].model_dump()])
@@ -147,16 +149,12 @@ class TableUnitTest(unittest.TestCase):
                         description="Test Table",
                         database_id=1,
                         internal_name="test",
-                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                     attributes=UserAttributes(theme='light')),
-                        owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                   attributes=UserAttributes(theme='light')),
-                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                         is_versioned=True,
-                        created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                         queue_name='test',
                         routing_key='dbrepo.test_database_1234.test',
                         is_public=True,
+                        is_schema_public=True,
                         constraints=Constraints(uniques=[],
                                                 foreign_keys=[],
                                                 checks=[],
@@ -501,11 +499,9 @@ class TableUnitTest(unittest.TestCase):
                          is_public=True,
                          concept=Concept(id=2,
                                          uri="http://dbpedia.org/page/Category:Precipitation",
-                                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                          name="Precipitation"),
                          unit=Unit(id=2,
                                    uri="http://www.wikidata.org/entity/Q119856947",
-                                   created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                    name="liters per square meter"),
                          is_null_allowed=False)
             # mock

@@ -93,10 +93,17 @@ interface TableBriefDto {
   id: number;
   name: string;
   description: string;
-  owner: UserBriefDto;
-  columns: ColumnBriefDto[];
   internal_name: string;
   is_versioned: boolean;
+  is_public: boolean;
+  is_schema_public: boolean;
+  owned_by: string;
+}
+
+interface TableUpdateDto {
+  description: string;
+  is_public: boolean;
+  is_schema_public: boolean;
 }
 
 interface ColumnBriefDto {
@@ -378,6 +385,7 @@ interface DatabaseModifyAccessDto {
 
 interface DatabaseModifyVisibilityDto {
   is_public: boolean;
+  is_schema_public: boolean;
 }
 
 interface DatabaseTransferDto {
@@ -391,6 +399,10 @@ interface DatabaseModifyImageDto {
 interface ViewCreateDto {
   name: string;
   query: string;
+  is_public: boolean;
+}
+
+interface ViewUpdateDto {
   is_public: boolean;
 }
 
@@ -498,6 +510,20 @@ interface ImageBriefDto {
   name: string;
   version: string;
   jdbc_method: string;
+}
+
+interface ImageDto {
+  id: number;
+  registry: string;
+  name: string;
+  version: string;
+  driver_class: string;
+  dialect: string;
+  jdbc_method: string;
+  default: boolean;
+  default_port: number;
+  data_types: DataTypeDto[];
+  operators: OperatorDto[];
 }
 
 interface UserUpdateDto {

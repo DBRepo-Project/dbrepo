@@ -10,6 +10,7 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.database.*;
+import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
@@ -117,7 +118,9 @@ public interface MetadataMapper {
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "count", expression = "java(data.getDatabases().size())"),
     })
-    ContainerBriefDto containerToDatabaseContainerBriefDto(Container data);
+    ContainerBriefDto containerToContainerBriefDto(Container data);
+
+    PrivilegedDatabaseDto databaseToPrivilegedDatabaseDto(Database data);
 
     @Mappings({
             @Mapping(target = "titles", source = "."),
@@ -298,6 +301,9 @@ public interface MetadataMapper {
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
+    @Mappings({
+            @Mapping(target = "databaseId", source = "database.id")
+    })
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
     default IdentifierTitle identifierToIdentifierTitle(Identifier data, String lang) {
@@ -477,12 +483,11 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "databaseId", source = "tdbid"),
+            @Mapping(target = "isPublic", source = "database.isPublic"),
     })
     TableBriefDto tableToTableBriefDto(Table data);
 
     default UniqueDto uniqueToUniqueDto(Unique data) {
-//        data.getTable().setOwner(null); /* loop */
-//        data.getTable().setCreator(null); /* loop */
         return UniqueDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -494,10 +499,6 @@ public interface MetadataMapper {
                 .build();
     }
 
-    @Mappings({
-            @Mapping(target = "table.owner", ignore = true),
-            @Mapping(target = "referencedTable.owner", ignore = true),
-    })
     ForeignKeyDto foreignKeyToForeignKeyDto(ForeignKey data);
 
     ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
@@ -524,73 +525,82 @@ public interface MetadataMapper {
     }
 
     default TableDto customTableToTableDto(Table data) {
+        return customTableToTableDto(data, true, true, true);
+    }
+
+    default TableDto customTableToTableDto(Table data, Boolean broker, Boolean statistic, Boolean schema) {
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
                 .internalName(data.getInternalName())
-                .owner(userToUserDto(data.getOwner()))
-                .createdBy(data.getCreatedBy())
-                .creator(userToUserDto(data.getCreator()))
+                .owner(userToUserBriefDto(data.getOwner()))
                 .tdbid(data.getTdbid())
-                .routingKey("dbrepo." + data.getTdbid() + "." + data.getId())
-                .queueName(data.getQueueName())
                 .isPublic(data.getDatabase().getIsPublic())
+                .isSchemaPublic(data.getIsSchemaPublic())
                 .isVersioned(true)
-                .avgRowLength(data.getAvgRowLength())
-                .maxDataLength(data.getMaxDataLength())
-                .dataLength(data.getDataLength())
-                .numRows(data.getNumRows())
                 .description(data.getDescription())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
-                .created(data.getCreated())
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .build();
-        table.getConstraints()
-                .getPrimaryKey()
-                .forEach(pk -> {
-                    pk.getTable().setDatabaseId(data.getDatabase().getId());
-                    pk.getColumn().setTableId(data.getId());
-                    pk.getColumn().setDatabaseId(data.getDatabase().getId());
-                });
-        table.getConstraints()
-                .getForeignKeys()
-                .forEach(fk -> {
-                    fk.getTable().setDatabaseId(table.getTdbid());
-                    fk.getReferencedTable().setDatabaseId(table.getTdbid());
-                    fk.getReferences()
-                            .forEach(ref -> {
-                                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
-                                ref.getColumn().setTableId(table.getId());
-                                ref.getColumn().setDatabaseId(table.getTdbid());
-                                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
-                                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
-                            });
-                });
-        table.getConstraints()
-                .getUniques()
-                .forEach(uk -> {
-                    uk.getTable().setDatabaseId(data.getDatabase().getId());
-                    uk.getColumns()
-                            .forEach(column -> {
-                                column.setTableId(data.getId());
-                                column.setDatabaseId(data.getDatabase().getId());
-                            });
-                });
-        if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
-            table.getConstraints().setChecks(new LinkedHashSet<>());
-        }
         if (data.getIdentifiers() != null) {
             table.setIdentifiers(new LinkedList<>(data.getIdentifiers()
                     .stream()
                     .map(this::identifierToIdentifierDto)
                     .toList()));
         }
-        if (data.getColumns() != null) {
-            table.setColumns(new LinkedList<>(data.getColumns()
-                    .stream()
-                    .map(this::tableColumnToColumnDto)
-                    .toList()));
+        if (broker) {
+            table.setQueueName(data.getQueueName());
+            table.setQueueType("quorum");
+            table.setRoutingKey("dbrepo." + data.getTdbid() + "." + data.getId());
+        }
+        if (statistic) {
+            table.setAvgRowLength(data.getAvgRowLength());
+            table.setMaxDataLength(data.getMaxDataLength());
+            table.setDataLength(data.getDataLength());
+            table.setNumRows(data.getNumRows());
+        }
+        if (schema) {
+            table.getConstraints()
+                    .getPrimaryKey()
+                    .forEach(pk -> {
+                        pk.getTable().setDatabaseId(data.getDatabase().getId());
+                        pk.getColumn().setTableId(data.getId());
+                        pk.getColumn().setDatabaseId(data.getDatabase().getId());
+                    });
+            table.getConstraints()
+                    .getForeignKeys()
+                    .forEach(fk -> {
+                        fk.getTable().setDatabaseId(table.getTdbid());
+                        fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                        fk.getReferences()
+                                .forEach(ref -> {
+                                    ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                                    ref.getColumn().setTableId(table.getId());
+                                    ref.getColumn().setDatabaseId(table.getTdbid());
+                                    ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
+                                    ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                                });
+                    });
+            table.getConstraints()
+                    .getUniques()
+                    .forEach(uk -> {
+                        uk.getTable().setDatabaseId(data.getDatabase().getId());
+                        uk.getColumns()
+                                .forEach(column -> {
+                                    column.setTableId(data.getId());
+                                    column.setDatabaseId(data.getDatabase().getId());
+                                });
+                    });
+            if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
+                table.getConstraints().setChecks(new LinkedHashSet<>());
+            }
+            if (data.getColumns() != null) {
+                table.setColumns(new LinkedList<>(data.getColumns()
+                        .stream()
+                        .map(this::tableColumnToColumnDto)
+                        .toList()));
+            }
         }
         return table;
     }
@@ -615,9 +625,6 @@ public interface MetadataMapper {
     })
     Table tableDtoToTable(TableDto data);
 
-    @Mappings({
-            @Mapping(target = "table.owner", ignore = true)
-    })
     PrimaryKeyDto primaryKeyToPrimaryKeyDto(PrimaryKey data);
 
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto data);
@@ -831,9 +838,6 @@ public interface MetadataMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
-    @Mappings({
-            @Mapping(target = "createdBy", source = "creator.id"),
-    })
     View viewDtoToView(ViewDto data);
 
     /* keep */
@@ -855,7 +859,18 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    default DatabaseDto customDatabaseToDatabaseDto(Database data) {
+    default Boolean onlyIsPublicOrOwner(Boolean isPublic, User caller, User owner, User databaseOwner) {
+        if (isPublic) {
+            return true;
+        }
+        /* private schema */
+        if (caller == null) {
+            return false;
+        }
+        return owner.equals(caller) || databaseOwner.equals(caller);
+    }
+
+    default DatabaseDto customDatabaseToDatabaseDto(Database data, User caller) {
         if (data == null) {
             return null;
         }
@@ -867,11 +882,10 @@ public interface MetadataMapper {
                 .exchangeName(data.getExchangeName())
                 .previewImage(data.getImage() != null ? "/api/database/" + data.getId() + "/image" : null)
                 .isPublic(data.getIsPublic())
-                .container(containerToContainerDto(data.getContainer()))
-                .creator(userToUserDto(data.getCreator()))
-                .owner(userToUserDto(data.getOwner()))
-                .created(data.getCreated())
-                .contact(userToUserDto(data.getContact()))
+                .isSchemaPublic(data.getIsSchemaPublic())
+                .container(containerToContainerBriefDto(data.getContainer()))
+                .owner(userToUserBriefDto(data.getOwner()))
+                .contact(userToUserBriefDto(data.getContact()))
                 .subsets(new LinkedList<>())
                 .accesses(new LinkedList<>())
                 .tables(new LinkedList<>())
@@ -880,19 +894,21 @@ public interface MetadataMapper {
         if (data.getSubsets() != null) {
             database.setSubsets(new LinkedList<>(data.getSubsets()
                     .stream()
-                    .map(this::identifierToIdentifierDto)
+                    .map(this::identifierToIdentifierBriefDto)
                     .toList()));
         }
         if (data.getTables() != null) {
             database.setTables(new LinkedList<>(data.getTables()
                     .stream()
-                    .map(this::customTableToTableDto)
+                    .filter(t -> onlyIsPublicOrOwner(t.getIsSchemaPublic() || t.getIsPublic(), caller, t.getOwner(), t.getDatabase().getOwner()))
+                    .map(this::tableToTableBriefDto)
                     .toList()));
         }
         if (data.getViews() != null) {
             database.setViews(new LinkedList<>(data.getViews()
                     .stream()
-                    .map(this::viewToViewDto)
+                    .filter(v -> onlyIsPublicOrOwner(v.getIsSchemaPublic() || v.getIsPublic(), caller, v.getOwner(), v.getDatabase().getOwner()))
+                    .map(this::viewToViewBriefDto)
                     .toList()));
         }
         if (data.getAccesses() != null) {
@@ -904,15 +920,12 @@ public interface MetadataMapper {
         if (data.getIdentifiers() != null) {
             database.setIdentifiers(new LinkedList<>(data.getIdentifiers()
                     .stream()
-                    .map(this::identifierToIdentifierDto)
+                    .map(this::identifierToIdentifierBriefDto)
                     .toList()));
         }
         return database;
     }
 
-    @Mappings({
-            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
-    })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);

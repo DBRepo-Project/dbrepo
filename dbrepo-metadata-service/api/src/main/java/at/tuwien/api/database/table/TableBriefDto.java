@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -47,5 +48,16 @@ public class TableBriefDto {
     private Boolean isVersioned;
 
     @NotNull
-    private UserBriefDto owner;
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
+
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
+    @NotNull
+    @JsonProperty("owned_by")
+    private UUID ownedBy;
 }

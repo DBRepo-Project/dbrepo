@@ -167,6 +167,30 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
+    public void updateTable(PrivilegedTableDto table, TableUpdateDto data) throws SQLException,
+            TableMalformedException {
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
+        final Connection connection = dataSource.getConnection();
+        try {
+            /* create table if not exists */
+            final long start = System.currentTimeMillis();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tableNameToUpdateTableRawQuery(table.getInternalName()));
+            log.trace("prepare with arg 1={}", data.getDescription());
+            statement.setString(1, data.getDescription());
+            statement.executeUpdate();
+            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            log.error("Failed to update table: {}", e.getMessage());
+            throw new TableMalformedException("Failed to update table: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        log.info("Updated table with name {}", table.getInternalName());
+    }
+
+    @Override
     public void delete(PrivilegedTableDto table) throws SQLException, QueryMalformedException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
         final String tableName = mariaDbMapper.nameToInternalName(table.getInternalName());

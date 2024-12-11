@@ -86,7 +86,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseUnavailableException, TableMalformedException,
             DatabaseNotFoundException, TableExistsException, RemoteUnavailableException, SQLException,
-            TableNotFoundException, QueryMalformedException, MetadataServiceException {
+            TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))

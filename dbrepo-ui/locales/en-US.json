@@ -35,7 +35,9 @@
     "loading": "Loading",
     "view": "View",
     "modify": "Modify",
-    "help": "Help"
+    "help": "Help",
+    "visibility": "Visibility",
+    "update": "Update"
   },
   "pages": {
     "identifier": {
@@ -279,25 +281,32 @@
         "title": "ID"
       },
       "broker": {
-        "title": "Live Data"
+        "title": "Advanced Data Import Details"
       },
       "connection": {
-        "title": "Connection Details",
+        "title": "Connection(s)",
         "secure": "encrypted",
         "permissions": {
           "write": "You can write to this table",
           "read": "You can read all contents of this table"
         }
       },
+      "visibility": {
+        "title": "Visibility",
+        "open": "Open",
+        "data": "Data is public",
+        "schema": "Schema is public",
+        "closed": "Closed"
+      },
       "description": {
         "title": "Description",
         "empty": "(no description)"
       },
       "exchange": {
-        "title": "Exchange"
+        "title": "Exchange Name"
       },
       "queue": {
-        "title": "Queue"
+        "title": "Queue Name"
       },
       "routing-key": {
         "title": "Routing Key"
@@ -591,7 +600,11 @@
         "title": "Internal Name"
       },
       "visibility": {
-        "title": "Visibility"
+        "title": "Visibility",
+        "open": "Open",
+        "data": "Data is public",
+        "schema": "Schema is public",
+        "closed": "Closed"
       },
       "size": {
         "title": "Size"
@@ -638,6 +651,14 @@
           },
           "engine": {
             "label": "Engine",
+            "hint": "Required"
+          },
+          "data": {
+            "label": "Data Visibility",
+            "hint": "Required"
+          },
+          "schema": {
+            "label": "Schema Visibility",
             "hint": "Required"
           },
           "submit": {
@@ -696,10 +717,16 @@
           },
           "visibility": {
             "title": "Visibility",
-            "subtitle": "Private databases hide the data while metadata is still visible. Public databases are fully transparent",
-            "visibility": {
-              "label": "Database Visibility",
-              "hint": "Required"
+            "subtitle": "",
+            "data": {
+              "label": "Data Visibility",
+              "hint": "Required",
+              "help": "Public = visible to anyone, Private = visible only to designated users"
+            },
+            "schema": {
+              "label": "Schema Visibility",
+              "hint": "Required",
+              "help": "Public = visible to anyone, Private = visible only to designated users"
             },
             "submit": {
               "text": "Modify"
@@ -877,8 +904,8 @@
       "query": {
         "title": "Statement"
       },
-      "creator": {
-        "title": "Creator"
+      "owner": {
+        "title": "Owner"
       },
       "creation": {
         "title": "Creation"
@@ -900,11 +927,6 @@
           "columns": {
             "label": "Data Columns",
             "hint": "Required"
-          },
-          "visibility": {
-            "label": "Data Visibility",
-            "warn": "Only people with at least read access can view the data",
-            "hint": "Required. When private, the view metadata will still be public but the data will only be visible to people with at least read access to this database"
           }
         }
       }
@@ -1257,7 +1279,8 @@
     },
     "table": {
       "created": "Successfully created table",
-      "semantics": "Successfully assigned semantic instance"
+      "semantics": "Successfully assigned semantic instance",
+      "updated": "Successfully updated table"
     },
     "schema": {
       "tables": "Successfully refreshed database tables metadata.",
@@ -1287,7 +1310,8 @@
     },
     "view": {
       "create": "Successfully created view",
-      "delete": "Successfully deleted view"
+      "delete": "Successfully deleted view",
+      "modified": "Successfully modified view visibility"
     },
     "subset": {
       "create": "Successfully created subset"
@@ -1326,7 +1350,7 @@
       },
       "import-csv": {
         "permanent": "Import",
-        "xl": "CSV"
+        "xl": "Dataset"
       },
       "dashboard": {
         "permanent": "Visualize",
@@ -1339,6 +1363,10 @@
       "create-view": {
         "permanent": "View",
         "xl": "Create"
+      },
+      "update-table": {
+        "permanent": "Table",
+        "xl": "Update"
       },
       "create-table": {
         "permanent": "Table",

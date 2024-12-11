@@ -19,6 +19,21 @@
           :subtitle="table.description ? table.description : ''"
           :to="`/database/${$route.params.database_id}/table/${table.id}/info`">
           <template v-slot:append>
+            <v-chip
+              v-if="table && table.is_public"
+              size="small"
+              class="ml-2"
+              color="success"
+              :text="$t('toolbars.database.public')"
+              variant="outlined" />
+            <v-chip
+              v-if="table && !table.is_public"
+              size="small"
+              class="ml-2"
+              :color="colorVariant"
+              variant="outlined"
+              :text="$t('toolbars.database.private')"
+              flat />
             <v-tooltip
               v-if="hasPublishedIdentifier(table)"
               :text="$t('pages.identifier.pid.title')"
@@ -91,14 +106,18 @@ export default {
         return []
       }
       return this.database.tables
+    },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
+    colorVariant () {
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     }
   },
   methods: {
-    pick (item, mode) {
-      this.column = item
-      this.mode = mode
-      this.dialogSemantic = true
-    },
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false

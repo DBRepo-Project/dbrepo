@@ -33,7 +33,6 @@ export default {
   computed: {
     hasOrcid () {
       return !(!this.user || !this.user.attributes || !this.user.attributes.orcid);
-
     },
     orcid () {
       if (!this.hasOrcid) {
@@ -46,7 +45,7 @@ export default {
       return userService.userToFullName(this.user)
     },
     isSelf () {
-      if (!this.otherUser) {
+      if (!this.otherUser || !this.user) {
         return false
       }
       return this.user.id === this.otherUser.id

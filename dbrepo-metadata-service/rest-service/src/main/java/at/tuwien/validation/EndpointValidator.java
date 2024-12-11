@@ -188,8 +188,8 @@ public class EndpointValidator {
         return false;
     }
 
-    public boolean validateOnlyMineOrReadAccessOrHasRole(User creator, Principal principal, DatabaseAccess access, String role) {
-        if (validateOnlyMineOrWriteAccessOrHasRole(creator, principal, access, role)) {
+    public boolean validateOnlyMineOrReadAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
+        if (validateOnlyMineOrWriteAccessOrHasRole(owner, principal, access, role)) {
             return true;
         }
         if (access.getType().equals(AccessType.READ)) {
@@ -203,23 +203,23 @@ public class EndpointValidator {
     @Transactional(readOnly = true)
     public void validateOnlyOwnerOrWriteAll(Table table, User user) throws NotAllowedException,
             AccessNotFoundException {
-        log.trace("table creator: {}", table.getCreatedBy());
+        log.trace("table owner: {}", table.getOwnedBy());
         final DatabaseAccess access = accessService.find(table.getDatabase(), user);
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.READ)) {
             log.error("Access not allowed: insufficient access (only read-access)");
             throw new NotAllowedException("Access not allowed: insufficient access (only read-access)");
         }
-        if (table.getCreatedBy().equals(user.getId()) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
-            log.trace("grant access: table creator with write access");
+        if (table.getOwnedBy().equals(user.getId()) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
+            log.trace("grant access: table owner with write access");
             return;
         }
         if (access.getType().equals(AccessType.WRITE_ALL)) {
             log.trace("grant access: write-all access");
             return;
         }
-        log.error("Access not allowed: insufficient access (neither creator {} nor write-all access)", table.getCreatedBy());
-        throw new NotAllowedException("Access not allowed: insufficient access (neither creator nor write-all access)");
+        log.error("Access not allowed: insufficient access (neither owner {} nor write-all access)", table.getOwnedBy());
+        throw new NotAllowedException("Access not allowed: insufficient access (neither owner nor write-all access)");
     }
 
     public void validateOnlyPrivateHasRole(Database database, Principal principal, String role)

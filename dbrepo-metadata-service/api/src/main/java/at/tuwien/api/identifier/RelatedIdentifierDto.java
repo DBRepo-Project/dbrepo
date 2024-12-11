@@ -37,11 +37,6 @@ public class RelatedIdentifierDto {
     @Schema(example = "Cites")
     private RelationTypeDto relation;
 
-    @ToString.Exclude
-    @JsonIgnore
-    @NotNull
-    private UserDto creator;
-
 }
 
 

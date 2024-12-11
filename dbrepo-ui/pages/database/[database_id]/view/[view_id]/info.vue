@@ -4,7 +4,7 @@
     <v-window
       v-model="tab">
       <v-window-item
-        v-if="view">
+        v-if="cachedView">
         <v-card variant="flat">
           <Summary
             v-if="hasIdentifier"
@@ -23,30 +23,35 @@
           variant="flat">
           <v-card-text>
             <v-list
-              v-if="view"
+              v-if="cachedView"
               dense>
               <v-list-item
                 :title="$t('pages.view.name.title')">
-                {{ view.internal_name }}
+                {{ cachedView.internal_name }}
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.query.title')">
-                <pre>{{ view.query }}</pre>
+                <pre>{{ cachedView.query }}</pre>
               </v-list-item>
               <v-list-item
-                :title="$t('pages.view.creator.title')">
+                :title="$t('pages.view.owner.title')">
                 <UserBadge
-                  :user="view.creator"
+                  v-if="view"
+                  :user="view.owner"
                   :other-user="user" />
+                <v-skeleton-loader
+                  v-else
+                  type="subtitle"
+                  width="200" />
               </v-list-item>
               <v-list-item
-                v-if="view.created"
+                v-if="cachedView.created"
                 :title="$t('pages.view.creation.title')">
-                {{ formatUTC(view.created) }}
+                {{ formatUTC(cachedView.created) }}
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.visibility.title')">
-                {{ view.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
+                {{ viewVisibility }}
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -107,6 +112,8 @@ export default {
   data () {
     return {
       tab: 0,
+      loadingView: false,
+      view: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -145,7 +152,7 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    view () {
+    cachedView () {
       if (!this.database) {
         return null
       }
@@ -196,11 +203,43 @@ export default {
       }
       const userService = useUserService()
       return userService.userToFullName(this.view.creator)
+    },
+    viewVisibility () {
+      if (!this.cachedView) {
+        return null
+      }
+      if (this.cachedView.is_public && this.cachedView.is_schema_public) {
+        return this.$t('pages.database.visibility.open')
+      }
+      if (!this.cachedView.is_public && !this.cachedView.is_schema_public) {
+        return this.$t('pages.database.visibility.closed')
+      }
+      return this.cachedView.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
     }
+  },
+  mounted () {
+    this.fetchView()
   },
   methods: {
     formatUTC (timestamp) {
       return formatTimestampUTCLabel(timestamp)
+    },
+    fetchView () {
+      this.loadingView = true
+      const viewService = useViewService()
+      viewService.findOne(this.$route.params.database_id, this.$route.params.view_id)
+        .then((view) => {
+          this.view = view
+          this.loadingView = false
+        })
+        .catch(({code}) => {
+          this.loadingView = false
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loadingView = false
+        })
     }
   }
 }
@@ -221,17 +260,5 @@ pre {
 }
 #back-btn::before {
   opacity: 0;
-}
-.skeleton-large > div {
-  width: 400px !important;
-}
-.skeleton-medium > div {
-  width: 200px !important;
-}
-.skeleton-small > div {
-  width: 100px !important;
-}
-.skeleton-xsmall > div {
-  width: 50px !important;
 }
 </style>

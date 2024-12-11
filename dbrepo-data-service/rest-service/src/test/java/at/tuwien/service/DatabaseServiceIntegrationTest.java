@@ -58,8 +58,6 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         assertNull(response.getName());
         assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
         assertEquals(EXCHANGE_DBREPO_NAME, response.getExchangeName());
-        assertNotNull(response.getCreator());
-        assertEquals(USER_1_ID, response.getCreator().getId());
         assertNotNull(response.getOwner());
         assertEquals(USER_1_ID, response.getOwner().getId());
         assertNotNull(response.getContact());

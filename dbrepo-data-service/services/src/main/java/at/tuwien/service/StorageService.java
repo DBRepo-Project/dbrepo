@@ -1,14 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.exception.MalformedException;
 import at.tuwien.exception.StorageNotFoundException;
 import at.tuwien.exception.StorageUnavailableException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -71,7 +69,7 @@ public interface StorageService {
     /**
      * Transforms the given dataset into a downloadable dataset.
      *
-     * @param data    The dataset.
+     * @param data The dataset.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
      */
     ExportResourceDto transformDataset(Dataset<Row> data) throws StorageUnavailableException;
@@ -85,6 +83,7 @@ public interface StorageService {
      * @return The dataset.
      * @throws StorageNotFoundException    The key was not found in the Storage Service.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
+     * @throws MalformedException          The field lengths for the table and dataset are not the same.
      */
     Dataset<Row> loadDataset(List<String> columns, String key, Boolean withHeader) throws StorageNotFoundException,
             StorageUnavailableException, MalformedException;

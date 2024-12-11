@@ -8,6 +8,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.exception.*;
@@ -162,6 +163,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
                 query.setIdentifiers(identifiers.stream()
                         .filter(i -> i.getType().equals(IdentifierTypeDto.SUBSET))
                         .filter(i -> i.getQueryId().equals(query.getId()))
+                        .map(metadataMapper::identifierDtoToIdentifierBriefDto)
                         .toList());
                 queries.add(query);
             }
@@ -178,7 +180,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     @Override
     public ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp)
             throws SQLException, QueryMalformedException, StorageNotFoundException, StorageUnavailableException,
-            RemoteUnavailableException, ViewNotFoundException, MalformedException {
+            RemoteUnavailableException, ViewNotFoundException {
         final String viewName = "ex_" + Hashing.sha512()
                 .hashString(new String(RandomUtils.nextBytes(256), Charset.defaultCharset()), Charset.defaultCharset())
                 .toString()
@@ -261,7 +263,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
 
     @Override
     public QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException {
+            RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -274,8 +276,12 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
                 throw new QueryNotFoundException("Failed to find query");
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
-            query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
-            query.setCreator(database.getOwner());
+            final List<IdentifierBriefDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), queryId)
+                    .stream()
+                    .map(metadataMapper::identifierDtoToIdentifierBriefDto)
+                    .toList();
+            query.setIdentifiers(identifiers);
+            query.setOwner(database.getOwner());
             query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {

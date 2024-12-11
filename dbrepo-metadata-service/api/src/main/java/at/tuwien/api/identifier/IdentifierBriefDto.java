@@ -3,11 +3,13 @@ package at.tuwien.api.identifier;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -27,21 +29,40 @@ public class IdentifierBriefDto {
     @Schema(example = "1")
     private Long databaseId;
 
+    @JsonProperty("query_id")
+    @Schema(example = "1")
+    private Long queryId;
+
+    @JsonProperty("table_id")
+    @Schema(example = "1")
+    private Long tableId;
+
+    @JsonProperty("view_id")
+    @Schema(example = "1")
+    private Long viewId;
+
+    @NotNull
+    private IdentifierTypeDto type;
+
+    @NotNull
+    private List<IdentifierTitleDto> titles;
+
+    @Schema(example = "10.1038/nphys1170")
+    private String doi;
+
+    @NotBlank
+    @Schema(example = "TU Wien")
+    private String publisher;
+
+    @NotNull
+    @JsonProperty("publication_year")
+    @Schema(example = "2022")
+    private Integer publicationYear;
+
     private IdentifierStatusTypeDto status;
 
     @NotNull
     @JsonProperty("created_by")
     private UUID createdBy;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
-    @NotNull
-    @JsonProperty("last_modified")
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant lastModified;
 
 }

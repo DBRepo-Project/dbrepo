@@ -18,19 +18,6 @@
           },
           "user": {
             "properties": {
-              "attributes": {
-                "properties": {
-                  "theme": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
               "id": {
                 "type": "text",
                 "fields": {
@@ -41,6 +28,24 @@
                 }
               },
               "qualified_name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "orcid": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -64,19 +69,6 @@
       },
       "contact": {
         "properties": {
-          "attributes": {
-            "properties": {
-              "theme": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          },
           "id": {
             "type": "text",
             "fields": {
@@ -87,6 +79,24 @@
             }
           },
           "qualified_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "orcid": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -236,19 +246,6 @@
       },
       "creator": {
         "properties": {
-          "attributes": {
-            "properties": {
-              "theme": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          },
           "id": {
             "type": "text",
             "fields": {
@@ -259,6 +256,24 @@
             }
           },
           "qualified_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "orcid": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -307,6 +322,24 @@
                 }
               },
               "qualified_name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "orcid": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -399,9 +432,6 @@
           },
           "id": {
             "type": "long"
-          },
-          "last_modified": {
-            "type": "date"
           },
           "licenses": {
             "properties": {
@@ -530,6 +560,9 @@
       "is_public": {
         "type": "boolean"
       },
+      "is_schema_public": {
+        "type": "boolean"
+      },
       "name": {
         "type": "text",
         "fields": {
@@ -541,19 +574,6 @@
       },
       "owner": {
         "properties": {
-          "attributes": {
-            "properties": {
-              "theme": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          },
           "id": {
             "type": "text",
             "fields": {
@@ -713,30 +733,8 @@
           "created": {
             "type": "date"
           },
-          "created_by": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
           "creator": {
             "properties": {
-              "attributes": {
-                "properties": {
-                  "theme": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
               "id": {
                 "type": "text",
                 "fields": {
@@ -747,6 +745,24 @@
                 }
               },
               "qualified_name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "orcid": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -796,6 +812,9 @@
           "is_public": {
             "type": "boolean"
           },
+          "is_schema_public": {
+            "type": "boolean"
+          },
           "is_versioned": {
             "type": "boolean"
           },
@@ -813,19 +832,6 @@
           },
           "owner": {
             "properties": {
-              "attributes": {
-                "properties": {
-                  "theme": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
               "id": {
                 "type": "text",
                 "fields": {
@@ -836,6 +842,24 @@
                 }
               },
               "qualified_name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "orcid": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -928,19 +952,6 @@
           },
           "creator": {
             "properties": {
-              "attributes": {
-                "properties": {
-                  "theme": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
               "id": {
                 "type": "text",
                 "fields": {
@@ -951,6 +962,24 @@
                 }
               },
               "qualified_name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "orcid": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -993,6 +1022,24 @@
                     }
                   },
                   "qualified_name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "orcid": {
                     "type": "text",
                     "fields": {
                       "keyword": {
@@ -1085,9 +1132,6 @@
               },
               "id": {
                 "type": "long"
-              },
-              "last_modified": {
-                "type": "date"
               },
               "licenses": {
                 "properties": {
@@ -1210,8 +1254,8 @@
           "is_public": {
             "type": "boolean"
           },
-          "last_modified": {
-            "type": "date"
+          "is_schema_public": {
+            "type": "boolean"
           },
           "name": {
             "type": "text",

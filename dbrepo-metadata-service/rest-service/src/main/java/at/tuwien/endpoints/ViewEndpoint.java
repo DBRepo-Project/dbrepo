@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -94,7 +95,7 @@ public class ViewEndpoint {
     @PreAuthorize("hasAuthority('create-database-view')")
     @Observed(name = "dbrepo_view_create")
     @Operation(summary = "Create view",
-            description = "Creates a view. Requires role `create-database-view`.",
+            description = "Creates a view. This can only be performed by the database owner. Requires role `create-database-view`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -248,9 +249,9 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<View> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("viewId") Long viewId,
-                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+                                    @NotNull @PathVariable("viewId") Long viewId,
+                                    @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
@@ -263,6 +264,59 @@ public class ViewEndpoint {
         viewService.delete(view);
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    @PutMapping("/{viewId}")
+    @Transactional
+    @PreAuthorize("hasAuthority('modify-view-visibility')")
+    @Observed(name = "dbrepo_view_update")
+    @Operation(summary = "Update view",
+            description = "Updates a view with id. This can only be performed by the view owner or database owner. Requires role `create-database-view`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Update view successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Update view query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Update not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or View could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<ViewDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                          @NotNull @PathVariable("viewId") Long viewId,
+                                          @NotNull @Valid @RequestBody ViewUpdateDto data,
+                                          @NotNull Principal principal) throws NotAllowedException,
+            DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
+        final Database database = databaseService.findById(databaseId);
+        final View view = viewService.findById(database, viewId);
+        if (!database.getOwner().equals(principal) && !view.getOwner().equals(principal)) {
+            log.error("Failed to update view: not the database- or view owner");
+            throw new NotAllowedException("Failed to update view: not the database- or view owner");
+        }
+        return ResponseEntity.accepted()
+                .body(metadataMapper.viewToViewDto(viewService.update(database, view, data)));
     }
 
 }

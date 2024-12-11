@@ -13,6 +13,8 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
@@ -54,5 +56,7 @@ public interface MetadataMapper {
             @Mapping(target = "databaseId", source = "tdbid")
     })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
+
+    IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
 }

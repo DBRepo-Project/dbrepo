@@ -78,23 +78,23 @@ CREATE TABLE IF NOT EXISTS `mdb_licenses`
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
-    id             SERIAL,
-    cid            BIGINT UNSIGNED        NOT NULL,
-    name           character varying(255) NOT NULL,
-    internal_name  character varying(255) NOT NULL,
-    exchange_name  character varying(255) NOT NULL,
-    description    text,
-    engine         character varying(20),
-    is_public      boolean                NOT NULL DEFAULT TRUE,
-    image          longblob,
-    created_by     character varying(36),
-    owned_by       character varying(36),
-    contact_person character varying(36),
-    created        timestamp              NOT NULL DEFAULT NOW(),
-    last_modified  timestamp,
+    id               SERIAL,
+    cid              BIGINT UNSIGNED        NOT NULL,
+    name             character varying(255) NOT NULL,
+    internal_name    character varying(255) NOT NULL,
+    exchange_name    character varying(255) NOT NULL,
+    description      text,
+    engine           character varying(20),
+    is_public        boolean                NOT NULL DEFAULT TRUE,
+    is_schema_public boolean                NOT NULL DEFAULT TRUE,
+    image            longblob,
+    owned_by         character varying(36),
+    contact_person   character varying(36),
+    created          timestamp              NOT NULL DEFAULT NOW(),
+    last_modified    timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
@@ -108,33 +108,34 @@ CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
-    ID              SERIAL,
-    tDBID           BIGINT UNSIGNED       NOT NULL,
-    tName           VARCHAR(64)           NOT NULL,
-    internal_name   VARCHAR(64)           NOT NULL,
-    queue_name      VARCHAR(255)          NOT NULL,
-    routing_key     VARCHAR(255),
-    tDescription    VARCHAR(2048),
-    num_rows        BIGINT,
-    data_length     BIGINT,
-    max_data_length BIGINT,
-    avg_row_length  BIGINT,
-    `separator`     CHAR(1),
-    quote           CHAR(1),
-    element_null    VARCHAR(50),
-    skip_lines      BIGINT,
-    element_true    VARCHAR(50),
-    element_false   VARCHAR(50),
-    Version         TEXT,
-    created         timestamp             NOT NULL DEFAULT NOW(),
-    versioned       boolean               not null default true,
-    created_by      character varying(36) NOT NULL,
-    owned_by        character varying(36) NOT NULL,
-    last_modified   timestamp,
+    ID               SERIAL,
+    tDBID            BIGINT UNSIGNED       NOT NULL,
+    tName            VARCHAR(64)           NOT NULL,
+    internal_name    VARCHAR(64)           NOT NULL,
+    queue_name       VARCHAR(255)          NOT NULL,
+    routing_key      VARCHAR(255),
+    tDescription     VARCHAR(2048),
+    num_rows         BIGINT,
+    data_length      BIGINT,
+    max_data_length  BIGINT,
+    avg_row_length   BIGINT,
+    `separator`      CHAR(1),
+    quote            CHAR(1),
+    element_null     VARCHAR(50),
+    skip_lines       BIGINT,
+    element_true     VARCHAR(50),
+    element_false    VARCHAR(50),
+    Version          TEXT,
+    created          timestamp             NOT NULL DEFAULT NOW(),
+    versioned        boolean               not null default true,
+    is_public        boolean               not null default true,
+    is_schema_public boolean               not null default true,
+    owned_by         character varying(36) NOT NULL,
+    last_modified    timestamp,
     PRIMARY KEY (ID),
     UNIQUE (tDBID, internal_name),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -314,20 +315,21 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
-    id            SERIAL,
-    vdbid         BIGINT UNSIGNED       NOT NULL,
-    vName         VARCHAR(64)           NOT NULL,
-    internal_name VARCHAR(64)           NOT NULL,
-    Query         TEXT                  NOT NULL,
-    query_hash    VARCHAR(255)          NOT NULL,
-    Public        BOOLEAN               NOT NULL,
-    InitialView   BOOLEAN               NOT NULL,
-    created       timestamp             NOT NULL DEFAULT NOW(),
-    last_modified timestamp,
-    created_by    character varying(36) NOT NULL,
+    id               SERIAL,
+    vdbid            BIGINT UNSIGNED       NOT NULL,
+    vName            VARCHAR(64)           NOT NULL,
+    internal_name    VARCHAR(64)           NOT NULL,
+    Query            TEXT                  NOT NULL,
+    query_hash       VARCHAR(255)          NOT NULL,
+    Public           BOOLEAN               NOT NULL DEFAULT TRUE,
+    is_schema_public boolean               NOT NULL DEFAULT TRUE,
+    InitialView      BOOLEAN               NOT NULL,
+    created          timestamp             NOT NULL DEFAULT NOW(),
+    last_modified    timestamp,
+    owned_by         character varying(36) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
@@ -395,11 +397,11 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     result_number     BIGINT,
     doi               VARCHAR(255),
     created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
-    created_by        VARCHAR(36)                                  NOT NULL,
+    owned_by          VARCHAR(36)                                  NOT NULL,
     last_modified     TIMESTAMP,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
@@ -451,8 +453,8 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 (
     id       SERIAL,
-    pid      BIGINT UNSIGNED NOT NULL,
-    value    varchar(255)    NOT NULL,
+    pid      BIGINT UNSIGNED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      NOT NULL,
+    value    varchar(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
     type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
     relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */

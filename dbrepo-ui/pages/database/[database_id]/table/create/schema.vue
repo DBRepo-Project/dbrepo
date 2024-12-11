@@ -273,10 +273,7 @@ export default {
         .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            return
-          }
-          toast.error(message)
+          toast.error(this.$t(`${code}: ${message}`))
         })
         .finally(() => {
           this.loading = false

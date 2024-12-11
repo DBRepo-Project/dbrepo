@@ -6,7 +6,7 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Result, Query, User, UserAttributes, QueryType
+from dbrepo.api.dto import Result, Query, User, UserAttributes, QueryType, UserBrief
 from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError, QueryStoreError, \
     MetadataConsistencyError, AuthenticationError
 
@@ -79,11 +79,8 @@ class QueryUnitTest(unittest.TestCase):
     def test_find_query_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = Query(id=6,
-                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                     attributes=UserAttributes(theme='light')),
+                        owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                         execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         type=QueryType.QUERY,
@@ -131,11 +128,8 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_queries_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [Query(id=6,
-                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                                      attributes=UserAttributes(theme='light')),
+                         owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                          execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                         last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                          query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          type=QueryType.QUERY,

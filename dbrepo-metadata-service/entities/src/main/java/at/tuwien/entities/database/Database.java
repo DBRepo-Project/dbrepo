@@ -52,17 +52,6 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
-    private UUID createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User creator;
-
-    @ToString.Exclude
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
@@ -130,8 +119,11 @@ public class Database implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<DatabaseAccess> accesses;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isPublic;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean isSchemaPublic;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)

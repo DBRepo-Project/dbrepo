@@ -61,13 +61,25 @@ public interface TableService {
      * @param database The data database privileged object.
      * @param data     The table definition.
      * @return The created table, if successful.
-     * @throws SQLException           Failed to parse SQL query, contains invalid syntax.
-     * @throws TableNotFoundException The table could not be inspected in the data database.
-     * @throws TableExistsException   The table name already exists in the information_schema.
-     * @throws TableNotFoundException The table could not be inspected in the data database.
+     * @throws SQLException            Query statement is malformed.
+     * @throws TableMalformedException The table schema is malformed.
+     * @throws TableExistsException    The table name already exists in the information_schema.
+     * @throws TableNotFoundException  The table could not be inspected in the metadata database.
      */
     TableDto createTable(PrivilegedDatabaseDto database, TableCreateDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException;
+
+    /**
+     * Updating table description.
+     *
+     * @param table The table.
+     * @param data  The description.
+     * @throws SQLException            Query statement is malformed.
+     * @throws TableMalformedException The table schema is malformed.
+     * @throws TableNotFoundException  The table could not be inspected in the metadata database.
+     */
+    void updateTable(PrivilegedTableDto table, TableUpdateDto data) throws SQLException,
+            TableMalformedException, TableNotFoundException;
 
     /**
      * Drops a table in given table object.
@@ -122,8 +134,8 @@ public interface TableService {
      * @param table The table.
      * @param data  The dataset metadata.
      * @throws MalformedException          The dataset is malformed.
-     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
      * @throws StorageNotFoundException    The storage service was not able to find the dataset for import.
+     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
      * @throws SQLException                Failed to parse SQL query, contains invalid syntax.
      * @throws QueryMalformedException     The import query is malformed, likely due to a bug in the application.
      */

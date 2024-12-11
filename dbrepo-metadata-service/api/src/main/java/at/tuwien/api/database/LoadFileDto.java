@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class LoadFileDto {
 
-    @NotBlank(message = "filepath is required")
+    @NotBlank
     @Schema(example = "sample.csv")
     private String filepath;
 

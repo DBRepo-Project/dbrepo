@@ -1,11 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -48,6 +50,10 @@ public interface TableService {
      * @param table The table.
      */
     void deleteTable(Table table) throws DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException, SearchServiceConnectionException;
+
+    Table updateTable(Table table, TableUpdateDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException;
 
     TableColumn update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;

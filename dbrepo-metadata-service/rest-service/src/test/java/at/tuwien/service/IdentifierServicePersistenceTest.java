@@ -487,7 +487,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
         assertEquals(8L, response.getId());
-        assertEquals(IDENTIFIER_1_DOI_NOT_NULL, response.getDoi());
+        assertEquals(IDENTIFIER_1_DOI, response.getDoi());
     }
 
     @Test

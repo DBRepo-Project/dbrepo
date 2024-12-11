@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -14,10 +15,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.EntityService;
-import at.tuwien.service.TableService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -53,17 +51,19 @@ public class TableEndpoint {
     private final UserService userService;
     private final TableService tableService;
     private final EntityService entityService;
+    private final AccessService accessService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public TableEndpoint(UserService userService, TableService tableService, EntityService entityService,
-                         MetadataMapper metadataMapper, DatabaseService databaseService,
+                         AccessService accessService, MetadataMapper metadataMapper, DatabaseService databaseService,
                          EndpointValidator endpointValidator) {
         this.userService = userService;
         this.tableService = tableService;
         this.entityService = entityService;
+        this.accessService = accessService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
@@ -151,12 +151,12 @@ public class TableEndpoint {
                 .body(dtos);
     }
 
-    @PutMapping("/{tableId}")
+    @PutMapping("/{tableId}/statistic")
     @Transactional
     @PreAuthorize("hasAuthority('update-table-statistic')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update statistics",
-            description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. Requires role `update-table-statistic`",
+            description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. Requires role `update-table-statistic`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -358,6 +358,63 @@ public class TableEndpoint {
                 .body(dto);
     }
 
+    @PutMapping("/{tableId}")
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('update-table')")
+    @Observed(name = "dbrepo_table_update")
+    @Operation(summary = "Update table",
+            description = "Updates a table in the database with id. Requires role `update-table`.",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated the table",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Update table visibility payload is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Update table visibility not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to search service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to save in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                           @NotNull @PathVariable("tableId") Long tableId,
+                                           @NotNull @Valid @RequestBody TableUpdateDto data,
+                                           @NotNull Principal principal) throws NotAllowedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint update table, databaseId={}, data.is_public={}", databaseId, data.getIsPublic());
+        final Table table = tableService.findById(databaseId, tableId);
+        if (!table.getOwner().equals(principal)) {
+            log.error("Failed to update table: not owner");
+            throw new NotAllowedException("Failed to update table: not owner");
+        }
+        final TableDto dto = metadataMapper.customTableToTableDto(tableService.updateTable(table, data));
+        log.info("Updated table with id {}", dto.getId());
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
+    }
+
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_find")
@@ -405,7 +462,23 @@ public class TableEndpoint {
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
-        final TableDto dto = metadataMapper.customTableToTableDto(table);
+        boolean hasAccess = UserUtil.isSystem(principal);
+        boolean isOwner = false;
+        try {
+            if (principal != null) {
+                final User user = userService.findByUsername(principal.getName());
+                accessService.find(table.getDatabase(), user);
+                hasAccess = true;
+                isOwner = table.getOwner().equals(user);
+            }
+        } catch (UserNotFoundException | AccessNotFoundException e) {
+            /* ignore */
+        }
+        final boolean includeSchema = UserUtil.isSystem(principal) || isOwner || table.getIsSchemaPublic();
+        log.trace("user has access: {}", hasAccess);
+        log.trace("include schema in mapping: {}", includeSchema);
+        final TableDto dto = metadataMapper.customTableToTableDto(table, hasAccess, table.getDatabase().getIsPublic(),
+                includeSchema);
         final HttpHeaders headers = new HttpHeaders();
         if (UserUtil.isSystem(principal)) {
             headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());

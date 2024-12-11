@@ -32,6 +32,16 @@ public class TableCreateDto {
     private String description;
 
     @NotNull
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
+
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
+    @NotNull
     private List<ColumnCreateDto> columns;
 
     @NotNull

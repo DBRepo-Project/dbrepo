@@ -9,11 +9,13 @@ import java.util.List;
 public abstract class AbstractUnitTest extends BaseTest {
 
     public void genesis() {
+        CONTAINER_1_PRIVILEGED_DTO.setImage(IMAGE_1_DTO);
         IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
         CONTAINER_4.setDatabases(new LinkedList<>(List.of(DATABASE_4)));
         /* USER_1 */
         USER_1.setAccesses(new LinkedList<>());
+        USER_1.setTheme(USER_1_THEME);
         /* USER_2 */
         USER_2.setAccesses(new LinkedList<>());
         /* USER_3 */

@@ -18,7 +18,6 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.AnalyseServiceGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -42,8 +41,6 @@ import java.util.*;
 
 import static at.tuwien.service.SchemaServiceIntegrationTest.assertColumn;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -57,9 +54,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
-
-    @MockBean
-    private AnalyseServiceGateway dataDatabaseSidecarGateway;
 
     @MockBean
     private StorageService storageService;
@@ -742,18 +736,14 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void exportTable_succeeds() throws QueryMalformedException, RemoteUnavailableException,
-            StorageNotFoundException, StorageUnavailableException, AnalyseServiceException, TableNotFoundException,
-            MalformedException {
+    public void exportTable_succeeds() throws QueryMalformedException, StorageNotFoundException,
+            StorageUnavailableException, TableNotFoundException, MalformedException {
         final ExportResourceDto mock = ExportResourceDto.builder()
                 .filename("weather_aus.csv")
                 .resource(new InputStreamResource(InputStream.nullInputStream()))
                 .build();
 
         /* mock */
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .exportTable(anyLong(), anyLong());
         when(storageService.getResource("weather_aus.csv"))
                 .thenReturn(mock);
 

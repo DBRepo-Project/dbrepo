@@ -4,7 +4,6 @@
     v-if="timestamp && offSeconds > 3"
     class="banner"
     border="start"
-    tile
     type="warning">
     {{ $t('error.data.drift') + ' ' + offSeconds + 's' }}
   </v-alert>

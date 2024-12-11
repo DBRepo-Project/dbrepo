@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class SaveStatementDto {
 
-    @NotBlank(message = "statement is required")
+    @NotBlank
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String statement;
 }

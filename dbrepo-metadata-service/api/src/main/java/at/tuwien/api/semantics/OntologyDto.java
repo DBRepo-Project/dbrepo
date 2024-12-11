@@ -51,11 +51,4 @@ public class OntologyDto {
     @Schema(example = "rdf/om-2.0.rdf")
     private String rdfPath;
 
-    private UserBriefDto creator;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
 }

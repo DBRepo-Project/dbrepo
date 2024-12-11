@@ -1,7 +1,8 @@
 <template>
-  <div>
+  <div
+    v-if="canViewData">
     <ViewToolbar
-      v-if="view" />
+      v-if="cachedView" />
     <v-toolbar
       color="secondary"
       :title="$t('toolbars.database.current')"
@@ -69,14 +70,18 @@ export default {
           disabled: true
         }
       ],
-      cacheStore: useCacheStore()
+      cacheStore: useCacheStore(),
+      userStore: useUserStore()
     }
   },
   computed: {
+    user () {
+      return this.userStore.getUser
+    },
     database () {
       return this.cacheStore.getDatabase
     },
-    view () {
+    cachedView () {
       if (!this.database) {
         return null
       }
@@ -85,20 +90,41 @@ export default {
     access () {
       return this.userStore.getAccess
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     canDownload () {
       if (!this.view) {
         return false
       }
-      if (this.view.is_public) {
+      if (this.cachedView.is_public) {
         return true
       }
       if (!this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
-    }
+    },
+    canViewData () {
+      if (!this.cachedView) {
+        return false
+      }
+      if (this.cachedView.is_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+    },
   },
   mounted () {
+    if (!this.canViewData) {
+      return
+    }
     this.reload()
   },
   methods: {

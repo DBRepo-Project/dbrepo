@@ -17,7 +17,7 @@
           <v-row dense>
             <v-col>
               <v-text-field
-                v-model="createDatabaseDto.name"
+                v-model="payload.name"
                 name="database"
                 :variant="inputVariant"
                 :label="$t('pages.database.subpages.create.name.label')"
@@ -46,14 +46,46 @@
                 return-object
                 required>
                 <template
-                  v-slot:selection>
-                  <span>{{ engine.name }}</span>
-                </template>
-                <template
                   v-if="engine"
                   v-slot:details>
                   {{ $t('pages.database.subpages.create.utilization.label') }} {{ engine.count }}/{{ engine.quota }}
                 </template>
+              </v-select>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col
+              md="6">
+              <v-select
+                v-model="payload.is_public"
+                name="public"
+                :label="$t('pages.database.subpages.create.data.label')"
+                :hint="$t('pages.database.subpages.create.data.hint')"
+                persistent-hint
+                :variant="inputVariant"
+                :items="visibilityOptions"
+                item-title="name"
+                item-value="value"
+                :rules="[v => !!v || $t('validation.required')]"
+                return-object
+                required>
+              </v-select>
+            </v-col>
+            <v-col
+              md="6">
+              <v-select
+                v-model="payload.is_schema_public"
+                name="schema-public"
+                :label="$t('pages.database.subpages.create.schema.label')"
+                :hint="$t('pages.database.subpages.create.schema.hint')"
+                persistent-hint
+                :variant="inputVariant"
+                :items="visibilityOptions"
+                item-title="name"
+                item-value="value"
+                :rules="[v => !!v || $t('validation.required')]"
+                return-object
+                required>
               </v-select>
             </v-col>
           </v-row>
@@ -91,9 +123,20 @@ export default {
       loadingContainers: false,
       engine: null,
       engines: [],
-      createDatabaseDto: {
+      visibilityOptions: [
+        {
+          name: this.$t('toolbars.database.public'),
+          value: true
+        },
+        {
+          name: this.$t('toolbars.database.private'),
+          value: false
+        }
+      ],
+      payload: {
         name: null,
-        is_public: true
+        is_public: true,
+        is_schema_public: true,
       }
     }
   },
@@ -137,17 +180,14 @@ export default {
         .catch(({code}) => {
           this.loadingContainers = false
           const toast = useToastInstance()
-          if (typeof code !== 'string') {
-            return
-          }
           toast.error(this.$t(code))
         })
     },
     create () {
-      const payload = { container_id: this.engine.id, name: this.createDatabaseDto.name, is_public: true }
-      const databaseService = useDatabaseService()
       this.loading = true
-      databaseService.create(payload)
+      this.payload.container_id = this.engine.id
+      const databaseService = useDatabaseService()
+      databaseService.create(this.payload)
         .then(async (database) => {
           await this.$router.push(`/database/${database.id}/info`)
           this.loading = false

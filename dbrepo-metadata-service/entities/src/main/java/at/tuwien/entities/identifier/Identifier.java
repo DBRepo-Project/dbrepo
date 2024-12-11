@@ -155,9 +155,9 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
-    @Column(nullable = false)
+    @Column(name = "owned_by", nullable = false)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    private UUID createdBy;
+    private UUID ownedBy;
 
     /**
      * Users are never created/updated/deleted by the Identifier entity.
@@ -165,9 +165,9 @@ public class Identifier implements Serializable {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
-    private User creator;
+    private User owner;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")

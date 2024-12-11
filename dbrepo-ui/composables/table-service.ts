@@ -35,7 +35,7 @@ export const useTableService = (): any => {
     })
   }
 
-  async function update(databaseId: number, tableId: number, columnId: number, data: ColumnSemanticsUpdateDto): Promise<ColumnDto> {
+  async function updateSemantics(databaseId: number, tableId: number, columnId: number, data: ColumnSemanticsUpdateDto): Promise<ColumnDto> {
     const axios = useAxiosInstance()
     console.debug('update column with id', columnId, 'table with id', tableId, 'in database with id', databaseId);
     return new Promise<ColumnDto>((resolve, reject) => {
@@ -46,6 +46,22 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to update column', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
+  async function update(databaseId: number, tableId: number, data: TableUpdateDto): Promise<TableDto> {
+    const axios = useAxiosInstance()
+    console.debug('update table with id', tableId, 'in database with id', databaseId);
+    return new Promise<TableDto>((resolve, reject) => {
+      axios.put<TableDto>(`/api/database/${databaseId}/table/${tableId}`, data)
+        .then((response) => {
+          console.info('Updated table with id', tableId, 'in database with id', databaseId);
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to update table', error)
           reject(axiosErrorToApiError(error))
         })
     })

@@ -1,12 +1,11 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
@@ -14,6 +13,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
+import at.tuwien.test.AbstractUnitTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -97,8 +97,6 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         assertEquals(compare.getTitles().size(), body.getTitles().size());
         assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
-        assertEquals(compare.getCreated(), body.getCreated());
-        assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
         assertEquals(compare.getLicenses().size(), body.getLicenses().size());
         assertEquals(compare.getPublicationDay(), body.getPublicationDay());
@@ -136,8 +134,6 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         assertEquals(compare.getDescriptions().get(0).getDescription(), body.getDescriptions().get(0).getDescription());
         assertEquals(compare.getDescriptions().get(0).getLanguage(), body.getDescriptions().get(0).getLanguage());
         assertEquals(compare.getDescriptions().get(0).getDescriptionType(), body.getDescriptions().get(0).getDescriptionType());
-        assertEquals(compare.getCreated(), body.getCreated());
-        assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
         assertEquals(compare.getLicenses().size(), body.getLicenses().size());
         assertEquals(compare.getLicenses().get(0).getIdentifier(), body.getLicenses().get(0).getIdentifier());

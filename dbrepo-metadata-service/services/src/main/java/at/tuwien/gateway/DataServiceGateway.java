@@ -10,6 +10,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
 
@@ -73,6 +74,9 @@ public interface DataServiceGateway {
      * @throws DatabaseNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
+            DataServiceException, DatabaseNotFoundException;
+
+    void updateTable(Long databaseId, Long tableId, TableUpdateDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
     /**
