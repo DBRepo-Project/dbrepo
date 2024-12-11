@@ -1,6 +1,7 @@
 
 package at.tuwien.api.database;
 
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,14 +34,9 @@ public class DatabaseAccessDto {
     private Long hdbid;
 
     @NotNull
-    private UserDto user;
+    private UserBriefDto user;
 
     @NotNull
     private AccessTypeDto type;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
 }

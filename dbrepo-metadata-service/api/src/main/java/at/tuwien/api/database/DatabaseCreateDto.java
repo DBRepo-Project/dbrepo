@@ -30,4 +30,9 @@ public class DatabaseCreateDto {
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
 }

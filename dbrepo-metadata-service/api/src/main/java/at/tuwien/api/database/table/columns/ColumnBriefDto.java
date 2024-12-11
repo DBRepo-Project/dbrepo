@@ -17,22 +17,22 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ColumnBriefDto {
 
-    @NotNull(message = "id is required")
+    @NotNull
     private Long id;
 
     @JsonProperty("database_id")
-    @NotNull(message = "database id is required")
+    @NotNull
     private Long databaseId;
 
     @JsonProperty("table_id")
-    @NotNull(message = "table id is required")
+    @NotNull
     private Long tableId;
 
-    @NotBlank(message = "name is required")
+    @NotBlank
     @Schema(example = "date")
     private String name;
 
-    @NotBlank(message = "internal name is required")
+    @NotBlank
     @JsonProperty("internal_name")
     @Schema(example = "mdb_date")
     private String internalName;

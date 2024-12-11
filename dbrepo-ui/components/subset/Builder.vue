@@ -62,19 +62,10 @@
             </v-col>
           </v-row>
           <v-row
-            v-if="isView && !view.is_public"
-            dense>
-            <v-col>
-              <v-alert
-                :text="$t('pages.view.subpages.create.visibility.warn')"
-                border="start"
-                color="warning" />
-            </v-col>
-          </v-row>
-          <v-row
             v-if="isView"
             dense>
-            <v-col lg="8">
+            <v-col
+              md="4">
               <v-select
                 v-model="view.is_public"
                 :items="visibilities"
@@ -85,8 +76,23 @@
                 :rules="[
                   v => !!v || $t('validation.required')
                 ]"
-                :label="$t('pages.view.subpages.create.visibility.label')"
-                :hint="$t('pages.view.subpages.create.visibility.hint')" />
+                :label="$t('pages.database.subpages.create.data.label')"
+                :hint="$t('pages.database.subpages.create.data.hint')" />
+            </v-col>
+            <v-col
+              md="4">
+              <v-select
+                v-model="view.is_schema_public"
+                :items="visibilities"
+                persistent-hint
+                :variant="inputVariant"
+                required
+                clearable
+                :rules="[
+                  v => !!v || $t('validation.required')
+                ]"
+                :label="$t('pages.database.subpages.create.schema.label')"
+                :hint="$t('pages.database.subpages.create.schema.hint')" />
             </v-col>
           </v-row>
           <v-window
@@ -121,6 +127,7 @@
                     :label="$t('pages.view.subpages.create.columns.label')"
                     :hint="$t('pages.view.subpages.create.columns.hint')"
                     :rules="[v => !!v || $t('validation.required')]"
+                    :loading="loadingColumns"
                     return-object
                     multiple
                     @update:model-value="buildQuery">
@@ -322,6 +329,7 @@ export default {
     return {
       table: null,
       views: [],
+      columns: [],
       timestamp: null,
       executeDifferentTimestamp: false,
       visibilities: [
@@ -338,6 +346,7 @@ export default {
       },
       view: {
         is_public: true,
+        is_schema_public: true,
         name: null,
         query: null
       },
@@ -345,6 +354,7 @@ export default {
       clauses: [],
       tabs: 0,
       loadingQuery: false,
+      loadingColumns: false,
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -358,12 +368,6 @@ export default {
         return []
       }
       return this.database.container.image.operators
-    },
-    columns () {
-      if (!this.table) {
-        return []
-      }
-      return this.table.columns
     },
     tables () {
       if (!this.database) {
@@ -462,12 +466,30 @@ export default {
     },
     table () {
       this.select = []
+      if (!this.table) {
+        return
+      }
+      this.fetchTableColumns(this.table.id)
     }
   },
   mounted () {
     this.selectTable()
   },
   methods: {
+    fetchTableColumns (tableId) {
+      this.loadingColumns = true
+      const tableService = useTableService()
+      tableService.findOne(this.$route.params.database_id, tableId)
+        .then((table) => {
+          this.columns = table.columns
+          this.loadingColumns = false
+        })
+        .catch(({code}) => {
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
+          this.loadingColumns = false
+        })
+    },
     validViewName (name) {
       if (!name) {
         return false

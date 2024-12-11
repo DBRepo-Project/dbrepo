@@ -1,35 +1,26 @@
 import json
 import time
 import unittest
-import datetime
 
 import jwt
-from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Table, Constraints, Column, ColumnType, \
-    Concept, Unit
+from dbrepo.api.dto import Database, User, Container, Image, Table, Constraints, Column, ColumnType, Concept, Unit, \
+    UserBrief
 
 from app import app
 
 req = Database(id=1,
                name="Test",
                internal_name="test_tuw1",
-               creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                            username="foo",
-                            attributes=UserAttributes(theme="dark")),
-               owner=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                          username="foo",
-                          attributes=UserAttributes(theme="dark")),
-               contact=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                            username="foo",
-                            attributes=UserAttributes(theme="dark")),
-               created=datetime.datetime(2024, 3, 25, 16, tzinfo=datetime.timezone.utc),
+               owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
+               contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                exchange_name="dbrepo",
                is_public=True,
+               is_schema_public=True,
                container=Container(id=1,
                                    name="MariaDB",
                                    internal_name="mariadb",
                                    host="data-db",
                                    port="3306",
-                                   created=datetime.datetime(2024, 3, 1, 10, tzinfo=datetime.timezone.utc),
                                    sidecar_host="data-db-sidecar",
                                    sidecar_port=3305,
                                    image=Image(id=1,
@@ -41,29 +32,19 @@ req = Database(id=1,
                                                jdbc_method="mariadb",
                                                default_port=3306)),
                tables=[Table(id=1, database_id=1, name="Data", internal_name="data",
-                             creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                          username="foo",
-                                          attributes=UserAttributes(theme="dark")),
-                             owner=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                        username="foo",
-                                        attributes=UserAttributes(theme="dark")),
-                             created=datetime.datetime(2024, 3, 1, 10, tzinfo=datetime.timezone.utc),
+                             owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                              constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=[]),
                              is_versioned=False,
-                             created_by="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                              queue_name="dbrepo",
                              routing_key="dbrepo.1.1",
                              is_public=True,
+                             is_schema_public=True,
                              columns=[Column(id=1, database_id=1, table_id=1, name="ID", internal_name="id",
                                              column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False,
                                              size=20, d=0,
-                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906",
-                                                             created=datetime.datetime(2024, 3, 1, 10,
-                                                                                       tzinfo=datetime.timezone.utc)),
+                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
                                              unit=Unit(id=1,
-                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius",
-                                                       created=datetime.datetime(2024, 3, 1, 10,
-                                                                                 tzinfo=datetime.timezone.utc)),
+                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
                                              val_min=0,
                                              val_max=10)]
                              )])

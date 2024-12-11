@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSchema">
     <TableToolbar
       :selection="selection" />
     <v-toolbar
@@ -184,8 +185,26 @@ export default {
     access () {
       return this.userStore.getAccess
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     roles () {
       return this.userStore.getRoles
+    },
+    canViewSchema () {
+      if (!this.table) {
+        return false
+      }
+      if (this.table.is_schema_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')

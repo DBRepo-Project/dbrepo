@@ -18,6 +18,22 @@ export const useViewService = (): any => {
     })
   }
 
+  async function findOne(databaseId: number, viewId: number): Promise<ViewDto> {
+    const axios = useAxiosInstance()
+    console.debug('get view with id', viewId, 'in database with id', databaseId)
+    return new Promise<ViewDto>((resolve, reject) => {
+      axios.get<ViewDto>(`/api/database/${databaseId}/view/${viewId}`)
+        .then((response) => {
+          console.info('Deleted view with id', viewId, 'in database with id', databaseId)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to delete view', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
   async function create(databaseId: number, payload: ViewCreateDto): Promise<ViewDto> {
     const axios = useAxiosInstance()
     console.debug('create view in database with id', databaseId)
@@ -34,11 +50,27 @@ export const useViewService = (): any => {
     })
   }
 
+  async function update(databaseId: number, viewId: number, payload: ViewUpdateDto): Promise<ViewDto> {
+    const axios = useAxiosInstance()
+    console.debug('update view with id', viewId)
+    return new Promise<ViewDto>((resolve, reject) => {
+      axios.put<ViewDto>(`/api/database/${databaseId}/view/${viewId}`, payload)
+        .then((response) => {
+          console.info('Update view with id', viewId)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to update view', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
   async function reExecuteData(databaseId: number, viewId: number, page: number | null, size: number | null): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, { params: {page, size} })
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, {params: {page, size}})
         .then((response) => {
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)
@@ -89,5 +121,5 @@ export const useViewService = (): any => {
     })
   }
 
-  return {remove, create, reExecuteData, reExecuteCount, exportData}
+  return {remove, findOne, create, update, reExecuteData, reExecuteCount, exportData}
 }

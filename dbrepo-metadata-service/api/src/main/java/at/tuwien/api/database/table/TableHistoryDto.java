@@ -18,15 +18,15 @@ import java.time.Instant;
 @ToString
 public class TableHistoryDto {
 
-    @NotNull(message = "event timestamp is required")
+    @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant timestamp;
 
-    @NotNull(message = "event name is required")
+    @NotNull
     private String event;
 
-    @NotNull(message = "total number is required")
+    @NotNull
     @Schema(example = "1")
     private Long total;
 

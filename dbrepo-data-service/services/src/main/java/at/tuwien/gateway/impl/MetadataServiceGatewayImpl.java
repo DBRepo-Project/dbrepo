@@ -103,7 +103,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Host", "X-Port");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all privileged database headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -117,6 +117,8 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final PrivilegedDatabaseDto database = response.getBody();
         database.getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
+        database.getContainer().setHost(response.getHeaders().get("X-Host").get(0));
+        database.getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
         log.debug("found privileged database username={}", database.getContainer().getUsername());
         return database;
     }

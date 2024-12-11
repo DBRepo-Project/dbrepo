@@ -51,6 +51,7 @@
 | `dbrepo_statistic_table_update`    | Update statistics             |
 | `dbrepo_table_create`              | Create table                  |
 | `dbrepo_table_delete`              | Delete table                  |
+| `dbrepo_table_update`              | Update table                  |
 | `dbrepo_tables_find`               | Find table                    |
 | `dbrepo_tables_findall`            | List tables                   |
 | `dbrepo_tables_refresh`            | Update database table schemas |
@@ -64,5 +65,6 @@
 | `dbrepo_view_create`               | Create view                   |
 | `dbrepo_view_delete`               | Delete view                   |
 | `dbrepo_view_find`                 | Get view                      |
+| `dbrepo_view_update`               | Update view                   |
 | `dbrepo_views_findall`             | List views                    |
 | `dbrepo_views_refresh`             | Update database view schemas  |

@@ -31,7 +31,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -247,6 +248,8 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
+        headers.set("X-Host", CONTAINER_1_HOST);
+        headers.set("X-Port", "" + CONTAINER_1_PORT);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class)))

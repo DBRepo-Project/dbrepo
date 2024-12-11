@@ -6,7 +6,8 @@
         size="small"
         icon="mdi-arrow-left"
         :to="`/database/${$route.params.database_id}/table`" />
-      <v-toolbar-title>
+      <v-toolbar-title
+        v-if="table">
         <v-skeleton-loader
           v-if="!table && $vuetify.display.lgAndUp"
           type="subtitle"
@@ -15,6 +16,21 @@
           v-if="table && $vuetify.display.lgAndUp">
           {{ table.name }}
         </span>
+        <v-chip
+          v-if="table && table.is_public"
+          size="small"
+          class="ml-2"
+          color="success"
+          :text="$t('toolbars.database.public')"
+          variant="outlined" />
+        <v-chip
+          v-if="table && !table.is_public"
+          size="small"
+          class="ml-2"
+          :color="colorVariant"
+          variant="outlined"
+          :text="$t('toolbars.database.private')"
+          flat />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
@@ -42,6 +58,14 @@
         class="mr-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
+        v-if="canUpdateTable"
+        class="mr-2"
+        variant="flat"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-edit' : null"
+        color="warning"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.update-table.xl') + ' ' : '') + $t('toolbars.database.update-table.permanent')"
+        @click="updateTableDialog = true" />
+      <v-btn
         v-if="canDropTable"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
         color="error"
@@ -63,10 +87,11 @@
             :text="$t('navigation.info')"
             :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/info`" />
           <v-tab
-            v-if="canViewTableData"
+            v-if="canViewData"
             :text="$t('navigation.data')"
             :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/data`" />
           <v-tab
+            v-if="canViewSchema"
             :text="$t('navigation.schema')"
             :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`" />
         </v-tabs>
@@ -75,7 +100,15 @@
     <v-dialog
       v-model="dropTableDialog"
       max-width="640">
-      <DropTable @close="closed" />
+      <DropTable
+        @close="closeDelete" />
+    </v-dialog>
+    <v-dialog
+      v-model="updateTableDialog"
+      max-width="640">
+      <UpdateTable
+        :table="table"
+        @close="closeUpdate" />
     </v-dialog>
   </div>
 </template>
@@ -83,13 +116,15 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import DropTable from '@/components/dialogs/DropTable.vue'
+import UpdateTable from '@/components/dialogs/UpdateTable.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
     EditTuple,
-    DropTable
+    DropTable,
+    UpdateTable
   },
   data () {
     return {
@@ -98,6 +133,7 @@ export default {
       error: false,
       edit: false,
       dropTableDialog: false,
+      updateTableDialog: false,
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -112,11 +148,23 @@ export default {
     access () {
       return this.userStore.getAccess
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     user () {
       return this.userStore.getUser
     },
     roles () {
       return this.userStore.getRoles
+    },
+    canUpdateTable () {
+      if (!this.roles || !this.user || !this.table) {
+        return false
+      }
+      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
     },
     canExecuteQuery () {
       if (!this.roles || !this.table || !this.user) {
@@ -142,18 +190,29 @@ export default {
       const databaseService = useDatabaseService()
       return databaseService.isOwner(this.database, this.user) && this.roles.includes('create-database-view')
     },
-    canViewTableData () {
-      /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
-      if (!this.database) {
+    canViewData () {
+      if (!this.table) {
         return false
       }
-      if (this.database.is_public) {
+      if (this.table.is_public) {
         return true
       }
-      if (!this.roles || !this.table || !this.user || !this.roles.includes('view-table-data') || !this.access) {
+      if (!this.user) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+    },
+    canViewSchema () {
+      if (!this.table) {
+        return false
+      }
+      if (this.table.is_schema_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
     },
     canImportCsv () {
       if (!this.roles || !this.table || !this.user) {
@@ -170,16 +229,27 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
-    }
+    },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
+    colorVariant () {
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
+    },
   },
   methods: {
-    closed (event) {
-      const { success } = event
+    closeDelete ({success}) {
       this.dropTableDialog = false
       if (success) {
         this.cacheStore.reloadDatabase()
         this.$router.push(`/database/${this.$route.params.database_id}/table`)
       }
+    },
+    closeUpdate () {
+      this.updateTableDialog = false
     }
   }
 }

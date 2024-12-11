@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
@@ -64,7 +65,7 @@ public class ViewServiceImpl implements ViewService {
         }
         return database.getViews()
                 .stream()
-                .filter(v -> v.getIsPublic() || v.getCreatedBy().equals(user.getId()))
+                .filter(v -> v.getIsPublic() || v.getOwnedBy().equals(user.getId()))
                 .toList();
     }
 
@@ -86,16 +87,17 @@ public class ViewServiceImpl implements ViewService {
 
     @Override
     @Transactional
-    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException, DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException,
+            DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
         /* create in metadata database */
         final View view = View.builder()
                 .vdbid(database.getId())
                 .database(database)
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()))
-                .createdBy(creator.getId())
-                .creator(creator)
+                .ownedBy(creator.getId())
+                .owner(creator)
                 .identifiers(new LinkedList<>())
                 .query(data.getQuery())
                 .queryHash(Hashing.sha256()
@@ -103,6 +105,7 @@ public class ViewServiceImpl implements ViewService {
                         .toString())
                 .columns(new LinkedList<>())
                 .isInitialView(false)
+                .isSchemaPublic(data.getIsSchemaPublic())
                 .isPublic(data.getIsPublic())
                 .build();
         /* create in data service */
@@ -128,6 +131,28 @@ public class ViewServiceImpl implements ViewService {
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Created view with id {}", optional.get().getId());
+        return optional.get();
+    }
+
+    @Override
+    @Transactional
+    public View update(Database database, View view, ViewUpdateDto data) throws DataServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
+        final Optional<View> optional = database.getViews()
+                .stream()
+                .filter(v -> v.getInternalName().equals(view.getInternalName()))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find view");
+            throw new ViewNotFoundException("Failed to find view");
+        }
+        final View tmpView = optional.get();
+        tmpView.setIsPublic(data.getIsPublic());
+        tmpView.setIsSchemaPublic(data.getIsSchemaPublic());
+        database = databaseRepository.save(database);
+        /* update in search service */
+        searchServiceGateway.update(database);
+        log.info("Updated view with id {}", tmpView.getId());
         return optional.get();
     }
 

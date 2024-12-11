@@ -307,6 +307,14 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String tableNameToUpdateTableRawQuery(String internalName) {
+        final StringBuilder stringBuilder = new StringBuilder("ALTER TABLE `")
+                .append(internalName)
+                .append("` COMMENT = ?;");
+        log.trace("mapped update table statement: {}", stringBuilder);
+        return stringBuilder.toString();
+    }
+
     default String tableCreateDtoToCreateTableRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
         final StringBuilder stringBuilder = new StringBuilder("CREATE TABLE `")
                 .append(nameToInternalName(data.getName()))

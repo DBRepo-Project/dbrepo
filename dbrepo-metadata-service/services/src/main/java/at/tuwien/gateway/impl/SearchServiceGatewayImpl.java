@@ -3,7 +3,9 @@ package at.tuwien.gateway.impl;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.*;
+import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.SearchServiceConnectionException;
+import at.tuwien.exception.SearchServiceException;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import lombok.extern.log4j.Log4j2;
@@ -42,7 +44,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
         log.trace("update database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(
-                    metadataMapper.customDatabaseToDatabaseDto(database), headers), DatabaseDto.class);
+                    metadataMapper.databaseToPrivilegedDatabaseDto(database), headers), DatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to update database: {}", e.getMessage());

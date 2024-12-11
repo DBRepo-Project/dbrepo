@@ -2,7 +2,10 @@ package at.tuwien.service.impl;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.*;
+import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.MetadataConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
@@ -16,7 +19,8 @@ import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.IdentifierRepository;
-import at.tuwien.service.*;
+import at.tuwien.service.IdentifierService;
+import at.tuwien.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -27,7 +31,10 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -159,8 +166,8 @@ public class IdentifierServiceImpl implements IdentifierService {
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = find(data.getId());
         identifier.setDatabase(database);
-        identifier.setCreatedBy(user.getId());
-        identifier.setCreator(user);
+        identifier.setOwnedBy(user.getId());
+        identifier.setOwner(user);
         identifier.setStatus(IdentifierStatusType.DRAFT);
         /* set from data */
         identifier.setTableId(data.getTableId());
@@ -227,8 +234,8 @@ public class IdentifierServiceImpl implements IdentifierService {
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierCreateDtoToIdentifier(data);
         identifier.setDatabase(database);
-        identifier.setCreatedBy(user.getId());
-        identifier.setCreator(user);
+        identifier.setOwnedBy(user.getId());
+        identifier.setOwner(user);
         identifier.setStatus(IdentifierStatusType.DRAFT);
         /* create in metadata database */
         if (data.getCreators() != null) {

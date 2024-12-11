@@ -1176,6 +1176,7 @@ export default {
     this.addDescription()
     this.fetchLicenses()
     this.fetchIdentifier()
+    this.$refs.form.validate()
   },
   methods: {
     cancel () {

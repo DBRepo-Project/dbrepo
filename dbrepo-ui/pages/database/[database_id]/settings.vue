@@ -138,10 +138,50 @@
                   v-model="modifyVisibility.is_public"
                   :items="visibility"
                   :variant="inputVariant"
-                  :label="$t('pages.database.subpages.settings.visibility.visibility.label')"
-                  :hint="$t('pages.database.subpages.settings.visibility.visibility.hint')"
+                  :label="$t('pages.database.subpages.settings.visibility.data.label')"
+                  :hint="$t('pages.database.subpages.settings.visibility.data.hint')"
                   persistent-hint
-                  name="visibility" />
+                  name="visibility">
+                  <template
+                    v-slot:append>
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('pages.database.subpages.settings.visibility.data.help') }}
+                    </v-tooltip>
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col md="8">
+                <v-select
+                  v-model="modifyVisibility.is_schema_public"
+                  :items="visibility"
+                  :variant="inputVariant"
+                  :label="$t('pages.database.subpages.settings.visibility.schema.label')"
+                  :hint="$t('pages.database.subpages.settings.visibility.schema.hint')"
+                  persistent-hint
+                  name="schema-visibility">
+                  <template
+                    v-slot:append>
+                    <v-tooltip
+                      location="bottom">
+                      <template
+                        v-slot:activator="{ props }">
+                        <v-icon
+                          v-bind="props"
+                          icon="mdi-help-circle-outline" />
+                      </template>
+                      {{ $t('pages.database.subpages.settings.visibility.schema.help') }}
+                    </v-tooltip>
+                  </template>
+                </v-select>
               </v-col>
             </v-row>
             <v-row>
@@ -253,7 +293,8 @@ export default {
       editAccessDialog: false,
       editVisibilityDialog: false,
       modifyVisibility: {
-        is_public: null
+        is_public: null,
+        is_schema_public: null
       },
       modifyOwner: {
         id: null
@@ -349,7 +390,7 @@ export default {
       if (!this.modifyVisibility || !this.database) {
         return false
       }
-      return this.modifyVisibility.is_public === this.database.is_public
+      return this.modifyVisibility.is_public === this.database.is_public && this.modifyVisibility.is_schema_public === this.database.is_schema_public
     },
     canModifyVisibility () {
       if (!this.isOwner) {
@@ -434,6 +475,7 @@ export default {
       return
     }
     this.modifyVisibility.is_public = this.database.is_public
+    this.modifyVisibility.is_schema_public = this.database.is_schema_public
     this.modifyOwner.id = this.database.owner.id
   },
   methods: {

@@ -2,35 +2,26 @@ import datetime
 import unittest
 
 import opensearchpy
-from dbrepo.api.dto import Database, User, UserAttributes, Container, Image, Table, Column, ColumnType, Constraints, \
-    PrimaryKey, TableMinimal, ColumnMinimal, Concept, Unit
+from dbrepo.api.dto import Database, Container, Image, Table, Column, ColumnType, Constraints, PrimaryKey, \
+  TableMinimal, ColumnMinimal, Concept, Unit, UserBrief
 from opensearchpy import NotFoundError
 
 from app import app
-
 from init.clients.opensearch_client import OpenSearchClient
 
 req = Database(id=1,
                name="Test",
                internal_name="test_tuw1",
-               creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                            username="foo",
-                            attributes=UserAttributes(theme="dark")),
-               owner=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                          username="foo",
-                          attributes=UserAttributes(theme="dark")),
-               contact=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                            username="foo",
-                            attributes=UserAttributes(theme="dark")),
-               created=datetime.datetime(2024, 3, 25, 16, tzinfo=datetime.timezone.utc),
+               owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
+               contact=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                exchange_name="dbrepo",
                is_public=True,
+               is_schema_public=True,
                container=Container(id=1,
                                    name="MariaDB",
                                    internal_name="mariadb",
                                    host="data-db",
                                    port="3306",
-                                   created=datetime.datetime(2024, 3, 1, 10, tzinfo=datetime.timezone.utc),
                                    sidecar_host="data-db-sidecar",
                                    sidecar_port=3305,
                                    image=Image(id=1,
@@ -41,30 +32,23 @@ req = Database(id=1,
                                                driver_class="org.mariadb.jdbc.Driver",
                                                jdbc_method="mariadb",
                                                default_port=3306)),
-               tables=[Table(id=1, database_id=1, name="Data", internal_name="data",
-                             creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                          username="foo",
-                                          attributes=UserAttributes(theme="dark")),
-                             owner=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                        username="foo",
-                                        attributes=UserAttributes(theme="dark")),
-                             created=datetime.datetime(2024, 3, 1, 10, tzinfo=datetime.timezone.utc),
+               tables=[Table(id=1,
+                             database_id=1,
+                             name="Data",
+                             internal_name="data",
+                             owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                              constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=[]),
                              is_versioned=False,
-                             created_by="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
                              queue_name="dbrepo",
                              routing_key="dbrepo.1.1",
                              is_public=True,
+                             is_schema_public=True,
                              columns=[Column(id=1, database_id=1, table_id=1, name="ID", internal_name="id",
                                              column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False,
                                              size=20, d=0,
-                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906",
-                                                             created=datetime.datetime(2024, 3, 1, 10,
-                                                                                       tzinfo=datetime.timezone.utc)),
+                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
                                              unit=Unit(id=1,
-                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius",
-                                                       created=datetime.datetime(2024, 3, 1, 10,
-                                                                                 tzinfo=datetime.timezone.utc)),
+                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
                                              val_min=0,
                                              val_max=10)]
                              )])
@@ -84,6 +68,7 @@ class OpenSearchClientTest(unittest.TestCase):
                                 queue_name="dbrepo",
                                 routing_key="dbrepo.test_tuw1.test_table",
                                 is_public=True,
+                                is_schema_public=True,
                                 database_id=req.id,
                                 constraints=Constraints(uniques=[], foreign_keys=[], checks=[],
                                                         primary_key=[PrimaryKey(id=1,
@@ -92,14 +77,7 @@ class OpenSearchClientTest(unittest.TestCase):
                                                                                 column=ColumnMinimal(id=1, table_id=1,
                                                                                                      database_id=req.id))]),
                                 is_versioned=True,
-                                created_by="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                creator=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                             username="foo",
-                                             attributes=UserAttributes(theme="dark")),
-                                owner=User(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502",
-                                           username="foo",
-                                           attributes=UserAttributes(theme="dark")),
-                                created=datetime.datetime(2024, 4, 25, 17, 44, tzinfo=datetime.timezone.utc),
+                                owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                                 columns=[Column(id=1,
                                                 name="ID",
                                                 internal_name="id",
@@ -112,16 +90,10 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(1, database.id)
             self.assertEqual("Test", database.name)
             self.assertEqual("test_tuw1", database.internal_name)
-            self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.creator.id)
-            self.assertEqual("foo", database.creator.username)
-            self.assertEqual("dark", database.creator.attributes.theme)
             self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.owner.id)
             self.assertEqual("foo", database.owner.username)
-            self.assertEqual("dark", database.owner.attributes.theme)
             self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.contact.id)
             self.assertEqual("foo", database.contact.username)
-            self.assertEqual("dark", database.contact.attributes.theme)
-            self.assertEqual(datetime.datetime(2024, 3, 25, 16, tzinfo=datetime.timezone.utc), database.created)
             self.assertEqual("dbrepo", database.exchange_name)
             self.assertEqual(True, database.is_public)
             self.assertEqual(1, database.container.id)
@@ -137,15 +109,8 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(True, database.tables[0].is_public)
             self.assertEqual(1, database.tables[0].database_id)
             self.assertEqual(True, database.tables[0].is_versioned)
-            self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.tables[0].created_by)
-            self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.tables[0].creator.id)
-            self.assertEqual("foo", database.tables[0].creator.username)
-            self.assertEqual("dark", database.tables[0].creator.attributes.theme)
             self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.tables[0].owner.id)
             self.assertEqual("foo", database.tables[0].owner.username)
-            self.assertEqual("dark", database.tables[0].owner.attributes.theme)
-            self.assertEqual(datetime.datetime(2024, 4, 25, 17, 44, tzinfo=datetime.timezone.utc),
-                             database.tables[0].created)
             self.assertEqual(1, len(database.tables[0].columns))
             self.assertEqual(1, database.tables[0].columns[0].id)
             self.assertEqual("ID", database.tables[0].columns[0].name)
@@ -163,16 +128,10 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(1, database.id)
             self.assertEqual("Test", database.name)
             self.assertEqual("test_tuw1", database.internal_name)
-            self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.creator.id)
-            self.assertEqual("foo", database.creator.username)
-            self.assertEqual("dark", database.creator.attributes.theme)
             self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.owner.id)
             self.assertEqual("foo", database.owner.username)
-            self.assertEqual("dark", database.owner.attributes.theme)
             self.assertEqual("c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", database.contact.id)
             self.assertEqual("foo", database.contact.username)
-            self.assertEqual("dark", database.contact.attributes.theme)
-            self.assertEqual(datetime.datetime(2024, 3, 25, 16, 0, tzinfo=datetime.timezone.utc), database.created)
             self.assertEqual("dbrepo", database.exchange_name)
             self.assertEqual(True, database.is_public)
             self.assertEqual(1, database.container.id)

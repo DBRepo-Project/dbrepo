@@ -29,9 +29,9 @@ import java.util.UUID;
 @Table(name = "mdb_view")
 @NamedQueries({
         @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
-        @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.createdBy = ?2)"),
+        @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.ownedBy = ?2)"),
         @NamedQuery(name = "View.findPublicByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and v.isPublic = true"),
-        @NamedQuery(name = "View.findPublicOrMineByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and (v.isPublic = true or v.createdBy = ?3)")
+        @NamedQuery(name = "View.findPublicOrMineByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and (v.isPublic = true or v.ownedBy = ?3)")
 })
 public class View {
 
@@ -48,14 +48,14 @@ public class View {
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
-    private UUID createdBy;
+    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
+    private UUID ownedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
-    private User creator;
+    private User owner;
 
     @Column(name = "vname", nullable = false, columnDefinition = "VARCHAR(64)")
     private String name;
@@ -63,8 +63,11 @@ public class View {
     @Column(nullable = false, columnDefinition = "VARCHAR(64)")
     private String internalName;
 
-    @Column(name = "public", nullable = false)
+    @Column(name = "public", nullable = false, columnDefinition = "boolean default true")
     private Boolean isPublic;
+
+    @Column(name = "is_schema_public", nullable = false, columnDefinition = "boolean default true")
+    private Boolean isSchemaPublic;
 
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;

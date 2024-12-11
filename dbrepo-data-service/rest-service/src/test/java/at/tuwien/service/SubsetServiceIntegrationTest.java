@@ -8,7 +8,6 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.AnalyseServiceGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -34,7 +33,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -48,9 +46,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
-
-    @MockBean
-    private AnalyseServiceGateway dataDatabaseSidecarGateway;
 
     @MockBean
     private StorageService storageService;
@@ -78,8 +73,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, Instant.now(), USER_1_ID, 0L, 10L, null, null);
@@ -119,8 +114,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_7_STATEMENT, Instant.now(), USER_1_ID, 0L, 10L, null, null);
@@ -150,8 +145,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(List.of(IDENTIFIER_2_DTO));
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, Instant.now(), USER_1_ID, 0L, 1L, null, null);
@@ -255,8 +250,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_2_CREATED_BY))
-                .thenReturn(QUERY_2_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
         persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_DTO), true);
@@ -271,8 +266,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
         persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_DTO), false);
@@ -322,8 +317,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(List.of(IDENTIFIER_2_DTO));
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
         MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
@@ -388,9 +383,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .exportTable(anyLong(), anyLong());
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
 

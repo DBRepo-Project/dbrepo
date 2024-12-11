@@ -7,6 +7,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.*;
@@ -156,6 +157,30 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to update user password in database: wrong http code: {}", response.getStatusCode());
             throw new DataServiceException("Failed to update user password in database: wrong http code: " + response.getStatusCode());
+        }
+    }
+
+    @Override
+    public void updateTable(Long databaseId, Long tableId, TableUpdateDto data) throws DataServiceConnectionException,
+            DataServiceException, DatabaseNotFoundException {
+        final ResponseEntity<Void> response;
+        final String path = "/api/database/" + databaseId + "/table/" + tableId;
+        log.trace("update table at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
+        try {
+            response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+        } catch (HttpServerErrorException e) {
+            log.error("Failed to update table in database: {}", e.getMessage());
+            throw new DataServiceConnectionException("Failed to update table in database: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("Failed to update table in database: not found: {}", e.getMessage());
+            throw new DatabaseNotFoundException("Failed to update table in database: not found: " + e.getMessage(), e);
+        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.Unauthorized e) {
+            log.error("Failed to update table in database: {}", e.getMessage());
+            throw new DataServiceException("Failed to update table in database: " + e.getMessage(), e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+            log.error("Failed to update table in database: wrong http code: {}", response.getStatusCode());
+            throw new DataServiceException("Failed to update table in database: wrong http code: " + response.getStatusCode());
         }
     }
 

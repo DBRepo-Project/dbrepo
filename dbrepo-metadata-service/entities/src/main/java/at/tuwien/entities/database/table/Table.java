@@ -1,21 +1,20 @@
 package at.tuwien.entities.database.table;
 
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -44,18 +43,6 @@ public class Table {
 
     @Column(updatable = false, nullable = false)
     private Long tdbid;
-
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
-    private UUID createdBy;
-
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User creator;
-
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
@@ -103,8 +90,14 @@ public class Table {
     @Embedded
     private Constraints constraints;
 
-    @Column(name = "versioned", columnDefinition = "boolean default true")
+    @Column(name = "versioned", nullable = false, columnDefinition = "boolean default true")
     private Boolean isVersioned;
+
+    @Column(name = "is_public", nullable = false, columnDefinition = "boolean default true")
+    private Boolean isPublic;
+
+    @Column(name = "is_schema_public", nullable = false, columnDefinition = "boolean default true")
+    private Boolean isSchemaPublic;
 
     @Column(name = "num_rows")
     private Long numRows;

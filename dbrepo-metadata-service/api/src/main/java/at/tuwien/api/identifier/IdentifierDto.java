@@ -4,14 +4,12 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 import java.util.List;
@@ -94,7 +92,7 @@ public class IdentifierDto {
     private String publisher;
 
     @NotNull
-    private UserDto creator;
+    private UserDto owner;
 
     @JsonProperty("publication_day")
     @Schema(example = "15")
@@ -121,16 +119,5 @@ public class IdentifierDto {
     @NotNull
     @JsonProperty("created_by")
     private UUID createdBy;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
-    @NotNull
-    @JsonProperty("last_modified")
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant lastModified;
 
 }

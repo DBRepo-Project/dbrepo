@@ -20,7 +20,7 @@ import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -115,8 +115,7 @@ public interface DataMapper {
                         .toString())
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .creator(database.getOwner())
-                .createdBy(database.getOwner().getId())
+                .owner(database.getOwner())
                 .build();
     }
 
@@ -369,13 +368,9 @@ public interface DataMapper {
         /* note that next() is called outside this mapping function */
         return QueryDto.builder()
                 .id(data.getLong(1))
-                .created(LocalDateTime.parse(data.getString(2), mariaDbFormatter)
-                        .atZone(ZoneId.of("UTC"))
-                        .toInstant())
-                .creator(UserDto.builder()
+                .owner(UserBriefDto.builder()
                         .id(UUID.fromString(data.getString(3)))
                         .build())
-                .createdBy(UUID.fromString(data.getString(3)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
@@ -489,7 +484,7 @@ public interface DataMapper {
         if (!resultSet.next()) {
             throw new TableNotFoundException("Failed to find table in the information schema");
         }
-        final TableDto table = TableDto.builder()
+        return TableDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
                 .isVersioned(resultSet.getString(2).equals("SYSTEM VERSIONED"))
@@ -503,7 +498,7 @@ public interface DataMapper {
                 .description(resultSet.getString(10))
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
-                .creator(database.getOwner())
+                .owner(database.getOwner())
                 .owner(database.getOwner())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
@@ -513,11 +508,6 @@ public interface DataMapper {
                         .build())
                 .isPublic(database.getIsPublic())
                 .build();
-        if (resultSet.getString(7) != null && !resultSet.getString(7).isEmpty()) {
-            table.setCreated(Timestamp.valueOf(resultSet.getString(7))
-                    .toInstant());
-        }
-        return table;
     }
 
     default Object dataColumnToObject(Object data, ColumnDto column) {

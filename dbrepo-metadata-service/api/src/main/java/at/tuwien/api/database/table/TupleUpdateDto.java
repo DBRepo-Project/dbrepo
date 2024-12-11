@@ -16,10 +16,10 @@ import java.util.Map;
 @ToString
 public class TupleUpdateDto {
 
-    @NotNull(message = "data is required")
+    @NotNull
     private Map<String, Object> data;
 
-    @NotNull(message = "primary key columns are required")
+    @NotNull
     private Map<String, Object> keys;
 
 }

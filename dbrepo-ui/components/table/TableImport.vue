@@ -98,13 +98,13 @@
           v-if="$route.query.location"
           dense>
           <v-col>
-            <p>
-              {{ $t('pages.table.subpages.import.storage.text') }}
-            </p>
             <v-chip
-              prepend-icon="mdi-cloud-upload"
+              prepend-icon="mdi-database-check-outline"
+              size="large"
+              variant="flat"
+              color="tertiary"
               label>
-              {{ $route.query.location }}
+              {{ $t('pages.table.subpages.import.storage.text') }}
             </v-chip>
           </v-col>
         </v-row>

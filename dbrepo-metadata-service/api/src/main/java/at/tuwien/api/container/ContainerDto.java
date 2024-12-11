@@ -35,6 +35,7 @@ public class ContainerDto {
     @NotBlank
     private String host;
 
+    @NotNull
     private Integer port;
 
     @JsonProperty("ui_host")
@@ -53,10 +54,5 @@ public class ContainerDto {
     @NotNull
     @Schema(example = "10")
     private Long count;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
 }

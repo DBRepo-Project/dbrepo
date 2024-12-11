@@ -158,7 +158,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* test */
-        generic_modifyVisibility(DATABASE_1, true);
+        generic_modifyVisibility(DATABASE_1, true, true);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true);
+            generic_modifyVisibility(DATABASE_1, true, true);
         });
     }
 
@@ -187,7 +187,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true);
+            generic_modifyVisibility(DATABASE_1, true, true);
         });
     }
 
@@ -202,7 +202,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            generic_modifyVisibility(DATABASE_1, true);
+            generic_modifyVisibility(DATABASE_1, true, true);
         });
     }
 
@@ -285,12 +285,10 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         assertNotNull(response.getViews());
         assertNotNull(response.getAccesses());
         assertNotNull(response.getIdentifiers());
-        assertNotNull(response.getCreatedBy());
-        assertNotNull(response.getCreator());
+        assertNotNull(response.getOwnedBy());
+        assertNotNull(response.getOwner());
         assertNotNull(response.getContactPerson());
         assertNotNull(response.getContact());
-        assertNotNull(response.getCreatedBy());
-        assertNotNull(response.getOwner());
         assertNotNull(response.getImage());
         assertNotNull(response.getExchangeName());
         return response;
@@ -309,8 +307,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         return response;
     }
 
-    protected Database generic_modifyVisibility(Database database, Boolean isPublic) throws DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    protected Database generic_modifyVisibility(Database database, Boolean isPublic, Boolean isSchemaPublic)
+            throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
         when(databaseRepository.save(any(Database.class)))
@@ -319,6 +317,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         /* test */
         final Database response = databaseService.modifyVisibility(database, DatabaseModifyVisibilityDto.builder()
                 .isPublic(isPublic)
+                .isSchemaPublic(isSchemaPublic)
                 .build());
         assertNotNull(response);
         return response;

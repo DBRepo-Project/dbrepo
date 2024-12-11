@@ -47,7 +47,8 @@
               :disabled="step > 4"
               @submit.prevent="submit">
               <v-container>
-                <v-row dense>
+                <v-row
+                  dense>
                   <v-col md="4">
                     <v-text-field
                       v-model="tableCreate.name"
@@ -80,7 +81,8 @@
                       :label="$t('pages.table.subpages.import.generated.label')"/>
                   </v-col>
                 </v-row>
-                <v-row dense>
+                <v-row
+                  dense>
                   <v-col md="8">
                     <v-textarea
                       v-model="tableCreate.description"
@@ -95,6 +97,41 @@
                       :variant="inputVariant"
                       :hint="$t('pages.table.subpages.import.description.hint')"
                       :label="$t('pages.table.subpages.import.description.label')"/>
+                  </v-col>
+                </v-row>
+                <v-row
+                  dense>
+                  <v-col
+                    md="4">
+                    <v-select
+                      v-model="tableCreate.is_public"
+                      name="public"
+                      :label="$t('pages.database.subpages.create.data.label')"
+                      :hint="$t('pages.database.subpages.create.data.hint')"
+                      persistent-hint
+                      :variant="inputVariant"
+                      :items="visibilityOptions"
+                      item-title="name"
+                      item-value="value"
+                      :rules="[v => v !== null || $t('validation.required')]"
+                      required>
+                    </v-select>
+                  </v-col>
+                  <v-col
+                    md="4">
+                    <v-select
+                      v-model="tableCreate.is_schema_public"
+                      name="schema-public"
+                      :label="$t('pages.database.subpages.create.schema.label')"
+                      :hint="$t('pages.database.subpages.create.schema.hint')"
+                      persistent-hint
+                      :variant="inputVariant"
+                      :items="visibilityOptions"
+                      item-title="name"
+                      item-value="value"
+                      :rules="[v => v !== null || $t('validation.required')]"
+                      required>
+                    </v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -198,6 +235,16 @@ export default {
       loadingImport: false,
       fileModel: null,
       rowCount: null,
+      visibilityOptions: [
+        {
+          name: this.$t('toolbars.database.public'),
+          value: true
+        },
+        {
+          name: this.$t('toolbars.database.private'),
+          value: false
+        }
+      ],
       file: {
         filename: null,
         path: null
@@ -237,6 +284,8 @@ export default {
       tables: [],
       tableCreate: {
         name: null,
+        is_public: true,
+        is_schema_public: true,
         description: '',
         columns: []
       },
@@ -253,6 +302,13 @@ export default {
       userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
+  },
+  mounted () {
+    if (!this.database) {
+      return
+    }
+    this.tableCreate.is_public = this.database.is_public
+    this.tableCreate.is_schema_public = this.database.is_schema_public
   },
   computed: {
     user() {

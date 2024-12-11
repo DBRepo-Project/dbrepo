@@ -16,7 +16,7 @@ import java.util.Map;
 @ToString
 public class TupleDeleteDto {
 
-    @NotNull(message = "primary key columns are required")
+    @NotNull
     private Map<String, Object> keys;
 
 }

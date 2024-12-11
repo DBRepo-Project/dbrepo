@@ -2,6 +2,7 @@
   "id": 1,
   "query_id": 1,
   "type": "subset",
+  "doi": "10.12345/183",
   "titles": [
     {
       "id": 1,
@@ -24,7 +25,6 @@
   ],
   "query": "SELECT `id` FROM `foobar`",
   "query_normalized": "SELECT `id` FROM `foobar`",
-  "doi": null,
   "query_hash": "abc",
   "execution": "2018-11-07T10:59:12.000+00:00",
   "result_hash": "def",
@@ -51,7 +51,5 @@
     }
   ],
   "publication_month": 5,
-  "publication_year": 2022,
-  "created": "2022-01-07T20:45:52.000+00:00",
-  "last_modified": "2018-11-07T10:59:12.000+00:00"
+  "publication_year": 2022
 }

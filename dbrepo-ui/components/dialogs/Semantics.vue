@@ -234,7 +234,7 @@ export default {
       }
       this.loadingSave = true
       const tableService = useTableService()
-      tableService.update(this.database.id, this.tableId, this.column.id, payload)
+      tableService.updateSemantics(this.database.id, this.tableId, this.column.id, payload)
         .then(() => {
           this.recommendation = null
           this.$refs.form.reset()

@@ -35,6 +35,7 @@ public class PrivilegedContainerDto {
     @NotBlank
     private String host;
 
+    @NotNull
     private Integer port;
 
     @JsonProperty("ui_host")
@@ -46,19 +47,10 @@ public class PrivilegedContainerDto {
     @NotNull
     private ImageDto image;
 
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
     @ToString.Exclude
     private String username;
 
     @ToString.Exclude
     private String password;
-
-    private Long defaultTimestampFormatId;
-
-    private Long defaultDateFormatId;
 
 }

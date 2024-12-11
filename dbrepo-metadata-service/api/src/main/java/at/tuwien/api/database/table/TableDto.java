@@ -3,20 +3,18 @@ package at.tuwien.api.database.table;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -57,14 +55,12 @@ public class TableDto {
     private Boolean isVersioned;
 
     @NotNull
-    @JsonProperty("created_by")
-    private UUID createdBy;
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
 
     @NotNull
-    private UserDto creator;
-
-    @NotNull
-    private UserDto owner;
+    private UserBriefDto owner;
 
     @NotBlank
     @JsonProperty("queue_name")
@@ -84,7 +80,7 @@ public class TableDto {
     @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @NotNull(message = "isPublic is required")
+    @NotNull
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
@@ -104,11 +100,6 @@ public class TableDto {
     @JsonProperty("avg_row_length")
     @Schema(example = "3276", description = "in bytes")
     private Long avgRowLength;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
     @NotNull
     private List<ColumnDto> columns;

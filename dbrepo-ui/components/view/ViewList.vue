@@ -14,6 +14,21 @@
           :class="clazz(view)"
           :to="`/database/${$route.params.database_id}/view/${view.id}/info`">
           <template v-slot:append>
+            <v-chip
+              v-if="view && view.is_public"
+              size="small"
+              class="ml-2"
+              color="success"
+              :text="$t('toolbars.database.public')"
+              variant="outlined" />
+            <v-chip
+              v-if="view && !view.is_public"
+              size="small"
+              class="ml-2"
+              :color="colorVariant"
+              variant="outlined"
+              :text="$t('toolbars.database.private')"
+              flat />
             <v-tooltip
               v-if="hasPublishedIdentifier(view)"
               :text="$t('pages.identifier.pid.title')"
@@ -60,6 +75,15 @@ export default {
         return []
       }
       return this.database.views
+    },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
+    colorVariant () {
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     }
   },
   methods: {

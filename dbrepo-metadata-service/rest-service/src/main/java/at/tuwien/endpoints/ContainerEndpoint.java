@@ -67,7 +67,7 @@ public class ContainerEndpoint {
         log.debug("endpoint find all containers, limit={}", limit);
         final List<ContainerBriefDto> dtos = containerService.getAll(limit)
                 .stream()
-                .map(metadataMapper::containerToDatabaseContainerBriefDto)
+                .map(metadataMapper::containerToContainerBriefDto)
                 .collect(Collectors.toList());
         log.debug("find all containers resulted in {} container(s)", dtos.size());
         return ResponseEntity.ok()

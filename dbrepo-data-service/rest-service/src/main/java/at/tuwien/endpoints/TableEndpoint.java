@@ -79,7 +79,7 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Failed to find database in metadata database or table in data database",
+                    description = "Failed to find database or table in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -97,7 +97,7 @@ public class TableEndpoint {
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                            @Valid @RequestBody TableCreateDto data) throws DatabaseNotFoundException,
             RemoteUnavailableException, TableMalformedException, DatabaseUnavailableException, TableExistsException,
-            TableNotFoundException, QueryMalformedException, MetadataServiceException {
+            TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
         log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
         /* check */
         if (data.getConstraints().getPrimaryKey().isEmpty()) {
@@ -110,6 +110,50 @@ public class TableEndpoint {
             final TableDto table = tableService.createTable(database, data);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(schemaService.inspectTable(database, table.getInternalName()));
+        } catch (SQLException e) {
+            log.error("Failed to establish connection to database: {}", e.getMessage());
+            throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
+        }
+    }
+
+    @PutMapping("/{tableId}")
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Update table",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated table",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Table schema or query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database or table in metadata database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to establish connection with the metadata service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                           @NotNull @PathVariable("tableId") Long tableId,
+                                           @Valid @RequestBody TableUpdateDto data) throws RemoteUnavailableException,
+            TableMalformedException, DatabaseUnavailableException, TableNotFoundException, MetadataServiceException {
+        log.debug("endpoint update table, databaseId={}, data.description={}", databaseId, data.getDescription());
+        /* create */
+        final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
+        try {
+            tableService.updateTable(table, data);
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .build();
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

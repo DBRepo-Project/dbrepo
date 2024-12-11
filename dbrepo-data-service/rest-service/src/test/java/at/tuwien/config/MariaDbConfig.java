@@ -265,7 +265,7 @@ public class MariaDbConfig {
             prepareStatement.setString(5, query.getQueryHash());
             prepareStatement.setString(6, query.getResultHash());
             prepareStatement.setLong(7, query.getResultNumber());
-            prepareStatement.setTimestamp(8, Timestamp.from(query.getCreated()));
+            prepareStatement.setTimestamp(8, Timestamp.from(query.getExecution()));
             prepareStatement.setTimestamp(9, Timestamp.from(query.getExecution()));
             log.trace("prepared statement: {}", prepareStatement);
             prepareStatement.executeUpdate();

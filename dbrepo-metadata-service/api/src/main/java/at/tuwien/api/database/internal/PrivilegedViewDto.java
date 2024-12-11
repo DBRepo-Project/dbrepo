@@ -1,23 +1,18 @@
 package at.tuwien.api.database.internal;
 
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,7 +23,6 @@ import java.util.UUID;
 @ToString
 public class PrivilegedViewDto {
 
-    @Id
     @NotNull
     private Long id;
 
@@ -37,6 +31,7 @@ public class PrivilegedViewDto {
     private Long vdbid;
 
     @NotNull
+    @ToString.Exclude
     private PrivilegedDatabaseDto database;
 
     @NotBlank
@@ -54,6 +49,10 @@ public class PrivilegedViewDto {
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
     @JsonProperty("initial_view")
     @Schema(example = "true", description = "True if it is the default view for the database")
     private Boolean isInitialView;
@@ -68,22 +67,9 @@ public class PrivilegedViewDto {
     private String queryHash;
 
     @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
-    @JsonIgnore
-    private UUID createdBy;
+    private UserBriefDto owner;
 
     @NotNull
-    private UserDto creator;
-
-    @NotNull(message = "columns are required")
     private List<ViewColumnDto> columns;
-
-    @JsonProperty("last_modified")
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant lastModified;
 
 }

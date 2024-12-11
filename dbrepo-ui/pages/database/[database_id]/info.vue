@@ -60,9 +60,7 @@
               <v-list-item
                 :title="$t('pages.database.visibility.title')"
                 density="compact">
-                <div>
-                  {{ database.is_public ? 'Public' : 'Private' }}
-                </div>
+                {{ databaseVisibility }}
               </v-list-item>
               <v-list-item
                 :title="$t('pages.database.size.title')"
@@ -78,13 +76,6 @@
                   <UserBadge
                     :user="database.owner"
                     :other-user="user" />
-                </div>
-              </v-list-item>
-              <v-list-item
-                :title="$t('pages.database.created.title')"
-                density="compact">
-                <div>
-                  {{ createdUTC }}
                 </div>
               </v-list-item>
               <v-list-item
@@ -290,12 +281,6 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    createdUTC () {
-      if (!this.database) {
-        return
-      }
-      return formatTimestampUTCLabel(this.database.created)
-    },
     internal_name () {
       if (!this.database) {
         return
@@ -369,6 +354,18 @@ export default {
       let sum = 0
       this.database.tables.forEach((t) => { sum += t.data_length })
       return sizeToHumanLabel(sum)
+    },
+    databaseVisibility () {
+      if (!this.database) {
+        return null
+      }
+      if (this.database.is_public && this.database.is_schema_public) {
+        return this.$t('pages.database.visibility.open')
+      }
+      if (!this.database.is_public && !this.database.is_schema_public) {
+        return this.$t('pages.database.visibility.closed')
+      }
+      return this.database.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
     },
     previewImage () {
       if (!this.database) {

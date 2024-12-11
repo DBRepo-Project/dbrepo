@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.*;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Log4j2
 @SpringBootTest
@@ -81,13 +82,13 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
         assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
         /* creator */
-        assertNotNull(response.getCreator());
-        assertEquals(USER_1_ID, response.getCreator().getId());
-        assertEquals(USER_1_USERNAME, response.getCreator().getUsername());
-        assertEquals(USER_1_EMAIL, response.getCreator().getEmail());
-        assertEquals(USER_1_THEME, response.getCreator().getTheme());
-        assertEquals(USER_1_LANGUAGE, response.getCreator().getLanguage());
-        assertNotNull(response.getCreator().getAccesses());
+        assertNotNull(response.getOwner());
+        assertEquals(USER_1_ID, response.getOwner().getId());
+        assertEquals(USER_1_USERNAME, response.getOwner().getUsername());
+        assertEquals(USER_1_EMAIL, response.getOwner().getEmail());
+        assertEquals(USER_1_THEME, response.getOwner().getTheme());
+        assertEquals(USER_1_LANGUAGE, response.getOwner().getLanguage());
+        assertNotNull(response.getOwner().getAccesses());
     }
 
     @Test
@@ -119,13 +120,13 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
         assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
         /* creator */
-        assertNotNull(response.getCreator());
-        assertEquals(USER_1_ID, response.getCreator().getId());
-        assertEquals(USER_1_USERNAME, response.getCreator().getUsername());
-        assertEquals(USER_1_EMAIL, response.getCreator().getEmail());
-        assertEquals(USER_1_THEME, response.getCreator().getTheme());
-        assertEquals(USER_1_LANGUAGE, response.getCreator().getLanguage());
-        assertNotNull(response.getCreator().getAccesses());
+        assertNotNull(response.getOwner());
+        assertEquals(USER_1_ID, response.getOwner().getId());
+        assertEquals(USER_1_USERNAME, response.getOwner().getUsername());
+        assertEquals(USER_1_EMAIL, response.getOwner().getEmail());
+        assertEquals(USER_1_THEME, response.getOwner().getTheme());
+        assertEquals(USER_1_LANGUAGE, response.getOwner().getLanguage());
+        assertNotNull(response.getOwner().getAccesses());
     }
 
 }

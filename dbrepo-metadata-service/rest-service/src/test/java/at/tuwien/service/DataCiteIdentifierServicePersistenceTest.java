@@ -210,7 +210,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final Identifier response = dataCiteIdentifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
-        assertEquals(IDENTIFIER_1_DOI_NOT_NULL, response.getDoi());
+        assertEquals(IDENTIFIER_1_DOI, response.getDoi());
     }
 
     @Test

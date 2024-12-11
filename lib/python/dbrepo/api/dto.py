@@ -4,7 +4,7 @@ from dataclasses import field
 from enum import Enum
 import datetime
 from typing import List, Optional, Any, Annotated
-from pydantic import BaseModel, ConfigDict, PlainSerializer, Field
+from pydantic import BaseModel, PlainSerializer, Field
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -17,7 +17,7 @@ class JwtAuth(BaseModel):
     id_token: str
     expires_in: int
     refresh_expires_in: int
-    not_before_policy: int = Field(alias='not-before-policy')
+    not_before_policy: int
     scope: str
     session_state: str
     token_type: str
@@ -45,6 +45,11 @@ class ImageBrief(BaseModel):
 class CreateDatabase(BaseModel):
     name: str
     container_id: int
+    is_public: bool
+    is_schema_public: bool
+
+
+class UpdateView(BaseModel):
     is_public: bool
 
 
@@ -91,7 +96,6 @@ class Container(BaseModel):
     host: str
     port: int
     image: Image
-    created: Timestamp
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
 
@@ -100,7 +104,6 @@ class ContainerBrief(BaseModel):
     id: int
     name: str
     image: ImageBrief
-    created: Timestamp
     internal_name: str
     running: Optional[bool] = None
     hash: Optional[str] = None
@@ -123,7 +126,9 @@ class TableBrief(BaseModel):
     description: Optional[str]
     internal_name: str
     is_versioned: bool
-    owner: UserBrief
+    is_public: bool
+    is_schema_public: bool
+    owned_by: str
 
 
 class UserAttributes(BaseModel):
@@ -392,8 +397,7 @@ class Language(str, Enum):
 
 class DatabaseAccess(BaseModel):
     type: AccessType
-    user: User
-    created: Timestamp
+    user: UserBrief
 
 
 class CreateAccess(BaseModel):
@@ -486,6 +490,7 @@ class UpdateColumn(BaseModel):
 
 class ModifyVisibility(BaseModel):
     is_public: bool
+    is_schema_public: bool
 
 
 class ModifyOwner(BaseModel):
@@ -494,6 +499,8 @@ class ModifyOwner(BaseModel):
 
 class CreateTable(BaseModel):
     name: str
+    is_public: bool
+    is_schema_public: bool
     constraints: CreateTableConstraints
     columns: List[CreateTableColumn] = field(default_factory=list)
     description: Optional[str] = None
@@ -590,10 +597,8 @@ class Identifier(BaseModel):
     id: int
     database_id: int
     type: IdentifierType
-    creator: UserBrief
+    owner: UserBrief
     status: IdentifierStatusType
-    created: Timestamp
-    last_modified: Timestamp
     publication_year: int
     publisher: str
     creators: List[IdentifierCreator]
@@ -622,12 +627,10 @@ class View(BaseModel):
     name: str
     query: str
     query_hash: str
-    created: Timestamp
-    creator: User
+    owner: UserBrief
     internal_name: str
     is_public: bool
     initial_view: bool
-    last_modified: Timestamp
     columns: List[ViewColumn]
     identifiers: List[Identifier] = field(default_factory=list)
 
@@ -636,6 +639,7 @@ class CreateView(BaseModel):
     name: str
     query: str
     is_public: bool
+    is_schema_public: bool
 
 
 class Result(BaseModel):
@@ -648,21 +652,18 @@ class ViewBrief(BaseModel):
     id: int
     database_id: int
     name: str
-    identifier: List[Identifier]
-    query: str
-    query_hash: str
-    created: Timestamp
-    creator: User
     internal_name: str
     is_public: bool
+    is_schema_public: bool
     initial_view: bool
-    last_modified: Timestamp
+    query: str
+    query_hash: str
+    owned_by: str
 
 
 class Concept(BaseModel):
     id: int
     uri: str
-    created: Timestamp
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -698,7 +699,6 @@ class TableStatistics(BaseModel):
 class Unit(BaseModel):
     id: int
     uri: str
-    created: Timestamp
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -851,17 +851,15 @@ class IdentifierType(str, Enum):
 
 class Query(BaseModel):
     id: int
-    creator: User
+    owner: UserBrief
     execution: Timestamp
     query: str
     type: QueryType
-    created: Timestamp
     database_id: int
     query_hash: str
     is_persisted: bool
     result_hash: str
     query_normalized: str
-    last_modified: Timestamp
     result_number: Optional[int] = None
     identifiers: List[Identifier] = field(default_factory=list)
 
@@ -874,8 +872,8 @@ class DataType(BaseModel):
     display_name: str
     value: str
     documentation: str
-    is_quoted:  bool
-    is_buildable:  bool
+    is_quoted: bool
+    is_buildable: bool
     size_min: Optional[int] = None
     size_max: Optional[int] = None
     size_default: Optional[int] = None
@@ -884,8 +882,8 @@ class DataType(BaseModel):
     d_max: Optional[int] = None
     d_default: Optional[int] = None
     d_required: Optional[bool] = None
-    data_hint:  Optional[str] = None
-    type_hint:  Optional[str] = None
+    data_hint: Optional[str] = None
+    type_hint: Optional[str] = None
 
 
 class Column(BaseModel):
@@ -940,17 +938,15 @@ class Table(BaseModel):
     id: int
     database_id: int
     name: str
-    creator: User
-    owner: User
-    created: Timestamp
+    owner: UserBrief
     columns: List[Column]
     constraints: Constraints
     internal_name: str
     is_versioned: bool
-    created_by: str
     queue_name: str
     routing_key: str
     is_public: bool
+    is_schema_public: bool
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     description: Optional[str] = None
     queue_type: Optional[str] = None
@@ -974,10 +970,8 @@ class ColumnMinimal(BaseModel):
 class Database(BaseModel):
     id: int
     name: str
-    creator: User
-    owner: User
-    contact: User
-    created: Timestamp
+    owner: UserBrief
+    contact: UserBrief
     exchange_name: str
     internal_name: str
     is_public: bool
@@ -1001,7 +995,6 @@ class DatabaseBrief(BaseModel):
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     contact: UserBrief
     owner: UserBrief
-    created: Timestamp
 
 
 class Unique(BaseModel):

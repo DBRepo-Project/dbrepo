@@ -96,7 +96,7 @@ public class MetadataEndpointMvcTest extends AbstractUnitTest {
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListIdentifiers']").exists())
-                .andExpect(xpath("//header[1]/identifier").string("oai:" + IDENTIFIER_1_ID))
+                .andExpect(xpath("//header[1]/identifier").string("doi:" + IDENTIFIER_1_DOI))
                 .andExpect(xpath("//header[2]/identifier").string("oai:" + IDENTIFIER_2_ID))
                 .andExpect(xpath("//header[3]/identifier").string("oai:" + IDENTIFIER_3_ID))
                 .andExpect(xpath("//header[4]/identifier").string("oai:" + IDENTIFIER_4_ID))
@@ -127,7 +127,7 @@ public class MetadataEndpointMvcTest extends AbstractUnitTest {
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())
                 .andExpect(xpath("//request[@identifier='oai:" + IDENTIFIER_1_ID + "']").exists())
-                .andExpect(xpath("//identifier").string("oai:" + IDENTIFIER_1_ID))
+                .andExpect(xpath("//identifier").string("doi:" + IDENTIFIER_1_DOI))
                 .andExpect(status().isOk());
     }
 

@@ -109,6 +109,26 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-auth-service-init:
+    init: true
+    restart: "no"
+    image: dbrepo-auth-service-init:latest
+    build:
+      context: ./dbrepo-auth-service/init
+      network: host
+    environment:
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+    depends_on:
+      dbrepo-auth-service:
+        condition: service_healthy
+      dbrepo-metadata-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
   dbrepo-metadata-service:
     restart: "no"
     container_name: dbrepo-metadata-service

@@ -1,9 +1,9 @@
 package at.tuwien.api.database;
 
-import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,42 +48,39 @@ public class DatabaseDto {
     @Schema(example = "Air Quality")
     private String description;
 
-    private List<TableDto> tables;
+    private List<TableBriefDto> tables;
 
-    private List<ViewDto> views;
+    private List<ViewBriefDto> views;
 
     @NotNull
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
     @ToString.Exclude
     @NotNull
-    private ContainerDto container;
+    private ContainerBriefDto container;
 
     private List<DatabaseAccessDto> accesses;
 
-    private List<IdentifierDto> identifiers;
+    private List<IdentifierBriefDto> identifiers;
 
-    private List<IdentifierDto> subsets;
-
-    @ToString.Exclude
-    @NotNull
-    private UserDto creator;
+    private List<IdentifierBriefDto> subsets;
 
     @ToString.Exclude
     @NotNull
-    private UserDto contact;
+    private UserBriefDto contact;
 
+    @ToString.Exclude
     @NotNull
-    private UserDto owner;
+    private UserBriefDto owner;
 
     @JsonProperty("preview_image")
     private String previewImage;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
 }

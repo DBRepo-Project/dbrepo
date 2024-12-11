@@ -118,6 +118,12 @@ export default {
     roles () {
       return this.userStore.getRoles
     },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
     colorVariant () {
       return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     },

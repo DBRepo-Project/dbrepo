@@ -228,7 +228,9 @@ export default {
   data () {
     return {
       valid: false,
+      columnTypes: [],
       loadColumn: false,
+      loadingColumnTypes: false,
       tableColumns: [],
       cacheStore: useCacheStore()
     }
@@ -236,22 +238,6 @@ export default {
   computed: {
     database () {
       return this.cacheStore.getDatabase
-    },
-    columnTypes () {
-      if (!this.database) {
-        return []
-      }
-      const types = this.database.container.image.data_types
-      if (this.columns.filter(c => c.type === 'serial').length > 0) {
-        return types.filter(t => t.value !== 'serial')
-      }
-      return types
-    },
-    dateFormats () {
-      if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
-        return []
-      }
-      return this.database.container.image.date_formats
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -272,7 +258,32 @@ export default {
       }
     }
   },
+  mounted () {
+    this.fetchColumnTypes()
+  },
   methods: {
+    fetchColumnTypes () {
+      if (!this.database) {
+        return
+      }
+      this.loadingColumnTypes = true
+      const imageService = useImageService()
+      imageService.findById(this.database.container.id)
+        .then((image) => {
+          const types = image.data_types
+          if (this.columns.filter(c => c.type === 'serial').length > 0) {
+            this.columnTypes = types.filter(t => t.value !== 'serial')
+          } else {
+            this.columnTypes = types
+          }
+          this.loadingColumnTypes = false
+        })
+        .catch(({code}) => {
+          this.loadingColumnTypes = false
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
+        })
+    },
     shift (column) {
       if (!this.columns || this.columns.length === 0) {
         return false

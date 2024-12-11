@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -42,18 +43,14 @@ public class DatabaseBriefDto {
     @Schema(example = "true")
     private Boolean isPublic;
 
-    private List<IdentifierDto> identifiers;
+    private List<IdentifierBriefDto> identifiers;
 
     @ToString.Exclude
     @NotNull
     private UserBriefDto contact;
 
     @NotNull
-    private UserBriefDto owner;
-
-    @NotNull
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
+    @JsonProperty("owner_id")
+    private UserBriefDto ownerId;
 
 }

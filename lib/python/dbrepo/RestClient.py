@@ -28,7 +28,7 @@ class RestClient:
     :param username: The REST API username. Optional.
     :param password: The REST API password. Optional.
     :param secure: When set to false, the requests library will not verify the authenticity of your TLS/SSL
-        certificates (i.e. when using self-signed certificates). Default: true.
+        certificates (i.e. when using self-signed certificates). Default: `True`.
     """
     endpoint: str = None
     username: str = None
@@ -78,22 +78,6 @@ class RestClient:
             logging.debug(f'configured for basic auth: username={self.username}, password=(hidden)')
         return requests.request(method=method, url=url, auth=auth, verify=self.secure,
                                 json=payload, headers=headers, params=params, stream=stream)
-
-    def upload(self, file_path: str) -> str:
-        """
-        Uploads a file located at file_path to the Upload Service.
-
-        :param file_path: The location of the file on the local filesystem.
-
-        :returns: Filename on the S3 backend of the Upload Service, if successful.
-        """
-        my_client = TusClient(url=f'{self.endpoint}/api/upload/files/')
-        uploader = my_client.uploader(file_path=file_path)
-        uploader.upload()
-        filename = uploader.url[uploader.url.rfind('/') + 1:uploader.url.rfind('+')]
-        if filename is None or len(filename) == 0:
-            raise UploadError(f'Failed to upload the file to {self.endpoint}')
-        return filename
 
     def get_jwt_auth(self, username: str = None, password: str = None) -> JwtAuth:
         """
@@ -147,7 +131,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the authentication.
         """
         url = f'{self.endpoint}/api/user/token'
-        response = self._wrapper(method="put", url=url, payload={"refresh_token": refresh_token})
+        response = requests.put(url=url, json=dict({"refresh_token": refresh_token}))
         if response.status_code == 202:
             body = response.json()
             return JwtAuth.model_validate(body)
@@ -431,14 +415,15 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find database: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_database(self, name: str, container_id: int, is_public: bool) -> Database:
+    def create_database(self, name: str, container_id: int, is_public: bool = True,
+                        is_schema_public: bool = True) -> Database:
         """
         Create a databases in a container with given container id.
 
         :param name: The name of the database.
         :param container_id: The container id.
-        :param is_public: The visibility of the database. If set to true everything will be visible, otherwise only
-                the metadata (schema, identifiers) will be visible to the public.
+        :param is_public: The visibility of the data. If set to true the data will be publicly visible. Optional. Default: `True`.
+        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible. Optional. Default: `True`.
 
         :returns: The database, if successful.
 
@@ -452,7 +437,8 @@ class RestClient:
         """
         url = f'/api/database'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=CreateDatabase(name=name, container_id=container_id, is_public=is_public))
+                                 payload=CreateDatabase(name=name, container_id=container_id, is_public=is_public,
+                                                        is_schema_public=is_schema_public))
         if response.status_code == 201:
             body = response.json()
             return Database.model_validate(body)
@@ -487,7 +473,7 @@ class RestClient:
         :param privileged_username: The container privileged user username.
         :param privileged_password: The container privileged user password.
         :param port: The container port bound to the host. Optional.
-        :param ui_host: The container hostname displayed in the user interface. Optional. Default: value of `host`
+        :param ui_host: The container hostname displayed in the user interface. Optional. Default: value of `host`.
         :param ui_port: The container port displayed in the user interface. Optional. Default: `default_port` of image.
 
         :returns: The container, if successful.
@@ -519,13 +505,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create container: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def update_database_visibility(self, database_id: int, is_public: bool) -> Database:
+    def update_database_visibility(self, database_id: int, is_public: bool, is_schema_public: bool) -> Database:
         """
         Updates the database visibility of a database with given database id.
 
         :param database_id: The database id.
-        :param is_public: The visibility of the database. If set to true everything will be visible, otherwise only
-                the metadata (schema, identifiers) will be visible to the public.
+        :param is_public: The visibility of the data. If set to true the data will be publicly visible.
+        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
 
         :returns: The database, if successful.
 
@@ -537,7 +523,8 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/database/{database_id}'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyVisibility(is_public=is_public))
+        response = self._wrapper(method="put", url=url, force_auth=True,
+                                 payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public))
         if response.status_code == 202:
             body = response.json()
             return Database.model_validate(body)
@@ -629,13 +616,16 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database schema: response code: {response.status_code} is not 200 (OK)')
 
-    def create_table(self, database_id: int, name: str, columns: List[CreateTableColumn],
-                     constraints: CreateTableConstraints, description: str = None) -> Table:
+    def create_table(self, database_id: int, name: str, is_public: bool, is_schema_public: bool,
+                     columns: List[CreateTableColumn], constraints: CreateTableConstraints,
+                     description: str = None) -> Table:
         """
         Updates the database owner of a database with given database id.
 
         :param database_id: The database id.
         :param name: The name of the created table.
+        :param is_public: The visibility of the data. If set to true the data will be publicly visible.
+        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible.
         :param constraints: The constraints of the created table.
         :param columns: The columns of the created table.
         :param description: The description of the created table. Optional.
@@ -652,8 +642,8 @@ class RestClient:
         """
         url = f'/api/database/{database_id}/table'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=CreateTable(name=name, description=description,
-                                                     columns=columns, constraints=constraints))
+                                 payload=CreateTable(name=name, is_public=is_public, is_schema_public=is_schema_public,
+                                                     description=description, columns=columns, constraints=constraints))
         if response.status_code == 201:
             body = response.json()
             return Table.model_validate(body)
@@ -882,15 +872,41 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find view: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_view(self, database_id: int, name: str, query: str, is_public: bool) -> View:
+    def update_view(self, database_id: int, view_id: int, is_public: bool) -> View:
+        """
+        Get a view of a database with given database id and view id.
+
+        :param database_id: The database id.
+        :param view_id: The view id.
+        :param is_public: If set to `True`, the view is publicly visible.
+
+        :returns: The view, if successful.
+
+        :raises ForbiddenError: If something went wrong with the authorization.
+        :raises NotExistsError: If the container does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/database/{database_id}/view/{view_id}'
+        response = self._wrapper(method="put", url=url, payload=UpdateView(is_public=is_public))
+        if response.status_code == 202:
+            body = response.json()
+            return View.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to update view: not allowed')
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to update view: not found')
+        raise ResponseCodeError(f'Failed to update view: response code: {response.status_code} is not '
+                                f'202 (ACCEPTED): {response.text}')
+
+    def create_view(self, database_id: int, name: str, query: str, is_public: bool, is_schema_public: bool) -> View:
         """
         Create a view in a database with given database id.
 
         :param database_id: The database id.
         :param name: The name of the created view.
         :param query: The query of the created view.
-        :param is_public: The visibility of the view. If set to true everything will be visible, otherwise only
-                the metadata (schema, identifiers) will be visible to the public.
+        :param is_public: The visibility of the data. If set to true the data will be publicly visible. Optional. Default: `True`.
+        :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible. Optional. Default: `True`.
 
         :returns: The created view, if successful.
 
@@ -904,7 +920,8 @@ class RestClient:
         """
         url = f'/api/database/{database_id}/view'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=CreateView(name=name, query=query, is_public=is_public))
+                                 payload=CreateView(name=name, query=query, is_public=is_public,
+                                                    is_schema_public=is_schema_public))
         if response.status_code == 201:
             body = response.json()
             return View.model_validate(body)
@@ -1197,7 +1214,7 @@ class RestClient:
         :param file_path: The path of the file that is imported on the storage service.
         :param separator: The csv column separator.
         :param upload: If set to true, the file from file_path will be uploaded, otherwise no upload will be performed \
-            and the file_path will be treated as S3 filename and analysed instead. Optional. Default: true.
+            and the file_path will be treated as S3 filename and analysed instead. Optional. Default: `True`.
 
         :returns: The determined ranking of the primary key candidates, if successful.
 
@@ -1326,8 +1343,8 @@ class RestClient:
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
         :param timestamp: The query execution time. Optional.
 
         :returns: The result of the view query, if successful.
@@ -1559,10 +1576,10 @@ class RestClient:
 
         :param database_id: The database id.
         :param query: The query statement.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
         :param timestamp: The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: `False`.
 
         :returns: The result set, if successful.
 
@@ -1612,10 +1629,10 @@ class RestClient:
 
         :param database_id: The database id.
         :param subset_id: The subset id.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
-        :param size: The result pagination size. Optional. Default: 10.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
+        :param size: The result pagination size. Optional. Default: `10`.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional.Optional. Default: `False`.
 
         :returns: The result set, if successful.
 
@@ -1653,8 +1670,8 @@ class RestClient:
 
         :param database_id: The database id.
         :param subset_id: The subset id.
-        :param page: The result pagination number. Optional. Default: 0.
-        :param size: The result pagination size. Optional. Default: 10.
+        :param page: The result pagination number. Optional. Default: `0`.
+        :param size: The result pagination size. Optional. Default: `10`.
 
         :returns: The result set, if successful.
 

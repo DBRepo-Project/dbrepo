@@ -21,8 +21,6 @@ class IdentifierUnitTest(unittest.TestCase):
                              view_id=32,
                              publication_year=2024,
                              publisher='TU Wien',
-                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                             last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              type=IdentifierType.VIEW,
                              language=Language.EN,
                              descriptions=[IdentifierDescription(id=2, description='Test Description')],
@@ -33,7 +31,7 @@ class IdentifierUnitTest(unittest.TestCase):
                                                    type=RelatedIdentifierType.DOI)],
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
                              status=IdentifierStatusType.PUBLISHED,
-                             creator=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
+                             owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
             mock.post('/api/identifier', json=exp.model_dump(), status_code=201)
             # test
@@ -121,8 +119,6 @@ class IdentifierUnitTest(unittest.TestCase):
                               view_id=32,
                               publication_year=2024,
                               publisher='TU Wien',
-                              created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                              last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                               type=IdentifierType.VIEW,
                               language=Language.EN,
                               descriptions=[IdentifierDescription(id=2, description='Test Description')],
@@ -133,7 +129,7 @@ class IdentifierUnitTest(unittest.TestCase):
                                                                      type=RelatedIdentifierType.DOI)],
                               creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
                               status=IdentifierStatusType.PUBLISHED,
-                              creator=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
+                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
             # mock
             mock.get('/api/identifiers', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
             # test

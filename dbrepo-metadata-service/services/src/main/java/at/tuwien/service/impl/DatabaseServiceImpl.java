@@ -11,7 +11,6 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
@@ -22,14 +21,17 @@ import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
-import at.tuwien.service.*;
+import at.tuwien.service.DatabaseService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -88,14 +90,13 @@ public class DatabaseServiceImpl implements DatabaseService {
             SearchServiceException, SearchServiceConnectionException {
         Database database = Database.builder()
                 .isPublic(data.getIsPublic())
+                .isSchemaPublic(data.getIsSchemaPublic())
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
                 .cid(data.getCid())
                 .container(container)
                 .ownedBy(user.getId())
                 .owner(user)
-                .createdBy(user.getId())
-                .creator(user)
                 .contactPerson(user.getId())
                 .contact(user)
                 .tables(new LinkedList<>())
@@ -155,6 +156,10 @@ public class DatabaseServiceImpl implements DatabaseService {
             throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
         /* update in metadata database */
         database.setIsPublic(data.getIsPublic());
+        database.setIsSchemaPublic(data.getIsSchemaPublic());
+        log.debug("visibility change affects {} table(s)", database.getTables().stream().filter(t -> !t.getIsSchemaPublic().equals(data.getIsSchemaPublic())).count());
+        database.getTables()
+                .forEach(table -> table.setIsSchemaPublic(data.getIsSchemaPublic()));
         database = databaseRepository.save(database);
         /* update in open search service */
         searchServiceGateway.update(database);

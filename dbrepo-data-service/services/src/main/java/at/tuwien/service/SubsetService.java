@@ -82,6 +82,7 @@ public interface SubsetService {
      * @return The row count.
      * @throws TableMalformedException The table is malformed.
      * @throws SQLException            The connection to the database could not be established.
+     * @throws QueryMalformedException The re-execute query is malformed.
      */
     Long reExecuteCount(PrivilegedDatabaseDto database, QueryDto query) throws TableMalformedException,
             SQLException, QueryMalformedException;
@@ -113,10 +114,11 @@ public interface SubsetService {
      * @throws StorageNotFoundException    The exported subset was not found from the key provided by the sidecar in the Storage Service.
      * @throws StorageUnavailableException The communication to the Storage Service failed.
      * @throws RemoteUnavailableException  The privileged database information could not be found in the Metadata Service.
+     * @throws ViewNotFoundException       The source view was not found in the metadata database.
      */
     ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp) throws SQLException,
             QueryMalformedException, StorageNotFoundException, StorageUnavailableException, RemoteUnavailableException,
-            ViewNotFoundException, MalformedException;
+            ViewNotFoundException;
 
     /**
      * Executes a subset query without saving it.
@@ -141,12 +143,11 @@ public interface SubsetService {
      * @throws QueryNotFoundException     The query store did not return a query.
      * @throws SQLException               The connection to the database could not be established.
      * @throws RemoteUnavailableException The privileged database information could not be found in the Metadata Service.
-     * @throws UserNotFoundException      The user that created the query was not found in the Metadata Service.
      * @throws DatabaseNotFoundException  The database metadata was not found in the Metadata Service.
      * @throws MetadataServiceException   Communication with the Metadata Service failed.
      */
     QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException;
+            RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id.
@@ -182,6 +183,16 @@ public interface SubsetService {
      */
     void deleteStaleQueries(PrivilegedDatabaseDto database) throws SQLException, QueryStoreGCException;
 
-    Dataset<Row> getData(@NotNull PrivilegedDatabaseDto database, String viewName, Instant timestamp) throws ViewNotFoundException,
-            QueryMalformedException;
+    /**
+     * Exports data as dataset from the database view with given name at a given timestamp.
+     *
+     * @param database  The database.
+     * @param viewName  The view name.
+     * @param timestamp The timestamp.
+     * @return The dataset.
+     * @throws ViewNotFoundException   The view was not found in the metadata database.
+     * @throws QueryMalformedException The query to eis malformed.
+     */
+    Dataset<Row> getData(@NotNull PrivilegedDatabaseDto database, String viewName, Instant timestamp)
+            throws ViewNotFoundException, QueryMalformedException;
 }

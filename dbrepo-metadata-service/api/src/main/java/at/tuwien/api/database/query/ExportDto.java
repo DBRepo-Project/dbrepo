@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ExportDto {
 
-    @NotBlank(message = "location is required")
+    @NotBlank
     @Schema(example = "/tmp/file.csv")
     private String location;
 }

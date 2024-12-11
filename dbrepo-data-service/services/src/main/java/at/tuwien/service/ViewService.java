@@ -6,7 +6,6 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.exception.*;
 import jakarta.validation.constraints.NotNull;
 import org.apache.spark.sql.Dataset;

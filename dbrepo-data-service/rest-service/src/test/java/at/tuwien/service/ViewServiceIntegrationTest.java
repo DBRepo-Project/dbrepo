@@ -115,8 +115,7 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
         assertEquals("not_in_metadata_db2", view0.getInternalName());
         assertEquals(DATABASE_1_ID, view0.getVdbid());
         assertEquals(DATABASE_1_ID, view0.getDatabase().getId());
-        assertEquals(DATABASE_1_OWNER, view0.getCreatedBy());
-        assertEquals(DATABASE_1_OWNER, view0.getCreator().getId());
+        assertEquals(DATABASE_1_OWNER, view0.getOwner().getId());
         assertFalse(view0.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, view0.getIsPublic());
         assertTrue(view0.getQuery().length() >= 69);

@@ -3,7 +3,10 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.identifier.*;
+import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.config.EndpointConfig;
@@ -409,7 +412,7 @@ public class IdentifierEndpoint {
         final User user = userService.findByUsername(principal.getName());
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */
-        if (!identifier.getCreator().equals(user) && !UserUtil.hasRole(principal, "create-foreign-identifier")) {
+        if (!identifier.getOwner().equals(user) && !UserUtil.hasRole(principal, "create-foreign-identifier")) {
             log.error("Failed to save identifier: foreign user");
             throw new NotAllowedException("Failed to save identifier: foreign user");
         }
@@ -436,7 +439,7 @@ public class IdentifierEndpoint {
                     throw new MalformedException("Failed to save view identifier: only parameters database_id & view_id must be present");
                 }
                 final View view = viewService.findById(database, data.getViewId());
-                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(view.getCreator(), principal, access, "create-foreign-identifier")) {
+                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(view.getOwner(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to save view identifier: insufficient access or role");
                     throw new MalformedException("Failed to save view identifier: insufficient access or role");
                 }
@@ -459,7 +462,7 @@ public class IdentifierEndpoint {
                 }
                 log.debug("retrieving subset from data service: data.database_id={}, data.query_id={}", data.getDatabaseId(), data.getQueryId());
                 final QueryDto query = dataServiceGateway.findQuery(data.getDatabaseId(), data.getQueryId());
-                final User queryCreator = userService.findById(query.getCreator().getId());
+                final User queryCreator = userService.findById(query.getOwner().getId());
                 if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(queryCreator, principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create subset identifier: insufficient access or role");
                     throw new MalformedException("Failed to create subset identifier: insufficient access or role");

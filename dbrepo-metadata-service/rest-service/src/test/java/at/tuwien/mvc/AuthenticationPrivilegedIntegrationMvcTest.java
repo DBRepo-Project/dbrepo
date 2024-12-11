@@ -28,7 +28,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Optional;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -81,7 +83,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         genesis();
         /* metadata database */
         licenseRepository.save(LICENSE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_LOCAL));
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         /* keycloak */
@@ -114,7 +116,9 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 
@@ -127,7 +131,9 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
+                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port"))
                 .andExpect(status().isOk());
     }
 

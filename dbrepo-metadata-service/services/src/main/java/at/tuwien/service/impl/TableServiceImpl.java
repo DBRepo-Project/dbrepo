@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
@@ -109,12 +110,12 @@ public class TableServiceImpl implements TableService {
                 .queueName(rabbitConfig.getQueueName())
                 .tdbid(database.getId())
                 .database(database)
-                .createdBy(owner.getId())
-                .creator(owner)
                 .ownedBy(owner.getId())
                 .owner(owner)
                 .numRows(0L)
                 .dataLength(0L)
+                .isPublic(data.getIsPublic())
+                .isSchemaPublic(data.getIsSchemaPublic())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
                 .build();
@@ -198,6 +199,34 @@ public class TableServiceImpl implements TableService {
         /* update in search service */
         searchServiceGateway.update(database);
         log.info("Deleted table with id {}", table.getId());
+    }
+
+    @Transactional
+    @Override
+    public Table updateTable(Table table, TableUpdateDto data) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        /* update at data service */
+        dataServiceGateway.updateTable(table.getDatabase().getId(), table.getId(), data);
+        /* update in metadata database */
+        final Optional<Table> optional = table.getDatabase()
+                .getTables()
+                .stream()
+                .filter(t -> t.getId().equals(table.getId()))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find table with id {}", table.getId());
+            throw new TableNotFoundException("Failed to find table with id " + table.getId());
+        }
+        final Table tableEntity = optional.get();
+        tableEntity.setIsPublic(data.getIsPublic());
+        tableEntity.setDescription(data.getDescription());
+        tableEntity.setIsSchemaPublic(data.getIsSchemaPublic());
+        final Database database = databaseRepository.save(table.getDatabase());
+        /* update in search service */
+        searchServiceGateway.update(database);
+        log.info("Updated table with id {}", table.getId());
+        return tableEntity;
     }
 
     @Override

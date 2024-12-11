@@ -22,41 +22,44 @@
       :title="$t('pages.table.title')">
       <v-card-text>
         <v-skeleton-loader
-          v-if="!table"
+          v-if="!cachedTable"
           type="list-item-three-line"
           width="50%" />
         <v-list
-          v-if="table"
+          v-if="cachedTable"
           dense>
           <v-list-item
             :title="$t('pages.table.id.title')">
-            {{ table.id }}
+            {{ cachedTable.id }}
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.name.title')">
-            {{ table.internal_name }}
+            {{ cachedTable.internal_name }}
           </v-list-item>
           <v-list-item
+            :title="$t('pages.table.visibility.title')">
+            {{ databaseVisibility }}
+          </v-list-item>
+          <v-list-item
+            v-if="table"
             :title="$t('pages.table.size.title')">
             {{ sizeToHumanLabel(table.data_length) }}
           </v-list-item>
           <v-list-item
+            v-if="table"
             :title="$t('pages.table.result-rows.title')">
             {{ table.num_rows }}
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.description.title')">
-            {{ hasDescription ? table.description : $t('pages.table.description.empty') }}
+            {{ hasDescription ? cachedTable.description : $t('pages.table.description.empty') }}
           </v-list-item>
           <v-list-item
             :title="$t('pages.table.owner.title')">
             <UserBadge
-              :user="table.creator"
+              v-if="table"
+              :user="table.owner"
               :other-user="user" />
-          </v-list-item>
-          <v-list-item
-            :title="$t('pages.table.creation.title')">
-            {{ createdUTC }}
           </v-list-item>
           <v-list-item
             v-if="accessDescription"
@@ -73,9 +76,27 @@
               </v-badge>
               <span
                 v-else>
-                {{ accessDescription}}
+                {{ accessDescription }}
               </span>
             </span>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+    <v-divider />
+    <v-card
+      :title="$t('pages.database.title')"
+      variant="flat">
+      <v-card-text>
+        <v-list dense>
+          <v-list-item
+            v-if="database"
+            :title="$t('pages.database.name.title')">
+            <NuxtLink
+              class="text-primary"
+              :to="`/database/${$route.params.database_id}`">
+              {{ database.internal_name }}
+            </NuxtLink>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -125,29 +146,6 @@
         </v-list>
       </v-card-text>
     </v-card>
-    <v-divider />
-    <v-card
-      :title="$t('pages.database.title')"
-      variant="flat">
-      <v-card-text>
-        <v-list dense>
-          <v-list-item
-            v-if="database"
-            :title="$t('pages.database.visibility.title')">
-            {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
-          </v-list-item>
-          <v-list-item
-            v-if="database"
-            :title="$t('pages.database.name.title')">
-            <NuxtLink
-              class="text-primary"
-              :to="`/database/${database.id}`">
-              {{ database.internal_name }}
-            </NuxtLink>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -182,6 +180,7 @@ export default {
     return {
       selection: [],
       consumers: [],
+      table: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -207,9 +206,7 @@ export default {
       ],
       headers: [],
       dateColumns: [],
-      loadingConsumers: false,
-      loadingExchange: false,
-      loadingQueue: false,
+      loading: false,
       exchange: null,
       queue: null,
       userStore: useUserStore(),
@@ -226,7 +223,7 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    table () {
+    cachedTable () {
       return this.cacheStore.getTable
     },
     roles () {
@@ -245,19 +242,13 @@ export default {
       if (!this.table || !this.user || !this.access) {
         return false
       }
-      return (this.access.type === 'write_own' && this.table.owner.id === this.user.id) || this.access.type === 'write_all'
-    },
-    createdUTC () {
-      if (this.table.created === undefined || this.table.created === null) {
-        return null
-      }
-      return formatTimestampUTCLabel(this.table.created)
+      return (this.access.type === 'write_own' && this.cachedTable.owned_by === this.user.id) || this.access.type === 'write_all'
     },
     access () {
       return this.userStore.getAccess
     },
     hasDescription () {
-      return this.table && this.table.description
+      return this.table && this.cachedTable.description
     },
     canWriteQueues () {
       if (!this.roles) {
@@ -278,7 +269,7 @@ export default {
       if (!this.user) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.user.id)
     },
     identifier () {
       if (this.pid) {
@@ -321,6 +312,40 @@ export default {
       } else if (this.canRead) {
         return this.$t('pages.table.connection.permissions.read')
       }
+    },
+    databaseVisibility () {
+      if (!this.database) {
+        return null
+      }
+      if (this.database.is_public && this.cachedTable.is_schema_public) {
+        return this.$t('pages.table.visibility.open')
+      }
+      if (!this.database.is_public && !this.cachedTable.is_schema_public) {
+        return this.$t('pages.table.visibility.closed')
+      }
+      return this.database.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
+    }
+  },
+  mounted () {
+    this.fetchTable()
+  },
+  methods: {
+    fetchTable () {
+      this.loading = true
+      const tableService = useTableService()
+      tableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
+        .then((table) => {
+          this.loading = false
+          this.table = table
+        })
+        .catch(({code}) => {
+          this.loading = false
+          const toast = useToastInstance()
+          toast.error(this.$t(code))
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

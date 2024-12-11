@@ -1,13 +1,11 @@
 import unittest
 
 import requests_mock
-import datetime
 
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType, DatabaseBrief, \
-    UserBrief, DataType
+from dbrepo.api.dto import Database, Container, Image, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, DataType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
 
@@ -28,7 +26,6 @@ class DatabaseUnitTest(unittest.TestCase):
                 name='test',
                 owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
-                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 internal_name='test_abcd',
                 is_public=True)
         ]
@@ -43,13 +40,8 @@ class DatabaseUnitTest(unittest.TestCase):
         exp = Database(
             id=1,
             name='test',
-            creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                       attributes=UserAttributes(theme='light')),
-            contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+            owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -61,7 +53,6 @@ class DatabaseUnitTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -115,13 +106,8 @@ class DatabaseUnitTest(unittest.TestCase):
         exp = Database(
             id=1,
             name='test',
-            creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                       attributes=UserAttributes(theme='light')),
-            contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+            owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -133,7 +119,6 @@ class DatabaseUnitTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -190,13 +175,8 @@ class DatabaseUnitTest(unittest.TestCase):
         exp = Database(
             id=1,
             name='test',
-            creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                       attributes=UserAttributes(theme='light')),
-            contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+            owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -208,7 +188,6 @@ class DatabaseUnitTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -226,7 +205,7 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.put('/api/database/1', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            response = client.update_database_visibility(database_id=1, is_public=True)
+            response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
             self.assertEqual(response.is_public, True)
 
     def test_update_database_visibility_not_allowed_fails(self):
@@ -236,7 +215,7 @@ class DatabaseUnitTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.update_database_visibility(database_id=1, is_public=True)
+                response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
             except ForbiddenError:
                 pass
 
@@ -247,7 +226,7 @@ class DatabaseUnitTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.update_database_visibility(database_id=1, is_public=True)
+                response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
             except NotExistsError:
                 pass
 
@@ -257,7 +236,7 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.put('/api/database/1', status_code=404)
             # test
             try:
-                response = RestClient().update_database_visibility(database_id=1, is_public=True)
+                response = RestClient().update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
             except AuthenticationError:
                 pass
 
@@ -265,13 +244,8 @@ class DatabaseUnitTest(unittest.TestCase):
         exp = Database(
             id=1,
             name='test',
-            creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            owner=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
-                       attributes=UserAttributes(theme='light')),
-            contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
-                         attributes=UserAttributes(theme='light')),
-            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+            owner=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'),
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -283,7 +257,6 @@ class DatabaseUnitTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -341,9 +314,7 @@ class DatabaseUnitTest(unittest.TestCase):
 
     def test_get_database_access_succeeds(self):
         exp = DatabaseAccess(type=AccessType.READ,
-                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                             user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
-                                       attributes=UserAttributes(theme='light')))
+                             user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/access', json=exp.model_dump())
@@ -373,9 +344,7 @@ class DatabaseUnitTest(unittest.TestCase):
 
     def test_create_database_access_succeeds(self):
         exp = DatabaseAccess(type=AccessType.READ,
-                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                             user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
-                                       attributes=UserAttributes(theme='light')))
+                             user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump(),
@@ -435,9 +404,7 @@ class DatabaseUnitTest(unittest.TestCase):
 
     def test_update_database_access_succeeds(self):
         exp = DatabaseAccess(type=AccessType.READ,
-                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                             user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
-                                       attributes=UserAttributes(theme='light')))
+                             user=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'))
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump(),

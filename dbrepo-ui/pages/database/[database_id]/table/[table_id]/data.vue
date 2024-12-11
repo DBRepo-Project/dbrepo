@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div
+    v-if="canViewTableData">
     <TableToolbar />
     <v-toolbar
-      v-if="canViewTableData"
       :color="versionColor"
       :title="title"
       flat>
@@ -142,6 +142,7 @@ export default {
       loadingData: false,
       loadingCount: false,
       loadingDelete: false,
+      loadingTable: false,
       addTupleDialog: false,
       editTupleDialog: false,
       total: 0,
@@ -153,6 +154,7 @@ export default {
       dateMenu: false,
       timeMenu: false,
       selection: [],
+      columns: [],
       pickVersionDialog: null,
       version: null,
       lastReload: new Date(),
@@ -212,14 +214,20 @@ export default {
     access () {
       return this.userStore.getAccess
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     title () {
       return (this.version ? this.$t('toolbars.database.history') : this.$t('toolbars.database.current')) + ' ' + this.versionFormatted
     },
     blobColumns () {
-      if (!this.table || !this.table.columns) {
+      if (!this.columns) {
         return []
       }
-      return this.table.columns.filter(c => this.isFileField(c)).map(c => 'item.' + c.internal_name)
+      return this.columns.filter(c => this.isFileField(c)).map(c => 'item.' + c.internal_name)
     },
     versionColor () {
       return this.version ? 'primary' : 'secondary'
@@ -247,16 +255,16 @@ export default {
     },
     canViewTableData () {
       /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
-      if (!this.database) {
+      if (!this.table) {
         return false
       }
-      if (this.database.is_public) {
+      if (this.table.is_public) {
         return true
       }
-      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
+      if (!this.roles || !this.roles.includes('view-table-data')) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+      return this.hasReadAccess
     },
     canAddTuple () {
       if (!this.roles) {
@@ -284,21 +292,15 @@ export default {
     version () {
       this.loadCount()
       this.reload()
-    },
-    table (newTable, oldTable) {
-      if (newTable !== oldTable && oldTable === null) {
-        this.loadProperties()
-      }
     }
   },
   mounted () {
-    this.loadProperties()
     this.loadCount()
   },
   methods: {
     addTuple () {
       this.tuple = {}
-      this.table.columns.forEach((c) => {
+      this.columns.forEach((c) => {
         this.tuple[c.internal_name] = null
       })
       this.addTupleDialog = true
@@ -313,14 +315,14 @@ export default {
       for (const select of this.selection) {
         /* remove in container */
         const constraints = {}
-        this.table.columns
+        this.columns
           .filter(c => c.is_primary_key)
           .forEach((c) => {
             constraints[c.internal_name] = select[c.internal_name]
           })
         if (Object.keys(constraints).length === 0) {
           console.warn(`Table with id ${this.$route.params.table_id} does not have primary key(s): attempt to delete by values`)
-          this.table.columns
+          this.columns
             .forEach((c) => {
               constraints[c.internal_name] = select[c.internal_name]
             })
@@ -402,27 +404,6 @@ export default {
       }
       this.pickVersionDialog = false
     },
-    loadProperties () {
-      if (!this.table || this.headers.length > 0) {
-        return
-      }
-      try {
-        this.headers = []
-        this.table.columns.map((c) => {
-          return {
-            value: c.internal_name,
-            title: c.internal_name,
-            sortable: false
-          }
-        }).forEach(header => this.headers.push(header))
-        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
-        console.debug('date columns are', this.dateColumns)
-      } catch ({code}) {
-        const toast = useToastInstance()
-        toast.error(this.$t(code))
-      }
-      this.loading = false
-    },
     reload () {
       this.lastReload = new Date()
       this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
@@ -450,7 +431,6 @@ export default {
         .then((data) => {
           this.rows = data.result.map((row) => {
             for (const col in row) {
-              const column = this.table.columns.filter(c => c.internal_name === col)[0]
               const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
               if (columnDefinition.length > 0) {
                 if (columnDefinition[0].column_type === 'date') {
@@ -461,6 +441,13 @@ export default {
               }
             }
             return row
+          })
+          this.headers = data.headers.map(h => {
+            return {
+              value: Object.keys(h)[0],
+              title: Object.keys(h)[0],
+              sortable: false
+            }
           })
           this.loadingData = false
         })
