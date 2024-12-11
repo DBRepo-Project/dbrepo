@@ -1,14 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
+import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.exception.*;
-import jakarta.validation.constraints.NotNull;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -77,20 +75,6 @@ public interface TableService {
      * @throws QueryMalformedException The drop table query is malformed.
      */
     void delete(PrivilegedTableDto table) throws SQLException, QueryMalformedException;
-
-    /**
-     * Obtains data from a table with given table object at timestamp, loaded as page number and length size.
-     *
-     * @param table     The table object.
-     * @param timestamp The timestamp.
-     * @param page      The page number.
-     * @param size      The page size/length.
-     * @return The data.
-     * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
-     * @throws TableMalformedException The table schema is malformed, likely due to a bug in the application.
-     */
-    QueryResultDto getPaginatedData(PrivilegedTableDto table, Instant timestamp, Long page, Long size)
-            throws SQLException, TableMalformedException;
 
     /**
      * Obtains the table history for a given table object.
@@ -168,28 +152,7 @@ public interface TableService {
     void updateTuple(PrivilegedTableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
 
-    /**
-     * Exports a table at given system-versioning time.
-     *
-     * @param table     The table.
-     * @param timestamp The system-versioning time.
-     * @return The exported resource.
-     * @throws TableNotFoundException      The table was not found in the data database.
-     * @throws QueryMalformedException     The export query is malformed, likely due to a bug in the application.
-     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
-     */
-    ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
-            QueryMalformedException, StorageUnavailableException, MalformedException;
-
-    /**
-     * Get data from a given table at timestamp.
-     *
-     * @param table     The table.
-     * @param timestamp The timestamp.
-     * @return The data.
-     * @throws TableNotFoundException  The table was not found in the data database.
-     * @throws QueryMalformedException The export query is malformed, likely due to a bug in the application.
-     */
-    Dataset<Row> getData(@NotNull PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
-            QueryMalformedException;
+    Dataset<Row> getData(PrivilegedDatabaseDto database, String query, Instant timestamp,
+                         Long page, Long size, SortTypeDto sortDirection, String sortColumn)
+            throws QueryMalformedException, TableNotFoundException;
 }

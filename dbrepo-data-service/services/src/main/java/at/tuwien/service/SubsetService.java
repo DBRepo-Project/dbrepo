@@ -1,13 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.exception.*;
-import jakarta.validation.constraints.NotNull;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -32,46 +29,19 @@ public interface SubsetService {
     /**
      * Creates a subset from the given statement at given time in the given database.
      *
-     * @param database      The database.
-     * @param statement     The subset statement.
-     * @param timestamp     The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
-     * @param userId        The user id of the creating user.
-     * @param page          The page number. Optional but requires size to be set too.
-     * @param size          The page size. Optional but requires page to be set too.
-     * @param sortDirection The sort direction.
-     * @param sortColumn    The column that is sorted.
-     * @return The query result.
-     * @throws QueryStoreInsertException  The query store refused to insert the query.
-     * @throws SQLException               The connection to the database could not be established.
-     * @throws QueryNotFoundException     The query was not found for re-execution.
-     * @throws TableMalformedException    The table is malformed.
-     * @throws UserNotFoundException      The user was not found.
-     * @throws NotAllowedException        The operation is not allowed.
-     * @throws RemoteUnavailableException The privileged database information could not be found in the Metadata Service.
-     * @throws DatabaseNotFoundException  The database was not found in the Metadata Service.
-     * @throws MetadataServiceException   The Metadata Service responded unexpected.
+     * @param database  The database.
+     * @param statement The subset statement.
+     * @param timestamp The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
+     * @param userId    The user id of the creating user.
+     * @return The query id.
+     * @throws QueryStoreInsertException The query store refused to insert the query.
+     * @throws SQLException              The connection to the database could not be established.
      */
-    QueryResultDto execute(PrivilegedDatabaseDto database, String statement, Instant timestamp, UUID userId, Long page,
-                           Long size, SortTypeDto sortDirection, String sortColumn)
-            throws QueryStoreInsertException, SQLException, QueryNotFoundException, TableMalformedException,
-            UserNotFoundException, NotAllowedException, RemoteUnavailableException, DatabaseNotFoundException,
-            MetadataServiceException;
+    Long create(PrivilegedDatabaseDto database, String statement, Instant timestamp, UUID userId)
+            throws QueryStoreInsertException, SQLException;
 
-    /**
-     * Re-executes the query of a given subset in the given database.
-     *
-     * @param database      The database.
-     * @param query         The subset.
-     * @param page          The page number. Optional but requires size to be set too.
-     * @param size          The page size. Optional but requires page to be set too.
-     * @param sortDirection The sort direction.
-     * @param sortColumn    The column that is sorted.
-     * @return The query result.
-     * @throws TableMalformedException The table is malformed.
-     * @throws SQLException            The connection to the database could not be established.
-     */
-    QueryResultDto reExecute(PrivilegedDatabaseDto database, QueryDto query, Long page, Long size,
-                             SortTypeDto sortDirection, String sortColumn) throws TableMalformedException,
+    Dataset<Row> reExecute(PrivilegedDatabaseDto database, QueryDto query, Long page, Long size,
+                           SortTypeDto sortDirection, String sortColumn) throws TableMalformedException,
             SQLException;
 
     /**
@@ -100,23 +70,6 @@ public interface SubsetService {
      */
     List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException;
-
-    /**
-     * Exports a subset by re-executing the query in a given database with given timestamp to a given s3key.
-     *
-     * @param database  The database.
-     * @param query     The query.
-     * @param timestamp The timestamp.
-     * @return The exported subset.
-     * @throws SQLException                The connection to the database could not be established.
-     * @throws QueryMalformedException     The mapped export query produced a database error.
-     * @throws StorageNotFoundException    The exported subset was not found from the key provided by the sidecar in the Storage Service.
-     * @throws StorageUnavailableException The communication to the Storage Service failed.
-     * @throws RemoteUnavailableException  The privileged database information could not be found in the Metadata Service.
-     */
-    ExportResourceDto export(PrivilegedDatabaseDto database, QueryDto query, Instant timestamp) throws SQLException,
-            QueryMalformedException, StorageNotFoundException, StorageUnavailableException, RemoteUnavailableException,
-            ViewNotFoundException, MalformedException;
 
     /**
      * Executes a subset query without saving it.
@@ -181,7 +134,4 @@ public interface SubsetService {
      * @throws QueryStoreGCException The query store failed to delete stale queries.
      */
     void deleteStaleQueries(PrivilegedDatabaseDto database) throws SQLException, QueryStoreGCException;
-
-    Dataset<Row> getData(@NotNull PrivilegedDatabaseDto database, String viewName, Instant timestamp) throws ViewNotFoundException,
-            QueryMalformedException;
 }

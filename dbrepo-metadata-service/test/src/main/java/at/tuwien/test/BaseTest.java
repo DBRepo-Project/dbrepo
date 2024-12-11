@@ -20,7 +20,6 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
@@ -1582,38 +1581,29 @@ public abstract class BaseTest {
             .build();
 
     public final static Long TABLE_1_DATA_COUNT = 3L;
-    public final static QueryResultDto TABLE_1_DATA_DTO = QueryResultDto.builder()
-            .headers(new LinkedList<>(List.of(new HashMap<>() {{
-                put("id", 0);
-                put("date", 1);
-                put("location", 2);
-                put("mintemp", 3);
-                put("rainfall", 4);
-            }})))
-            .result(new LinkedList<>(List.of(
-                    new HashMap<>() {{
-                        put("id", BigInteger.valueOf(1L));
-                        put("date", LocalDate.of(2008, 12, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
-                        put("location", "Albury");
-                        put("mintemp", 13.4);
-                        put("rainfall", 0.6);
-                    }},
-                    new HashMap<>() {{
-                        put("id", BigInteger.valueOf(2L));
-                        put("date", LocalDate.of(2008, 12, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
-                        put("location", "Albury");
-                        put("mintemp", 7.4);
-                        put("rainfall", 0);
-                    }},
-                    new HashMap<>() {{
-                        put("id", BigInteger.valueOf(3L));
-                        put("date", LocalDate.of(2008, 12, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
-                        put("location", "Albury");
-                        put("mintemp", 12.9);
-                        put("rainfall", 0);
-                    }}
-            )))
-            .build();
+    public final static List<Map<String, Object>> TABLE_1_DATA_DTO = new LinkedList<>(List.of(
+            new HashMap<>() {{
+                put("id", BigInteger.valueOf(1L));
+                put("date", LocalDate.of(2008, 12, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
+                put("location", "Albury");
+                put("mintemp", 13.4);
+                put("rainfall", 0.6);
+            }},
+            new HashMap<>() {{
+                put("id", BigInteger.valueOf(2L));
+                put("date", LocalDate.of(2008, 12, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
+                put("location", "Albury");
+                put("mintemp", 7.4);
+                put("rainfall", 0);
+            }},
+            new HashMap<>() {{
+                put("id", BigInteger.valueOf(3L));
+                put("date", LocalDate.of(2008, 12, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
+                put("location", "Albury");
+                put("mintemp", 12.9);
+                put("rainfall", 0);
+            }}
+    ));
 
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
@@ -2432,44 +2422,38 @@ public abstract class BaseTest {
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
-    public final static QueryResultDto TABLE_8_DATA_DTO = QueryResultDto.builder()
-            .headers(new LinkedList<>(List.of(new HashMap<>() {{
-                put(COLUMN_8_1_INTERNAL_NAME, 0);
-                put(COLUMN_8_2_INTERNAL_NAME, 1);
-            }})))
-            .result(new LinkedList<>(List.of(
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 11.2);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }},
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 11.3);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }},
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 11.4);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }},
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 11.9);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }},
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 12.3);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }},
-                    new HashMap<>() {{
-                        put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L));
-                        put(COLUMN_8_2_INTERNAL_NAME, 23.1);
-                        put(COLUMN_8_3_INTERNAL_NAME, null);
-                    }}
-            )))
-            .build();
+    public final static List<Map<String, Object>> TABLE_8_DATA_DTO = new LinkedList<>(List.of(
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
+                put(COLUMN_8_2_INTERNAL_NAME, 11.2);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }},
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L));
+                put(COLUMN_8_2_INTERNAL_NAME, 11.3);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }},
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L));
+                put(COLUMN_8_2_INTERNAL_NAME, 11.4);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }},
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L));
+                put(COLUMN_8_2_INTERNAL_NAME, 11.9);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }},
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L));
+                put(COLUMN_8_2_INTERNAL_NAME, 12.3);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }},
+            new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L));
+                put(COLUMN_8_2_INTERNAL_NAME, 23.1);
+                put(COLUMN_8_3_INTERNAL_NAME, null);
+            }}
+    ));
 
     public final static TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
             .columns(new HashMap<>() {{
@@ -2637,11 +2621,6 @@ public abstract class BaseTest {
                 put("value", 23.1);
             }});
 
-    public final static QueryResultDto QUERY_4_RESULT_DTO = QueryResultDto.builder()
-            .id(QUERY_4_RESULT_ID)
-            .result(QUERY_4_RESULT_RESULT)
-            .build();
-
     public final static QueryDto QUERY_4_DTO = QueryDto.builder()
             .id(QUERY_4_ID)
             .databaseId(QUERY_4_DATABASE_ID)
@@ -2687,20 +2666,14 @@ public abstract class BaseTest {
             .createdBy(QUERY_5_CREATED_BY)
             .build();
 
-    public final static QueryResultDto QUERY_5_RESULT_DTO = QueryResultDto.builder()
-            .headers(new LinkedList<>(List.of(new HashMap<>() {{
-                put("id", 0);
-                put("value", 1);
-            }})))
-            .result(new LinkedList<>(List.of(
-                    Map.of("id", BigInteger.valueOf(1L), "value", 11.2),
-                    Map.of("id", BigInteger.valueOf(2L), "value", 11.3),
-                    Map.of("id", BigInteger.valueOf(3L), "value", 11.4),
-                    Map.of("id", BigInteger.valueOf(4L), "value", 11.9),
-                    Map.of("id", BigInteger.valueOf(5L), "value", 12.3),
-                    Map.of("id", BigInteger.valueOf(6L), "value", 23.1)
-            )))
-            .build();
+    public final static List<Map<String, Object>> QUERY_5_RESULT_DTO = new LinkedList<>(List.of(
+            Map.of("id", BigInteger.valueOf(1L), "value", 11.2),
+            Map.of("id", BigInteger.valueOf(2L), "value", 11.3),
+            Map.of("id", BigInteger.valueOf(3L), "value", 11.4),
+            Map.of("id", BigInteger.valueOf(4L), "value", 11.9),
+            Map.of("id", BigInteger.valueOf(5L), "value", 12.3),
+            Map.of("id", BigInteger.valueOf(6L), "value", 23.1)
+    ));
 
     public final static Long QUERY_6_ID = 6L;
     public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
@@ -4721,30 +4694,23 @@ public abstract class BaseTest {
             .build();
 
     public final static Long VIEW_1_DATA_COUNT = 3L;
-    public final static QueryResultDto VIEW_1_DATA_DTO = QueryResultDto.builder()
-            .headers(new LinkedList<>(List.of(new HashMap<>() {{
-                put("location", 0);
-                put("lat", 1);
-                put("lng", 2);
-            }})))
-            .result(new LinkedList<>(List.of(
-                    new HashMap<>() {{
-                        put("location", "Albury");
-                        put("lat", -36.0653583);
-                        put("lng", 146.9112214);
-                    }},
-                    new HashMap<>() {{
-                        put("location", "Sydney");
-                        put("lat", -33.847927);
-                        put("lng", 150.6517942);
-                    }},
-                    new HashMap<>() {{
-                        put("location", "Vienna");
-                        put("lat", null);
-                        put("lng", null);
-                    }}
-            )))
-            .build();
+    public final static List<Map<String, Object>> VIEW_1_DATA_DTO = new LinkedList<>(List.of(
+            new HashMap<>() {{
+                put("location", "Albury");
+                put("lat", -36.0653583);
+                put("lng", 146.9112214);
+            }},
+            new HashMap<>() {{
+                put("location", "Sydney");
+                put("lat", -33.847927);
+                put("lng", 150.6517942);
+            }},
+            new HashMap<>() {{
+                put("location", "Vienna");
+                put("lat", null);
+                put("lng", null);
+            }}
+    ));
 
     public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
             ViewColumn.builder()
@@ -5541,11 +5507,6 @@ public abstract class BaseTest {
                 put("lat", -33.847927);
                 put("lng", 150.6517942);
             }});
-
-    public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
-            .id(QUERY_1_RESULT_ID)
-            .result(QUERY_1_RESULT_RESULT)
-            .build();
 
     public final static String LICENSE_1_IDENTIFIER = "MIT";
     public final static String LICENSE_1_URI = "https://opensource.org/license/mit/";

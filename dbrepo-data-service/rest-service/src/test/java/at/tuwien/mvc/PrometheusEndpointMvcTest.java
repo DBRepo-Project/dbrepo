@@ -136,7 +136,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.create(DATABASE_1_ID, ExecuteStatementDto.builder().statement(QUERY_5_STATEMENT).build(), USER_1_PRINCIPAL, 0L, 10L, null);
+            subsetEndpoint.create(DATABASE_1_ID, ExecuteStatementDto.builder().statement(QUERY_5_STATEMENT).build(), USER_1_PRINCIPAL, httpServletRequest, 0L, 10L, null);
         } catch (Exception e) {
             /* ignore */
         }

@@ -1,7 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -27,23 +25,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 
 import static at.tuwien.service.SchemaServiceIntegrationTest.assertColumn;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -674,48 +667,48 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         });
     }
 
-    @Test
-    public void getPaginatedData_succeeds() throws SQLException, TableMalformedException {
+//    @Test
+//    public void getPaginatedData_succeeds() throws SQLException, TableMalformedException {
+//
+//        /* test */
+//        final QueryResultDto response = tableService.getPaginatedData(TABLE_1_PRIVILEGED_DTO, null, 0L, 10L);
+//        assertEquals(TABLE_1_ID, response.getId());
+//        final List<Map<String, Integer>> headers = response.getHeaders();
+//        assertEquals(5, headers.size());
+//        assertEquals(0, headers.get(0).get("id"));
+//        assertEquals(1, headers.get(1).get("date"));
+//        assertEquals(2, headers.get(2).get("location"));
+//        assertEquals(3, headers.get(3).get("mintemp"));
+//        assertEquals(4, headers.get(4).get("rainfall"));
+//        final List<Map<String, Object>> result = response.getResult();
+//        assertEquals(Instant.ofEpochSecond(1228089600), result.get(0).get("date"));
+//        assertEquals(0.6, result.get(0).get("rainfall"));
+//        assertEquals("Albury", result.get(0).get("location"));
+//        assertEquals(BigInteger.valueOf(1L), result.get(0).get("id"));
+//        assertEquals(13.4, result.get(0).get("mintemp"));
+//        assertEquals(Instant.ofEpochSecond(1228176000), result.get(1).get("date"));
+//        assertEquals(0.0, result.get(1).get("rainfall"));
+//        assertEquals("Albury", result.get(1).get("location"));
+//        assertEquals(BigInteger.valueOf(2L), result.get(1).get("id"));
+//        assertEquals(7.4, result.get(1).get("mintemp"));
+//        assertEquals(Instant.ofEpochSecond(1228262400), result.get(2).get("date"));
+//        assertEquals(0.0, result.get(2).get("rainfall"));
+//        assertEquals("Albury", result.get(2).get("location"));
+//        assertEquals(BigInteger.valueOf(3L), result.get(2).get("id"));
+//        assertEquals(12.9, result.get(2).get("mintemp"));
+//    }
 
-        /* test */
-        final QueryResultDto response = tableService.getPaginatedData(TABLE_1_PRIVILEGED_DTO, null, 0L, 10L);
-        assertEquals(TABLE_1_ID, response.getId());
-        final List<Map<String, Integer>> headers = response.getHeaders();
-        assertEquals(5, headers.size());
-        assertEquals(0, headers.get(0).get("id"));
-        assertEquals(1, headers.get(1).get("date"));
-        assertEquals(2, headers.get(2).get("location"));
-        assertEquals(3, headers.get(3).get("mintemp"));
-        assertEquals(4, headers.get(4).get("rainfall"));
-        final List<Map<String, Object>> result = response.getResult();
-        assertEquals(Instant.ofEpochSecond(1228089600), result.get(0).get("date"));
-        assertEquals(0.6, result.get(0).get("rainfall"));
-        assertEquals("Albury", result.get(0).get("location"));
-        assertEquals(BigInteger.valueOf(1L), result.get(0).get("id"));
-        assertEquals(13.4, result.get(0).get("mintemp"));
-        assertEquals(Instant.ofEpochSecond(1228176000), result.get(1).get("date"));
-        assertEquals(0.0, result.get(1).get("rainfall"));
-        assertEquals("Albury", result.get(1).get("location"));
-        assertEquals(BigInteger.valueOf(2L), result.get(1).get("id"));
-        assertEquals(7.4, result.get(1).get("mintemp"));
-        assertEquals(Instant.ofEpochSecond(1228262400), result.get(2).get("date"));
-        assertEquals(0.0, result.get(2).get("rainfall"));
-        assertEquals("Albury", result.get(2).get("location"));
-        assertEquals(BigInteger.valueOf(3L), result.get(2).get("id"));
-        assertEquals(12.9, result.get(2).get("mintemp"));
-    }
-
-    @Test
-    public void getPaginatedData_notFound_fails() throws SQLException {
-
-        /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
-
-        /* test */
-        assertThrows(TableMalformedException.class, () -> {
-            tableService.getPaginatedData(TABLE_5_PRIVILEGED_DTO, null, 0L, 10L);
-        });
-    }
+//    @Test
+//    public void getPaginatedData_notFound_fails() throws SQLException {
+//
+//        /* mock */
+//        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+//
+//        /* test */
+//        assertThrows(TableMalformedException.class, () -> {
+//            tableService.getPaginatedData(TABLE_5_PRIVILEGED_DTO, null, 0L, 10L);
+//        });
+//    }
 
     @Test
     public void history_succeeds() throws SQLException, TableNotFoundException {
@@ -741,36 +734,36 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         });
     }
 
-    @Test
-    public void exportTable_succeeds() throws QueryMalformedException, RemoteUnavailableException,
-            StorageNotFoundException, StorageUnavailableException, AnalyseServiceException, TableNotFoundException,
-            MalformedException {
-        final ExportResourceDto mock = ExportResourceDto.builder()
-                .filename("weather_aus.csv")
-                .resource(new InputStreamResource(InputStream.nullInputStream()))
-                .build();
-
-        /* mock */
-        doNothing()
-                .when(dataDatabaseSidecarGateway)
-                .exportTable(anyLong(), anyLong());
-        when(storageService.getResource("weather_aus.csv"))
-                .thenReturn(mock);
-
-        /* test */
-        final ExportResourceDto response = tableService.exportDataset(TABLE_1_PRIVILEGED_DTO, null);
-    }
-
-    @Test
-    public void exportDataset_malformedData_fails() throws SQLException {
-
-        /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
-
-        /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            tableService.exportDataset(TABLE_5_PRIVILEGED_DTO, null);
-        });
-    }
+//    @Test
+//    public void exportTable_succeeds() throws QueryMalformedException, RemoteUnavailableException,
+//            StorageNotFoundException, StorageUnavailableException, AnalyseServiceException, TableNotFoundException,
+//            MalformedException {
+//        final ExportResourceDto mock = ExportResourceDto.builder()
+//                .filename("weather_aus.csv")
+//                .resource(new InputStreamResource(InputStream.nullInputStream()))
+//                .build();
+//
+//        /* mock */
+//        doNothing()
+//                .when(dataDatabaseSidecarGateway)
+//                .exportTable(anyLong(), anyLong());
+//        when(storageService.getResource("weather_aus.csv"))
+//                .thenReturn(mock);
+//
+//        /* test */
+//        final ExportResourceDto response = tableService.exportDataset(TABLE_1_PRIVILEGED_DTO, null);
+//    }
+//
+//    @Test
+//    public void exportDataset_malformedData_fails() throws SQLException {
+//
+//        /* mock */
+//        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+//
+//        /* test */
+//        assertThrows(QueryMalformedException.class, () -> {
+//            tableService.exportDataset(TABLE_5_PRIVILEGED_DTO, null);
+//        });
+//    }
 
 }

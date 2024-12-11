@@ -1,16 +1,13 @@
 package at.tuwien.service;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.exception.*;
-import jakarta.validation.constraints.NotNull;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
+import at.tuwien.exception.DatabaseMalformedException;
+import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.ViewMalformedException;
+import at.tuwien.exception.ViewNotFoundException;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -42,27 +39,14 @@ public interface ViewService {
             ViewMalformedException;
 
     /**
-     * Get data from the given view at specific timestamp, paginated by page and size.
-     *
-     * @param view      The view.
-     * @param timestamp The timestamp.
-     * @param page      The page number.
-     * @param size      The page size.
-     * @return The data, if successful.
-     * @throws SQLException           The connection to the data database was unsuccessful.
-     * @throws ViewMalformedException The query is malformed and was rejected by the data database.
-     */
-    QueryResultDto data(PrivilegedViewDto view, Instant timestamp, Long page, Long size) throws SQLException,
-            ViewMalformedException;
-
-    /**
      * Deletes a view.
      *
-     * @param view The view.
+     * @param database The database.
+     * @param viewName The view name.
      * @throws SQLException           The connection to the data database was unsuccessful.
      * @throws ViewMalformedException The query is malformed and was rejected by the data database.
      */
-    void delete(PrivilegedViewDto view) throws SQLException, ViewMalformedException;
+    void delete(PrivilegedDatabaseDto database, String viewName) throws SQLException, ViewMalformedException;
 
     /**
      * Counts tuples in a view at system-versioned timestamp.
@@ -74,27 +58,4 @@ public interface ViewService {
      * @throws QueryMalformedException The query is malformed and was rejected by the data database.
      */
     Long count(PrivilegedViewDto view, Instant timestamp) throws SQLException, QueryMalformedException;
-
-    /**
-     * Exports view data into a dataset.
-     *
-     * @param view The view.
-     * @return The dataset.
-     * @throws QueryMalformedException     The query is malformed and was rejected by the data database.
-     * @throws StorageUnavailableException Failed to establish a connection with the Storage Service.
-     * @throws ViewNotFoundException       The view with given name was not found.
-     */
-    ExportResourceDto exportDataset(PrivilegedViewDto view) throws QueryMalformedException,
-            StorageUnavailableException, ViewNotFoundException, MalformedException;
-
-    /**
-     * Get data from a given view.
-     *
-     * @param view The view.
-     * @return The data.
-     * @throws ViewNotFoundException   The view with given name was not found.
-     * @throws QueryMalformedException The query is malformed and was rejected by the data database.
-     */
-    Dataset<Row> getData(@NotNull PrivilegedViewDto view) throws ViewNotFoundException,
-            QueryMalformedException;
 }

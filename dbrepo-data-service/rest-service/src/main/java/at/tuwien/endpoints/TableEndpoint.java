@@ -5,14 +5,16 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.SchemaService;
+import at.tuwien.service.StorageService;
+import at.tuwien.service.SubsetService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -29,6 +31,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -41,23 +45,31 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/table")
-public class TableEndpoint {
+public class TableEndpoint extends AbstractEndpoint {
 
     private final TableService tableService;
+    private final MariaDbMapper mariaDbMapper;
     private final SchemaService schemaService;
+    private final SubsetService subsetService;
+    private final StorageService storageService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, SchemaService schemaService, EndpointValidator endpointValidator,
-                         MetadataServiceGateway metadataServiceGateway) {
+    public TableEndpoint(TableService tableService, MariaDbMapper mariaDbMapper, SchemaService schemaService,
+                         SubsetService subsetService, StorageService storageService,
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
+        this.mariaDbMapper = mariaDbMapper;
         this.schemaService = schemaService;
+        this.subsetService = subsetService;
+        this.storageService = storageService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -171,7 +183,7 @@ public class TableEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = QueryResultDto.class))}),
+                            schema = @Schema(implementation = List.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination or table data select query is malformed",
                     content = {@Content(
@@ -193,13 +205,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryResultDto> getData(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @NotNull @PathVariable("tableId") Long tableId,
-                                                  @RequestParam(required = false) Instant timestamp,
-                                                  @RequestParam(required = false) Long page,
-                                                  @RequestParam(required = false) Long size,
-                                                  @NotNull HttpServletRequest request,
-                                                  Principal principal)
+    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                             @NotNull @PathVariable("tableId") Long tableId,
+                                                             @RequestParam(required = false) Instant timestamp,
+                                                             @RequestParam(required = false) Long page,
+                                                             @RequestParam(required = false) Long size,
+                                                             @NotNull HttpServletRequest request,
+                                                             Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             TableMalformedException, PaginationException, QueryMalformedException, MetadataServiceException,
             NotAllowedException {
@@ -236,9 +248,10 @@ public class TableEndpoint {
                         .headers(headers)
                         .build();
             }
-            final QueryResultDto dto = tableService.getPaginatedData(table, timestamp, page, size);
+            final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
+                    null, null, null, null);
             return ResponseEntity.ok()
-                    .body(dto);
+                    .body(transform(dataset));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -552,13 +565,14 @@ public class TableEndpoint {
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, StorageUnavailableException,
-            QueryMalformedException, MetadataServiceException, MalformedException {
+            QueryMalformedException, MetadataServiceException {
         log.debug("endpoint export table data, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
         /* parameters */
         if (timestamp == null) {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
+        // TODO improve to single operation checking if user xyz has access to table abc
         final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
         if (!table.getIsPublic()) {
             if (principal == null) {
@@ -567,8 +581,10 @@ public class TableEndpoint {
             }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
+        final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp, null,
+                null, null, null);
+        final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResourceDto resource = tableService.exportDataset(table, timestamp);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         log.trace("export table resulted in resource {}", resource);
         return ResponseEntity.ok()
