@@ -1953,7 +1953,7 @@ class RestClient:
 
         :returns: List of licenses, if successful.
         """
-        url = f'/api/database/license'
+        url = f'/api/license'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
