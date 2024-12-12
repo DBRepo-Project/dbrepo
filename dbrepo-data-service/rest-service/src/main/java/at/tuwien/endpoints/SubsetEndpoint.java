@@ -158,8 +158,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
                                       @RequestParam(required = false) Instant timestamp)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException, SQLException,
-            QueryMalformedException {
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, QueryMalformedException {
         String accept = httpServletRequest.getHeader("Accept");
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
@@ -186,13 +185,19 @@ public class SubsetEndpoint extends AbstractEndpoint {
                 return ResponseEntity.ok(subset);
             case "text/csv":
                 log.trace("accept header matches csv");
-                final ExportResourceDto resource = storageService.transformDataset(subsetService.getData(database, subset, null, null));
-                final HttpHeaders headers = new HttpHeaders();
-                headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-                log.trace("export table resulted in resource {}", resource);
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource.getResource());
+                try {
+                    final Dataset<Row> dataset = subsetService.getData(database, subset, null, null);
+                    final ExportResourceDto resource = storageService.transformDataset(dataset);
+                    final HttpHeaders headers = new HttpHeaders();
+                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                    log.trace("export table resulted in resource {}", resource);
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(resource.getResource());
+                } catch (SQLException e) {
+                    log.error("Failed to find data: {}", e.getMessage());
+                    throw new DatabaseUnavailableException("Failed to find data: " + e.getMessage(), e);
+                }
         }
         throw new FormatNotAvailableException("Must provide either application/json or text/csv headers");
     }

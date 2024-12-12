@@ -247,7 +247,7 @@ public class TableEndpoint extends AbstractEndpoint {
                     .headers(headers)
                     .body(transform(tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
                             null, null, null, null)));
-        } catch (SQLException e) {
+        } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
         }

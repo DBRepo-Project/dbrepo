@@ -188,12 +188,12 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void delete_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, DatabaseUnavailableException, ViewNotFoundException, MetadataServiceException {
+    public void delete_succeeds() throws RemoteUnavailableException, ViewMalformedException, ViewNotFoundException,
+            SQLException, DatabaseUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
                 .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_INTERNAL_NAME);

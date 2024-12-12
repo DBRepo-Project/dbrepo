@@ -51,10 +51,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private TableEndpoint tableEndpoint;
 
     @Autowired
-    private HttpServletRequest httpServletRequest;
-
-    @Autowired
     private SparkSession sparkSession;
+
+    @MockBean
+    private HttpServletRequest httpServletRequest;
 
     @MockBean
     private TableService tableService;
@@ -280,7 +280,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -303,7 +303,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getCount(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
                 .thenReturn(3L);
-        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -359,9 +359,11 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        doThrow(SQLException.class)
+        doThrow(QueryMalformedException.class)
                 .when(tableService)
-                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null));
+                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null));
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -400,8 +402,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
         final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
@@ -1139,7 +1143,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), anyLong(), anyLong(), eq(null), eq(null)))
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
 
         /* test */
@@ -1160,7 +1164,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), anyLong(), anyLong(), eq(null), eq(null)))
+        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
 
         /* test */

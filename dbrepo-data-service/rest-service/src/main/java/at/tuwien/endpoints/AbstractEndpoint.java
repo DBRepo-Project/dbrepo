@@ -10,8 +10,7 @@ import java.util.Map;
 public abstract class AbstractEndpoint {
 
     public List<Map<String, Object>> transform(Dataset<Row> dataset) {
-        return dataset.selectExpr("*")
-                .collectAsList()
+        return dataset.collectAsList()
                 .stream()
                 .map(row -> {
                     final Map<String, Object> map = new LinkedHashMap<>();
