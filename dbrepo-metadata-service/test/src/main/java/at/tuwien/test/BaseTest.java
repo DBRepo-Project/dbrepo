@@ -1416,11 +1416,11 @@ public abstract class BaseTest {
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
-    public final static String TABLE_1_INTERNALNAME = "weather_aus";
+    public final static String TABLE_1_INTERNAL_NAME = "weather_aus";
     public final static Boolean TABLE_1_VERSIONED = true;
     public final static Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in Australia";
-    public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNAL_NAME;
     public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
     public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
     public final static Long TABLE_1_AVG_ROW_LENGTH = 3L;
@@ -1435,7 +1435,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .created(TABLE_1_CREATED)
-            .internalName(TABLE_1_INTERNALNAME)
+            .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
@@ -1458,7 +1458,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .database(null /* DATABASE_1 */)
             .created(TABLE_1_CREATED)
-            .internalName(TABLE_1_INTERNALNAME)
+            .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
@@ -1481,7 +1481,7 @@ public abstract class BaseTest {
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
             .created(TABLE_1_CREATED)
-            .internalName(TABLE_1_INTERNALNAME)
+            .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
@@ -1573,7 +1573,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_1_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_1_ID)
-            .internalName(TABLE_1_INTERNALNAME)
+            .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)

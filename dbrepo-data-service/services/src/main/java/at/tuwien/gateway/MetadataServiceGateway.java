@@ -4,11 +4,9 @@ import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.PrivilegedUserDto;
-import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import jakarta.validation.constraints.NotNull;
@@ -41,18 +39,6 @@ public interface MetadataServiceGateway {
      */
     PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
-
-    /**
-     * Get a database with given internal name from the metadata service.
-     *
-     * @param internalName The internal name.
-     * @return The database, if successful.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata service.
-     * @throws RemoteUnavailableException The remote service is not available.
-     * @throws MetadataServiceException   The remote service returned invalid data.
-     */
-    PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException;
 
     /**
      * Get a table with given database id and table id from the metadata service.
@@ -90,17 +76,6 @@ public interface MetadataServiceGateway {
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
     UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
-
-    /**
-     * Get a user with given username from the metadata service.
-     *
-     * @return The user, if successful. Otherwise empty list.
-     * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
-     * @throws UserNotFoundException      The user was not found in the metadata service.
-     * @throws MetadataServiceException   The remote service returned invalid data.
-     */
-    UUID getSystemUserId() throws RemoteUnavailableException, UserNotFoundException,
-            MetadataServiceException;
 
     /**
      * Get a user with given user id from the metadata service.

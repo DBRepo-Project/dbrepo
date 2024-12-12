@@ -217,7 +217,7 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         final TableDto table0 = response.getTables().get(0);
         assertEquals(TABLE_1_ID, table0.getId());
         assertEquals(TABLE_1_NAME, table0.getName());
-        assertEquals(TABLE_1_INTERNALNAME, table0.getInternalName());
+        assertEquals(TABLE_1_INTERNAL_NAME, table0.getInternalName());
         assertEquals(TABLE_1_DESCRIPTION, table0.getDescription());
         assertEquals(DATABASE_1_ID, table0.getTdbid());
         assertEquals(USER_1_ID, table0.getCreatedBy());

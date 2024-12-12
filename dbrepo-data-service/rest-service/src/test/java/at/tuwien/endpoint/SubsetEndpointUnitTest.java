@@ -394,28 +394,30 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         subsetEndpoint.create(DATABASE_3_ID, request, null, httpServletRequest, null, null, null);
     }
 
-//    @Test
-//    public void getData_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-//            NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException, QueryMalformedException,
-//            DatabaseUnavailableException, PaginationException, MetadataServiceException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//        when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
-//                .thenReturn(QUERY_5_RESULT_NUMBER);
-//        when(subsetService.reExecute(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO, 0L, 10L, null, null))
-//                .thenReturn(QUERY_5_RESULT_DTO);
-//        when(httpServletRequest.getMethod())
-//                .thenReturn("GET");
-//
-//        /* test */
-//        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null);
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertNotNull(response.getBody());
-//    }
+    @Test
+    public void getData_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
+            NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException,
+            ViewMalformedException, ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
+        when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
+                .thenReturn(QUERY_5_RESULT_NUMBER);
+        when(subsetService.getData(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO, 0L, 10L))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+
+        /* test */
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
 
     @Test
     public void getData_head_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
@@ -441,29 +443,31 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         assertEquals(QUERY_5_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
     }
 
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME)
-//    public void getData_private_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            UserNotFoundException, DatabaseUnavailableException, NotAllowedException, TableMalformedException,
-//            QueryMalformedException, QueryNotFoundException, PaginationException, SQLException, MetadataServiceException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-//                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-//        when(httpServletRequest.getMethod())
-//                .thenReturn("GET");
-//        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
-//                .thenReturn(QUERY_1_DTO);
-//        when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
-//                .thenReturn(QUERY_1_RESULT_NUMBER);
-//        when(subsetService.reExecute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L, null, null))
-//                .thenReturn(QUERY_1_RESULT_DTO);
-//
-//        /* test */
-//        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertNotNull(response.getBody());
-//    }
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void getData_private_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            UserNotFoundException, DatabaseUnavailableException, NotAllowedException, TableMalformedException,
+            QueryMalformedException, QueryNotFoundException, PaginationException, SQLException,
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(QUERY_1_DTO);
+        when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
+                .thenReturn(QUERY_1_RESULT_NUMBER);
+        when(subsetService.getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L))
+                .thenReturn(mock);
+
+        /* test */
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
 
     @Test
     @WithAnonymousUser
@@ -523,27 +527,28 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         assertEquals(QUERY_1_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
     }
 
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME)
-//    public void getData_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
-//            UserNotFoundException, QueryNotFoundException, MetadataServiceException, QueryMalformedException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
-//                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
-//                .thenReturn(QUERY_1_DTO);
-//        when(httpServletRequest.getMethod())
-//                .thenReturn("GET");
-//        doThrow(SQLException.class)
-//                .when(subsetService)
-//                .reExecute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L, null, null);
-//
-//        /* test */
-//        assertThrows(DatabaseUnavailableException.class, () -> {
-//            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
-//        });
-//    }
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void getData_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
+            UserNotFoundException, QueryNotFoundException, MetadataServiceException, QueryMalformedException,
+            TableNotFoundException, ViewMalformedException {
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(QUERY_1_DTO);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+        doThrow(SQLException.class)
+                .when(subsetService)
+                .getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L);
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
+        });
+    }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"persist-query"})

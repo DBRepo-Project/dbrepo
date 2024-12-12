@@ -607,12 +607,12 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
             TableExistsException {
 
         /* mock */
-        MariaDbConfig.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNALNAME);
+        MariaDbConfig.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME);
 
         /* test */
         final TableDto response = tableService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_CREATE_INTERNAL_DTO);
         assertEquals(TABLE_1_NAME, response.getName());
-        assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
+        assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
     }
 
