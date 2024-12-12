@@ -421,11 +421,24 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String selectExistsTableOrViewRawQuery() {
+        final String statement = "SELECT IF((SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?), 1, 0) AS `exists`";
+        log.trace("mapped select exists table or view statement: {}", statement);
+        return statement;
+    }
+
     default Long resultSetToNumber(ResultSet data) throws QueryMalformedException, SQLException {
         if (!data.next()) {
             throw new QueryMalformedException("Failed to map number");
         }
         return data.getLong(1);
+    }
+
+    default Boolean resultSetToBoolean(ResultSet data) throws QueryMalformedException, SQLException {
+        if (!data.next()) {
+            throw new QueryMalformedException("Failed to map boolean");
+        }
+        return data.getBoolean(1);
     }
 
     default List<Map<String, Object>> resultSetToList(ResultSet data, List<String> columns) throws SQLException {

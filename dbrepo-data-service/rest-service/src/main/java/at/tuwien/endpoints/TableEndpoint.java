@@ -6,15 +6,14 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.*;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
-import at.tuwien.service.SubsetService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -54,21 +53,16 @@ import java.util.Map;
 public class TableEndpoint extends AbstractEndpoint {
 
     private final TableService tableService;
-    private final MariaDbMapper mariaDbMapper;
     private final SchemaService schemaService;
-    private final SubsetService subsetService;
     private final StorageService storageService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, MariaDbMapper mariaDbMapper, SchemaService schemaService,
-                         SubsetService subsetService, StorageService storageService,
+    public TableEndpoint(TableService tableService, SchemaService schemaService, StorageService storageService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
-        this.mariaDbMapper = mariaDbMapper;
         this.schemaService = schemaService;
-        this.subsetService = subsetService;
         this.storageService = storageService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -213,9 +207,8 @@ public class TableEndpoint extends AbstractEndpoint {
                                                              @NotNull HttpServletRequest request,
                                                              Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            TableMalformedException, PaginationException, QueryMalformedException, MetadataServiceException,
-            NotAllowedException {
-        log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
+            PaginationException, QueryMalformedException, MetadataServiceException, NotAllowedException {
+        log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
                 tableId, timestamp, page, size);
         endpointValidator.validateDataParams(page, size);
         /* parameters */
@@ -240,18 +233,20 @@ public class TableEndpoint extends AbstractEndpoint {
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
+            final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
-                final HttpHeaders headers = new HttpHeaders();
                 headers.set("Access-Control-Expose-Headers", "X-Count");
                 headers.set("X-Count", "" + tableService.getCount(table, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
             }
-            final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
-                    null, null, null, null);
+            headers.set("Access-Control-Expose-Headers", "X-Headers");
+            headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
             return ResponseEntity.ok()
-                    .body(transform(dataset));
+                    .headers(headers)
+                    .body(transform(tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
+                            null, null, null, null)));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);

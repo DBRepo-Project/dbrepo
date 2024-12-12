@@ -399,9 +399,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 //    }
 
     @Test
-    public void getData_head_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException, QueryMalformedException,
-            DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException, ViewMalformedException {
+    public void getData_head_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            UserNotFoundException, NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException,
+            QueryMalformedException, DatabaseUnavailableException, PaginationException, MetadataServiceException,
+            TableNotFoundException, ViewMalformedException, ViewNotFoundException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
@@ -483,7 +484,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void getData_privateHead_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, TableMalformedException,
             QueryMalformedException, QueryNotFoundException, PaginationException, SQLException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException {
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))

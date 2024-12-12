@@ -152,7 +152,7 @@ public interface TableService {
     void updateTuple(PrivilegedTableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
 
-    Dataset<Row> getData(PrivilegedDatabaseDto database, String query, Instant timestamp,
+    Dataset<Row> getData(PrivilegedDatabaseDto database, String tableOrView, Instant timestamp,
                          Long page, Long size, SortTypeDto sortDirection, String sortColumn)
             throws QueryMalformedException, TableNotFoundException;
 }

@@ -4,6 +4,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.exception.QueryMalformedException;
@@ -12,7 +13,6 @@ import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.SchemaService;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -36,17 +36,39 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
     private final MariaDbMapper mariaDbMapper;
-    private final SchemaService schemaService;
     private final MetadataMapper metadataMapper;
 
     @Autowired
     public ViewServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
-                                  SchemaService schemaService, MetadataMapper metadataMapper) {
+                                  MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
         this.mariaDbMapper = mariaDbMapper;
-        this.schemaService = schemaService;
         this.metadataMapper = metadataMapper;
+    }
+
+    @Override
+    public Boolean existsByName(PrivilegedDatabaseDto database, String name) throws SQLException,
+            QueryMalformedException {
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final Connection connection = dataSource.getConnection();
+        final Boolean queryResult;
+        try {
+            /* find view data */
+            final long start = System.currentTimeMillis();
+            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.selectExistsTableOrViewRawQuery());
+            statement.setString(1, database.getInternalName());
+            statement.setString(2, name);
+            final ResultSet resultSet = statement.executeQuery();
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
+            queryResult = mariaDbMapper.resultSetToBoolean(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}", e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        return queryResult;
     }
 
     @Override
@@ -61,18 +83,14 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             statement.setString(1, database.getInternalName());
             final long start = System.currentTimeMillis();
             final ResultSet resultSet1 = statement.executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet1.next()) {
                 final String viewName = resultSet1.getString(1);
                 if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
                     log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), viewName);
                     continue;
                 }
-                final ViewDto view;
-                view = schemaService.inspectView(database, viewName);
-                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(view.getInternalName()))) {
-                    views.add(view);
-                }
+
             }
         } catch (SQLException e) {
             log.error("Failed to get view schemas: {}", e.getMessage());
@@ -82,6 +100,17 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
         }
         log.info("Found {} view schema(s)", views.size());
         return views;
+    }
+
+    @Override
+    public ViewDto create(PrivilegedDatabaseDto database, QueryDto subset) throws ViewMalformedException,
+            SQLException {
+        final ViewCreateDto data = ViewCreateDto.builder()
+                .name(metadataMapper.queryDtoToViewName(subset))
+                .query(subset.getQuery())
+                .isPublic(false)
+                .build();
+        return create(database, data);
     }
 
     @Override
@@ -110,7 +139,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), data.getQuery()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* select view columns */
             final PreparedStatement statement2 = connection.prepareStatement(mariaDbMapper.databaseTableColumnsSelectRawQuery());
             statement2.setString(1, database.getInternalName());
@@ -140,7 +169,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropViewRawQuery(viewName))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -165,7 +194,7 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
                             view.getDatabase().getInternalName(), view.getInternalName(), timestamp))
                     .executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {

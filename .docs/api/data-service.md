@@ -28,7 +28,16 @@ The Data Service is responsible for inserting AMQP tuples from the Broker Servic
 via [Spring AMQP](https://docs.spring.io/spring-amqp/reference/html/). To increase the number of consumers, scale the
 Data Service up.
 
+## Data Processing
+
+The Data Service uses [Apache Spark](https://spark.apache.org/), a data engine to load data from/into 
+the [Data Database](../data-db) with a wide range of open-source connectors. The default deployment uses a local mode of
+embedded processing directly in the service until there exists 
+a [Bitnami Chart](https://artifacthub.io/packages/helm/bitnami/spark) for Spark 4.
+
 ## Limitations
+
+* Currently only local processing (slow) embedded in the service using a two-thread `local[2]` configuration.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

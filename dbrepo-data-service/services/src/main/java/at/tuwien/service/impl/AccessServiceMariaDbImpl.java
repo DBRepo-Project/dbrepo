@@ -43,22 +43,22 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseCreateUserQuery(user.getUsername(), user.getPassword()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* grant access */
             final String grants = access != AccessTypeDto.READ ? grantDefaultWrite : grantDefaultRead;
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* grant query store */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantProcedureQuery(user.getUsername(), "store_query"))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -82,7 +82,7 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseGrantPrivilegesQuery(user.getUsername(), grants))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* apply access rights */
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery());
             connection.commit();
@@ -106,12 +106,12 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
             long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseRevokePrivilegesQuery(user.getUsername()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery())
                             .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

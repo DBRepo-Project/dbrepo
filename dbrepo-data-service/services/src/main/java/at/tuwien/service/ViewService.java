@@ -4,6 +4,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.ViewMalformedException;
@@ -14,6 +15,9 @@ import java.time.Instant;
 import java.util.List;
 
 public interface ViewService {
+
+    Boolean existsByName(PrivilegedDatabaseDto database, String name) throws SQLException,
+            QueryMalformedException;
 
     /**
      * Gets the metadata schema for a given database.
@@ -26,6 +30,16 @@ public interface ViewService {
      */
     List<ViewDto> getSchemas(PrivilegedDatabaseDto database) throws SQLException, DatabaseMalformedException,
             ViewNotFoundException;
+
+    /**
+     * Creates a view if not already exists.
+     * @param database
+     * @param subset
+     * @return
+     * @throws ViewMalformedException
+     * @throws SQLException
+     */
+    ViewDto create(PrivilegedDatabaseDto database, QueryDto subset) throws ViewMalformedException, SQLException;
 
     /**
      * Creates a view in the given data database.

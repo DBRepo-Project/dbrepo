@@ -9,9 +9,7 @@ import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.StorageService;
-import at.tuwien.service.SubsetService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.ViewService;
 import at.tuwien.utils.UserUtil;
@@ -50,20 +48,15 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     private final ViewService viewService;
     private final TableService tableService;
-    private final MariaDbMapper mariaDbMapper;
-    private final SubsetService subsetService;
     private final StorageService storageService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, TableService tableService, MariaDbMapper mariaDbMapper,
-                        SubsetService subsetService, StorageService storageService, EndpointValidator endpointValidator,
-                        MetadataServiceGateway metadataServiceGateway) {
+    public ViewEndpoint(ViewService viewService, TableService tableService, StorageService storageService,
+                        EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.viewService = viewService;
         this.tableService = tableService;
-        this.mariaDbMapper = mariaDbMapper;
-        this.subsetService = subsetService;
         this.storageService = storageService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -280,19 +273,18 @@ public class ViewEndpoint extends AbstractEndpoint {
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
+            final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
-                final HttpHeaders headers = new HttpHeaders();
                 headers.set("Access-Control-Expose-Headers", "X-Count");
                 headers.set("X-Count", "" + viewService.count(view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
             }
-            final List<String> columns = view.getColumns()
-                    .stream()
-                    .map(ViewColumnDto::getInternalName)
-                    .toList();
+            headers.set("Access-Control-Expose-Headers", "X-Headers");
+            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
             return ResponseEntity.ok()
+                    .headers(headers)
                     .body(transform(tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, page,
                             size, null, null)));
         } catch (SQLException e) {
