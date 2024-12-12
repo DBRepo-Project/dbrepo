@@ -4,9 +4,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.AnalyseServiceGateway;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -40,17 +38,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     @MockBean
     private MetadataServiceGateway metadataServiceGateway;
 
-    @MockBean
-    private AnalyseServiceGateway dataDatabaseSidecarGateway;
-
-    @MockBean
-    private StorageService storageService;
-
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
-
-    @Autowired
-    private S3Config s3Config;
 
     @BeforeEach
     public void beforeEach() throws SQLException {
@@ -59,138 +48,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
         MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
     }
-
-//    @Test
-//    public void execute_succeeds() throws QueryStoreInsertException, TableMalformedException, SQLException,
-//            QueryNotFoundException, UserNotFoundException, NotAllowedException, RemoteUnavailableException,
-//            MetadataServiceException, DatabaseNotFoundException, InterruptedException {
-//
-//        /* pre-condition */
-//        Thread.sleep(1000) /* wait for test container some more */;
-//
-//        /* mock */
-//        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-//                .thenReturn(QUERY_1_CREATOR);
-//
-//        /* test */
-//        final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, Instant.now(), USER_1_ID, 0L, 10L, null, null);
-//        assertNotNull(response);
-//        assertNotNull(response.getId());
-//        assertNotNull(response.getHeaders());
-//        assertEquals(5, response.getHeaders().size());
-//        assertEquals(List.of(Map.of("id", 0), Map.of("date", 1), Map.of("location", 2), Map.of("mintemp", 3), Map.of("rainfall", 4)), response.getHeaders());
-//        assertNotNull(response.getResult());
-//        assertEquals(3, response.getResult().size());
-//        /* row 0 */
-//        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
-//        assertEquals("Albury", response.getResult().get(0).get("location"));
-//        assertEquals(13.4, response.getResult().get(0).get("mintemp"));
-//        assertEquals(0.6, response.getResult().get(0).get("rainfall"));
-//        /* row 1 */
-//        assertEquals(BigInteger.valueOf(2L), response.getResult().get(1).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228176000), response.getResult().get(1).get("date"));
-//        assertEquals("Albury", response.getResult().get(1).get("location"));
-//        assertEquals(7.4, response.getResult().get(1).get("mintemp"));
-//        assertEquals(0.0, response.getResult().get(1).get("rainfall"));
-//        /* row 2 */
-//        assertEquals(BigInteger.valueOf(3L), response.getResult().get(2).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228262400), response.getResult().get(2).get("date"));
-//        assertEquals("Albury", response.getResult().get(2).get("location"));
-//        assertEquals(12.9, response.getResult().get(2).get("mintemp"));
-//        assertEquals(0.0, response.getResult().get(2).get("rainfall"));
-//    }
-//
-//    @Test
-//    public void execute_joinWithAlias_succeeds() throws QueryStoreInsertException, TableMalformedException,
-//            SQLException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
-//            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
-//
-//        /* pre-condition */
-//        Thread.sleep(1000) /* wait for test container some more */;
-//
-//        /* mock */
-//        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-//                .thenReturn(QUERY_1_CREATOR);
-//
-//        /* test */
-//        final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_7_STATEMENT, Instant.now(), USER_1_ID, 0L, 10L, null, null);
-//        assertNotNull(response);
-//        assertNotNull(response.getId());
-//        assertNotNull(response.getHeaders());
-//        assertEquals(5, response.getHeaders().size());
-//        assertEquals(List.of(Map.of("id", 0), Map.of("date", 1), Map.of("location", 2), Map.of("lat", 3), Map.of("lng", 4)), response.getHeaders());
-//        assertNotNull(response.getResult());
-//        assertEquals(1, response.getResult().size());
-//        /* row 0 */
-//        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
-//        assertEquals("Albury", response.getResult().get(0).get("location"));
-//        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
-//        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
-//    }
-//
-//    @Test
-//    public void execute_oneResult_succeeds() throws QueryStoreInsertException, TableMalformedException, SQLException,
-//            QueryNotFoundException, UserNotFoundException, NotAllowedException, RemoteUnavailableException,
-//            MetadataServiceException, DatabaseNotFoundException, InterruptedException {
-//
-//        /* pre-condition */
-//        Thread.sleep(1000) /* wait for test container some more */;
-//
-//        /* mock */
-//        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
-//                .thenReturn(List.of(IDENTIFIER_2_DTO));
-//        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-//                .thenReturn(QUERY_1_CREATOR);
-//
-//        /* test */
-//        final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, Instant.now(), USER_1_ID, 0L, 1L, null, null);
-//        assertNotNull(response);
-//        assertNotNull(response.getId());
-//        assertNotNull(response.getHeaders());
-//        assertEquals(5, response.getHeaders().size());
-//        assertEquals(List.of(Map.of("id", 0), Map.of("date", 1), Map.of("location", 2), Map.of("mintemp", 3), Map.of("rainfall", 4)), response.getHeaders());
-//        assertNotNull(response.getResult());
-//        assertEquals(1, response.getResult().size());
-//        /* row 0 */
-//        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228089600), response.getResult().get(0).get("date"));
-//        assertEquals("Albury", response.getResult().get(0).get("location"));
-//        assertEquals(13.4, response.getResult().get(0).get("mintemp"));
-//        assertEquals(0.6, response.getResult().get(0).get("rainfall"));
-//    }
-//
-//    @Test
-//    public void execute_oneResultPagination_succeeds() throws QueryStoreInsertException, TableMalformedException,
-//            SQLException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
-//            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
-//
-//        /* pre-condition */
-//        Thread.sleep(1000) /* wait for test container some more */;
-//
-//        /* mock */
-//        when(metadataServiceGateway.getUserById(USER_1_ID))
-//                .thenReturn(USER_1_DTO);
-//        when(metadataServiceGateway.getIdentifiers(eq(DATABASE_1_ID), anyLong()))
-//                .thenReturn(List.of());
-//
-//        /* test */
-//        final QueryResultDto response = queryService.execute(DATABASE_1_PRIVILEGED_DTO, QUERY_1_STATEMENT, Instant.now(), USER_1_ID, 1L, 1L, null, null);
-//        assertNotNull(response);
-//        assertNotNull(response.getId());
-//        assertNotNull(response.getHeaders());
-//        assertEquals(5, response.getHeaders().size());
-//        assertEquals(List.of(Map.of("id", 0), Map.of("date", 1), Map.of("location", 2), Map.of("mintemp", 3), Map.of("rainfall", 4)), response.getHeaders());
-//        assertNotNull(response.getResult());
-//        assertEquals(1, response.getResult().size());
-//        /* row 1 */
-//        assertEquals(BigInteger.valueOf(2L), response.getResult().get(0).get("id"));
-//        assertEquals(Instant.ofEpochSecond(1228176000), response.getResult().get(0).get("date"));
-//        assertEquals("Albury", response.getResult().get(0).get("location"));
-//        assertEquals(7.4, response.getResult().get(0).get("mintemp"));
-//        assertEquals(0.0, response.getResult().get(0).get("rainfall"));
-//    }
 
     @Test
     public void findAll_succeeds() throws SQLException, QueryNotFoundException, RemoteUnavailableException,
@@ -291,18 +148,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         });
     }
 
-//    @Test
-//    public void export_succeeds() throws SQLException, StorageUnavailableException, QueryMalformedException,
-//            RemoteUnavailableException, IOException, StorageNotFoundException, InterruptedException,
-//            AnalyseServiceException, ViewNotFoundException, MalformedException, TableNotFoundException {
-//
-//        /* mock */
-//        MariaDbConfig.dropQueryStore(DATABASE_1_PRIVILEGED_DTO);
-//
-//        /* test */
-//        export_generic();
-//    }
-
     protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
             UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
@@ -368,27 +213,5 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(0, response.size());
     }
-
-//    protected void export_generic() throws StorageUnavailableException, SQLException, RemoteUnavailableException,
-//            QueryMalformedException, StorageNotFoundException, IOException, InterruptedException,
-//            AnalyseServiceException, ViewNotFoundException, MalformedException, TableNotFoundException {
-//        final String filename = RandomStringUtils.randomAlphanumeric(40).toLowerCase() + ".tmp";
-//        EXPORT_RESOURCE_DTO.setFilename(filename);
-//
-//        /* pre-condition */
-//        Thread.sleep(1000) /* wait for test container some more */;
-//
-//        /* mock */
-//        doNothing()
-//                .when(dataDatabaseSidecarGateway)
-//                .exportTable(anyLong(), anyLong());
-//        when(storageService.transformDataset(any(Dataset.class)))
-//                .thenReturn(EXPORT_RESOURCE_DTO);
-//
-//        /* test */
-//        final ExportResourceDto response = queryService.export(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, Instant.now());
-//        assertEquals(filename, response.getFilename());
-//        assertNotNull(response.getResource().getInputStream());
-//    }
 
 }

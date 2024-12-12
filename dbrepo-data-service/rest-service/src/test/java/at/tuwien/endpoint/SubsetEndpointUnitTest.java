@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.endpoints.SubsetEndpoint;
@@ -10,6 +11,9 @@ import at.tuwien.service.SubsetService;
 import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -24,6 +29,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +43,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private SubsetEndpoint subsetEndpoint;
+
+    @Autowired
+    private SparkSession sparkSession;
 
     @MockBean
     private SubsetService subsetService;
@@ -97,284 +106,294 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-//            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
-//            FormatNotAvailableException, StorageNotFoundException, SQLException, MetadataServiceException,
-//            ViewNotFoundException, MalformedException, TableNotFoundException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//
-//        /* test */
-//        generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
-//    }
+    @Test
+    @WithAnonymousUser
+    public void findById_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
+            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
+            FormatNotAvailableException, TableNotFoundException, MetadataServiceException, SQLException,
+            ViewMalformedException {
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_format_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
-//            UserNotFoundException, QueryNotFoundException, MetadataServiceException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//
-//        /* test */
-//        assertThrows(FormatNotAvailableException.class, () -> {
-//            generic_findById(QUERY_5_ID, MediaType.APPLICATION_PDF, null);
-//        });
-//    }
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_acceptCsv_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
-//            QueryNotFoundException, FormatNotAvailableException, StorageNotFoundException, SQLException,
-//            MetadataServiceException, ViewNotFoundException, MalformedException, TableNotFoundException {
-//        final ExportResourceDto mock = ExportResourceDto.builder()
-//                .filename("deadbeef")
-//                .resource(new InputStreamResource(InputStream.nullInputStream()))
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
-//                .thenReturn(mock);
-//
-//        /* test */
-//        generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), null);
-//    }
+        /* test */
+        generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
+    }
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_timestamp_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
-//            QueryNotFoundException, FormatNotAvailableException, StorageNotFoundException, SQLException,
-//            MetadataServiceException, ViewNotFoundException, MalformedException, TableNotFoundException {
-//        final ExportResourceDto mock = ExportResourceDto.builder()
-//                .filename("deadbeef")
-//                .resource(new InputStreamResource(InputStream.nullInputStream()))
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
-//                .thenReturn(mock);
-//
-//        /* test */
-//        generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), Instant.now());
-//    }
+    @Test
+    @WithAnonymousUser
+    public void findById_format_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
+            UserNotFoundException, QueryNotFoundException, MetadataServiceException {
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_notFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
-//
-//        /* mock */
-//        doThrow(DatabaseNotFoundException.class)
-//                .when(metadataServiceGateway)
-//                .getDatabaseById(DATABASE_3_ID);
-//
-//        /* test */
-//        assertThrows(DatabaseNotFoundException.class, () -> {
-//            generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
-//        });
-//    }
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            MetadataServiceException, SQLException, UserNotFoundException, QueryNotFoundException {
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        doThrow(SQLException.class)
-//                .when(subsetService)
-//                .findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID);
-//
-//        /* test */
-//        assertThrows(DatabaseUnavailableException.class, () -> {
-//            generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
-//        });
-//    }
+        /* test */
+        assertThrows(FormatNotAvailableException.class, () -> {
+            generic_findById(QUERY_5_ID, MediaType.APPLICATION_PDF, null);
+        });
+    }
 
-//    @Test
-//    @WithAnonymousUser
-//    public void findById_unavailableExport_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            MetadataServiceException, SQLException, StorageUnavailableException, QueryMalformedException,
-//            StorageNotFoundException, UserNotFoundException, QueryNotFoundException, ViewNotFoundException, MalformedException {
-//        final ExportResourceDto mock = ExportResourceDto.builder()
-//                .filename("deadbeef")
-//                .resource(new InputStreamResource(InputStream.nullInputStream()))
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-//                .thenReturn(QUERY_5_DTO);
-//        when(subsetService.export(any(PrivilegedDatabaseDto.class), any(QueryDto.class), any(Instant.class)))
-//                .thenReturn(mock);
-//        doThrow(SQLException.class)
-//                .when(subsetService)
-//                .export(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), any(Instant.class));
-//
-//        /* test */
-//        assertThrows(DatabaseUnavailableException.class, () -> {
-//            generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), null);
-//        });
-//    }
-//
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-//    public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException,
-//            TableMalformedException, NotAllowedException, QueryNotSupportedException, PaginationException,
-//            StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
-//            QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-//            SQLException, MetadataServiceException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_1_ID), eq(0L), eq(10L), eq(null), eq(null)))
-//                .thenReturn(QUERY_5_RESULT_DTO);
-//
-//        /* test */
-//        subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, 0L, 10L, null);
-//    }
+    @Test
+    @WithAnonymousUser
+    public void findById_acceptCsv_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
+            QueryNotFoundException, FormatNotAvailableException, SQLException, MetadataServiceException,
+            TableNotFoundException, ViewMalformedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-//    public void create_forbiddenKeyword_fails() {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement("SELECT COUNT(id) FROM tbl")
-//                .build();
-//
-//        /* test */
-//        assertThrows(QueryNotSupportedException.class, () -> {
-//            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, 0L, 10L, null);
-//        });
-//    }
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
+        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), anyLong(), anyLong()))
+                .thenReturn(mock);
 
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-//    public void create_noPageSize_succeeds() throws UserNotFoundException, QueryStoreInsertException,
-//            TableMalformedException, NotAllowedException, QueryNotSupportedException,
-//            PaginationException, StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
-//            QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-//            SQLException, MetadataServiceException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_1_ID), eq(0L), eq(10L), eq(null), eq(null)))
-//                .thenReturn(QUERY_5_RESULT_DTO);
-//
-//        /* test */
-//        subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, null, null, null);
-//    }
-//
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-//    public void create_unavailable_succeeds() throws UserNotFoundException, QueryStoreInsertException,
-//            TableMalformedException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
-//            RemoteUnavailableException, SQLException, MetadataServiceException, QueryMalformedException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        doThrow(SQLException.class)
-//                .when(subsetService)
-//                .execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_1_ID), eq(0L), eq(10L), eq(null), eq(null));
-//
-//        /* test */
-//        assertThrows(DatabaseUnavailableException.class, () -> {
-//            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, null, null, null);
-//        });
-//    }
-//
-//    @Test
-//    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-//    public void create_databaseNotFound_fails() throws RemoteUnavailableException,
-//            DatabaseNotFoundException, MetadataServiceException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        doThrow(DatabaseNotFoundException.class)
-//                .when(metadataServiceGateway)
-//                .getDatabaseById(DATABASE_3_ID);
-//
-//        /* test */
-//        assertThrows(DatabaseNotFoundException.class, () -> {
-//            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, null, null, null);
-//        });
-//    }
-//
-//    @Test
-//    @WithMockUser(username = USER_4_USERNAME)
-//    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
-//            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
-//            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
-//            StorageNotFoundException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(USER_4_ID), eq(0L), eq(10L), eq(null), eq(null)))
-//                .thenReturn(QUERY_5_RESULT_DTO);
-//
-//        /* test */
-//        subsetEndpoint.create(DATABASE_3_ID, request, USER_4_PRINCIPAL, null, null, null);
-//    }
-//
-//    @Test
-//    @WithAnonymousUser
-//    public void create_anonymous_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-//            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
-//            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
-//            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
-//            StorageNotFoundException {
-//        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-//                .statement(QUERY_5_STATEMENT)
-//                .build();
-//
-//        /* mock */
-//        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-//                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-//        when(subsetService.execute(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(null), eq(0L), eq(10L), eq(null), eq(null)))
-//                .thenReturn(QUERY_5_RESULT_DTO);
-//
-//        /* test */
-//        subsetEndpoint.create(DATABASE_3_ID, request, null, null, null, null);
-//    }
-//
+        /* test */
+        generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), null);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_timestamp_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
+            QueryNotFoundException, FormatNotAvailableException, SQLException, MetadataServiceException,
+            TableNotFoundException, ViewMalformedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
+        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), anyLong(), anyLong()))
+                .thenReturn(mock);
+
+        /* test */
+        generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), Instant.now());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_notFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+
+        /* mock */
+        doThrow(DatabaseNotFoundException.class)
+                .when(metadataServiceGateway)
+                .getDatabaseById(DATABASE_3_ID);
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, SQLException, UserNotFoundException, QueryNotFoundException {
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        doThrow(SQLException.class)
+                .when(subsetService)
+                .findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID);
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            generic_findById(QUERY_5_ID, MediaType.APPLICATION_JSON, null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_unavailableExport_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, SQLException, QueryMalformedException, UserNotFoundException,
+            QueryNotFoundException, TableNotFoundException, ViewMalformedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
+        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), anyLong(), anyLong()))
+                .thenReturn(mock);
+        doThrow(SQLException.class)
+                .when(subsetService)
+                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), anyLong(), any());
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            generic_findById(QUERY_5_ID, MediaType.parseMediaType("text/csv"), null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException,
+            TableMalformedException, NotAllowedException, QueryNotSupportedException, PaginationException,
+            StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException, SQLException,
+            QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void create_forbiddenKeyword_fails() {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT COUNT(id) FROM tbl")
+                .build();
+
+        /* mock */
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        assertThrows(QueryNotSupportedException.class, () -> {
+            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void create_noPageSize_succeeds() throws UserNotFoundException, QueryStoreInsertException,
+            TableMalformedException, NotAllowedException, QueryNotSupportedException,
+            PaginationException, StorageNotFoundException, DatabaseUnavailableException, StorageUnavailableException,
+            QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            SQLException, MetadataServiceException, TableNotFoundException, ViewMalformedException,
+            ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(mock);
+
+        /* test */
+        subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void create_unavailable_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            SQLException, MetadataServiceException, QueryMalformedException, TableNotFoundException,
+            ViewMalformedException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        doThrow(SQLException.class)
+                .when(subsetService)
+                .getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L));
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void create_databaseNotFound_fails() throws RemoteUnavailableException,
+            DatabaseNotFoundException, MetadataServiceException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        doThrow(DatabaseNotFoundException.class)
+                .when(metadataServiceGateway)
+                .getDatabaseById(DATABASE_3_ID);
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
+            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
+            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
+            StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        subsetEndpoint.create(DATABASE_3_ID, request, USER_4_PRINCIPAL, httpServletRequest, null, null, null);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void create_anonymous_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
+            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
+            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
+            StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_5_STATEMENT)
+                .build();
+
+        /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("POST");
+
+        /* test */
+        subsetEndpoint.create(DATABASE_3_ID, request, null, httpServletRequest, null, null, null);
+    }
+
 //    @Test
 //    public void getData_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
 //            NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException, QueryMalformedException,
@@ -645,19 +664,19 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         return response.getBody();
     }
 
-//    protected void generic_findById(Long subsetId, MediaType accept, Instant timestamp) throws UserNotFoundException,
-//            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
-//            DatabaseNotFoundException, RemoteUnavailableException, FormatNotAvailableException, MalformedException,
-//            StorageNotFoundException, MetadataServiceException, ViewNotFoundException, TableNotFoundException {
-//
-//        /* mock */
-//        when(mockHttpServletRequest.getHeader("Accept"))
-//                .thenReturn(accept.toString());
-//
-//        /* test */
-//        final ResponseEntity<?> response = subsetEndpoint.findById(DATABASE_3_ID, subsetId, mockHttpServletRequest, timestamp);
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertNotNull(response.getBody());
-//    }
+    protected void generic_findById(Long subsetId, MediaType accept, Instant timestamp) throws UserNotFoundException,
+            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, FormatNotAvailableException,
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, SQLException {
+
+        /* mock */
+        when(mockHttpServletRequest.getHeader("Accept"))
+                .thenReturn(accept.toString());
+
+        /* test */
+        final ResponseEntity<?> response = subsetEndpoint.findById(DATABASE_3_ID, subsetId, mockHttpServletRequest, timestamp);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
 
 }
