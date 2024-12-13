@@ -1,3 +1,4 @@
+import json
 import unittest
 from json import dumps
 
@@ -7,7 +8,7 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import UserAttributes, User, View, Result, ViewColumn, ColumnType
+from dbrepo.api.dto import UserAttributes, User, View, ViewColumn, ColumnType
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -211,27 +212,24 @@ class ViewUnitTest(unittest.TestCase):
 
     def test_get_view_data_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/view/3/data', json=exp.model_dump())
+            mock.get('/api/database/1/view/3/data', json=json.dumps(exp))
             # test
             response = RestClient().get_view_data(database_id=1, view_id=3)
-            self.assertEqual(exp, response)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_view_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
-            res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
-            exp = DataFrame.from_records(res.model_dump()['result'])
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/view/3/data', json=res.model_dump())
+            mock.get('/api/database/1/view/3/data', json=json.dumps(exp))
             # test
-            response: DataFrame = RestClient().get_view_data(database_id=1, view_id=3, df=True)
-            self.assertEqual(exp.shape, response.shape)
-            self.assertTrue(DataFrame.equals(exp, response))
+            response: DataFrame = RestClient().get_view_data(database_id=1, view_id=3)
+            self.assertEqual(df.shape, response.shape)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_view_data_malformed_fails(self):
         with requests_mock.Mocker() as mock:

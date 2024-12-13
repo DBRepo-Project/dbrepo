@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import datetime
 from dataclasses import field
 from enum import Enum
-import datetime
-from typing import List, Optional, Any, Annotated
-from pydantic import BaseModel, ConfigDict, PlainSerializer, Field
+from typing import List, Optional, Annotated
+
+from pydantic import BaseModel, PlainSerializer, Field
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -638,12 +639,6 @@ class CreateView(BaseModel):
     is_public: bool
 
 
-class Result(BaseModel):
-    result: Any
-    headers: Any
-    id: Optional[int] = None
-
-
 class ViewBrief(BaseModel):
     id: int
     database_id: int
@@ -874,8 +869,8 @@ class DataType(BaseModel):
     display_name: str
     value: str
     documentation: str
-    is_quoted:  bool
-    is_buildable:  bool
+    is_quoted: bool
+    is_buildable: bool
     size_min: Optional[int] = None
     size_max: Optional[int] = None
     size_default: Optional[int] = None
@@ -884,8 +879,8 @@ class DataType(BaseModel):
     d_max: Optional[int] = None
     d_default: Optional[int] = None
     d_required: Optional[bool] = None
-    data_hint:  Optional[str] = None
-    type_hint:  Optional[str] = None
+    data_hint: Optional[str] = None
+    type_hint: Optional[str] = None
 
 
 class Column(BaseModel):
