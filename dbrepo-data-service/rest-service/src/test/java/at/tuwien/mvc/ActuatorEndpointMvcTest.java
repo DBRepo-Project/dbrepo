@@ -1,6 +1,5 @@
 package at.tuwien.mvc;
 
-import at.tuwien.annotations.MockAmqp;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-@MockAmqp
 public class ActuatorEndpointMvcTest extends AbstractUnitTest {
 
     @Autowired

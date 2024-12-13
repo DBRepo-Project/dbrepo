@@ -101,7 +101,8 @@ See the [API Overview](..) page for detailed examples.
 
 ## Limitations
 
-(none)
+* When developing locally, the `axios` module does not parse custom headers (such as `X-Count`, `X-Headers`) and/or
+  blocks CORS requests wrongfully.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

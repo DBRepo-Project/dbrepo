@@ -1,6 +1,5 @@
 package at.tuwien.validation;
 
-import at.tuwien.annotations.MockAmqp;
 import at.tuwien.exception.PaginationException;
 import at.tuwien.exception.QueryNotSupportedException;
 import at.tuwien.test.AbstractUnitTest;
@@ -12,19 +11,14 @@ import org.springframework.boot.test.autoconfigure.actuate.observability.AutoCon
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-@MockAmqp
 public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     @Autowired

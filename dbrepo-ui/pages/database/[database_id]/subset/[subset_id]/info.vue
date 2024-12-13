@@ -66,7 +66,7 @@
             <pre>{{ $t('pages.subset.hash.prefix') }}:{{ result_hash }}</pre>
           </v-list-item>
           <v-list-item
-            :title="$t('pages.subset.result-rows.title')"
+            :title="$t('pages.subset.rows.title')"
             density="compact">
             {{ subset.result_number }}
           </v-list-item>

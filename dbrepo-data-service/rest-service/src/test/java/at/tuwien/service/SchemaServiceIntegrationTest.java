@@ -196,8 +196,8 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertNotNull(unique0.getTable());
         assertEquals("some_constraint", unique0.getName());
         assertNull(unique0.getTable().getId());
-        assertEquals(TABLE_1_INTERNALNAME, unique0.getTable().getName());
-        assertEquals(TABLE_1_INTERNALNAME, unique0.getTable().getInternalName());
+        assertEquals(TABLE_1_INTERNAL_NAME, unique0.getTable().getName());
+        assertEquals(TABLE_1_INTERNAL_NAME, unique0.getTable().getInternalName());
         assertEquals(TABLE_1_DESCRIPTION, unique0.getTable().getDescription());
         assertTrue(unique0.getTable().getIsVersioned());
         assertNotNull(unique0.getColumns());
@@ -235,8 +235,8 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         final TableBriefDto fk0table = fk0.getTable();
         assertNull(fk0table.getId());
         assertEquals(DATABASE_1_ID, fk0table.getDatabaseId());
-        assertEquals(TABLE_1_INTERNALNAME, fk0table.getName());
-        assertEquals(TABLE_1_INTERNALNAME, fk0table.getInternalName());
+        assertEquals(TABLE_1_INTERNAL_NAME, fk0table.getName());
+        assertEquals(TABLE_1_INTERNAL_NAME, fk0table.getInternalName());
         assertNotNull(fk0.getOnDelete());
         assertNotNull(fk0.getOnUpdate());
         assertNotNull(fk0.getReferencedTable());

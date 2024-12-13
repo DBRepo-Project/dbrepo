@@ -40,7 +40,7 @@ public class DatabaseServiceMariaDbImpl extends HibernateConnector implements Da
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseCreateDatabaseQuery(data.getInternalName()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -76,7 +76,7 @@ public class DatabaseServiceMariaDbImpl extends HibernateConnector implements Da
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseSetPasswordQuery(data.getUsername(), data.getPassword()))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();

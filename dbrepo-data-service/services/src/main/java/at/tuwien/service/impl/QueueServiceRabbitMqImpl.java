@@ -52,7 +52,7 @@ public class QueueServiceRabbitMqImpl extends HibernateConnector implements Queu
             }
             final long start = System.currentTimeMillis();
             preparedStatement.executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             log.trace("successfully inserted tuple");
             amqpDataAccessCounter.increment();
         } finally {

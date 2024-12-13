@@ -41,7 +41,7 @@
             {{ sizeToHumanLabel(table.data_length) }}
           </v-list-item>
           <v-list-item
-            :title="$t('pages.table.result-rows.title')">
+            :title="$t('pages.table.rows.title')">
             {{ table.num_rows }}
           </v-list-item>
           <v-list-item
