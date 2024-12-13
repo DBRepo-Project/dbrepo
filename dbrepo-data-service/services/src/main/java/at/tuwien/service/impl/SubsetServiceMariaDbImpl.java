@@ -180,8 +180,6 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
-            query.setCreator(database.getOwner());
-            query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {
             log.error("Failed to find query with id {}: {}", queryId, e.getMessage());

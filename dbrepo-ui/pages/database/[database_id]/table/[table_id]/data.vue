@@ -55,36 +55,19 @@
     </v-toolbar>
     <TimeDrift />
     <v-card
-      elevation="0"
-      tile>
-      <v-card
-        v-if="error"
-        variant="flat">
-        <v-card-text>
-          {{ $t('error.table.connection') }}
-        </v-card-text>
-      </v-card>
-      <v-data-table-server
-        v-if="!error"
-        v-model="selection"
-        flat
-        :show-select="canModify"
-        return-object
-        :headers="headers"
-        :items="rows"
-        :items-length="total"
-        :loading="loadingData || loadingCount"
-        :options.sync="options"
-        :footer-props="footerProps"
-        :items-per-page-options="footerProps.itemsPerPageOptions"
-        @update:options="loadData">
-        <template
-          v-for="(blobColumn, idx) in blobColumns"
-          v-slot:[blobColumn]="{ item }">
-          <BlobDownload
-            :blob="item[blobColumn.substring(5)]" />
-        </template>
-      </v-data-table-server>
+      v-if="error"
+      variant="flat">
+      <v-card-text>
+        {{ $t('error.table.connection') }}
+      </v-card-text>
+    </v-card>
+    <v-card tile>
+      <QueryResults
+        id="query-results"
+        ref="queryResults"
+        type="table"
+        :timestamp="versionISO || lastReload.toISOString()"
+        class="mt-0 mb-0" />
     </v-card>
     <v-dialog
       v-model="pickVersionDialog"
@@ -122,14 +105,16 @@
 import TableHistory from '@/components/table/TableHistory.vue'
 import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import {formatTimestampUTC, formatDateUTC, formatTimestamp} from '@/utils'
+import { formatTimestamp } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import BlobDownload from '@/components/table/BlobDownload.vue'
+import QueryResults from '@/components/subset/Results.vue'
 
 export default {
   components: {
+    QueryResults,
     BlobDownload,
     EditTuple,
     TableHistory,
@@ -142,6 +127,7 @@ export default {
       loadingData: false,
       loadingCount: false,
       loadingDelete: false,
+      loadingTable: false,
       addTupleDialog: false,
       editTupleDialog: false,
       total: 0,
@@ -282,18 +268,11 @@ export default {
   },
   watch: {
     version () {
-      this.loadCount()
       this.reload()
-    },
-    table (newTable, oldTable) {
-      if (newTable !== oldTable && oldTable === null) {
-        this.loadProperties()
-      }
     }
   },
   mounted () {
-    this.loadProperties()
-    this.loadCount()
+    this.reload()
   },
   methods: {
     addTuple () {
@@ -402,74 +381,10 @@ export default {
       }
       this.pickVersionDialog = false
     },
-    loadProperties () {
-      if (!this.table || this.headers.length > 0) {
-        return
-      }
-      try {
-        this.headers = []
-        this.table.columns.map((c) => {
-          return {
-            value: c.internal_name,
-            title: c.internal_name,
-            sortable: false
-          }
-        }).forEach(header => this.headers.push(header))
-        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
-        console.debug('date columns are', this.dateColumns)
-      } catch ({code}) {
-        const toast = useToastInstance()
-        toast.error(this.$t(code))
-      }
-      this.loading = false
-    },
     reload () {
       this.lastReload = new Date()
-      this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
-    },
-    loadCount() {
-      this.loadingCount = true
-      const tableService = useTableService()
-      tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
-        .then((count) => {
-          this.total = count
-          this.loadingCount = false
-        })
-        .catch(({code}) => {
-          this.loadingCount = false
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
-        })
-    },
-    loadData({ page, itemsPerPage, sortBy }) {
-      this.options.page = page
-      this.options.itemsPerPage = itemsPerPage
-      const tableService = useTableService()
-      this.loadingData = true
-      tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (page - 1), itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
-        .then((data) => {
-          this.rows = data.result.map((row) => {
-            for (const col in row) {
-              const column = this.table.columns.filter(c => c.internal_name === col)[0]
-              const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
-              if (columnDefinition.length > 0) {
-                if (columnDefinition[0].column_type === 'date') {
-                  row[col] = formatDateUTC(row[col])
-                } else if (columnDefinition[0].column_type === 'timestamp') {
-                  row[col] = formatTimestampUTC(row[col])
-                }
-              }
-            }
-            return row
-          })
-          this.loadingData = false
-        })
-        .catch(({code, message}) => {
-          this.error = true
-          this.loadingData = false
-          const toast = useToastInstance()
-          toast.error(this.$t(code) + ": " + message)
-        })
+      this.$refs.queryResults.reExecute(Number(this.$route.params.table_id))
+      this.$refs.queryResults.reExecuteCount(Number(this.$route.params.table_id))
     },
     isFileField (column) {
       return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)

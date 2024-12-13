@@ -30,7 +30,7 @@
             width="50%" />
         </v-list>
         <v-list
-          v-else
+          v-else-if="subset"
           lines="two"
           dense>
           <v-list-item
@@ -40,6 +40,7 @@
             {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
           </v-list-item>
           <v-list-item
+            v-if="subset.creator"
             :title="$t('pages.subset.creator.title')"
             density="compact">
             <UserBadge :user="subset.creator" :other-user="user" />

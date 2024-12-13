@@ -21,7 +21,6 @@ import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
-import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
@@ -199,17 +198,13 @@ public interface DataMapper {
         return view;
     }
 
-    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException, QueryNotFoundException {
+    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
-        return QueryDto.builder()
+        final QueryDto subset = QueryDto.builder()
                 .id(data.getLong(1))
                 .created(LocalDateTime.parse(data.getString(2), mariaDbFormatter)
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
-                .creator(UserDto.builder()
-                        .id(UUID.fromString(data.getString(3)))
-                        .build())
-                .createdBy(UUID.fromString(data.getString(3)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
@@ -219,6 +214,13 @@ public interface DataMapper {
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
                 .build();
+        if (data.getString(3) != null) {
+            subset.setCreator(UserDto.builder()
+                    .id(UUID.fromString(data.getString(3)))
+                    .build());
+            subset.setCreatedBy(UUID.fromString(data.getString(3)));
+        }
+        return subset;
     }
 
     default List<TableHistoryDto> resultSetToTableHistory(ResultSet resultSet) throws SQLException {
