@@ -35,9 +35,15 @@ the [Data Database](../data-db) with a wide range of open-source connectors. The
 embedded processing directly in the service until there exists 
 a [Bitnami Chart](https://artifacthub.io/packages/helm/bitnami/spark) for Spark 4.
 
+Retrieving data from a subset internally generates a view with the 64-character hash of the query. This view is not
+automatically deleted currently.
+
 ## Limitations
 
-* Currently only local processing (slow) embedded in the service using a two-thread `local[2]` configuration.
+* Views in DBRepo can only have 63-character length (it is assumed only internal views have the maximum length of 64 
+  characters).
+* Local mode of embedded processing of Apache Spark directly in the service using 
+  a [`local[2]`](https://spark.apache.org/docs/latest/#running-the-examples-and-shell) configuration.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

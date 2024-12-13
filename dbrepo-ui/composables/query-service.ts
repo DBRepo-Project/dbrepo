@@ -84,7 +84,6 @@ export const useQueryService = (): any => {
       axios.post<QueryResultDto>(`/api/database/${databaseId}/subset`, data, {params: mapFilter(timestamp, page, size), timeout: 600_000})
         .then((response) => {
           console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
-          console.debug('=======>', response)
           const result: QueryResultDto = {
             id: 1,
             headers: [],

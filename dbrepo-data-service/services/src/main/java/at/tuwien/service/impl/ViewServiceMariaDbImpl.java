@@ -13,6 +13,7 @@ import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
+import at.tuwien.service.SchemaService;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -35,14 +36,16 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
 
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
+    private final SchemaService schemaService;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public ViewServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
-                                  MetadataMapper metadataMapper) {
+    public ViewServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, SchemaService schemaService,
+                                  MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
+        this.schemaService = schemaService;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
     }
@@ -86,11 +89,19 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet1.next()) {
                 final String viewName = resultSet1.getString(1);
+                if (viewName.length() == 64) {
+                    log.trace("view {}.{} seems to be a subset view (name length = 64), skip.", database.getInternalName(), viewName);
+                    continue;
+                }
                 if (database.getViews().stream().anyMatch(v -> v.getInternalName().equals(viewName))) {
                     log.trace("view {}.{} already known to metadata database, skip.", database.getInternalName(), viewName);
                     continue;
                 }
-
+                final ViewDto view;
+                view = schemaService.inspectView(database, viewName);
+                if (database.getTables().stream().noneMatch(t -> t.getInternalName().equals(view.getInternalName()))) {
+                    views.add(view);
+                }
             }
         } catch (SQLException e) {
             log.error("Failed to get view schemas: {}", e.getMessage());
