@@ -95,7 +95,8 @@ select `date`, `location`, `mintemp` as `MinTemp`, `rainfall` as `Rainfall`
 from `weather_aus`
 where `location` = 'Vienna');
 
-CREATE VIEW 5c7ba02f681b889892ee82987aa6c74ce45a30973cfef06b78ce797f25189b9 AS
+-- internal view who should not be indexed into schema
+CREATE VIEW 5c7ba02f681b889892ee82987aa6c74ce45a30973cfef06b78ce797f25189b9a AS
 (
 select `date`, `location`, `mintemp` as `MinTemp`, `rainfall` as `Rainfall`
 from `weather_aus`
