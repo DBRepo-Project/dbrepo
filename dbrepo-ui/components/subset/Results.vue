@@ -171,10 +171,10 @@ export default {
       }
     },
     mapResults (data) {
-      this.result.headers = data.headers.map((h) => {
+      this.result.headers = data.headers.map((header) => {
         return {
-          title: Object.keys(h)[0],
-          value: Object.keys(h)[0],
+          title: header,
+          value: header,
           sortable: false
         }
       })

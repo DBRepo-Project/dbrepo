@@ -563,7 +563,7 @@ interface ImportCsv {
 interface QueryResultDto {
   id: number | null;
   result: any;
-  headers: any;
+  headers: string[];
 }
 
 interface TableHistoryDto {

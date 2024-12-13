@@ -19,7 +19,7 @@ import lombok.extern.jackson.Jacksonized;
 public class ViewCreateDto {
 
     @NotBlank
-    @Size(min = 1, max = 64)
+    @Size(min = 1, max = 63)
     @Schema(example = "Air Quality")
     private String name;
 

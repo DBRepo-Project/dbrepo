@@ -63,7 +63,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Database", DATABASE_1_INTERNALNAME);
-        headers.set("X-Table", TABLE_1_INTERNALNAME);
+        headers.set("X-Table", TABLE_1_INTERNAL_NAME);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
@@ -79,7 +79,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getDatabase().getContainer().getUsername());
         assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getDatabase().getContainer().getPassword());
         assertEquals(DATABASE_1_INTERNALNAME, response.getDatabase().getInternalName());
-        assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
+        assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
     }
 
     @Test
@@ -154,7 +154,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
         headers.set("X-Database", DATABASE_1_INTERNALNAME);
-        headers.set("X-Table", TABLE_1_INTERNALNAME);
+        headers.set("X-Table", TABLE_1_INTERNAL_NAME);
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
@@ -165,80 +165,6 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
             metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
-        });
-    }
-
-    @Test
-    public void getDatabaseByInternalName_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-            MetadataServiceException {
-
-        /* mock */
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
-        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .headers(headers)
-                        .body(new PrivilegedDatabaseDto[]{DATABASE_1_PRIVILEGED_DTO}));
-
-        /* test */
-        final PrivilegedDatabaseDto response = metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
-        assertEquals(response.getId(), response.getId());
-    }
-
-    @Test
-    public void getDatabaseByInternalName_unavailable_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.ServiceUnavailable.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class));
-
-        /* test */
-        assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    @Test
-    public void getDatabaseByInternalName_statusCode_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body(new PrivilegedDatabaseDto[]{DATABASE_1_PRIVILEGED_DTO}));
-
-        /* test */
-        assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    @Test
-    public void getDatabaseByInternalName_emptyBody_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class)))
-                .thenReturn(ResponseEntity.ok()
-                        .build());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    @Test
-    public void getDatabaseByInternalName_notFound_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto[].class)))
-                .thenReturn(ResponseEntity.ok()
-                        .body(new PrivilegedDatabaseDto[]{}));
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            metadataServiceGateway.getDatabaseByInternalName(DATABASE_1_INTERNALNAME);
         });
     }
 

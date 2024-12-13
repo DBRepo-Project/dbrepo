@@ -221,12 +221,6 @@ public interface MariaDbMapper {
         return statement;
     }
 
-    default String tableCreateDtoToCreateSequenceRawQuery(at.tuwien.api.database.table.internal.TableCreateDto data) {
-        final String statement = "CREATE SEQUENCE IF NOT EXISTS `" + tableCreateDtoToSequenceName(data) + "` NOCACHE";
-        log.trace("mapped create sequence statement: {}", statement);
-        return statement;
-    }
-
     default String filterToGetQueriesRawQuery(Boolean filterPersisted) {
         final StringBuilder statement = new StringBuilder("SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted`, `executed` FROM `qs_queries`");
         if (filterPersisted != null) {
@@ -435,6 +429,12 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
+    default String selectExistsTableOrViewRawQuery() {
+        final String statement = "SELECT IF((SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?), 1, 0) AS `exists`";
+        log.trace("mapped select exists table or view statement: {}", statement);
+        return statement;
+    }
+
     default Long resultSetToNumber(ResultSet data) throws QueryMalformedException, SQLException {
         if (!data.next()) {
             throw new QueryMalformedException("Failed to map number");
@@ -442,38 +442,23 @@ public interface MariaDbMapper {
         return data.getLong(1);
     }
 
-    /**
-     * Selects the dataset page from a table/view.
-     *
-     * @param databaseName The database internal name.
-     * @param tableOrView  The table/view internal name.
-     * @param columns      The columns that should be contained in the result set.
-     * @param timestamp    The moment in time the data should be returned in UTC timezone.
-     * @return The raw SQL query.
-     */
-    default String selectDatasetRawQuery(String databaseName, String tableOrView, List<ColumnDto> columns,
-                                         Instant timestamp, Long size, Long page) {
-        final StringBuilder statement = new StringBuilder("SELECT ")
-                .append(String.join(",", columns.stream().map(c -> "`" + c.getInternalName() + "`").toList()));
-        statement.append(" FROM `")
-                .append(databaseName)
-                .append("`.`")
-                .append(tableOrView)
-                .append("`");
-        if (timestamp != null) {
-            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                    .append(mariaDbFormatter.format(timestamp))
-                    .append("'");
+    default Boolean resultSetToBoolean(ResultSet data) throws QueryMalformedException, SQLException {
+        if (!data.next()) {
+            throw new QueryMalformedException("Failed to map boolean");
         }
-        log.trace("pagination size/limit of {}", size);
-        statement.append(" LIMIT ")
-                .append(size);
-        log.trace("pagination page/offset of {}", page);
-        statement.append(" OFFSET ")
-                .append(page * size)
-                .append(";");
-        log.trace("mapped select data query: {}", statement);
-        return statement.toString();
+        return data.getBoolean(1);
+    }
+
+    default List<Map<String, Object>> resultSetToList(ResultSet data, List<String> columns) throws SQLException {
+        final List<Map<String, Object>> list = new LinkedList<>();
+        while (data.next()) {
+            final Map<String, Object> tuple = new HashMap<>();
+            for (String column : columns) {
+                tuple.put(column, data.getString(column));
+            }
+            list.add(tuple);
+        }
+        return list;
     }
 
     /**
@@ -498,53 +483,6 @@ public interface MariaDbMapper {
     @Named("dropTableQuery")
     default String dropTableRawQuery(String tableName) {
         return "DROP TABLE `" + tableName + "`;";
-    }
-
-    default String tableOrViewToRawExportQuery(String databaseName, String tableOrView, List<String> columns,
-                                               Instant timestamp) {
-        final StringBuilder statement = new StringBuilder("(SELECT ");
-        int[] jdx = new int[]{0};
-        columns.forEach(column -> {
-            statement.append(jdx[0] != 0 ? "," : "")
-                    .append("`")
-                    .append(column)
-                    .append("`");
-            jdx[0]++;
-        });
-        statement.append(" FROM `")
-                .append(databaseName)
-                .append("`.`")
-                .append(tableOrView)
-                .append("`");
-        if (timestamp != null) {
-            log.trace("export has timestamp present");
-            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                    .append(mariaDbFormatter.format(timestamp))
-                    .append("'");
-        }
-        statement.append(") as tbl_alias");
-        log.debug("mapped table/view export query: {}", statement);
-        return statement.toString();
-    }
-
-    default String subsetToRawTemporaryViewQuery(String viewName, String query) {
-        final StringBuilder statement = new StringBuilder("CREATE VIEW `")
-                .append(viewName)
-                .append("` AS (")
-                .append(query)
-                .append(");");
-        log.debug("mapped temporary view query: {}", statement);
-        return statement.toString();
-    }
-
-    default String subsetToRawExportQuery(String viewName, Instant timestamp) {
-        final StringBuilder statement = new StringBuilder("(SELECT * FROM `")
-                .append(viewName)
-                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("') as tbl");
-        log.debug("mapped export query: {}", statement);
-        return statement.toString();
     }
 
     default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {

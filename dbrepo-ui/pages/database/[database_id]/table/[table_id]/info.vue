@@ -47,7 +47,7 @@
           </v-list-item>
           <v-list-item
             v-if="table"
-            :title="$t('pages.table.result-rows.title')">
+            :title="$t('pages.table.rows.title')">
             {{ table.num_rows }}
           </v-list-item>
           <v-list-item
@@ -79,24 +79,6 @@
                 {{ accessDescription }}
               </span>
             </span>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
-    <v-divider />
-    <v-card
-      :title="$t('pages.database.title')"
-      variant="flat">
-      <v-card-text>
-        <v-list dense>
-          <v-list-item
-            v-if="database"
-            :title="$t('pages.database.name.title')">
-            <NuxtLink
-              class="text-primary"
-              :to="`/database/${$route.params.database_id}`">
-              {{ database.internal_name }}
-            </NuxtLink>
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -142,6 +124,29 @@
             <div v-if="table.routing_key">
               <pre>{{ table.routing_key }}</pre>
             </div>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+    <v-divider />
+    <v-card
+      :title="$t('pages.database.title')"
+      variant="flat">
+      <v-card-text>
+        <v-list dense>
+          <v-list-item
+            v-if="database"
+            :title="$t('pages.database.visibility.title')">
+            {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
+          </v-list-item>
+          <v-list-item
+            v-if="database"
+            :title="$t('pages.database.name.title')">
+            <NuxtLink
+              class="text-primary"
+              :to="`/database/${database.id}`">
+              {{ database.internal_name }}
+            </NuxtLink>
           </v-list-item>
         </v-list>
       </v-card-text>

@@ -1,6 +1,5 @@
 package at.tuwien.mvc;
 
-import at.tuwien.annotations.MockAmqp;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.SubsetService;
 import at.tuwien.test.AbstractUnitTest;
@@ -26,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @AutoConfigureObservability
-@MockAmqp
 public class SubsetEndpointMvcTest extends AbstractUnitTest {
 
     @MockBean

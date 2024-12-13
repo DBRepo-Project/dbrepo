@@ -1,9 +1,8 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResourceDto;
+import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
@@ -18,8 +17,6 @@ import at.tuwien.service.StorageService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import io.micrometer.core.instrument.Counter;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
@@ -37,7 +34,6 @@ import java.util.*;
 @Service
 public class TableServiceMariaDbImpl extends HibernateConnector implements TableService {
 
-    private final Counter httpDataAccessCounter;
     private final DataMapper dataMapper;
     private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
@@ -45,10 +41,8 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     private final StorageService storageService;
 
     @Autowired
-    public TableServiceMariaDbImpl(Counter httpDataAccessCounter, DataMapper dataMapper, SparkSession sparkSession,
-                                   MariaDbMapper mariaDbMapper, SchemaService schemaService,
-                                   StorageService storageService) {
-        this.httpDataAccessCounter = httpDataAccessCounter;
+    public TableServiceMariaDbImpl(DataMapper dataMapper, SparkSession sparkSession, MariaDbMapper mariaDbMapper,
+                                   SchemaService schemaService, StorageService storageService) {
         this.dataMapper = dataMapper;
         this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
@@ -68,7 +62,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.databaseTablesSelectRawQuery());
             statement.setString(1, database.getInternalName());
             final ResultSet resultSet1 = statement.executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet1.next()) {
                 final String tableName = resultSet1.getString(1);
                 if (database.getTables().stream().anyMatch(t -> t.getInternalName().equals(tableName))) {
@@ -106,7 +100,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             } else {
                 final ResultSet resultSet = connection.prepareStatement(query)
                         .executeQuery();
-                log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+                log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
                 statistic = dataMapper.resultSetToTableStatistic(resultSet);
                 final TableDto tmpTable = schemaService.inspectTable(table.getDatabase(), table.getInternalName());
                 statistic.setAvgRowLength(tmpTable.getAvgRowLength());
@@ -147,7 +141,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(data))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -200,7 +194,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final long start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.dropTableRawQuery(tableName))
                     .execute();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -210,37 +204,6 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             dataSource.close();
         }
         log.info("Deleted table with name {}", tableName);
-    }
-
-    @Override
-    public QueryResultDto getPaginatedData(PrivilegedTableDto table, Instant timestamp, Long page, Long size) throws SQLException,
-            TableMalformedException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
-        final Connection connection = dataSource.getConnection();
-        final QueryResultDto queryResult;
-        try {
-            /* find table data */
-            long start = System.currentTimeMillis();
-            final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectDatasetRawQuery(
-                            table.getDatabase().getInternalName(), table.getInternalName(), table.getColumns(),
-                            timestamp, size, page))
-                    .executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
-            connection.commit();
-            queryResult = dataMapper.resultListToQueryResultDto(table.getColumns(), resultSet);
-            log.debug("mapped result in {} ms", System.currentTimeMillis() - start);
-            httpDataAccessCounter.increment();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to find data from table {}.{}: {}", table.getDatabase().getInternalName(), table.getInternalName(), e.getMessage());
-            throw new TableMalformedException("Failed to find data from table " + table.getDatabase().getInternalName() + "." + table.getInternalName() + ": " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        log.info("Find data from table {}.{}", table.getDatabase().getInternalName(), table.getInternalName());
-        queryResult.setId(table.getId());
-        return queryResult;
     }
 
     @Override
@@ -255,7 +218,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectHistoryRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), size))
                     .executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             history = dataMapper.resultSetToTableHistory(resultSet);
             connection.commit();
         } catch (SQLException e) {
@@ -281,7 +244,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
                             table.getDatabase().getInternalName(), table.getInternalName(), timestamp))
                     .executeQuery();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
             connection.commit();
         } catch (SQLException e) {
@@ -362,7 +325,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             }
             final long start = System.currentTimeMillis();
             statement.executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -406,7 +369,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             }
             final long start = System.currentTimeMillis();
             statement.executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -442,7 +405,7 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             }
             final long start = System.currentTimeMillis();
             statement.executeUpdate();
-            log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
+            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {
             connection.rollback();
@@ -466,34 +429,24 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
     }
 
     @Override
-    public ExportResourceDto exportDataset(PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
-            QueryMalformedException, StorageUnavailableException, MalformedException {
-        final Dataset<Row> dataset = getData(table, timestamp);
-        httpDataAccessCounter.increment();
-        return storageService.transformDataset(dataset);
-    }
-
-    @Override
-    public Dataset<Row> getData(@NotNull PrivilegedTableDto table, Instant timestamp) throws TableNotFoundException,
-            QueryMalformedException {
+    public Dataset<Row> getData(PrivilegedDatabaseDto database, String tableOrView, Instant timestamp,
+                                Long page, Long size, SortTypeDto sortDirection, String sortColumn)
+            throws QueryMalformedException, TableNotFoundException {
         try {
             final Properties properties = new Properties();
-            properties.setProperty("user", table.getDatabase().getContainer().getUsername());
-            properties.setProperty("password", table.getDatabase().getContainer().getPassword());
+            properties.setProperty("user", database.getContainer().getUsername());
+            properties.setProperty("password", database.getContainer().getPassword());
             return sparkSession.read()
-                    .jdbc(getSparkUrl(table.getDatabase().getContainer(), table.getDatabase().getInternalName()),
-                            mariaDbMapper.tableOrViewToRawExportQuery(table.getDatabase().getInternalName(),
-                                    table.getInternalName(), table.getColumns().stream()
-                                            .map(ColumnDto::getInternalName).toList(), timestamp), properties);
+                    .jdbc(getSparkUrl(database.getContainer(), database.getInternalName()), tableOrView, properties);
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException exception) {
                 if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
-                    log.error("Failed to find table {}: {}", table.getInternalName(), exception.getSimpleMessage());
-                    throw new TableNotFoundException("Failed to find table " + table.getInternalName() + ": " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                    log.error("Failed to find named reference: {}", exception.getSimpleMessage());
+                    throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
                 }
             }
-            log.error("Failed to export dataset: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to export dataset: " + e.getMessage(), e);
+            log.error("Failed to find get data from query statement: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to find get data from query statement: " + e.getMessage(), e);
         }
     }
 

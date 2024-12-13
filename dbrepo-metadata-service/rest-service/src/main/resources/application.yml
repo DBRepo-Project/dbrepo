@@ -48,21 +48,6 @@ logging:
     at.tuwien.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 dbrepo:
-  repository-name: "${REPOSITORY_NAME:Database Repository}"
-  base-url: "${BASE_URL:http://localhost}"
-  admin-email: "${ADMIN_EMAIL:noreply@example.com}"
-  deleted-record: "${DELETED_RECORD:persistent}"
-  granularity: "${GRANULARITY:YYYY-MM-DDThh:mm:ssZ}"
-  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
-  queueName: "${BROKER_QUEUE_NAME:dbrepo}"
-  connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
-  s3:
-    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
-    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
-    bucket: "${S3_BUCKET:dbrepo}"
-  system:
-    username: "${SYSTEM_USERNAME:admin}"
-    password: "${SYSTEM_PASSWORD:admin}"
   endpoints:
     analyseService: "${ANALYSE_SERVICE_ENDPOINT:http://analyse-service:8080}"
     searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
@@ -72,6 +57,13 @@ dbrepo:
     storageService: "${S3_ENDPOINT:http://storage-service:9000}"
     rorService: "${ROR_ENDPOINT:https://api.ror.org}"
     crossRefService: "${CROSSREF_ENDPOINT:http://data.crossref.org}"
+  s3:
+    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
+    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
+    bucket: "${S3_BUCKET:dbrepo}"
+  system:
+    username: "${SYSTEM_USERNAME:admin}"
+    password: "${SYSTEM_PASSWORD:admin}"
   pid:
     base: "${BASE_URL:http://localhost}/pid/"
   jwt:
@@ -82,3 +74,11 @@ dbrepo:
     client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
     clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
   website: "${BASE_URL:http://localhost}"
+  repository-name: "${REPOSITORY_NAME:Database Repository}"
+  base-url: "${BASE_URL:http://localhost}"
+  admin-email: "${ADMIN_EMAIL:noreply@example.com}"
+  deleted-record: "${DELETED_RECORD:persistent}"
+  granularity: "${GRANULARITY:YYYY-MM-DDThh:mm:ssZ}"
+  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
+  queueName: "${BROKER_QUEUE_NAME:dbrepo}"
+  connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"

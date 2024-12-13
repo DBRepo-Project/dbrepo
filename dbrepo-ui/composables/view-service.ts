@@ -73,7 +73,12 @@ export const useViewService = (): any => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data`, {params: {page, size}})
         .then((response) => {
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
-          resolve(response.data)
+          const result: QueryResultDto = {
+            id: viewId,
+            headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
+            result: response.data
+          }
+          resolve(result)
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)

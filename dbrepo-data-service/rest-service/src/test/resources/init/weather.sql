@@ -1,6 +1,8 @@
 /* https://www.kaggle.com/jsphyg/weather-dataset-rattle-package */
-CREATE DATABASE weather;
-USE weather;
+CREATE
+DATABASE weather;
+USE
+weather;
 
 CREATE TABLE weather_location
 (
@@ -12,8 +14,8 @@ CREATE TABLE weather_location
 CREATE TABLE weather_aus
 (
     id       SERIAL PRIMARY KEY,
-    `date`   DATE             NOT NULL,
-    location VARCHAR(255)     NULL COMMENT 'Closest city',
+    `date`   DATE NOT NULL,
+    location VARCHAR(255) NULL COMMENT 'Closest city',
     mintemp  DOUBLE PRECISION NULL,
     rainfall DOUBLE PRECISION NULL,
     FOREIGN KEY (location) REFERENCES weather_location (location) ON DELETE SET NULL,
@@ -44,7 +46,7 @@ CREATE TABLE sensor
 
 CREATE TABLE exotic_boolean
 (
-    `bool_default`          BOOLEAN             NOT NULL PRIMARY KEY,
+    `bool_default`          BOOLEAN NOT NULL PRIMARY KEY,
     `bool_tinyint`          TINYINT(1)          NOT NULL,
     `bool_tinyint_unsigned` TINYINT(1) UNSIGNED NOT NULL
 ) WITH SYSTEM VERSIONING;
@@ -88,6 +90,13 @@ CREATE TABLE not_in_metadata_db
 ) WITH SYSTEM VERSIONING;
 
 CREATE VIEW not_in_metadata_db2 AS
+(
+select `date`, `location`, `mintemp` as `MinTemp`, `rainfall` as `Rainfall`
+from `weather_aus`
+where `location` = 'Vienna');
+
+-- internal view who should not be indexed into schema
+CREATE VIEW 5c7ba02f681b889892ee82987aa6c74ce45a30973cfef06b78ce797f25189b9a AS
 (
 select `date`, `location`, `mintemp` as `MinTemp`, `rainfall` as `Rainfall`
 from `weather_aus`

@@ -172,7 +172,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Type", IMAGE_1_JDBC))
                 .andExpect(header().string("X-Database", DATABASE_1_INTERNALNAME))
-                .andExpect(header().string("X-Table", TABLE_1_INTERNALNAME))
+                .andExpect(header().string("X-Table", TABLE_1_INTERNAL_NAME))
                 .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table"))
                 .andExpect(status().isOk());
     }
@@ -190,7 +190,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
                 .andExpect(header().string("X-Type", IMAGE_1_JDBC))
                 .andExpect(header().string("X-Database", DATABASE_1_INTERNALNAME))
-                .andExpect(header().string("X-Table", TABLE_1_INTERNALNAME))
+                .andExpect(header().string("X-Table", TABLE_1_INTERNAL_NAME))
                 .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table"))
                 .andExpect(status().isOk());
     }

@@ -10,9 +10,7 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.PrivilegedUserDto;
-import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
@@ -37,14 +35,11 @@ import java.util.UUID;
 public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     private final RestTemplate restTemplate;
-    private final GatewayConfig gatewayConfig;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public MetadataServiceGatewayImpl(RestTemplate restTemplate, GatewayConfig gatewayConfig,
-                                      MetadataMapper metadataMapper) {
+    public MetadataServiceGatewayImpl(RestTemplate restTemplate, MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
-        this.gatewayConfig = gatewayConfig;
         this.metadataMapper = metadataMapper;
     }
 
@@ -121,37 +116,6 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         database.getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
         log.debug("found privileged database username={}", database.getContainer().getUsername());
         return database;
-    }
-
-    @Override
-    public PrivilegedDatabaseDto getDatabaseByInternalName(String internalName) throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
-        final ResponseEntity<PrivilegedDatabaseDto[]> response;
-        final String url = "/api/database/";
-        log.debug("find privileged database from url: {}", url);
-        try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException e) {
-            log.error("Failed to find database with internal name {}: {}", internalName, e.getMessage());
-            throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
-        }
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to find database with internal name {}: service responded unsuccessful: {}", internalName, response.getStatusCode());
-            throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
-        }
-        /* body first, then headers next */
-        if (response.getBody() == null || response.getBody().length != 1) {
-            log.error("Failed to find database with internal name {}: body is empty", internalName);
-            throw new DatabaseNotFoundException("Failed to find database: body is empty");
-        }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
-        if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
-            log.error("Failed to find all privileged database headers");
-            log.debug("expected headers: {}", expectedHeaders);
-            log.debug("found headers: {}", response.getHeaders().keySet());
-            throw new MetadataServiceException("Failed to find all privileged database headers");
-        }
-        return response.getBody()[0];
     }
 
     @Override
@@ -259,34 +223,6 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to find user with id " + userId + ": body is empty");
         }
         return response.getBody();
-    }
-
-    @Override
-    public UUID getSystemUserId() throws RemoteUnavailableException, UserNotFoundException,
-            MetadataServiceException {
-        final ResponseEntity<UserBriefDto[]> response;
-        try {
-            response = restTemplate.exchange("/api/user?username=" + gatewayConfig.getSystemUsername(), HttpMethod.GET, HttpEntity.EMPTY, UserBriefDto[].class);
-        } catch (ResourceAccessException | HttpServerErrorException e) {
-            log.error("Failed to find user with username {}: {}", gatewayConfig.getSystemUsername(), e.getMessage());
-            throw new RemoteUnavailableException("Failed to find user with username " + gatewayConfig.getSystemUsername() + ": " + e.getMessage(), e);
-        } catch (HttpClientErrorException.NotFound e) {
-            log.error("Failed to find user with username {}: not found: {}", gatewayConfig.getSystemUsername(), e.getMessage());
-            throw new UserNotFoundException("Failed to find user with username " + gatewayConfig.getSystemUsername() + ": " + e.getMessage(), e);
-        }
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to find user with username {}: service responded unsuccessful: {}", gatewayConfig.getSystemUsername(), response.getStatusCode());
-            throw new MetadataServiceException("Failed to find user with username " + gatewayConfig.getSystemUsername() + ": service responded unsuccessful: " + response.getStatusCode());
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to find user with username {}: body is empty", gatewayConfig.getSystemUsername());
-            throw new MetadataServiceException("Failed to find user with username " + gatewayConfig.getSystemUsername() + ": body is empty");
-        }
-        if (response.getBody().length != 1) {
-            log.error("Failed to find system user: expected exactly one result but got {}", response.getBody().length);
-            throw new MetadataServiceException("Failed to find system user: expected exactly one result but got " + response.getBody().length);
-        }
-        return response.getBody()[0].getId();
     }
 
     @Override

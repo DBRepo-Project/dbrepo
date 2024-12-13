@@ -1,14 +1,16 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.StorageService;
+import at.tuwien.service.TableService;
 import at.tuwien.service.ViewService;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -22,7 +24,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,21 +38,26 @@ import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/view")
-public class ViewEndpoint {
+public class ViewEndpoint extends AbstractEndpoint {
 
     private final ViewService viewService;
+    private final TableService tableService;
+    private final StorageService storageService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, EndpointValidator endpointValidator,
-                        MetadataServiceGateway metadataServiceGateway) {
+    public ViewEndpoint(ViewService viewService, TableService tableService, StorageService storageService,
+                        EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.viewService = viewService;
+        this.tableService = tableService;
+        this.storageService = storageService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
     }
@@ -188,7 +194,7 @@ public class ViewEndpoint {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         try {
-            viewService.delete(view);
+            viewService.delete(view.getDatabase(), view.getInternalName());
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -209,7 +215,7 @@ public class ViewEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = QueryResultDto.class))}),
+                            schema = @Schema(implementation = List.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Request pagination is malformed",
                     content = {@Content(
@@ -236,16 +242,15 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryResultDto> getData(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @NotNull @PathVariable("viewId") Long viewId,
-                                                  @RequestParam(required = false) Long page,
-                                                  @RequestParam(required = false) Long size,
-                                                  @RequestParam(required = false) Instant timestamp,
-                                                  @NotNull HttpServletRequest request,
-                                                  Principal principal)
-            throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            QueryMalformedException, ViewMalformedException, PaginationException, NotAllowedException,
-            MetadataServiceException {
+    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                             @NotNull @PathVariable("viewId") Long viewId,
+                                                             @RequestParam(required = false) Long page,
+                                                             @RequestParam(required = false) Long size,
+                                                             @RequestParam(required = false) Instant timestamp,
+                                                             @NotNull HttpServletRequest request,
+                                                             Principal principal)
+            throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
+            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
                 viewId, page, size, timestamp);
         endpointValidator.validateDataParams(page, size);
@@ -262,23 +267,26 @@ public class ViewEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
+        // TODO improve with a single operation that checks if user xyz has access to view abc
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         if (!view.getIsPublic()) {
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
+            final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
-                final HttpHeaders headers = new HttpHeaders();
                 headers.set("Access-Control-Expose-Headers", "X-Count");
                 headers.set("X-Count", "" + viewService.count(view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
             }
-            final QueryResultDto result = viewService.data(view, timestamp, page, size);
-            log.trace("get view data resulted in result {}", result);
+            headers.set("Access-Control-Expose-Headers", "X-Headers");
+            headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
             return ResponseEntity.ok()
-                    .body(result);
+                    .headers(headers)
+                    .body(transform(tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, page,
+                            size, null, null)));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -319,10 +327,16 @@ public class ViewEndpoint {
     })
     public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") Long databaseId,
                                                              @NotNull @PathVariable("viewId") Long viewId,
+                                                             @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, ViewNotFoundException, NotAllowedException, MetadataServiceException,
-            StorageUnavailableException, QueryMalformedException, MalformedException {
+            StorageUnavailableException, QueryMalformedException, TableNotFoundException {
         log.debug("endpoint export view data, databaseId={}, viewId={}", databaseId, viewId);
+        /* parameters */
+        if (timestamp == null) {
+            timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
+        }
         /* parameters */
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         if (!view.getIsPublic()) {
@@ -332,8 +346,13 @@ public class ViewEndpoint {
             }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
+        final List<String> columns = view.getColumns()
+                .stream()
+                .map(ViewColumnDto::getInternalName)
+                .toList();
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResourceDto resource = viewService.exportDataset(view);
+        final ExportResourceDto resource = storageService.transformDataset(tableService.getData(view.getDatabase(),
+                view.getInternalName(), timestamp, null, null, null, null));
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         log.trace("export table resulted in resource {}", resource);
         return ResponseEntity.ok()

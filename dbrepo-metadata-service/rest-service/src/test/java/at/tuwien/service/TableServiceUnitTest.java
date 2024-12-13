@@ -107,7 +107,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findByName(DATABASE_3_ID, TABLE_1_INTERNALNAME);
+            tableService.findByName(DATABASE_3_ID, TABLE_1_INTERNAL_NAME);
         });
     }
 
