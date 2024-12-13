@@ -1,9 +1,7 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.endpoints.TableEndpoint;
@@ -14,6 +12,9 @@ import at.tuwien.service.TableService;
 import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,11 +32,11 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,6 +51,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private TableEndpoint tableEndpoint;
 
     @Autowired
+    private SparkSession sparkSession;
+
+    @MockBean
     private HttpServletRequest httpServletRequest;
 
     @MockBean
@@ -269,41 +273,43 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, TableMalformedException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException, MetadataServiceException,
-            NotAllowedException {
+    public void getData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, QueryMalformedException,
+            RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
-                .thenReturn(TABLE_8_DATA_DTO);
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
+        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
     }
 
     @Test
     @WithAnonymousUser
-    public void getData_head_succeeds() throws DatabaseUnavailableException, TableNotFoundException, TableMalformedException,
-            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException, MetadataServiceException,
-            NotAllowedException {
-        final HttpServletRequest mock = mock(HttpServletRequest.class);
+    public void getData_head_succeeds() throws DatabaseUnavailableException, TableNotFoundException,
+            SQLException, QueryMalformedException, RemoteUnavailableException, PaginationException,
+            MetadataServiceException, NotAllowedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(mock.getMethod())
-                .thenReturn("HEAD");
         when(tableService.getCount(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
                 .thenReturn(3L);
-        when(tableService.getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
-                .thenReturn(TABLE_8_DATA_DTO);
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, mock, null);
+        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_3_ID, TABLE_8_ID, null, null, null, httpServletRequest, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Access-Control-Expose-Headers"));
         assertEquals("X-Count", response.getHeaders().get("Access-Control-Expose-Headers").get(0));
@@ -348,14 +354,16 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void getData_unavailable_fails() throws TableNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, TableMalformedException, SQLException {
+            MetadataServiceException, QueryMalformedException {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        doThrow(SQLException.class)
+        doThrow(QueryMalformedException.class)
                 .when(tableService)
-                .getPaginatedData(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L));
+                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null));
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -385,19 +393,22 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_2_USERNAME)
     @MethodSource("anyAccess_parameters")
     public void getData_private_succeeds(String name, DatabaseAccessDto access) throws DatabaseUnavailableException,
-            TableNotFoundException, TableMalformedException, SQLException, QueryMalformedException,
-            RemoteUnavailableException, PaginationException, MetadataServiceException, NotAllowedException {
+            TableNotFoundException, QueryMalformedException, RemoteUnavailableException, PaginationException,
+            MetadataServiceException, NotAllowedException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(tableService.getPaginatedData(eq(TABLE_1_PRIVILEGED_DTO), any(Instant.class), eq(0L), eq(10L)))
-                .thenReturn(TABLE_1_DATA_DTO);
+        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
+        final ResponseEntity<List<Map<String, Object>>> response = tableEndpoint.getData(DATABASE_1_ID, TABLE_1_ID, null, null, null, httpServletRequest, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -1125,24 +1136,19 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void exportData_succeeds() throws DatabaseUnavailableException, TableNotFoundException, NotAllowedException,
-            StorageUnavailableException, QueryMalformedException, RemoteUnavailableException, StorageNotFoundException,
-            SQLException, MetadataServiceException, MalformedException {
-        final ExportResourceDto mock = ExportResourceDto.builder()
-                .filename("deadbeef")
-                .resource(new InputStreamResource(InputStream.nullInputStream()))
-                .build();
+    public void exportData_succeeds() throws TableNotFoundException, NotAllowedException,
+            StorageUnavailableException, QueryMalformedException, RemoteUnavailableException, MetadataServiceException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(tableService.exportDataset(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
+        when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
 
         /* test */
         final ResponseEntity<InputStreamResource> response = tableEndpoint.exportDataset(DATABASE_3_ID, TABLE_8_ID, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-
     }
 
     @ParameterizedTest
@@ -1150,24 +1156,20 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("anyAccess_parameters")
     public void exportData_private_succeeds(String name, DatabaseAccessDto access) throws TableNotFoundException,
             NotAllowedException, StorageUnavailableException, QueryMalformedException, RemoteUnavailableException,
-            MetadataServiceException, MalformedException {
-        final ExportResourceDto mock = ExportResourceDto.builder()
-                .filename("deadbeef")
-                .resource(new InputStreamResource(InputStream.nullInputStream()))
-                .build();
+            MetadataServiceException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(tableService.exportDataset(eq(TABLE_1_PRIVILEGED_DTO), any(Instant.class)))
+        when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
 
         /* test */
         final ResponseEntity<InputStreamResource> response = tableEndpoint.exportDataset(DATABASE_1_ID, TABLE_1_ID, null, USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-
     }
 
     @Test

@@ -122,6 +122,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_8_PRIVILEGED_DTO.setDatabase(DATABASE_3_PRIVILEGED_DTO);
         VIEW_5.setDatabase(DATABASE_3);
         VIEW_5.setColumns(VIEW_5_COLUMNS);
+        VIEW_5_DTO.setColumns(VIEW_5_COLUMNS_DTO);
         IDENTIFIER_6.setDatabase(DATABASE_3);
         /* DATABASE 4 */
         DATABASE_4.setSubsets(new LinkedList<>());

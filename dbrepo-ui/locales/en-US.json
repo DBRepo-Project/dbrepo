@@ -312,8 +312,8 @@
       "size": {
         "title": "Size"
       },
-      "result-rows": {
-        "title": "Rows"
+      "rows": {
+        "title": "Result Rows"
       },
       "owner": {
         "title": "Owner"

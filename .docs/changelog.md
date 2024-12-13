@@ -2,6 +2,17 @@
 author: Martin Weise
 ---
 
+## v1.5.3 (2024-12-13)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.3)
+
+### What's Changed
+
+#### Fixes
+
+* Fixed a bug where subsets containing sub-queries are not able to retrieve data
+  in [#476](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/476).
+
 ## v1.5.2 (2024-12-03)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.2)

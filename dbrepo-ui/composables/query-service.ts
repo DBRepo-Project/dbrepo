@@ -84,7 +84,12 @@ export const useQueryService = (): any => {
       axios.post<QueryResultDto>(`/api/database/${databaseId}/subset`, data, {params: mapFilter(timestamp, page, size), timeout: 600_000})
         .then((response) => {
           console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
-          resolve(response.data)
+          const result: QueryResultDto = {
+            id: 1,
+            headers: [],
+            result: response.data
+          }
+          resolve(result)
         })
         .catch((error) => {
           console.error('Failed to execute query', error)
@@ -100,7 +105,12 @@ export const useQueryService = (): any => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/subset/${queryId}/data`, { params: mapFilter(null, page, size) })
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
-          resolve(response.data)
+          const result: QueryResultDto = {
+            id: Number(response.headers['x-id']),
+            headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
+            result: response.data
+          }
+          resolve(result)
         })
         .catch((error) => {
           console.error('Failed to re-execute query', error)

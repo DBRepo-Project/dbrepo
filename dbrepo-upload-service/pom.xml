@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.12</version>
+        <version>3.3.5</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-upload-service</artifactId>
     <name>dbrepo-upload-service</name>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 
     <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/</url>
     <developers>
@@ -24,11 +24,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <spring-cloud.version>4.1.4</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
-        <commons-io.version>2.15.0</commons-io.version>
+        <commons-io.version>2.17.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
         <jacoco.version>0.8.12</jacoco.version>

@@ -74,7 +74,12 @@ export const useTableService = (): any => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
         .then((response) => {
           console.info('Got data for table with id', tableId, 'in database with id', databaseId)
-          resolve(response.data)
+          const result: QueryResultDto = {
+            id: tableId,
+            headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
+            result: response.data
+          }
+          resolve(result)
         })
         .catch((error) => {
           console.error('Failed to get data', error)

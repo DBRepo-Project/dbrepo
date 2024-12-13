@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.12</version>
+        <version>3.3.5</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 
     <description>Service that manages the metadata</description>
 
@@ -38,11 +38,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <spring-cloud.version>4.1.4</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
-        <commons-io.version>2.15.0</commons-io.version>
+        <commons-io.version>2.17.0</commons-io.version>
         <commons-validator.version>1.8.0</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
         <jacoco.version>0.8.12</jacoco.version>
@@ -55,6 +55,7 @@
         <keycloak.version>21.0.2</keycloak.version>
         <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <testcontainers.version>1.19.1</testcontainers.version>
+        <jackson.version>2.15.2</jackson.version>
         <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>

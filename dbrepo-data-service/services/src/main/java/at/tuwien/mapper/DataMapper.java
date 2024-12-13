@@ -4,7 +4,6 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableHistoryDto;
@@ -24,13 +23,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.*;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
-import org.apache.hadoop.shaded.org.apache.commons.codec.binary.Hex;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.mapstruct.Mapper;
@@ -40,15 +33,11 @@ import org.mapstruct.Mappings;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -210,161 +199,6 @@ public interface DataMapper {
         return view;
     }
 
-    /**
-     * Parse columns from a SQL statement of a known database.
-     *
-     * @param databaseId The database id.
-     * @param tables     The list of tables.
-     * @param query      The SQL statement.
-     * @return The list of columns.
-     * @throws JSQLParserException The table/view or column was not found in the database.
-     */
-    default List<ColumnDto> parseColumns(Long databaseId, List<TableDto> tables, String query) throws JSQLParserException {
-        final List<ColumnDto> columns = new ArrayList<>();
-        final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
-        final net.sf.jsqlparser.statement.Statement statement = parserRealSql.parse(new StringReader(query));
-        log.trace("parse columns from query: {}", query);
-        /* bi-directional mapping */
-        tables.forEach(table -> table.getColumns()
-                .forEach(column -> column.setTable(table)));
-        /* check */
-        if (!(statement instanceof Select selectStatement)) {
-            log.error("Query attempts to update the dataset, not a SELECT statement");
-            throw new JSQLParserException("Query attempts to update the dataset");
-        }
-        /* start parsing */
-        final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
-        final List<SelectItem> clauses = ps.getSelectItems();
-        log.trace("columns referenced in the from-clause: {}", clauses);
-        /* Parse all tables */
-        final List<FromItem> fromItems = new ArrayList<>(fromItemToFromItems(ps.getFromItem()));
-        if (ps.getJoins() != null && !ps.getJoins().isEmpty()) {
-            log.trace("query contains join items: {}", ps.getJoins());
-            for (net.sf.jsqlparser.statement.select.Join j : ps.getJoins()) {
-                if (j.getRightItem() != null) {
-                    fromItems.add(j.getRightItem());
-                }
-            }
-        }
-        final List<ColumnDto> allColumns = tables.stream()
-                .map(TableDto::getColumns)
-                .flatMap(List::stream)
-                .toList();
-        log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
-        /* Checking if all columns exist */
-        for (SelectItem clause : clauses) {
-            final SelectExpressionItem item = (SelectExpressionItem) clause;
-            final Column column = (Column) item.getExpression();
-            final String columnName = column.getColumnName().replace("`", "");
-            final List<ColumnDto> filteredColumns = allColumns.stream()
-                    .filter(c -> (c.getAlias() != null && c.getAlias().equals(columnName)) || c.getInternalName().equals(columnName))
-                    .toList();
-            String tableOrView = null;
-            for (Table t : fromItems.stream().map(t -> (net.sf.jsqlparser.schema.Table) t).toList()) {
-                if (column.getTable() == null) {
-                    /* column does not reference a specific table, find out */
-                    final List<String> filteredTables = filteredColumns.stream()
-                            .map(c -> c.getTable().getInternalName())
-                            .filter(table -> fromItems.stream().map(f -> (Table) f).anyMatch(otherTable -> otherTable.getName().replace("`", "").equals(table)))
-                            .toList();
-                    if (filteredTables.size() != 1) {
-                        log.error("Failed to filter column {} to exactly one match: {}", columnName, filteredTables.stream().map(table -> table + "." + columnName).toList());
-                        throw new JSQLParserException("Failed to filter column " + columnName + " to exactly one match");
-                    }
-                    if (tableMatches(t, filteredTables.get(0))) {
-                        tableOrView = t.getName().replace("`", "");
-                        break;
-                    }
-                }
-                /* column references a specific table */
-                final String tableOrAlias = (t.getAlias() != null ? t.getAlias().getName() : column.getTable().getName())
-                        .replace("`", "");
-                if (tableMatches(t, tableOrAlias)) {
-                    tableOrView = t.getName().replace("`", "");
-                    break;
-                }
-            }
-            if (tableOrView == null) {
-                log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
-                throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
-            }
-            final String finalTableOrView = tableOrView;
-            final List<ColumnDto> selectColumns = filteredColumns.stream()
-                    .filter(c -> c.getTable().getInternalName().equals(finalTableOrView))
-                    .toList();
-            final ColumnDto resultColumn;
-            if (selectColumns.size() != 1) {
-                if (filteredColumns.size() != 1) {
-                    log.error("Failed to filter column {} to exactly one match: {}", columnName, selectColumns.stream().map(c -> c.getTable().getInternalName() + "." + c.getInternalName()).toList());
-                    throw new JSQLParserException("Failed to filter column " + columnName + " to exactly one match");
-                }
-                resultColumn = filteredColumns.get(0);
-            } else {
-                resultColumn = selectColumns.get(0);
-            }
-            if (item.getAlias() != null) {
-                resultColumn.setAlias(item.getAlias().getName().replace("`", ""));
-            }
-            resultColumn.setDatabaseId(databaseId);
-            resultColumn.setTable(resultColumn.getTable());
-            resultColumn.setTableId(resultColumn.getTable().getId());
-            log.trace("found column with internal name {} and alias {}", resultColumn.getInternalName(), resultColumn.getAlias());
-            columns.add(resultColumn);
-        }
-        return columns;
-    }
-
-    default boolean tableMatches(net.sf.jsqlparser.schema.Table table, String tableOrDesignator) {
-        final String tableName = table.getName()
-                .trim()
-                .replace("`", "");
-        if (table.getAlias() == null) {
-            /* table does not have designator */
-            log.trace("table '{}' has no designator", tableName);
-            return tableName.equals(tableOrDesignator);
-        }
-        /* has designator */
-        final String designator = table.getAlias()
-                .getName()
-                .trim()
-                .replace("`", "");
-        log.trace("table '{}' has designator {}", tableName, designator);
-        return designator.equals(tableOrDesignator);
-    }
-
-    default List<FromItem> fromItemToFromItems(FromItem data) throws JSQLParserException {
-        return fromItemToFromItems(data, 0);
-    }
-
-    default List<FromItem> fromItemToFromItems(FromItem data, Integer level) throws JSQLParserException {
-        final List<FromItem> fromItems = new LinkedList<>();
-        if (data instanceof net.sf.jsqlparser.schema.Table table) {
-            fromItems.add(data);
-            log.trace("from-item {} is of type table: level ~> {}", table.getName(), level);
-            return fromItems;
-        }
-        if (data instanceof SubJoin subJoin) {
-            log.trace("from-item is of type sub-join: level ~> {}", level);
-            for (Join join : subJoin.getJoinList()) {
-                final List<FromItem> tmp = fromItemToFromItems(join.getRightItem(), level + 1);
-                if (tmp == null) {
-                    log.error("Failed to find right sub-join table: {}", join.getRightItem());
-                    throw new JSQLParserException("Failed to find right sub-join table");
-                }
-                fromItems.addAll(tmp);
-            }
-            final List<FromItem> tmp = fromItemToFromItems(subJoin.getLeft(), level + 1);
-            if (tmp == null) {
-                log.error("Failed to find left sub-join table: {}", subJoin.getLeft());
-                throw new JSQLParserException("Failed to find left sub-join table");
-            }
-            fromItems.addAll(tmp);
-            return fromItems;
-        }
-        log.warn("unknown from-item {}", data);
-        return null;
-    }
-
     default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException, QueryNotFoundException {
         /* note that next() is called outside this mapping function */
         return QueryDto.builder()
@@ -518,98 +352,6 @@ public interface DataMapper {
                     .toInstant());
         }
         return table;
-    }
-
-    default Object dataColumnToObject(Object data, ColumnDto column) {
-        if (data == null) {
-            return null;
-        }
-        /* boolean encoding fix */
-        if (column.getColumnType().equals(ColumnTypeDto.TINYINT) && column.getSize() == 1) {
-            column.setColumnType(ColumnTypeDto.BOOL);
-        }
-        switch (column.getColumnType()) {
-            case DATE -> {
-                final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                        .parseCaseInsensitive() /* case insensitive to parse JAN and FEB */
-                        .appendPattern("yyyy-MM-dd")
-                        .toFormatter(Locale.ENGLISH);
-                final LocalDate date = LocalDate.parse(String.valueOf(data), formatter);
-                return date.atStartOfDay(ZoneId.of("UTC"))
-                        .toInstant();
-            }
-            case TIMESTAMP, DATETIME -> {
-                return Timestamp.valueOf(data.toString())
-                        .toInstant();
-            }
-            case BINARY, VARBINARY, BIT -> {
-                return Long.parseLong(String.valueOf(data), 2);
-            }
-            case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> {
-                return String.valueOf(data);
-            }
-            case BIGINT, SERIAL -> {
-                return new BigInteger(String.valueOf(data));
-            }
-            case INT, SMALLINT, MEDIUMINT, TINYINT -> {
-                return Integer.parseInt(String.valueOf(data));
-            }
-            case DECIMAL, FLOAT, DOUBLE -> {
-                return Double.valueOf(String.valueOf(data));
-            }
-            case BOOL -> {
-                return Boolean.valueOf(String.valueOf(data));
-            }
-            case TIME -> {
-                return String.valueOf(data);
-            }
-            case YEAR -> {
-                final String date = String.valueOf(data);
-                return Short.valueOf(date.substring(0, date.indexOf('-')));
-            }
-        }
-        log.warn("column type {} is not known", column.getColumnType());
-        throw new IllegalArgumentException("Column type not known");
-    }
-
-    default QueryResultDto resultListToQueryResultDto(List<ColumnDto> columns, ResultSet result) throws SQLException {
-        log.trace("mapping result list to query result, columns.size={}", columns.size());
-        final List<Map<String, Object>> resultList = new LinkedList<>();
-        while (result.next()) {
-            /* map the result set to the columns through the stored metadata in the metadata database */
-            int[] idx = new int[]{1};
-            final Map<String, Object> map = new HashMap<>();
-            for (final ColumnDto column : columns) {
-                final String columnOrAlias;
-                if (column.getAlias() != null) {
-                    log.debug("column {} has alias {}", column.getInternalName(), column.getAlias());
-                    columnOrAlias = column.getAlias();
-                } else {
-                    columnOrAlias = column.getInternalName();
-                }
-                if (List.of(ColumnTypeDto.BLOB, ColumnTypeDto.TINYBLOB, ColumnTypeDto.MEDIUMBLOB, ColumnTypeDto.LONGBLOB).contains(column.getColumnType())) {
-                    log.trace("column {} is of type {}", columnOrAlias, column.getColumnType().getType().toLowerCase());
-                    final Blob blob = result.getBlob(idx[0]++);
-                    final String value = blob == null ? null : Hex.encodeHexString(blob.getBytes(1, (int) blob.length())).toUpperCase();
-                    map.put(columnOrAlias, value);
-                    continue;
-                }
-                final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
-                map.put(columnOrAlias, object);
-            }
-            resultList.add(map);
-        }
-        final int[] idx = new int[]{0};
-        final List<Map<String, Integer>> headers = columns.stream()
-                .map(c -> (Map<String, Integer>) new LinkedHashMap<String, Integer>() {{
-                    put(c.getAlias() != null ? c.getAlias() : c.getInternalName(), idx[0]++);
-                }})
-                .toList();
-        log.trace("created ordered header list: {}", headers);
-        return QueryResultDto.builder()
-                .result(resultList)
-                .headers(headers)
-                .build();
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {
