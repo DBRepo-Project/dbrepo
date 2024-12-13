@@ -957,8 +957,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete view: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_view_data(self, database_id: int, view_id: int, page: int = 0, size: int = 10,
-                      df: bool = False) -> Result | DataFrame:
+    def get_view_data(self, database_id: int, view_id: int, page: int = 0, size: int = 10) -> DataFrame:
         """
         Get data of a view in a database with given database id and view id.
 
@@ -966,9 +965,8 @@ class RestClient:
         :param view_id: The view id.
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
-        :returns: The result of the view query, if successful.
+        :returns: The view data, if successful.
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -984,11 +982,7 @@ class RestClient:
             params.append(('size', size))
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 200:
-            body = response.json()
-            res = Result.model_validate(body)
-            if df:
-                return DataFrame.from_records(res.result)
-            return res
+            return DataFrame.from_records(response.json())
         if response.status_code == 400:
             raise MalformedError(f'Failed to get view data: {response.text}')
         if response.status_code == 403:
@@ -1026,7 +1020,7 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_table_data(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
-                       timestamp: datetime.datetime = None, df: bool = False) -> Result | DataFrame:
+                       timestamp: datetime.datetime = None) -> DataFrame:
         """
         Get data of a table in a database with given database id and table id.
 
@@ -1035,9 +1029,8 @@ class RestClient:
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
         :param timestamp: The query execution time. Optional.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
-        :returns: The result of the view query, if successful.
+        :returns: The table data, if successful.
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -1054,11 +1047,7 @@ class RestClient:
             params.append(('timestamp', timestamp))
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 200:
-            body = response.json()
-            res = Result.model_validate(body)
-            if df:
-                return DataFrame.from_records(res.result)
-            return res
+            return DataFrame.from_records(response.json())
         if response.status_code == 400:
             raise MalformedError(f'Failed to get table data: {response.text}')
         if response.status_code == 403:
@@ -1551,7 +1540,7 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10,
-                      timestamp: datetime.datetime = None, df: bool = False) -> Result | DataFrame:
+                      timestamp: datetime.datetime = None) -> DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
         result set can be paginated with setting page and size (both). Historic data can be queried by setting
@@ -1562,7 +1551,6 @@ class RestClient:
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
         :param timestamp: The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result set, if successful.
 
@@ -1585,11 +1573,8 @@ class RestClient:
         response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"},
                                  payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
-            body = response.json()
-            res = Result.model_validate(body)
-            if df:
-                return DataFrame.from_records(res.result)
-            return res
+            logging.info(f'Created subset with id: {response.headers["X-Id"]}')
+            return DataFrame.from_records(response.json())
         if response.status_code == 400:
             raise MalformedError(f'Failed to create subset: {response.text}')
         if response.status_code == 403:
@@ -1605,8 +1590,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create subset: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def get_subset_data(self, database_id: int, subset_id: int, page: int = 0, size: int = 10,
-                        df: bool = False) -> Result | DataFrame:
+    def get_subset_data(self, database_id: int, subset_id: int, page: int = 0, size: int = 10) -> DataFrame:
         """
         Re-executes a query in a database with given database id and query id.
 
@@ -1615,9 +1599,8 @@ class RestClient:
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
         :param size: The result pagination size. Optional. Default: 10.
-        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
-        :returns: The result set, if successful.
+        :returns: The subset data, if successful.
 
         :raises MalformedError: If the payload is rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -1631,11 +1614,7 @@ class RestClient:
             url += f'?page={page}&size={size}'
         response = self._wrapper(method="get", url=url, headers=headers)
         if response.status_code == 200:
-            body = response.json()
-            res = Result.model_validate(body)
-            if df:
-                return DataFrame.from_records(res.result)
-            return res
+            return DataFrame.from_records(response.json())
         if response.status_code == 400:
             raise MalformedError(f'Failed to get query data: {response.text}')
         if response.status_code == 403:
@@ -1936,7 +1915,7 @@ class RestClient:
 
         :returns: List of licenses, if successful.
         """
-        url = f'/api/database/license'
+        url = f'/api/license'
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()

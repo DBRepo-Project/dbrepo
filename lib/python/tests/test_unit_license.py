@@ -12,7 +12,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_get_licenses_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/license', json=[])
+            mock.get('/api/license', json=[])
             # test
             response = RestClient().get_licenses()
             self.assertEqual([], response)
@@ -22,7 +22,7 @@ class DatabaseUnitTest(unittest.TestCase):
             exp = [License(identifier='CC-BY-4.0', uri='https://creativecommons.org/licenses/by/4.0/',
                            description='The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.')]
             # mock
-            mock.get('/api/database/license', json=[exp[0].model_dump()])
+            mock.get('/api/license', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_licenses()
             self.assertEqual(exp, response)
