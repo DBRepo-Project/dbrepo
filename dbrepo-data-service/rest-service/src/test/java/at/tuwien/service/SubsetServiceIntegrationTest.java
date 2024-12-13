@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
@@ -103,11 +103,11 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_2_CREATED_BY))
-                .thenReturn(QUERY_2_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
-        persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_DTO), true);
+        persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_BRIEF_DTO), true);
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_2_ID);
         assertEquals(2L, response.getId());
         assertTrue(response.getIsPersisted());
@@ -119,11 +119,11 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
 
         /* test */
-        persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_DTO), false);
+        persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_BRIEF_DTO), false);
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID);
         assertEquals(1L, response.getId());
         assertFalse(response.getIsPersisted());
@@ -157,9 +157,9 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(List.of(IDENTIFIER_2_DTO));
-        when(metadataServiceGateway.getUserById(QUERY_1_CREATED_BY))
-                .thenReturn(QUERY_1_CREATOR);
+                .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO));
+        when(metadataServiceGateway.getUserById(USER_1_ID))
+                .thenReturn(USER_1_DTO);
         MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
@@ -179,13 +179,13 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
         MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null))
-                .thenReturn(List.of(IDENTIFIER_2_DTO, IDENTIFIER_5_DTO));
+                .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_5_BRIEF_DTO));
 
         /* test */
         return queryService.findAll(DATABASE_1_PRIVILEGED_DTO, filterPersisted);
     }
 
-    protected void persist_generic(Long queryId, List<IdentifierDto> identifiers, Boolean persist)
+    protected void persist_generic(Long queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
             throws RemoteUnavailableException, SQLException, QueryStorePersistException, MetadataServiceException,
             DatabaseNotFoundException, InterruptedException {
 

@@ -3,7 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
@@ -114,7 +114,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     @Override
     public List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
-        final List<IdentifierDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
+        final List<IdentifierBriefDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -180,7 +180,7 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
             }
             final QueryDto query = dataMapper.resultSetToQueryDto(resultSet);
             query.setIdentifiers(metadataServiceGateway.getIdentifiers(database.getId(), queryId));
-            query.setCreator(database.getOwner());
+            query.setOwner(database.getOwner());
             query.setDatabaseId(database.getId());
             return query;
         } catch (SQLException e) {

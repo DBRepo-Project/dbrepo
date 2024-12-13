@@ -8,7 +8,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
@@ -284,13 +284,13 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
+    public List<IdentifierBriefDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException {
-        final ResponseEntity<IdentifierDto[]> response;
+        final ResponseEntity<IdentifierBriefDto[]> response;
         final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
         log.trace("mapped url: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, IdentifierDto[].class);
+            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, IdentifierBriefDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find identifiers for database with id {} and subset with id {}: {}", databaseId, subsetId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find identifiers: " + e.getMessage(), e);
@@ -313,7 +313,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     public void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, MetadataServiceException,
             RemoteUnavailableException {
         final ResponseEntity<Void> response;
-        final String url = "/api/database/" + databaseId + "/table/" + tableId;
+        final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
         log.trace("mapped url: {}", url);
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, HttpEntity.EMPTY, Void.class);

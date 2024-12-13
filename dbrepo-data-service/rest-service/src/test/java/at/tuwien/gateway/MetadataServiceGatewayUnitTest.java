@@ -8,7 +8,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
@@ -730,12 +730,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getIdentifiers_witSubset_succeeds() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
-                        .body(new IdentifierDto[]{IDENTIFIER_1_DTO}));
+                        .body(new IdentifierBriefDto[]{IDENTIFIER_1_BRIEF_DTO}));
 
         /* test */
-        final List<IdentifierDto> response = metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID);
+        final List<IdentifierBriefDto> response = metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID);
         assertEquals(1, response.size());
     }
 
@@ -743,12 +743,12 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getIdentifiers_succeeds() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
-                        .body(new IdentifierDto[]{IDENTIFIER_1_DTO}));
+                        .body(new IdentifierBriefDto[]{IDENTIFIER_1_BRIEF_DTO}));
 
         /* test */
-        final List<IdentifierDto> response = metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null);
+        final List<IdentifierBriefDto> response = metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null);
         assertEquals(1, response.size());
     }
 
@@ -758,7 +758,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpServerErrorException.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class));
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class));
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
@@ -772,7 +772,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class));
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -784,7 +784,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getIdentifiers_statusCode_fails() {
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -798,7 +798,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getIdentifiers_emptyBody_fails() {
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierDto[].class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(IdentifierBriefDto[].class)))
                 .thenReturn(ResponseEntity.ok()
                         .build());
 

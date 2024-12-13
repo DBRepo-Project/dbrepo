@@ -18,13 +18,15 @@ export default {
   props: {
     type: {
       type: String,
-      default: () => 'query' /* query or view */
+      default: () => 'query' /* query, view or table */
     },
     loading: {
       type: Boolean,
-      default: () => {
-        return false
-      }
+      default: () => false
+    },
+    timestamp: {
+      type: String,
+      default: () => new Date().toISOString()
     }
   },
   data () {
@@ -106,6 +108,25 @@ export default {
           .finally(() => {
             this.loadingExecute = false
           })
+      } else if (this.type === 'table') {
+        const tableService = useTableService()
+        tableService.getData(this.$route.params.database_id, id, (this.options.page - 1), this.options.itemsPerPage, this.timestamp)
+          .then((result) => {
+            this.mapResults(result)
+            this.id = id
+            this.loadingExecute = false
+          })
+          .catch(({code}) => {
+            this.loadingExecute = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
+          })
+          .finally(() => {
+            this.loadingExecute = false
+          })
       } else {
         const viewService = useViewService()
         viewService.reExecuteData(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
@@ -135,6 +156,24 @@ export default {
       if (this.type === 'query') {
         const queryService = useQueryService()
         queryService.reExecuteCount(this.$route.params.database_id, id)
+          .then((count) => {
+            this.total = count
+            this.loadingCount = false
+          })
+          .catch(({code}) => {
+            this.loadingCount = false
+            const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
+          })
+          .finally(() => {
+            this.loadingCount = false
+          })
+      } else if (this.type === 'table') {
+        const tableService = useTableService()
+        tableService.getCount(this.$route.params.database_id, id, this.timestamp)
           .then((count) => {
             this.total = count
             this.loadingCount = false

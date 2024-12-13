@@ -251,7 +251,7 @@ public class TableEndpoint extends AbstractEndpoint {
                                                              @NotNull HttpServletRequest request,
                                                              Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            PaginationException, QueryMalformedException, MetadataServiceException, NotAllowedException {
+            PaginationException, MetadataServiceException, NotAllowedException {
         log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
                 tableId, timestamp, page, size);
         endpointValidator.validateDataParams(page, size);

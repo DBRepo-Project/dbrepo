@@ -5,7 +5,7 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
@@ -112,7 +112,7 @@ public interface MetadataServiceGateway {
      * @throws DatabaseNotFoundException  The database was not found.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    List<IdentifierDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
+    List<IdentifierBriefDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException;
 
     /**

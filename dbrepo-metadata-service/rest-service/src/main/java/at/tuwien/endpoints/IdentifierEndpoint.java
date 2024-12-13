@@ -1,12 +1,8 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.config.EndpointConfig;
@@ -98,7 +94,7 @@ public class IdentifierEndpoint {
                     description = "Found identifiers successfully",
                     content = {
                             @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = ConceptDto.class))),
+                                    array = @ArraySchema(schema = @Schema(implementation = IdentifierBriefDto[].class))),
                             @Content(mediaType = "application/ld+json",
                                     array = @ArraySchema(schema = @Schema(implementation = LdDatasetDto.class)))
                     }),
@@ -129,8 +125,8 @@ public class IdentifierEndpoint {
         switch (accept) {
             case "application/json":
                 log.trace("accept header matches json");
-                final List<IdentifierDto> resource1 = identifiers.stream()
-                        .map(metadataMapper::identifierToIdentifierDto)
+                final List<IdentifierBriefDto> resource1 = identifiers.stream()
+                        .map(metadataMapper::identifierToIdentifierBriefDto)
                         .toList();
                 log.debug("find identifier resulted in identifiers {}", resource1);
                 return ResponseEntity.ok(resource1);
