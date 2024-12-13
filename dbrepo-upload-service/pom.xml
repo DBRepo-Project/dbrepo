@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-upload-service</artifactId>
     <name>dbrepo-upload-service</name>
-    <version>1.5.3</version>
+    <version>1.6.0</version>
 
     <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/</url>
     <developers>
