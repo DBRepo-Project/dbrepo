@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canReadData">
     <ViewToolbar
       v-if="view" />
     <v-toolbar
@@ -7,7 +8,6 @@
       :title="$t('toolbars.database.current')"
       flat>
       <v-btn
-        v-if="canDownload"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
@@ -85,18 +85,24 @@ export default {
     access () {
       return this.userStore.getAccess
     },
-    canDownload () {
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    },
+    canReadData () {
       if (!this.view) {
         return false
       }
       if (this.view.is_public) {
         return true
       }
-      if (!this.access) {
+      if (!this.user) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
-    }
+      return this.view.owner.id === this.user.id || this.hasReadAccess
+    },
   },
   mounted () {
     this.reload()

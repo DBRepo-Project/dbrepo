@@ -270,6 +270,10 @@ public class ViewEndpoint extends AbstractEndpoint {
         // TODO improve with a single operation that checks if user xyz has access to view abc
         final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
         if (!view.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to get data from view: unauthorized");
+                throw new NotAllowedException("Failed to get data from view: unauthorized");
+            }
             metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {

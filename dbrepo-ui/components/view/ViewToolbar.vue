@@ -34,6 +34,7 @@
           :text="$t('navigation.info')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
         <v-tab
+          v-if="canReadData"
           :text="$t('navigation.data')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
       </v-tabs>
@@ -95,6 +96,24 @@ export default {
     },
     roles () {
       return this.userStore.getRoles
+    },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    },
+    canReadData () {
+      if (!this.view) {
+        return false
+      }
+      if (this.view.is_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.view.owner.id === this.user.id || this.hasReadAccess
     },
     identifiers () {
       if (!this.view) {
