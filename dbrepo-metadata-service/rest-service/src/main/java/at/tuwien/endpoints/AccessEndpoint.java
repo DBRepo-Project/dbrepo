@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +91,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                    @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                                    @PathVariable("userId") UUID userId,
                                                     @Valid @RequestBody UpdateDatabaseAccessDto data,
                                                     @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
@@ -155,7 +154,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                       @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody UpdateDatabaseAccessDto data,
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
@@ -200,7 +199,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                                  @PathVariable("userId") UUID userId,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
@@ -257,7 +256,7 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @org.hibernate.validator.constraints.UUID @PathVariable("userId") UUID userId,
+                                       @PathVariable("userId") UUID userId,
                                        @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {

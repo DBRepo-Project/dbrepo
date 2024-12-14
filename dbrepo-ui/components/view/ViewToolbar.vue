@@ -69,11 +69,11 @@
           :text="$t('navigation.info')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
         <v-tab
-          v-if="canViewData"
+          v-if="canReadData"
           :text="$t('navigation.data')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
         <v-tab
-          v-if="canViewSchema"
+          v-if="canReadData"
           :text="$t('navigation.schema')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/schema`" />
       </v-tabs>
@@ -174,17 +174,29 @@ export default {
     access () {
       return this.userStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
     user () {
       return this.userStore.getUser
     },
     roles () {
       return this.userStore.getRoles
+    },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    },
+    canReadData () {
+      if (!this.view) {
+        return false
+      }
+      if (this.cachedView.is_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.cachedView.owner.id === this.user.id || this.hasReadAccess
     },
     identifiers () {
       if (!this.cachedView) {

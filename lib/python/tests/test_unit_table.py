@@ -1,3 +1,4 @@
+import json
 import unittest
 
 import requests_mock
@@ -6,9 +7,9 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, Result, Concept, Unit, \
-    TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
-from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
+from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, \
+    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
+from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
     AuthenticationError, ExternalSystemError
 
 
@@ -240,27 +241,24 @@ class TableUnitTest(unittest.TestCase):
 
     def test_get_table_data_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/table/9/data', json=exp.model_dump())
+            mock.get('/api/database/1/table/9/data', json=json.dumps(exp))
             # test
             response = RestClient().get_table_data(database_id=1, table_id=9)
-            self.assertEqual(exp, response)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_table_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
-            res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
-            exp = DataFrame.from_records(res.model_dump()['result'])
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/table/9/data', json=res.model_dump())
+            mock.get('/api/database/1/table/9/data', json=json.dumps(exp))
             # test
-            response = RestClient().get_table_data(database_id=1, table_id=9, df=True)
-            self.assertEqual(exp.shape, response.shape)
-            self.assertTrue(DataFrame.equals(exp, response))
+            response = RestClient().get_table_data(database_id=1, table_id=9)
+            self.assertEqual(df.shape, response.shape)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_table_data_malformed_fails(self):
         with requests_mock.Mocker() as mock:

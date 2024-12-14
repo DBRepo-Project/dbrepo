@@ -5510,7 +5510,7 @@ public abstract class BaseTest {
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
-            .columns(null)
+            .columns(new LinkedList<>())
             .build();
 
     public final static ViewBriefDto VIEW_5_BRIEF_DTO = ViewBriefDto.builder()
@@ -5560,6 +5560,40 @@ public abstract class BaseTest {
                     .d(0L)
                     .isNullAllowed(true)
                     .view(VIEW_5)
+                    .build());
+
+    public final static List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(
+            ViewColumnDto.builder()
+                    .id(29L)
+                    .ordinalPosition(0)
+                    .name("location")
+                    .internalName("location")
+                    .ordinalPosition(0)
+                    .columnType(ColumnTypeDto.VARCHAR)
+                    .size(255L)
+                    .isNullAllowed(false)
+                    .build(),
+            ViewColumnDto.builder()
+                    .id(30L)
+                    .ordinalPosition(1)
+                    .name("lat")
+                    .internalName("lat")
+                    .ordinalPosition(1)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .build(),
+            ViewColumnDto.builder()
+                    .id(31L)
+                    .ordinalPosition(2)
+                    .name("lng")
+                    .internalName("lng")
+                    .ordinalPosition(2)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
                     .build());
 
     public final static List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(

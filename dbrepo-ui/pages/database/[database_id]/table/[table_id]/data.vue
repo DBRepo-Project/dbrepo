@@ -66,7 +66,7 @@
         id="query-results"
         ref="queryResults"
         type="table"
-        :timestamp="this.versionISO || this.lastReload.toISOString()"
+        :timestamp="versionISO || lastReload.toISOString()"
         class="mt-0 mb-0" />
     </v-card>
     <v-dialog

@@ -1,3 +1,4 @@
+import json
 import unittest
 
 import requests_mock
@@ -6,25 +7,23 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Result, Query, User, UserAttributes, QueryType, UserBrief
-from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError, QueryStoreError, \
-    MetadataConsistencyError, AuthenticationError
+from dbrepo.api.dto import Query, User, UserAttributes, QueryType
+from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError
 
 
 class QueryUnitTest(unittest.TestCase):
 
     def test_create_subset_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=201)
+            mock.post('/api/database/1/subset', json=json.dumps(exp), headers={'X-Id': '1'}, status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_subset(database_id=1, page=0, size=10,
                                             query="SELECT id, username FROM some_table WHERE id IN (1,2)")
-            self.assertEqual(exp, response)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_create_subset_malformed_fails(self):
         with requests_mock.Mocker() as mock:
@@ -64,17 +63,16 @@ class QueryUnitTest(unittest.TestCase):
 
     def test_create_subset_not_auth_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=None)
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=201)
+            mock.post('/api/database/1/subset', json=json.dumps(exp), headers={'X-Id': '1'}, status_code=201)
             # test
 
             client = RestClient()
             response = client.create_subset(database_id=1, page=0, size=10,
                                             query="SELECT id, username FROM some_table WHERE id IN (1,2)")
-            self.assertEqual(exp, response)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_find_query_succeeds(self):
         with requests_mock.Mocker() as mock:
@@ -167,27 +165,24 @@ class QueryUnitTest(unittest.TestCase):
 
     def test_get_subset_data_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=6)
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/subset/6/data', json=exp.model_dump())
+            mock.get('/api/database/1/subset/6/data', json=json.dumps(exp))
             # test
             response = RestClient().get_subset_data(database_id=1, subset_id=6)
-            self.assertEqual(exp, response)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_subset_data_dataframe_succeeds(self):
         with requests_mock.Mocker() as mock:
-            res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
-                         headers=[{'id': 0, 'username': 1}],
-                         id=6)
-            exp = DataFrame.from_records(res.model_dump()['result'])
+            exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
+            df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.get('/api/database/1/subset/6/data', json=res.model_dump())
+            mock.get('/api/database/1/subset/6/data', json=json.dumps(exp))
             # test
-            response = RestClient().get_subset_data(database_id=1, subset_id=6, df=True)
-            self.assertEqual(exp.shape, response.shape)
-            self.assertTrue(DataFrame.equals(exp, response))
+            response = RestClient().get_subset_data(database_id=1, subset_id=6)
+            self.assertEqual(df.shape, response.shape)
+            self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_subset_data_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:

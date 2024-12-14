@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canViewData">
+    v-if="canReadData">
     <ViewToolbar
       v-if="cachedView" />
     <v-toolbar
@@ -8,7 +8,6 @@
       :title="$t('toolbars.database.current')"
       flat>
       <v-btn
-        v-if="canDownload"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
@@ -94,22 +93,10 @@ export default {
       if (!this.access) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
     },
-    canDownload () {
+    canReadData () {
       if (!this.view) {
-        return false
-      }
-      if (this.cachedView.is_public) {
-        return true
-      }
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
-    },
-    canViewData () {
-      if (!this.cachedView) {
         return false
       }
       if (this.cachedView.is_public) {
@@ -118,11 +105,11 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.view.owner.id === this.user.id || this.hasReadAccess
     },
   },
   mounted () {
-    if (!this.canViewData) {
+    if (!this.canReadData) {
       return
     }
     this.reload()

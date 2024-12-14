@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import datetime
 from dataclasses import field
 from enum import Enum
-import datetime
-from typing import List, Optional, Any, Annotated
+from typing import List, Optional, Annotated
+
 from pydantic import BaseModel, PlainSerializer, Field
 
 Timestamp = Annotated[
@@ -640,12 +641,6 @@ class CreateView(BaseModel):
     query: str
     is_public: bool
     is_schema_public: bool
-
-
-class Result(BaseModel):
-    result: Any
-    headers: Any
-    id: Optional[int] = None
 
 
 class ViewBrief(BaseModel):

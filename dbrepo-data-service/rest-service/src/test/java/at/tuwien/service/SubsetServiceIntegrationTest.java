@@ -165,7 +165,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId);
         assertEquals(QUERY_1_ID, response.getId());
-        assertEquals(DATABASE_1_ID, response.getDatabaseId());
     }
 
     protected List<QueryDto> findAll_generic(Boolean filterPersisted) throws SQLException, QueryNotFoundException,

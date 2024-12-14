@@ -21,7 +21,6 @@ import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.config.QueryConfig;
-import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
@@ -198,13 +197,10 @@ public interface DataMapper {
         return view;
     }
 
-    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException, QueryNotFoundException {
+    default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
-        return QueryDto.builder()
+        final QueryDto subset = QueryDto.builder()
                 .id(data.getLong(1))
-                .owner(UserBriefDto.builder()
-                        .id(UUID.fromString(data.getString(3)))
-                        .build())
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))
@@ -214,6 +210,12 @@ public interface DataMapper {
                         .atZone(ZoneId.of("UTC"))
                         .toInstant())
                 .build();
+        if (data.getString(3) != null) {
+            subset.setOwner(UserBriefDto.builder()
+                    .id(UUID.fromString(data.getString(3)))
+                    .build());
+        }
+        return subset;
     }
 
     default List<TableHistoryDto> resultSetToTableHistory(ResultSet resultSet) throws SQLException {
@@ -318,7 +320,7 @@ public interface DataMapper {
         if (!resultSet.next()) {
             throw new TableNotFoundException("Failed to find table in the information schema");
         }
-        return TableDto.builder()
+        final TableDto table = TableDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
                 .isVersioned(resultSet.getString(2).equals("SYSTEM VERSIONED"))
@@ -333,7 +335,6 @@ public interface DataMapper {
                 .columns(new LinkedList<>())
                 .identifiers(new LinkedList<>())
                 .owner(database.getOwner())
-                .owner(database.getOwner())
                 .constraints(ConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .primaryKey(new LinkedHashSet<>())
@@ -342,6 +343,7 @@ public interface DataMapper {
                         .build())
                 .isPublic(database.getIsPublic())
                 .build();
+        return table;
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {
