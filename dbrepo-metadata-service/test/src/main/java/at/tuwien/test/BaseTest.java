@@ -5596,40 +5596,6 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(
-            ViewColumnDto.builder()
-                    .id(29L)
-                    .ordinalPosition(0)
-                    .name("location")
-                    .internalName("location")
-                    .ordinalPosition(0)
-                    .columnType(ColumnTypeDto.VARCHAR)
-                    .size(255L)
-                    .isNullAllowed(false)
-                    .build(),
-            ViewColumnDto.builder()
-                    .id(30L)
-                    .ordinalPosition(1)
-                    .name("lat")
-                    .internalName("lat")
-                    .ordinalPosition(1)
-                    .columnType(ColumnTypeDto.DECIMAL)
-                    .size(10L)
-                    .d(0L)
-                    .isNullAllowed(true)
-                    .build(),
-            ViewColumnDto.builder()
-                    .id(31L)
-                    .ordinalPosition(2)
-                    .name("lng")
-                    .internalName("lng")
-                    .ordinalPosition(2)
-                    .columnType(ColumnTypeDto.DECIMAL)
-                    .size(10L)
-                    .d(0L)
-                    .isNullAllowed(true)
-                    .build());
-
     public final static Long QUERY_1_RESULT_ID = 1L;
     public final static List<Map<String, Object>> QUERY_1_RESULT_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
