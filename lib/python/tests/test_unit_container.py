@@ -55,8 +55,12 @@ class ContainerUnitTest(unittest.TestCase):
                             running=True,
                             host="data-db",
                             port=12345,
+<<<<<<< Updated upstream
                             sidecar_host="data-db-sidecar",
                             sidecar_port=3305,
+=======
+                            created=datetime.datetime(2024, 3, 26, 10, 11, 0, 0, datetime.timezone.utc),
+>>>>>>> Stashed changes
                             image=Image(id=1,
                                         registry="docker.io",
                                         name="mariadb",

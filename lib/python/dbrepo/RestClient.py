@@ -36,7 +36,7 @@ class RestClient:
     secure: bool = None
 
     def __init__(self,
-                 endpoint: str = 'http://gateway-service',
+                 endpoint: str = 'http://localhost',
                  username: str = None,
                  password: str = None,
                  secure: bool = True) -> None:
