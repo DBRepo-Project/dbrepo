@@ -33,6 +33,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -368,7 +369,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             final ViewDto view = schemaService.inspectView(database, metadataMapper.queryDtoToViewName(subset));
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
-            return ResponseEntity.ok()
+            return ResponseEntity.status(request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK)
                     .headers(headers)
                     .body(transform(dataset));
         } catch (SQLException e) {
