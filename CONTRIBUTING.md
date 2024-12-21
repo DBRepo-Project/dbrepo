@@ -31,7 +31,6 @@ a couple of days at maximum, one could go directly for a PR. It's fine.
 - [ ] Change variables `APP_VERSION` and `CHART_VERSION` in CI/CD file `.gitlab-ci.yml`
 - [ ] Change Helm chart variables in `helm/dbrepo/Chart.yaml` and update the chart README.md and values.schema.json for artifact hub with `make gen-helm-doc`
 - [ ] Change Python library version in `lib/python/setup.py` and `lib/python/pyproject.toml` for PyPI
-- [ ] Change the supported tags list in `.docs/docker/_header.md` for docker hub
 - [ ] Change the maven version in the metadata & data services:
   - `mvn -f ./dbrepo-metadata-service/pom.xml versions:set -DnewVersion=VERSION`
   - `mvn -f ./dbrepo-data-service/pom.xml versions:set -DnewVersion=VERSION`

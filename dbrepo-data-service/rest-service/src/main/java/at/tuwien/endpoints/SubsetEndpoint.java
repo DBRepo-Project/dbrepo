@@ -9,8 +9,8 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.SubsetService;
@@ -55,19 +55,19 @@ public class SubsetEndpoint extends AbstractEndpoint {
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
     private final StorageService storageService;
+    private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
-    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public SubsetEndpoint(SchemaService schemaService, SubsetService subsetService, MetadataMapper metadataMapper,
-                          StorageService storageService, EndpointValidator endpointValidator,
-                          MetadataServiceGateway metadataServiceGateway) {
+                          StorageService storageService, CredentialService credentialService,
+                          EndpointValidator endpointValidator) {
         this.schemaService = schemaService;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
         this.storageService = storageService;
+        this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
-        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @GetMapping
@@ -102,7 +102,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -162,7 +162,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
         String accept = httpServletRequest.getHeader("Accept");
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);
@@ -277,7 +277,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
             return getData(databaseId, subsetId, principal, request, page, size);
@@ -335,13 +335,13 @@ public class SubsetEndpoint extends AbstractEndpoint {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to re-execute query: no authentication found");
                 throw new NotAllowedException("Failed to re-execute query: no authentication found");
             }
-            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, UserUtil.getId(principal));
         }
         /* parameters */
         if (page == null) {
@@ -423,8 +423,8 @@ public class SubsetEndpoint extends AbstractEndpoint {
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        credentialService.getAccess(databaseId, UserUtil.getId(principal));
         try {
             subsetService.persist(database, queryId, data.getPersist());
             final QueryDto dto = subsetService.findById(database, queryId);

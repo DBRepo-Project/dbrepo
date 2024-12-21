@@ -5,7 +5,6 @@ volumes:
   broker-service-data:
   upload-service-data:
   search-db-data:
-  storage-service-data:
   identity-service-data:
   metric-db-data:
   dashboard-service-data:
@@ -344,7 +343,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/nginx:1.27.0-alpine3.19-slim
+    image: docker.io/nginx:1.27.3-alpine3.20-slim
     ports:
       - "80:8080"
     volumes:
@@ -416,11 +415,10 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/chrislusf/seaweedfs:3.59
-    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
+    image: docker.io/bitnami/seaweedfs:3.71.0-debian-12-r4
+    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
-      - storage-service-data:/data
     ports:
       - "9000:9000"
       - "8888:8888"
@@ -436,7 +434,7 @@ services:
     restart: "no"
     container_name: dbrepo-metric-db
     hostname: metric-db
-    image: bitnami/prometheus:2.54.1-debian-12-r4
+    image: docker.io/bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./dbrepo-metric-db/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data

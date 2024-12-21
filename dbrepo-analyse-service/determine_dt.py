@@ -82,7 +82,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=',') ->
             elif dataType == dtype('int64'):
                 min_val = min(df[name])
                 max_val = max(df[name])
-                if 0 <= min_val <= 1 and 0 <= max_val <= 1:
+                if 0 <= min_val <= 1 and 0 <= max_val <= 1 and 'id' not in column_name:
                     logging.debug(f"mapped column {name} from int64 to bool")
                     col.type = DataTypeDto.BOOL
                     continue

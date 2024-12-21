@@ -1,16 +1,17 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
-import at.tuwien.api.database.*;
+import at.tuwien.api.database.AccessTypeDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.PrivilegedUserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +41,16 @@ public class DatabaseEndpoint {
     private final AccessService accessService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
-    private final MetadataServiceGateway metadataServiceGateway;
+    private final CredentialService credentialService;
 
     @Autowired
     public DatabaseEndpoint(SubsetService queryService, AccessService accessService, MetadataMapper metadataMapper,
-                            DatabaseService databaseService, MetadataServiceGateway metadataServiceGateway) {
+                            DatabaseService databaseService, CredentialService credentialService) {
         this.queryService = queryService;
         this.accessService = accessService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
-        this.metadataServiceGateway = metadataServiceGateway;
+        this.credentialService = credentialService;
     }
 
     @PostMapping
@@ -90,7 +90,7 @@ public class DatabaseEndpoint {
             DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
-        final PrivilegedContainerDto container = metadataServiceGateway.getContainerById(data.getContainerId());
+        final PrivilegedContainerDto container = credentialService.getContainer(data.getContainerId());
         try {
             final PrivilegedDatabaseDto database = databaseService.create(container, data);
             queryService.createQueryStore(container, data.getInternalName());
@@ -138,7 +138,7 @@ public class DatabaseEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint update user password in database, databaseId={}, data.username={}", databaseId,
                 data.getUsername());
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             databaseService.update(database, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)

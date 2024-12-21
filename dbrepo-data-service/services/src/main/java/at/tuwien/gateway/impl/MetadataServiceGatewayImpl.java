@@ -9,8 +9,8 @@ import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
@@ -27,6 +27,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,6 +76,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final PrivilegedContainerDto container = metadataMapper.containerDtoToPrivilegedContainerDto(response.getBody());
         container.setUsername(response.getHeaders().get("X-Username").get(0));
         container.setPassword(response.getHeaders().get("X-Password").get(0));
+        container.setLastRetrieved(Instant.now());
         return container;
     }
 
@@ -114,7 +116,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
         database.getContainer().setHost(response.getHeaders().get("X-Host").get(0));
         database.getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
-        log.debug("found privileged database username={}", database.getContainer().getUsername());
+        database.setLastRetrieved(Instant.now());
         return database;
     }
 
@@ -156,7 +158,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         table.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
         table.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
         table.setInternalName(response.getHeaders().get("X-Table").get(0));
-        log.debug("found privileged database username={}", table.getDatabase().getContainer().getUsername());
+        table.setLastRetrieved(Instant.now());
         return table;
     }
 
@@ -198,6 +200,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         view.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
         view.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
         view.setInternalName(response.getHeaders().get("X-View").get(0));
+        view.setLastRetrieved(Instant.now());
         return view;
     }
 
@@ -256,6 +259,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final PrivilegedUserDto user = metadataMapper.userDtoToPrivilegedUserDto(response.getBody());
         user.setUsername(response.getHeaders().get("X-Username").get(0));
         user.setPassword(response.getHeaders().get("X-Password").get(0));
+        user.setLastRetrieved(Instant.now());
         return user;
     }
 

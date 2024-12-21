@@ -1,4 +1,4 @@
-FROM chrislusf/seaweedfs:3.59 AS runtime
+FROM docker.io/bitnami/seaweedfs:3.80.0-debian-12-r1 AS runtime
 
 WORKDIR /app
 

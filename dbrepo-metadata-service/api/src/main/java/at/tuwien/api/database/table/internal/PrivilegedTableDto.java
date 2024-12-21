@@ -1,11 +1,11 @@
 package at.tuwien.api.database.table.internal;
 
+import at.tuwien.api.PrivilegedObjectDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -25,7 +25,7 @@ import java.util.List;
 @Jacksonized
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PrivilegedTableDto {
+public class PrivilegedTableDto extends PrivilegedObjectDto {
 
     @NotNull
     private Long id;
@@ -110,5 +110,8 @@ public class PrivilegedTableDto {
 
     @NotNull
     private PrivilegedDatabaseDto database;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

@@ -6,8 +6,8 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.PrivilegedUserDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.*;
 import jakarta.validation.constraints.NotNull;
 

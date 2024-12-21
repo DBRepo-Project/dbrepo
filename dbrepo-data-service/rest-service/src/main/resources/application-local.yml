@@ -68,3 +68,17 @@ dbrepo:
     password: admin
     client: dbrepo-client
     clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  sql:
+    forbidden: AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
+  grant:
+    default:
+      read: "SELECT"
+      write: "SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE"
+  credentialCacheTimeout: 3600
+  minConcurrent: 2
+  maxConcurrent: 6
+  requeueRejected: "false"
+  queueName: "dbrepo"
+  exchangeName: "dbrepo"
+  routingKey: "#"
+  connectionTimeout: 10000

@@ -8,7 +8,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.ViewService;
@@ -49,17 +49,17 @@ public class ViewEndpoint extends AbstractEndpoint {
     private final ViewService viewService;
     private final TableService tableService;
     private final StorageService storageService;
+    private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
-    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public ViewEndpoint(ViewService viewService, TableService tableService, StorageService storageService,
-                        EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+                        CredentialService credentialService, EndpointValidator endpointValidator) {
         this.viewService = viewService;
         this.tableService = tableService;
         this.storageService = storageService;
+        this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
-        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @GetMapping
@@ -103,7 +103,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             ViewNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             return ResponseEntity.ok(viewService.getSchemas(database));
         } catch (SQLException e) {
@@ -148,7 +148,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                           @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(viewService.create(database, data));
@@ -192,7 +192,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, MetadataServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
+        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
         try {
             viewService.delete(view.getDatabase(), view.getInternalName());
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -267,14 +267,13 @@ public class ViewEndpoint extends AbstractEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        // TODO improve with a single operation that checks if user xyz has access to view abc
-        final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
+        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
-            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, UserUtil.getId(principal));
         }
         try {
             final HttpHeaders headers = new HttpHeaders();
@@ -342,18 +341,14 @@ public class ViewEndpoint extends AbstractEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* parameters */
-        final PrivilegedViewDto view = metadataServiceGateway.getViewById(databaseId, viewId);
+        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to export private view: principal is null");
                 throw new NotAllowedException("Failed to export private view: principal is null");
             }
-            metadataServiceGateway.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, UserUtil.getId(principal));
         }
-        final List<String> columns = view.getColumns()
-                .stream()
-                .map(ViewColumnDto::getInternalName)
-                .toList();
         final HttpHeaders headers = new HttpHeaders();
         final ExportResourceDto resource = storageService.transformDataset(tableService.getData(view.getDatabase(),
                 view.getInternalName(), timestamp, null, null, null, null));

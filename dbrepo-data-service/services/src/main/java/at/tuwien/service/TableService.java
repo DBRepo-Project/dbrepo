@@ -124,7 +124,7 @@ public interface TableService {
      * @throws QueryMalformedException     The import query is malformed, likely due to a bug in the application.
      */
     void importDataset(PrivilegedTableDto table, ImportDto data) throws MalformedException, StorageNotFoundException,
-            StorageUnavailableException, SQLException, QueryMalformedException;
+            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException;
 
     /**
      * Imports a dataset by metadata into the sidecar of the target database by given table.

@@ -9,7 +9,7 @@ class DatabaseUnitTest(TestCase):
     def test_constructor_succeeds(self):
         # test
         client = RestClient()
-        self.assertEqual("http://gateway-service", client.endpoint)
+        self.assertEqual("http://localhost", client.endpoint)
         self.assertIsNone(client.username)
         self.assertIsNone(client.password)
         self.assertTrue(client.secure)
@@ -31,7 +31,7 @@ class DatabaseUnitTest(TestCase):
     def test_constructor_credentials_succeeds(self):
         # test
         client = RestClient(username='admin', password='pass')
-        self.assertEqual("http://gateway-service", client.endpoint)
+        self.assertEqual("http://localhost", client.endpoint)
         self.assertEqual('admin', client.username)
         self.assertEqual('pass', client.password)
         self.assertTrue(client.secure)

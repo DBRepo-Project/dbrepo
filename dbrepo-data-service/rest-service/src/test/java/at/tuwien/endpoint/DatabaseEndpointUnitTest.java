@@ -2,11 +2,11 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.PrivilegedUserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.test.AbstractUnitTest;
@@ -48,7 +48,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
+    private CredentialService credentialService;
 
     @BeforeEach
     public void beforeEach() {
@@ -62,7 +62,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, SQLException {
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+        when(credentialService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
         when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -84,7 +84,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             SQLException, QueryStoreCreateException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+        when(credentialService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
         when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
@@ -107,7 +107,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             SQLException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
+        when(credentialService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
@@ -126,8 +126,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getContainerById(CONTAINER_1_ID);
+                .when(credentialService)
+                .getContainer(CONTAINER_1_ID);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -142,8 +142,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(ContainerNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getContainerById(CONTAINER_1_ID);
+                .when(credentialService)
+                .getContainer(CONTAINER_1_ID);
         when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(QueryStoreCreateException.class)
@@ -162,7 +162,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseMalformedException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -175,7 +175,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, MetadataServiceException, SQLException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
@@ -192,7 +192,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void update_noRole_fails() throws RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -208,8 +208,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -223,7 +223,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(DatabaseMalformedException.class)
                 .when(databaseService)

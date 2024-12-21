@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.SchemaService;
 import at.tuwien.service.TableService;
 import at.tuwien.test.AbstractUnitTest;
@@ -63,6 +64,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     private SchemaService schemaService;
 
     @MockBean
+    private CredentialService credentialService;
+
+    @MockBean
     private MetadataServiceGateway metadataServiceGateway;
 
     public static Stream<Arguments> size_arguments() {
@@ -93,7 +97,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(tableService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO))
                 .thenReturn(TABLE_4_DTO);
@@ -122,8 +126,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -137,7 +141,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableExistsException, RemoteUnavailableException, TableNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -166,7 +170,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             SQLException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getStatistics(any(PrivilegedTableDto.class)))
                 .thenReturn(TABLE_8_STATISTIC_DTO);
@@ -182,7 +186,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException, SQLException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -201,8 +205,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_1_ID, TABLE_1_ID);
+                .when(credentialService)
+                .getTable(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -216,7 +220,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableNotFoundException, QueryMalformedException, SQLException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(tableService)
@@ -244,8 +248,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_1_ID, TABLE_1_ID);
+                .when(credentialService)
+                .getTable(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -259,7 +263,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, QueryMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -278,7 +282,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
@@ -299,7 +303,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getCount(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
                 .thenReturn(3L);
@@ -324,7 +328,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -339,10 +343,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_2_ID);
 
         /* test */
@@ -357,7 +361,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, QueryMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         doThrow(QueryMalformedException.class)
                 .when(tableService)
@@ -377,10 +381,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, NotAllowedException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doThrow(RemoteUnavailableException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_2_ID);
 
         /* test */
@@ -398,9 +402,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
         when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
@@ -419,8 +423,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -441,9 +445,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -486,8 +490,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -507,9 +511,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -531,9 +535,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -558,9 +562,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -579,9 +583,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -603,9 +607,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -628,9 +632,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -679,8 +683,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -703,9 +707,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -729,9 +733,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -759,9 +763,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -790,9 +794,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -817,9 +821,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -845,9 +849,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -888,8 +892,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -908,9 +912,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -930,9 +934,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -956,9 +960,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -983,9 +987,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1006,9 +1010,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1028,7 +1032,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, SQLException, NotAllowedException, MetadataServiceException, PaginationException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.history(TABLE_8_PRIVILEGED_DTO, null))
                 .thenReturn(List.of());
@@ -1044,7 +1048,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
@@ -1070,10 +1074,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
@@ -1088,9 +1092,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableNotFoundException, MetadataServiceException, DatabaseUnavailableException, PaginationException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
         when(tableService.history(TABLE_1_PRIVILEGED_DTO, 10L))
                 .thenReturn(List.of());
@@ -1106,7 +1110,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             TableNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1125,8 +1129,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -1141,7 +1145,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(TABLE_8_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
@@ -1160,9 +1164,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
         when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(TABLE_1_INTERNAL_NAME), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
                 .thenReturn(mock);
@@ -1178,10 +1182,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
@@ -1197,7 +1201,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DatabaseMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+        when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(tableService.getSchemas(DATABASE_3_PRIVILEGED_DTO))
                 .thenReturn(List.of(TABLE_8_DTO));
@@ -1233,7 +1237,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
+        when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1248,7 +1252,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_succeeds() throws TableNotFoundException, NotAllowedException, RemoteUnavailableException,
-            MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException, SQLException {
+            MetadataServiceException, StorageNotFoundException, MalformedException, StorageUnavailableException, DatabaseUnavailableException, QueryMalformedException, SQLException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination(null)
@@ -1256,9 +1260,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
         doNothing()
                 .when(tableService)
@@ -1299,8 +1303,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_3_ID, TABLE_8_ID);
+                .when(credentialService)
+                .getTable(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -1312,7 +1316,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_unavailable_fails() throws RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
-            StorageUnavailableException, SQLException, QueryMalformedException {
+            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1320,9 +1324,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1338,7 +1342,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"insert-table-data"})
     public void importDataset_writeOwnAccess_fails() throws RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, NotAllowedException, StorageNotFoundException, MalformedException,
-            StorageUnavailableException, SQLException, QueryMalformedException {
+            StorageUnavailableException, SQLException, QueryMalformedException, TableMalformedException {
         final ImportDto request = ImportDto.builder()
                 .header(true)
                 .lineTermination("\\n")
@@ -1346,9 +1350,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
@@ -1371,9 +1375,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
 
         /* test */
@@ -1394,9 +1398,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1414,9 +1418,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_3_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1437,9 +1441,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
+        when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -1458,9 +1462,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO);
 
         /* test */
@@ -1479,9 +1483,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_2_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_2_ID))
                 .thenReturn(TABLE_2_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1499,9 +1503,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO);
 
         /* test */
@@ -1521,9 +1525,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_2_ID))
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_2_ID))
                 .thenReturn(TABLE_2_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_2_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(DATABASE_1_USER_2_READ_ACCESS_DTO);
 
         /* test */

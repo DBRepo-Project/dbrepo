@@ -1,5 +1,6 @@
 package at.tuwien.api.container.internal;
 
+import at.tuwien.api.PrivilegedObjectDto;
 import at.tuwien.api.container.image.ImageDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +19,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class PrivilegedContainerDto {
+public class PrivilegedContainerDto extends PrivilegedObjectDto {
 
     @NotNull
     private Long id;
@@ -52,5 +53,8 @@ public class PrivilegedContainerDto {
 
     @ToString.Exclude
     private String password;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

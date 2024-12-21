@@ -59,6 +59,7 @@ import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -155,6 +156,10 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * User 3 (write-all)
  */
 public abstract class BaseTest {
+
+    public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
+
+    public final static String MARIADB_IMAGE = "mariadb:11.1.3";
 
     public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
@@ -485,6 +490,7 @@ public abstract class BaseTest {
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .qualifiedName(USER_1_QUALIFIED_NAME)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static User USER_1 = User.builder()
@@ -664,6 +670,7 @@ public abstract class BaseTest {
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .qualifiedName(USER_2_QUALIFIED_NAME)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
@@ -757,6 +764,7 @@ public abstract class BaseTest {
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
             .qualifiedName(USER_3_QUALIFIED_NAME)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
@@ -829,6 +837,7 @@ public abstract class BaseTest {
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
             .qualifiedName(USER_4_QUALIFIED_NAME)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
@@ -840,6 +849,7 @@ public abstract class BaseTest {
     public final static String USER_5_ORCID = null;
     public final static String USER_5_PASSWORD = "junit5";
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_5_QUALIFIED_NAME = "@" + USER_5_USERNAME + " — " + USER_5_FIRSTNAME + " " + USER_5_LASTNAME;
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
@@ -847,11 +857,30 @@ public abstract class BaseTest {
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
 
+    public final static UserAttributesDto USER_5_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .theme(USER_5_THEME)
+            .affiliation(USER_5_AFFILIATION)
+            .mariadbPassword(USER_5_DATABASE_PASSWORD)
+            .build();
+
     public final static UserDto USER_5_DTO = UserDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
+            .qualifiedName(USER_5_QUALIFIED_NAME)
+            .attributes(USER_5_ATTRIBUTES_DTO)
+            .build();
+
+    public final static PrivilegedUserDto USER_5_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .firstname(USER_5_FIRSTNAME)
+            .lastname(USER_5_LASTNAME)
+            .qualifiedName(USER_5_QUALIFIED_NAME)
+            .password(USER_5_PASSWORD)
+            .attributes(USER_5_ATTRIBUTES_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static UserBriefDto USER_5_BRIEF_DTO = UserBriefDto.builder()
@@ -859,6 +888,7 @@ public abstract class BaseTest {
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
+            .qualifiedName(USER_5_QUALIFIED_NAME)
             .build();
 
     public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
@@ -1046,6 +1076,7 @@ public abstract class BaseTest {
             .port(CONTAINER_1_PORT)
             .username(CONTAINER_1_PRIVILEGED_USERNAME)
             .password(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -1090,6 +1121,18 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .quota(CONTAINER_2_QUOTA)
+            .build();
+
+    public final static PrivilegedContainerDto CONTAINER_2_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .image(CONTAINER_2_IMAGE_DTO)
+            .host(CONTAINER_2_HOST)
+            .port(CONTAINER_2_PORT)
+            .username(CONTAINER_2_PRIVILEGED_USERNAME)
+            .password(CONTAINER_2_PRIVILEGED_PASSWORD)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -1473,6 +1516,7 @@ public abstract class BaseTest {
             .numRows(TABLE_1_NUM_ROWS)
             .dataLength(TABLE_1_DATA_LENGTH)
             .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static Table TABLE_1 = Table.builder()
@@ -1689,6 +1733,7 @@ public abstract class BaseTest {
             .numRows(TABLE_2_NUM_ROWS)
             .dataLength(TABLE_2_DATA_LENGTH)
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static TableDto TABLE_2_DTO = TableDto.builder()
@@ -1896,6 +1941,7 @@ public abstract class BaseTest {
             .numRows(TABLE_5_NUM_ROWS)
             .dataLength(TABLE_5_DATA_LENGTH)
             .maxDataLength(TABLE_5_MAX_DATA_LENGTH)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
@@ -2253,6 +2299,7 @@ public abstract class BaseTest {
             .columns(new LinkedList<>()) /* TABLE_8_COLUMNS_DTO */
             .owner(USER_1_BRIEF_DTO)
             .isPublic(DATABASE_3_PUBLIC)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static String QUEUE_NAME = "dbrepo";
@@ -4796,6 +4843,7 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .columns(VIEW_1_COLUMNS_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static ViewBriefDto VIEW_1_BRIEF_DTO = ViewBriefDto.builder()
@@ -4954,6 +5002,7 @@ public abstract class BaseTest {
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
             .columns(VIEW_2_COLUMNS_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
@@ -5052,6 +5101,7 @@ public abstract class BaseTest {
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
             .columns(VIEW_3_COLUMNS_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static List<ViewColumn> VIEW_3_COLUMNS = List.of(
@@ -7157,6 +7207,7 @@ public abstract class BaseTest {
             .tables(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO))
             .views(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO))
             .owner(USER_1_BRIEF_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -7301,6 +7352,7 @@ public abstract class BaseTest {
             .tables(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO))
             .views(List.of(VIEW_4_DTO))
             .owner(USER_2_BRIEF_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
@@ -7347,6 +7399,12 @@ public abstract class BaseTest {
             .database(DATABASE_2)
             .huserid(USER_2_ID)
             .user(USER_2)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_2_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
@@ -7545,6 +7603,7 @@ public abstract class BaseTest {
             .tables(List.of(TABLE_8_DTO))
             .views(List.of(VIEW_5_DTO))
             .owner(USER_3_BRIEF_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static Identifier IDENTIFIER_7 = Identifier.builder()
