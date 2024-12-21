@@ -2,8 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.user.PrivilegedUserDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.AccessService;
@@ -72,7 +71,7 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void update(PrivilegedDatabaseDto database, UserDto user, AccessTypeDto access)
+    public void update(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access)
             throws DatabaseMalformedException, SQLException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -97,7 +96,7 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void delete(PrivilegedDatabaseDto database, UserDto user) throws DatabaseMalformedException,
+    public void delete(PrivilegedDatabaseDto database, PrivilegedUserDto user) throws DatabaseMalformedException,
             SQLException {
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
         final Connection connection = dataSource.getConnection();

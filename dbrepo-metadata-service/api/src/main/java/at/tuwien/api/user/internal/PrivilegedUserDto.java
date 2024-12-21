@@ -1,13 +1,15 @@
-package at.tuwien.api.user;
+package at.tuwien.api.user.internal;
 
+import at.tuwien.api.PrivilegedObjectDto;
+import at.tuwien.api.user.UserAttributesDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -18,7 +20,7 @@ import java.util.UUID;
 @Jacksonized
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PrivilegedUserDto {
+public class PrivilegedUserDto extends PrivilegedObjectDto {
 
     @NotNull
     @EqualsAndHashCode.Include
@@ -50,5 +52,8 @@ public class PrivilegedUserDto {
 
     @NotNull
     private UserAttributesDto attributes;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

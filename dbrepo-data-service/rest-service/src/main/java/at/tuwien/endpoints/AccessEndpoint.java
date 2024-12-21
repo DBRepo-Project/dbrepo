@@ -3,11 +3,10 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.UpdateDatabaseAccessDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.PrivilegedUserDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.CredentialService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,12 +32,12 @@ import java.util.UUID;
 public class AccessEndpoint {
 
     private final AccessService accessService;
-    private final MetadataServiceGateway metadataServiceGateway;
+    private final CredentialService credentialService;
 
     @Autowired
-    public AccessEndpoint(AccessService accessService, MetadataServiceGateway metadataServiceGateway) {
+    public AccessEndpoint(AccessService accessService, CredentialService credentialService) {
         this.accessService = accessService;
-        this.metadataServiceGateway = metadataServiceGateway;
+        this.credentialService = credentialService;
     }
 
     @PostMapping("/{userId}")
@@ -81,8 +80,8 @@ public class AccessEndpoint {
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final PrivilegedUserDto user = metadataServiceGateway.getPrivilegedUserById(userId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final PrivilegedUserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to create access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
@@ -138,8 +137,8 @@ public class AccessEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final UserDto user = metadataServiceGateway.getUserById(userId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final PrivilegedUserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
@@ -152,6 +151,22 @@ public class AccessEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAuthority('system')")
+    @Operation(summary = "Invalidate access cache for database",
+            security = {@SecurityRequirement(name = "basicAuth")},
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Invalidated access cache succeeded")
+    })
+    public ResponseEntity<Void> invalidateAccess(@NotNull @PathVariable("databaseId") Long databaseId) {
+        log.debug("endpoint empty access cache for database, databaseId={}", databaseId);
+        credentialService.invalidateAccess(databaseId);
+        return ResponseEntity.accepted()
+                .build();
     }
 
     @DeleteMapping("/{userId}")
@@ -193,8 +208,8 @@ public class AccessEndpoint {
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
-        final PrivilegedDatabaseDto database = metadataServiceGateway.getDatabaseById(databaseId);
-        final UserDto user = metadataServiceGateway.getUserById(userId);
+        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final PrivilegedUserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to delete access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to delete access to user with id " + userId + ": no access");

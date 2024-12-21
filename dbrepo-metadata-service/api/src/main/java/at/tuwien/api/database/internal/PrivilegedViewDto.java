@@ -1,9 +1,9 @@
 package at.tuwien.api.database.internal;
 
+import at.tuwien.api.PrivilegedObjectDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class PrivilegedViewDto {
+public class PrivilegedViewDto extends PrivilegedObjectDto {
 
     @NotNull
     private Long id;
@@ -71,5 +71,8 @@ public class PrivilegedViewDto {
 
     @NotNull
     private List<ViewColumnDto> columns;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

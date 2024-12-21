@@ -2,8 +2,11 @@ variables:
   HOSTALIASES: ./hosts
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
+  ALPINE_VERSION: "3.21"
   PYTHON_VERSION: "3.11"
-  DOC_VERSION: "1.5"
+  JAVA_VERSION: "17"
+  BUN_VERSION: "1.1.40"
+  DOC_VERSION: "1.6"
   APP_VERSION: "1.6.0"
   CHART_VERSION: "1.6.0"
   CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
@@ -34,7 +37,7 @@ stages:
   - scan
 
 build-metadata-service:
-  image: maven:3-openjdk-17
+  image: maven:3-openjdk-${JAVA_VERSION}
   stage: build
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
@@ -52,7 +55,7 @@ build-metadata-service:
     expire_in: 1 days
 
 build-analyse-service:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: build
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
@@ -61,7 +64,7 @@ build-analyse-service:
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
 build-lib:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: build
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
@@ -70,7 +73,7 @@ build-lib:
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
 build-data-service:
-  image: maven:3-openjdk-17
+  image: maven:3-openjdk-${JAVA_VERSION}
   stage: build
   needs:
     - build-metadata-service
@@ -89,13 +92,13 @@ build-data-service:
     expire_in: 1 days
 
 build-ui:
-  image: oven/bun:1.1.20-alpine
+  image: oven/bun:${BUN_VERSION}-alpine
   stage: build
   script:
     - "cd ./dbrepo-ui && bun install && bun run build"
 
 build-search-service:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: build
   script:
     - "pip install pipenv"
@@ -123,7 +126,7 @@ build-helm:
     - helm package ./helm/dbrepo --destination ./build
 
 lint-docker-compose:
-  image: docker.io/alpine:3.18
+  image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   variables:
     VERSION: 3.3.0
@@ -168,7 +171,7 @@ verify-install-script:
     - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
 
 verify-dist:
-  image: docker.io/alpine:3.20
+  image: docker.io/alpine:${ALPINE_VERSION}
   stage: verify
   only:
     refs:
@@ -191,7 +194,7 @@ lint-helm-chart:
     - helm lint ./helm/dbrepo
 
 test-metadata-service:
-  image: maven:3-openjdk-17
+  image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
   needs:
     - build-metadata-service
@@ -211,7 +214,7 @@ test-metadata-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-data-service:
-  image: maven:3-openjdk-17
+  image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
   needs:
     - build-data-service
@@ -231,14 +234,14 @@ test-data-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-upload-service:
-  image: maven:3-openjdk-17
+  image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
     - "mvn -f ./dbrepo-upload-service/pom.xml clean test $MAVEN_OPTS"
 
 test-analyse-service:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
@@ -262,7 +265,7 @@ test-analyse-service:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-search-service:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
@@ -289,7 +292,7 @@ test-search-service:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-search-service-init:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
@@ -313,7 +316,7 @@ test-search-service-init:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-lib:
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
@@ -372,19 +375,6 @@ scan-sonarqube:
     paths:
       - sonar-scanner/
 
-docs-registry:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "pip install pipenv"
-    - "pipenv install --dev --system --deploy"
-    - "apt-get update && apt-get install -y sed"
-  script:
-    - python3 .docs/docker/release.py
-
 release-images:
   stage: release
   image: docker:24-dind
@@ -433,7 +423,7 @@ release-helm:
 
 release-docs:
   stage: release
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   only:
     refs:
       - /^release-.*/
@@ -466,7 +456,7 @@ release-docs:
 
 release-libs:
   stage: release
-  image: docker.io/python:3.11-alpine
+  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   when: manual
   only:
     refs:

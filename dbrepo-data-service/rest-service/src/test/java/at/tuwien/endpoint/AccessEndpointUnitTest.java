@@ -2,11 +2,11 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.CredentialService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private AccessEndpoint accessEndpoint;
 
     @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
+    private CredentialService credentialService;
 
     @MockBean
     private AccessService accessService;
@@ -50,9 +50,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, RemoteUnavailableException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getPrivilegedUserById(USER_4_ID))
+        when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_PRIVILEGED_DTO);
 
         /* test */
@@ -67,9 +67,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
+        when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
 
         /* test */
@@ -84,9 +84,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException, SQLException, DatabaseMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getPrivilegedUserById(USER_4_ID))
+        when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
@@ -105,8 +105,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -120,11 +120,11 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getPrivilegedUserById(USER_4_ID);
+                .when(credentialService)
+                .getUser(USER_4_ID);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
@@ -148,10 +148,10 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, DatabaseUnavailableException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
-                .thenReturn(USER_1_DTO);
+        when(credentialService.getUser(USER_1_ID))
+                .thenReturn(USER_1_PRIVILEGED_DTO);
 
         /* test */
         final ResponseEntity<Void> response = accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO);
@@ -165,13 +165,13 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
-                .thenReturn(USER_1_DTO);
+        when(credentialService.getUser(USER_1_ID))
+                .thenReturn(USER_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
-                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
+                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_PRIVILEGED_DTO, AccessTypeDto.READ);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -185,10 +185,10 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             UserNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_4_ID))
-                .thenReturn(USER_4_DTO);
+        when(credentialService.getUser(USER_4_ID))
+                .thenReturn(USER_4_PRIVILEGED_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -213,8 +213,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -228,11 +228,11 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             UserNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getUserById(USER_1_ID);
+                .when(credentialService)
+                .getUser(USER_1_ID);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
@@ -247,13 +247,13 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             SQLException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getPrivilegedUserById(USER_1_ID))
+        when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_PRIVILEGED_DTO);
         doNothing()
                 .when(accessService)
-                .delete(any(PrivilegedDatabaseDto.class), any(UserDto.class));
+                .delete(any(PrivilegedDatabaseDto.class), any(PrivilegedUserDto.class));
 
         /* test */
         final ResponseEntity<Void> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID);
@@ -267,9 +267,9 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getPrivilegedUserById(USER_4_ID))
+        when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_PRIVILEGED_DTO);
 
         /* test */
@@ -295,8 +295,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -310,11 +310,11 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             UserNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getUserById(USER_1_ID);
+                .when(credentialService)
+                .getUser(USER_1_ID);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
@@ -328,13 +328,13 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             UserNotFoundException, MetadataServiceException, SQLException, DatabaseMalformedException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getUserById(USER_1_ID))
-                .thenReturn(USER_1_DTO);
+        when(credentialService.getUser(USER_1_ID))
+                .thenReturn(USER_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
-                .delete(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO, USER_1_PRIVILEGED_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {

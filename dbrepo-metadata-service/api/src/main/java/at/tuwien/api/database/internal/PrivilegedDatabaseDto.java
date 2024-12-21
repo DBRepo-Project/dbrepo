@@ -1,5 +1,6 @@
 package at.tuwien.api.database.internal;
 
+import at.tuwien.api.PrivilegedObjectDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.ViewDto;
@@ -13,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -22,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class PrivilegedDatabaseDto {
+public class PrivilegedDatabaseDto extends PrivilegedObjectDto {
 
     @NotNull
     private Long id;
@@ -82,5 +84,8 @@ public class PrivilegedDatabaseDto {
 
     @JsonProperty("preview_image")
     private String previewImage;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

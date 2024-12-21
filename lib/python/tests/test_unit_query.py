@@ -7,7 +7,7 @@ import datetime
 from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Query, User, UserAttributes, QueryType
+from dbrepo.api.dto import Query, User, UserAttributes, QueryType, UserBrief
 from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError
 
 

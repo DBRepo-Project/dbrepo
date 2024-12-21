@@ -5,9 +5,11 @@ import at.tuwien.config.S3Config;
 import at.tuwien.exception.MalformedException;
 import at.tuwien.exception.StorageNotFoundException;
 import at.tuwien.exception.StorageUnavailableException;
+import at.tuwien.exception.TableMalformedException;
 import at.tuwien.service.StorageService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.apache.spark.sql.types.StructField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -133,14 +135,15 @@ public class StorageServiceS3Impl implements StorageService {
     }
 
     @Override
-    public Dataset<Row> loadDataset(List<String> columns, String key, Boolean withHeader) throws StorageNotFoundException,
-            StorageUnavailableException, MalformedException {
+    public Dataset<Row> loadDataset(List<String> columns, String key, String delimiter, Boolean withHeader)
+            throws StorageNotFoundException, StorageUnavailableException, MalformedException, TableMalformedException {
         final String path = "s3a://" + s3Config.getS3Bucket() + "/" + key;
         log.debug("read dataset from s3 path: {} using header: {}", path, withHeader);
         Dataset<Row> dataset;
         try {
-            log.trace("spark session conf: {}", sparkSession.conf().getAllAsJava());
+            log.trace("spark read conf: header={}, delimiter={}", withHeader, delimiter);
             dataset = sparkSession.read()
+                    .option("delimiter", delimiter)
                     .option("header", withHeader)
                     .csv(path);
         } catch (Exception e) {
@@ -150,15 +153,24 @@ public class StorageServiceS3Impl implements StorageService {
                     log.error("Failed to find dataset {} in storage service: {}", key, e.getMessage());
                     throw new StorageNotFoundException("Failed to find dataset in storage service: " + e.getMessage());
                 }
+                if (exception.getSimpleMessage().contains("UNRESOLVED_COLUMN")) {
+                    log.error("Failed to resolve column from dataset in database: {}", e.getMessage());
+                    throw new TableMalformedException("Failed to resolve column from dataset in database: " + e.getMessage());
+                }
             }
             log.error("Failed to connect to storage service: {}", e.getMessage());
             throw new StorageUnavailableException("Failed to connect to storage service: " + e.getMessage());
         }
         if (!withHeader) {
             log.debug("no header provided: use table column names: {}", columns);
-            dataset = dataset.toDF(asScalaIteratorConverter(columns.iterator())
-                    .asScala()
-                    .toSeq());
+            try {
+                dataset = dataset.toDF(asScalaIteratorConverter(columns.iterator())
+                        .asScala()
+                        .toSeq());
+            } catch (IllegalArgumentException e) {
+                log.error("Failed to map column to scala sequence: {}", e.getMessage());
+                throw new MalformedException("Failed to map column to scala sequence: " + e.getMessage(), e);
+            }
         }
         /* determine header order in dataset */
         if (dataset.schema().fields().length != columns.size()) {
@@ -170,6 +182,15 @@ public class StorageServiceS3Impl implements StorageService {
                 .map(Column::new)
                 .toList();
         log.trace("ordered columns: {}", columnOrder);
-        return dataset.select(columnOrder.toArray(new Column[0]));
+        try {
+            return dataset.select(columnOrder.toArray(new Column[0]));
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                log.error("Failed to resolve column from dataset in database: {}", exception.getSimpleMessage());
+                throw new TableMalformedException("Failed to resolve column from dataset in database: " + exception.getSimpleMessage());
+            }
+            log.error("Failed to select columns from dataset: {}", e.getMessage());
+            throw new MalformedException("Failed to select columns from dataset: " + e.getMessage());
+        }
     }
 }

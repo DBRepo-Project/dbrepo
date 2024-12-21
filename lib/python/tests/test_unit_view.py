@@ -4,7 +4,8 @@ import unittest
 import requests_mock
 from pandas import DataFrame
 
-from dbrepo.api.dto import UserAttributes, User, View, ViewColumn, ColumnType
+from dbrepo.RestClient import RestClient
+from dbrepo.api.dto import UserAttributes, User, View, ViewColumn, ColumnType, UserBrief
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 

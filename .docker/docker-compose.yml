@@ -5,7 +5,6 @@ volumes:
   broker-service-data:
   upload-service-data:
   search-db-data:
-  storage-service-data:
   identity-service-data:
   metric-db-data:
   dashboard-service-data:
@@ -107,11 +106,28 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-auth-service-init:
+    init: true
+    restart: "no"
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.0
+    environment:
+      AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
+      AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
+      AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+    depends_on:
+      dbrepo-auth-service:
+        condition: service_healthy
+      dbrepo-metadata-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
   dbrepo-metadata-service:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.5.3
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -174,7 +190,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.5.3
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -229,7 +245,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.5.3
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -253,7 +269,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.5.3
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -275,7 +291,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.5.3
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
@@ -297,7 +313,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: docker.io/nginx:1.27.0-alpine3.19-slim
+    image: docker.io/nginx:1.27.3-alpine3.20-slim
     ports:
       - "80:8080"
     volumes:
@@ -344,7 +360,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.5.3
     environment:
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
@@ -363,11 +379,10 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/chrislusf/seaweedfs:3.59
-    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
+    image: docker.io/bitnami/seaweedfs:3.71.0-debian-12-r4
+    command: [ "server", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9090" ]
     volumes:
       - ./config/s3_config.json:/app/s3_config.json
-      - storage-service-data:/data
     ports:
       - "9000:9000"
       - "8888:8888"
@@ -383,7 +398,7 @@ services:
     restart: "no"
     container_name: dbrepo-metric-db
     hostname: metric-db
-    image: bitnami/prometheus:2.54.1-debian-12-r4
+    image: docker.io/bitnami/prometheus:2.54.1-debian-12-r4
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - metric-db-data:/opt/bitnami/prometheus/data
@@ -399,7 +414,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.5.3
     ports:
       - "3000:3000"
     volumes:
@@ -426,7 +441,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.5.3
     environment:
       WEED_CLUSTER_SW_MASTER: "${STORAGE_SERVICE_MASTER_ENDPOINT:-storage-service:9333}"
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -469,7 +484,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.5.3
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:

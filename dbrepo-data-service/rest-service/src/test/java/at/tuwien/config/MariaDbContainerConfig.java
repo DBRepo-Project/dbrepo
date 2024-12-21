@@ -1,20 +1,17 @@
 package at.tuwien.config;
 
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.test.BaseTest;
-import org.codehaus.plexus.util.FileUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.images.PullPolicy;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * This class configures the MariaDB container for the integration tests.
  */
 @Configuration
-public class MariaDbContainerConfig {
+public class MariaDbContainerConfig extends AbstractUnitTest {
 
     public static CustomMariaDBContainer getContainer() {
         return CustomMariaDBContainer.getInstance();
@@ -37,7 +34,7 @@ public class MariaDbContainerConfig {
 
         public static synchronized CustomMariaDBContainer getInstance() {
             if (instance == null) {
-                instance = new CustomMariaDBContainer("mariadb:11.2.2");
+                instance = new CustomMariaDBContainer(MARIADB_IMAGE);
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, BaseTest.IMAGE_1_PORT);
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);

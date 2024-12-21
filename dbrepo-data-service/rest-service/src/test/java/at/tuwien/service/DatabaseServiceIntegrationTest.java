@@ -5,7 +5,6 @@ import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.DatabaseMalformedException;
-import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,9 +33,6 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
-
-    @Autowired
-    private MariaDbMapper mariaDbMapper;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {

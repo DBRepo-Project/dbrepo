@@ -2,6 +2,22 @@
 author: Martin Weise
 ---
 
+## v1.6.0 (2024-xx-xx)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)
+
+### What's Changed
+
+#### Changes
+
+* Bumped SeaweedFS version from `3.59` to `3.71` and use the Bitnami image 
+  in [#477](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/477).
+
+#### Fixes
+
+* Fixed a bug where the dataset separator was being ignored for imports 
+  in [#478](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/478).
+
 ## v1.5.3 (2024-12-13)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.5.3)

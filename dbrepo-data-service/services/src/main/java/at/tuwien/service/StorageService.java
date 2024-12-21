@@ -4,6 +4,7 @@ import at.tuwien.ExportResourceDto;
 import at.tuwien.exception.MalformedException;
 import at.tuwien.exception.StorageNotFoundException;
 import at.tuwien.exception.StorageUnavailableException;
+import at.tuwien.exception.TableMalformedException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
@@ -79,12 +80,13 @@ public interface StorageService {
      *
      * @param columns    The list of column names.
      * @param key        The key.
+     * @param delimiter  The column delimiter, e.g. <code>,</code>
      * @param withHeader If true, the first line contains the column names, otherwise it contains data only.
      * @return The dataset.
      * @throws StorageNotFoundException    The key was not found in the Storage Service.
      * @throws StorageUnavailableException The object failed to be loaded from the Storage Service.
      * @throws MalformedException          The field lengths for the table and dataset are not the same.
      */
-    Dataset<Row> loadDataset(List<String> columns, String key, Boolean withHeader) throws StorageNotFoundException,
-            StorageUnavailableException, MalformedException;
+    Dataset<Row> loadDataset(List<String> columns, String key, String delimiter, Boolean withHeader) throws StorageNotFoundException,
+            StorageUnavailableException, MalformedException, TableMalformedException;
 }

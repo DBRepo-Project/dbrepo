@@ -260,12 +260,14 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
 
     @Override
     public void importDataset(PrivilegedTableDto table, ImportDto data) throws MalformedException,
-            StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException {
+            StorageNotFoundException, StorageUnavailableException, SQLException, QueryMalformedException,
+            TableMalformedException {
         final List<String> columns = table.getColumns()
                 .stream()
                 .map(ColumnDto::getInternalName)
                 .toList();
-        final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(), data.getHeader());
+        final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(),
+                String.valueOf(data.getSeparator()), data.getHeader());
         final Properties properties = new Properties();
         properties.setProperty("user", table.getDatabase().getContainer().getUsername());
         properties.setProperty("password", table.getDatabase().getContainer().getPassword());
@@ -302,6 +304,10 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             log.error("Failed to import tuple: {}", e.getMessage());
             throw new QueryMalformedException("Failed to import tuple: " + e.getMessage(), e);
         } finally {
+            /* delete temporary table */
+            connection.prepareStatement(mariaDbMapper.dropTableRawQuery(temporaryTable, false))
+                    .execute();
+            connection.commit();
             dataSource.close();
         }
         log.info("Imported dataset into table: {}.{}", table.getDatabase().getInternalName(), table.getInternalName());

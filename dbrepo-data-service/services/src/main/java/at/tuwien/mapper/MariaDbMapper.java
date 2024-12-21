@@ -482,7 +482,19 @@ public interface MariaDbMapper {
 
     @Named("dropTableQuery")
     default String dropTableRawQuery(String tableName) {
-        return "DROP TABLE `" + tableName + "`;";
+        return dropTableRawQuery(tableName, true);
+    }
+
+    default String dropTableRawQuery(String tableName, Boolean force) {
+        final StringBuilder statement = new StringBuilder("DROP TABLE ");
+        if (!force) {
+            statement.append("IF EXISTS ");
+        }
+        statement.append("`")
+                .append(tableName)
+                .append("`;");
+        log.trace("mapped drop table query: {}", statement);
+        return statement.toString();
     }
 
     default String temporaryTableToRawMergeQuery(String tmp, String table, List<String> columns) {

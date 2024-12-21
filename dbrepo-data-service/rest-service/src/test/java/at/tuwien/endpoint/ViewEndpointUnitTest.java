@@ -3,7 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.endpoints.ViewEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.ViewService;
 import at.tuwien.test.AbstractUnitTest;
@@ -41,7 +41,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     private ViewService viewService;
 
     @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
+    private CredentialService credentialService;
 
     @MockBean
     private HttpServletRequest httpServletRequest;
@@ -66,7 +66,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             SQLException, DatabaseUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
                 .thenReturn(VIEW_1_DTO);
@@ -82,7 +82,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             ViewMalformedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(viewService)
@@ -100,7 +100,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             SQLException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
                 .thenReturn(VIEW_1_DTO);
@@ -118,8 +118,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -133,7 +133,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             DatabaseMalformedException, DatabaseUnavailableException, ViewNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(viewService.getSchemas(DATABASE_1_PRIVILEGED_DTO))
                 .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO));
@@ -160,8 +160,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getDatabaseById(DATABASE_1_ID);
+                .when(credentialService)
+                .getDatabase(DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -175,7 +175,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             SQLException, DatabaseMalformedException, ViewNotFoundException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(viewService)
@@ -203,7 +203,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             SQLException, DatabaseUnavailableException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
@@ -220,7 +220,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException, ViewNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(viewService)
@@ -238,7 +238,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             SQLException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+        when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
@@ -257,8 +257,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getViewById(DATABASE_1_ID, VIEW_1_ID);
+                .when(credentialService)
+                .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
@@ -274,9 +274,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_1_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
                 .thenReturn(VIEW_1_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(tableService.getData(eq(DATABASE_1_PRIVILEGED_DTO), eq(VIEW_1_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
@@ -296,9 +296,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException, TableNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
                 .thenReturn(VIEW_3_PRIVILEGED_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_1_ID, USER_1_ID))
+        when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -323,12 +323,12 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
                 .thenReturn(VIEW_3_PRIVILEGED_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_1_ID);
 
         /* test */
@@ -344,8 +344,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getViewById(DATABASE_1_ID, VIEW_1_ID);
+                .when(credentialService)
+                .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
@@ -359,10 +359,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
                 .thenReturn(VIEW_3_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_3_ID);
 
         /* test */
@@ -377,10 +377,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
                 .thenReturn(VIEW_3_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_3_ID);
 
         /* test */
@@ -396,8 +396,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(ViewNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getViewById(DATABASE_1_ID, VIEW_1_ID);
+                .when(credentialService)
+                .getView(DATABASE_1_ID, VIEW_1_ID);
 
         /* test */
         assertThrows(ViewNotFoundException.class, () -> {
@@ -411,10 +411,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(metadataServiceGateway.getViewById(DATABASE_1_ID, VIEW_3_ID))
+        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
                 .thenReturn(VIEW_3_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
-                .when(metadataServiceGateway)
+                .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_1_ID);
 
         /* test */
