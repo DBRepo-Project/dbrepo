@@ -16,7 +16,7 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
   title: DBRepo REST API
-  version: 1.5.2
+  version: 1.6.0
 servers:
   - description: Test Instance
     url: 'https://test.dbrepo.tuwien.ac.at'
@@ -24,7 +24,7 @@ servers:
     url: 'http://localhost'
 externalDocs:
   description: Project Website
-  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/'
+  url: 'https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/'
 paths:
   /api/analyse/datatypes:
     get:
@@ -947,7 +947,7 @@ paths:
         '202':
           description: Imported dataset successfully
         '400':
-          description: Dataset query is malformed
+          description: Dataset and/or query are malformed
           content:
             application/json:
               schema:
@@ -1178,53 +1178,6 @@ paths:
       security:
         - basicAuth: []
         - bearerAuth: []
-  '/api/database/{databaseId}/table/{tableId}/statistic':
-    get:
-      tags:
-        - table-endpoint
-      summary: Get table statistic
-      description: >-
-        Gets basic statistical properties (min, max, mean, median, std.dev) of
-        numerical columns of a table with id.
-      operationId: statistic
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: tableId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Generated table statistic
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TableStatisticDto'
-        '400':
-          description: Failed to obtain column statistic
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '404':
-          description: Failed to find table or database in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '503':
-          description: Failed to establish connection with the metadata service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
   '/api/database/{databaseId}/table/{tableId}/history':
     get:
       tags:
@@ -1615,7 +1568,7 @@ paths:
       description: >-
         Modifies access of a user with given id to database with given id.
         Requires role `update-database-access`.
-      operationId: update_4
+      operationId: update_6
       parameters:
         - name: databaseId
           in: path
@@ -2625,6 +2578,205 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  '/api/database/{databaseId}/view/{viewId}':
+    get:
+      tags:
+        - view-endpoint
+      summary: Get view
+      description: Gets a view with id in the metadata database.
+      operationId: find_7
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: viewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Find view successfully
+          headers:
+            X-Username:
+              description: The authentication username
+              style: simple
+            Access-Control-Expose-Headers:
+              description: Expose custom headers
+              style: simple
+            X-Type:
+              description: The JDBC connection type
+              style: simple
+            X-View:
+              description: The view internal name
+              style: simple
+            X-Database:
+              description: The database internal name
+              style: simple
+            X-Password:
+              description: The authentication password
+              style: simple
+            X-Host:
+              description: The database hostname
+              style: simple
+            X-Port:
+              description: The database port number
+              style: simple
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewDto'
+        '403':
+          description: Find view is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: 'Database, view or user could not be found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+    put:
+      tags:
+        - view-endpoint
+      summary: Update view
+      description: >-
+        Updates a view with id. This can only be performed by the view owner or
+        database owner. Requires role `create-database-view`.
+      operationId: update_3
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: viewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewUpdateDto'
+        required: true
+      responses:
+        '202':
+          description: Update view successfully
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ViewDto'
+        '400':
+          description: Update view query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Update not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: Database or View could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '502':
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+    delete:
+      tags:
+        - view-endpoint
+      summary: Delete view
+      description: Deletes a view with id. Requires role `delete-database-view`.
+      operationId: delete_4
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: viewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '202':
+          description: Delete view successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        '400':
+          description: Delete view query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Deletion not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: 'Database, view or user could not be found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '423':
+          description: Delete view resulted in an invalid query statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '502':
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
   '/api/database/{databaseId}/table/{tableId}':
     get:
       tags:
@@ -2709,12 +2861,9 @@ paths:
     put:
       tags:
         - table-endpoint
-      summary: Update statistics
-      description: >-
-        Updates basic statistical properties (min, max, mean, median, std.dev)
-        for numerical columns in a table with id. Requires role
-        `update-table-statistic`
-      operationId: updateStatistic
+      summary: Update table
+      description: Updates a table in the database with id. Requires role `update-table`.
+      operationId: update_4
       parameters:
         - name: databaseId
           in: path
@@ -2728,17 +2877,33 @@ paths:
           schema:
             type: integer
             format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TableUpdateDto'
+        required: true
       responses:
         '202':
-          description: Updated table statistics successfully
+          description: Updated the table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableBriefDto'
         '400':
-          description: Failed to map column statistic to known columns
+          description: Update table visibility payload is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Update table visibility not permitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
-          description: Failed to find database/table in metadata database
+          description: Table could not be found
           content:
             application/json:
               schema:
@@ -2816,6 +2981,59 @@ paths:
       security:
         - bearerAuth: []
         - basicAuth: []
+  '/api/database/{databaseId}/table/{tableId}/statistic':
+    put:
+      tags:
+        - table-endpoint
+      summary: Update statistics
+      description: >-
+        Updates basic statistical properties (min, max, mean, median, std.dev)
+        for numerical columns in a table with id. Requires role
+        `update-table-statistic`.
+      operationId: updateStatistic
+      parameters:
+        - name: databaseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tableId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '202':
+          description: Updated table statistics successfully
+        '400':
+          description: Failed to map column statistic to known columns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '404':
+          description: Failed to find database/table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '502':
+          description: Connection to search service failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '503':
+          description: Failed to save in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+        - bearerAuth: []
+        - basicAuth: []
   '/api/database/{databaseId}/table/{tableId}/column/{columnId}':
     put:
       tags:
@@ -2826,7 +3044,7 @@ paths:
         with at least *READ* access to the associated database can update the
         column semantics (requires role `modify-table-column-semantics`) or
         foreign table columns if role `modify-foreign-table-column-semantics`.
-      operationId: update_3
+      operationId: update_5
       parameters:
         - name: databaseId
           in: path
@@ -3429,7 +3647,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ConceptDto'
+                  type: string
             application/ld+json:
               schema:
                 type: array
@@ -3533,7 +3751,9 @@ paths:
       tags:
         - view-endpoint
       summary: Create view
-      description: Creates a view. Requires role `create-database-view`.
+      description: >-
+        Creates a view. This can only be performed by the database owner.
+        Requires role `create-database-view`.
       operationId: create_6
       parameters:
         - name: databaseId
@@ -3968,7 +4188,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
         '404':
-          description: Database or exchange could not be found
+          description: 'Database, user or exchange could not be found'
           content:
             application/json:
               schema:
@@ -3981,138 +4201,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
         '503':
           description: Failed to find queue information in broker service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-        - bearerAuth: []
-        - basicAuth: []
-  '/api/database/{databaseId}/view/{viewId}':
-    get:
-      tags:
-        - view-endpoint
-      summary: Get view
-      description: Gets a view with id in the metadata database.
-      operationId: find_7
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: viewId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Find view successfully
-          headers:
-            X-Username:
-              description: The authentication username
-              style: simple
-            Access-Control-Expose-Headers:
-              description: Expose custom headers
-              style: simple
-            X-Type:
-              description: The JDBC connection type
-              style: simple
-            X-View:
-              description: The view internal name
-              style: simple
-            X-Database:
-              description: The database internal name
-              style: simple
-            X-Password:
-              description: The authentication password
-              style: simple
-            X-Host:
-              description: The database hostname
-              style: simple
-            X-Port:
-              description: The database port number
-              style: simple
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ViewDto'
-        '403':
-          description: Find view is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '404':
-          description: 'Database, view or user could not be found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-        - bearerAuth: []
-        - basicAuth: []
-    delete:
-      tags:
-        - view-endpoint
-      summary: Delete view
-      description: Deletes a view with id. Requires role `delete-database-view`.
-      operationId: delete_4
-      parameters:
-        - name: databaseId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: viewId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '202':
-          description: Delete view successfully
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/View'
-        '400':
-          description: Delete view query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '403':
-          description: Deletion not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '404':
-          description: 'Database, view or user could not be found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '423':
-          description: Delete view resulted in an invalid query statement
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '502':
-          description: Connection to search service failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        '503':
-          description: Failed to save in search service
           content:
             application/json:
               schema:
@@ -4665,284 +4753,13 @@ components:
         persist:
           type: boolean
           example: true
-    CreatorDto:
+    IdentifierBriefDto:
       required:
-        - creator_name
-        - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        firstname:
-          type: string
-          example: Josiah
-        lastname:
-          type: string
-          example: Carberry
-        affiliation:
-          type: string
-          example: Brown University
-        creator_name:
-          type: string
-          example: 'Carberry, Josiah'
-        name_type:
-          type: string
-          example: Personal
-          enum:
-            - Personal
-            - Organizational
-        name_identifier:
-          type: string
-          example: 0000-0002-1825-0097
-        name_identifier_scheme:
-          type: string
-          example: ORCID
-          enum:
-            - ORCID
-            - ROR
-            - ISNI
-            - GRID
-        name_identifier_scheme_uri:
-          type: string
-          example: 'https://orcid.org/'
-        affiliation_identifier:
-          type: string
-          example: 'https://ror.org/05gq02987'
-        affiliation_identifier_scheme:
-          type: string
-          example: ROR
-          enum:
-            - ROR
-            - GRID
-            - ISNI
-        affiliation_identifier_scheme_uri:
-          type: string
-          example: 'https://ror.org/'
-    IdentifierDescriptionDto:
-      required:
-        - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        description:
-          type: string
-          example: 'Air quality reports at Stephansplatz, Vienna'
-        language:
-          type: string
-          example: en
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        type:
-          type: string
-          example: Abstract
-          enum:
-            - Abstract
-            - Methods
-            - SeriesInformation
-            - TableOfContents
-            - TechnicalInfo
-            - Other
-    IdentifierDto:
-      required:
-        - created
         - created_by
-        - creator
-        - creators
         - database_id
-        - execution
         - id
-        - last_modified
         - publication_year
         - publisher
-        - query
-        - query_hash
-        - query_normalized
         - titles
         - type
       type: object
@@ -4961,235 +4778,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/IdentifierTitleDto'
-        descriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDescriptionDto'
-        funders:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierFunderDto'
-        query:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        execution:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
         doi:
           type: string
           example: 10.1038/nphys1170
         publisher:
           type: string
           example: TU Wien
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        licenses:
-          type: array
-          items:
-            $ref: '#/components/schemas/LicenseDto'
-        creators:
-          type: array
-          items:
-            $ref: '#/components/schemas/CreatorDto'
         status:
           type: string
           enum:
             - draft
             - published
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
         database_id:
           type: integer
           format: int64
@@ -5206,33 +4805,6 @@ components:
           type: integer
           format: int64
           example: 1
-        query_normalized:
-          type: string
-          example: >-
-            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
-            = "09:STEF"
-        related_identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedIdentifierDto'
-        query_hash:
-          type: string
-          description: query hash in sha512
-        result_hash:
-          type: string
-          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
-        result_number:
-          type: integer
-          format: int64
-          example: 1
-        publication_day:
-          type: integer
-          format: int32
-          example: 15
-        publication_month:
-          type: integer
-          format: int32
-          example: 12
         publication_year:
           type: integer
           format: int32
@@ -5240,43 +4812,6 @@ components:
         created_by:
           type: string
           format: uuid
-        last_modified:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-    IdentifierFunderDto:
-      required:
-        - funder_name
-        - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        funder_name:
-          type: string
-          example: European Commission
-        funder_identifier:
-          type: string
-          example: 'http://doi.org/10.13039/501100000780'
-        funder_identifier_type:
-          type: string
-          example: Crossref Funder ID
-          enum:
-            - Crossref Funder ID
-            - ROR
-            - GND
-            - ISNI
-            - Other
-        scheme_uri:
-          type: string
-          example: 'http://doi.org/'
-        award_number:
-          type: string
-          example: '824087'
-        award_title:
-          type: string
-          example: EOSC-Life
     IdentifierTitleDto:
       required:
         - id
@@ -5483,35 +5018,14 @@ components:
             - Subtitle
             - TranslatedTitle
             - Other
-    LicenseDto:
-      required:
-        - identifier
-        - uri
-      type: object
-      properties:
-        identifier:
-          type: string
-          example: MIT
-        uri:
-          type: string
-          example: 'https://opensource.org/licenses/MIT'
-        description:
-          type: string
-          example: >-
-            A short and simple permissive license with conditions only requiring
-            preservation of copyright and license notices. Licensed works,
-            modifications, and larger works may be distributed under different
-            terms and without source code.
     QueryDto:
       required:
-        - created
-        - creator
         - database_id
         - execution
         - id
         - identifiers
         - is_persisted
-        - last_modified
+        - owner
         - query
         - query_hash
         - query_normalized
@@ -5520,8 +5034,8 @@ components:
         id:
           type: integer
           format: int64
-        creator:
-          $ref: '#/components/schemas/UserDto'
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
         execution:
           type: string
           format: date-time
@@ -5538,11 +5052,7 @@ components:
         identifiers:
           type: array
           items:
-            $ref: '#/components/schemas/IdentifierDto'
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+            $ref: '#/components/schemas/IdentifierBriefDto'
         database_id:
           type: integer
           format: int64
@@ -5562,105 +5072,8 @@ components:
           type: integer
           format: int64
           example: 1
-        last_modified:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-    RelatedIdentifierDto:
+    UserBriefDto:
       required:
-        - id
-        - relation
-        - type
-        - value
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        value:
-          type: string
-          example: 10.70124/dc4zh-9ce78
-        type:
-          type: string
-          example: DOI
-          enum:
-            - DOI
-            - URL
-            - URN
-            - ARK
-            - arXiv
-            - bibcode
-            - EAN13
-            - EISSN
-            - Handle
-            - IGSN
-            - ISBN
-            - ISTC
-            - LISSN
-            - LSID
-            - PMID
-            - PURL
-            - UPC
-            - w3id
-        relation:
-          type: string
-          example: Cites
-          enum:
-            - IsCitedBy
-            - Cites
-            - IsSupplementTo
-            - IsSupplementedBy
-            - IsContinuedBy
-            - Continues
-            - IsDescribedBy
-            - Describes
-            - HasMetadata
-            - IsMetadataFor
-            - HasVersion
-            - IsVersionOf
-            - IsNewVersionOf
-            - IsPreviousVersionOf
-            - IsPartOf
-            - HasPart
-            - IsPublishedIn
-            - IsReferencedBy
-            - References
-            - IsDocumentedBy
-            - Documents
-            - IsCompiledBy
-            - Compiles
-            - IsVariantFormOf
-            - IsOriginalFormOf
-            - IsIdenticalTo
-            - IsReviewedBy
-            - Reviews
-            - IsDerivedFrom
-            - IsSourceOf
-            - IsRequiredBy
-            - Requires
-            - IsObsoletedBy
-            - Obsoletes
-    UserAttributesDto:
-      required:
-        - language
-        - theme
-      type: object
-      properties:
-        theme:
-          type: string
-          example: light
-        orcid:
-          type: string
-          example: 'https://orcid.org/0000-0002-1825-0097'
-        affiliation:
-          type: string
-          example: Brown University
-        language:
-          type: string
-          example: en
-    UserDto:
-      required:
-        - attributes
         - id
         - username
       type: object
@@ -5676,8 +5089,9 @@ components:
         name:
           type: string
           example: Josiah Carberry
-        attributes:
-          $ref: '#/components/schemas/UserAttributesDto'
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -5728,53 +5142,6 @@ components:
         statement:
           type: string
           example: SELECT `id` FROM `air_quality`
-    ColumnStatisticDto:
-      required:
-        - mean
-        - median
-        - std_dev
-        - val_max
-        - val_min
-      type: object
-      properties:
-        mean:
-          type: number
-        median:
-          type: number
-        std_dev:
-          type: number
-        val_min:
-          type: number
-        val_max:
-          type: number
-    TableStatisticDto:
-      required:
-        - columns
-      type: object
-      properties:
-        columns:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ColumnStatisticDto'
-        rows:
-          type: integer
-          format: int64
-          example: 5
-        data_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 16384
-        max_data_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 0
-        avg_row_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 3276
     TableHistoryDto:
       required:
         - event
@@ -5801,254 +5168,10 @@ components:
           type: object
           additionalProperties:
             type: object
-    ColumnBriefDto:
-      required:
-        - column_type
-        - database_id
-        - id
-        - internal_name
-        - name
-        - table_id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: date
-        alias:
-          type: string
-        database_id:
-          type: integer
-          format: int64
-        table_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: mdb_date
-        column_type:
-          type: string
-          example: date
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-    ColumnDto:
-      required:
-        - column_type
-        - database_id
-        - id
-        - internal_name
-        - is_null_allowed
-        - is_public
-        - name
-        - ordinal_position
-        - table_id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: Date
-        alias:
-          type: string
-        size:
-          type: integer
-          format: int64
-          example: 255
-        d:
-          type: integer
-          format: int64
-          example: 0
-        mean:
-          type: number
-          example: 45.4
-        median:
-          type: number
-          example: 51
-        concept:
-          $ref: '#/components/schemas/ConceptDto'
-        unit:
-          $ref: '#/components/schemas/UnitDto'
-        description:
-          maxLength: 2048
-          minLength: 0
-          type: string
-          example: Column comment
-        enums:
-          type: array
-          items:
-            type: string
-        sets:
-          type: array
-          items:
-            type: string
-        database_id:
-          type: integer
-          format: int64
-        table_id:
-          type: integer
-          format: int64
-        ordinal_position:
-          type: integer
-          format: int32
-          example: 0
-        internal_name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: mdb_date
-        index_length:
-          type: integer
-          format: int64
-        length:
-          type: integer
-          format: int64
-        column_type:
-          type: string
-          example: string
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-        data_length:
-          type: integer
-          format: int64
-          example: 34300
-        max_data_length:
-          type: integer
-          format: int64
-          example: 34300
-        num_rows:
-          type: integer
-          format: int64
-          example: 32
-        val_min:
-          type: number
-          example: 0
-        val_max:
-          type: number
-          example: 100
-        std_dev:
-          type: number
-          example: 5.32
-        is_public:
-          type: boolean
-          example: true
-        is_null_allowed:
-          type: boolean
-          example: false
-    ConceptDto:
-      required:
-        - columns
-        - created
-        - id
-        - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-    ConstraintsDto:
-      type: object
-      properties:
-        uniques:
-          type: array
-          items:
-            $ref: '#/components/schemas/UniqueDto'
-        checks:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        foreign_keys:
-          type: array
-          items:
-            $ref: '#/components/schemas/ForeignKeyDto'
-        primary_key:
-          uniqueItems: true
-          type: array
-          items:
-            $ref: '#/components/schemas/PrimaryKeyDto'
-    ContainerDto:
+    ContainerBriefDto:
       required:
         - count
-        - created
-        - host
+        - hash
         - id
         - image
         - internal_name
@@ -6059,123 +5182,48 @@ components:
         id:
           type: integer
           format: int64
+        hash:
+          type: string
+          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
         name:
           type: string
           example: Air Quality
-        host:
-          type: string
-        port:
-          type: integer
-          format: int32
         image:
-          $ref: '#/components/schemas/ImageDto'
+          $ref: '#/components/schemas/ImageBriefDto'
         quota:
           type: integer
-          format: int64
+          format: int32
           example: 50
         count:
           type: integer
-          format: int64
+          format: int32
           example: 10
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
         internal_name:
           type: string
-          example: data-db
-        ui_host:
-          type: string
-        ui_port:
-          type: integer
-          format: int32
-    DataTypeDto:
-      required:
-        - display_name
-        - documentation
-        - is_buildable
-        - is_quoted
-        - value
-      type: object
-      properties:
-        value:
-          type: string
-          example: time
-        documentation:
-          type: string
-          example: 'https://mariadb.com/kb/en/time/'
-        display_name:
-          type: string
-          example: TIME(fsp)
-        size_min:
-          type: integer
-          format: int32
-          example: 0
-        size_max:
-          type: integer
-          format: int32
-          example: 6
-        size_default:
-          type: integer
-          format: int32
-          example: 0
-        size_required:
-          type: boolean
-          example: false
-        d_min:
-          type: integer
-          format: int32
-        d_max:
-          type: integer
-          format: int32
-        d_default:
-          type: integer
-          format: int32
-        d_required:
-          type: boolean
-        data_hint:
-          type: string
-          example: 'e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S'
-        type_hint:
-          type: string
-          example: 'fsp=microsecond precision, min. 0, max. 6'
-        is_quoted:
-          type: boolean
-          description: frontend needs to quote this data type
-          example: false
-        is_buildable:
-          type: boolean
-          description: frontend can build this data type
-          example: true
+          example: air-quality
     DatabaseAccessDto:
       required:
-        - created
         - type
         - user
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/UserDto'
+          $ref: '#/components/schemas/UserBriefDto'
         type:
           type: string
           enum:
             - read
             - write_own
             - write_all
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
     DatabaseDto:
       required:
         - contact
         - container
-        - created
-        - creator
         - exchange_name
         - id
         - internal_name
         - is_public
+        - is_schema_public
         - name
         - owner
       type: object
@@ -6192,13 +5240,13 @@ components:
         tables:
           type: array
           items:
-            $ref: '#/components/schemas/TableDto'
+            $ref: '#/components/schemas/TableBriefDto'
         views:
           type: array
           items:
-            $ref: '#/components/schemas/ViewDto'
+            $ref: '#/components/schemas/ViewBriefDto'
         container:
-          $ref: '#/components/schemas/ContainerDto'
+          $ref: '#/components/schemas/ContainerBriefDto'
         accesses:
           type: array
           items:
@@ -6206,21 +5254,15 @@ components:
         identifiers:
           type: array
           items:
-            $ref: '#/components/schemas/IdentifierDto'
+            $ref: '#/components/schemas/IdentifierBriefDto'
         subsets:
           type: array
           items:
-            $ref: '#/components/schemas/IdentifierDto'
-        creator:
-          $ref: '#/components/schemas/UserDto'
+            $ref: '#/components/schemas/IdentifierBriefDto'
         contact:
-          $ref: '#/components/schemas/UserDto'
+          $ref: '#/components/schemas/UserBriefDto'
         owner:
-          $ref: '#/components/schemas/UserDto'
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          $ref: '#/components/schemas/UserBriefDto'
         exchange_name:
           type: string
           example: dbrepo
@@ -6233,155 +5275,45 @@ components:
         is_public:
           type: boolean
           example: true
+        is_schema_public:
+          type: boolean
+          example: true
         preview_image:
           type: string
-    ForeignKeyBriefDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-    ForeignKeyDto:
+    ImageBriefDto:
       required:
-        - name
-        - referenced_table
-        - references
-        - table
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/ForeignKeyReferenceDto'
-        table:
-          $ref: '#/components/schemas/TableBriefDto'
-        referenced_table:
-          $ref: '#/components/schemas/TableBriefDto'
-        on_update:
-          type: string
-          enum:
-            - restrict
-            - cascade
-            - set_null
-            - no_action
-            - set_default
-        on_delete:
-          type: string
-          enum:
-            - restrict
-            - cascade
-            - set_null
-            - no_action
-            - set_default
-    ForeignKeyReferenceDto:
-      required:
-        - column
-        - foreign_key
-        - referenced_column
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        column:
-          $ref: '#/components/schemas/ColumnBriefDto'
-        foreign_key:
-          $ref: '#/components/schemas/ForeignKeyBriefDto'
-        referenced_column:
-          $ref: '#/components/schemas/ColumnBriefDto'
-    ImageDto:
-      required:
-        - data_types
         - default
-        - default_port
-        - dialect
-        - driver_class
         - id
         - jdbc_method
         - name
-        - operators
-        - registry
         - version
       type: object
       properties:
         id:
           type: integer
           format: int64
-        registry:
-          type: string
-          example: docker.io/library
         name:
           type: string
           example: mariadb
         version:
           type: string
           example: '10.5'
-        dialect:
-          type: string
-          example: org.hibernate.dialect.MariaDBDialect
-        operators:
-          type: array
-          items:
-            $ref: '#/components/schemas/OperatorDto'
-        driver_class:
-          type: string
-          example: org.mariadb.jdbc.Driver
         jdbc_method:
           type: string
           example: mariadb
         default:
           type: boolean
           example: false
-        default_port:
-          type: integer
-          format: int32
-          example: 3306
-        data_types:
-          type: array
-          items:
-            $ref: '#/components/schemas/DataTypeDto'
-    OperatorDto:
-      required:
-        - display_name
-        - documentation
-        - value
-      type: object
-      properties:
-        value:
-          type: string
-          example: XOR
-        documentation:
-          type: string
-          example: 'https://mariadb.com/kb/en/xor/'
-        display_name:
-          type: string
-          example: XOR
-    PrimaryKeyDto:
-      required:
-        - column
-        - table
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        table:
-          $ref: '#/components/schemas/TableBriefDto'
-        column:
-          $ref: '#/components/schemas/ColumnBriefDto'
     TableBriefDto:
       required:
         - database_id
         - id
         - internal_name
+        - is_public
+        - is_schema_public
         - is_versioned
         - name
-        - owner
+        - owned_by
       type: object
       properties:
         id:
@@ -6393,8 +5325,6 @@ components:
         description:
           type: string
           example: Air Quality in Austria
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
         database_id:
           type: integer
           format: int64
@@ -6404,276 +5334,17 @@ components:
         is_versioned:
           type: boolean
           example: true
-    TableDto:
-      required:
-        - columns
-        - constraints
-        - created
-        - created_by
-        - creator
-        - database_id
-        - id
-        - internal_name
-        - is_public
-        - is_versioned
-        - name
-        - owner
-        - queue_name
-        - routing_key
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        alias:
-          type: string
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDto'
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        owner:
-          $ref: '#/components/schemas/UserDto'
-        description:
-          maxLength: 2048
-          minLength: 0
-          type: string
-          example: Air Quality in Austria
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-        constraints:
-          $ref: '#/components/schemas/ConstraintsDto'
-        database_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: air_quality
-        is_versioned:
-          type: boolean
-          example: true
-        created_by:
-          type: string
-          format: uuid
-        queue_name:
-          type: string
-          example: air_quality
-        queue_type:
-          type: string
-          example: quorum
-        routing_key:
-          type: string
-          example: dbrepo.1.2
         is_public:
           type: boolean
           example: true
-        num_rows:
-          type: integer
-          format: int64
-          example: 5
-        data_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 16384
-        max_data_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 0
-        avg_row_length:
-          type: integer
-          description: in bytes
-          format: int64
-          example: 3276
-    UniqueDto:
-      required:
-        - columns
-        - id
-        - name
-        - table
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        table:
-          $ref: '#/components/schemas/TableBriefDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-    UnitDto:
-      required:
-        - columns
-        - created
-        - id
-        - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-    UserBriefDto:
-      required:
-        - id
-        - username
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
-        username:
-          type: string
-          description: Only contains lowercase characters
-          example: jcarberry
-        name:
-          type: string
-          example: Josiah Carberry
-        orcid:
-          type: string
-          example: 0000-0002-1825-0097
-        qualified_name:
-          type: string
-          example: Josiah Carberry — @jcarberry
-        given_name:
-          type: string
-          example: Josiah
-        family_name:
-          type: string
-          example: Carberry
-    ViewColumnDto:
-      required:
-        - auto_generated
-        - column_type
-        - database_id
-        - id
-        - internal_name
-        - is_null_allowed
-        - is_public
-        - name
-        - ordinal_position
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: Date
-        size:
-          type: integer
-          format: int64
-          example: 255
-        d:
-          type: integer
-          format: int64
-          example: 0
-        concept:
-          $ref: '#/components/schemas/ConceptDto'
-        unit:
-          $ref: '#/components/schemas/UnitDto'
-        description:
-          maxLength: 2048
-          minLength: 0
-          type: string
-          example: Column comment
-        database_id:
-          type: integer
-          format: int64
-        ordinal_position:
-          type: integer
-          format: int32
-          example: 0
-        internal_name:
-          maxLength: 64
-          minLength: 0
-          type: string
-          example: mdb_date
-        auto_generated:
-          type: boolean
-          example: false
-        index_length:
-          type: integer
-          format: int64
-        length:
-          type: integer
-          format: int64
-        column_type:
-          type: string
-          example: string
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-        is_public:
+        is_schema_public:
           type: boolean
           example: true
-        is_null_allowed:
-          type: boolean
-          example: false
-    ViewDto:
+        owned_by:
+          type: string
+          format: uuid
+    ViewBriefDto:
       required:
-        - columns
-        - created
-        - creator
-        - database
         - database_id
         - id
         - internal_name
@@ -6685,28 +5356,12 @@ components:
         id:
           type: integer
           format: int64
-        database:
-          $ref: '#/components/schemas/DatabaseDto'
         name:
           type: string
           example: Air Quality
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDto'
         query:
           type: string
           example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewColumnDto'
         database_id:
           type: integer
           format: int64
@@ -6716,6 +5371,9 @@ components:
         is_public:
           type: boolean
           example: true
+        is_schema_public:
+          type: boolean
+          example: true
         initial_view:
           type: boolean
           description: True if it is the default view for the database
@@ -6723,10 +5381,9 @@ components:
         query_hash:
           type: string
           example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-        last_modified:
+        owned_by:
           type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
+          format: uuid
     UserUpdateDto:
       required:
         - language
@@ -6751,6 +5408,53 @@ components:
         language:
           type: string
           example: en
+    UserAttributesDto:
+      required:
+        - language
+        - theme
+      type: object
+      properties:
+        theme:
+          type: string
+          example: light
+        orcid:
+          type: string
+          example: 'https://orcid.org/0000-0002-1825-0097'
+        affiliation:
+          type: string
+          example: Brown University
+        language:
+          type: string
+          example: en
+    UserDto:
+      required:
+        - attributes
+        - id
+        - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        attributes:
+          $ref: '#/components/schemas/UserAttributesDto'
+        qualified_name:
+          type: string
+          example: Josiah Carberry — @jcarberry
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
     UserPasswordDto:
       required:
         - password
@@ -6820,7 +5524,6 @@ components:
           example: rdf/om-2.0.rdf
     OntologyDto:
       required:
-        - created
         - id
         - prefix
         - rdf
@@ -6843,12 +5546,6 @@ components:
         rdf:
           type: boolean
           example: false
-        creator:
-          $ref: '#/components/schemas/UserBriefDto'
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
         uri_pattern:
           type: string
           example: 'http://www.wikidata.org/entity/.*'
@@ -6934,6 +5631,131 @@ components:
         jdbc_method:
           type: string
           example: postgresql
+    DataTypeDto:
+      required:
+        - display_name
+        - documentation
+        - is_buildable
+        - is_quoted
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          example: time
+        documentation:
+          type: string
+          example: 'https://mariadb.com/kb/en/time/'
+        display_name:
+          type: string
+          example: TIME(fsp)
+        size_min:
+          type: integer
+          format: int32
+          example: 0
+        size_max:
+          type: integer
+          format: int32
+          example: 6
+        size_default:
+          type: integer
+          format: int32
+          example: 0
+        size_required:
+          type: boolean
+          example: false
+        d_min:
+          type: integer
+          format: int32
+        d_max:
+          type: integer
+          format: int32
+        d_default:
+          type: integer
+          format: int32
+        d_required:
+          type: boolean
+        data_hint:
+          type: string
+          example: 'e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S'
+        type_hint:
+          type: string
+          example: 'fsp=microsecond precision, min. 0, max. 6'
+        is_quoted:
+          type: boolean
+          description: frontend needs to quote this data type
+          example: false
+        is_buildable:
+          type: boolean
+          description: frontend can build this data type
+          example: true
+    ImageDto:
+      required:
+        - data_types
+        - default
+        - default_port
+        - dialect
+        - driver_class
+        - id
+        - jdbc_method
+        - name
+        - operators
+        - registry
+        - version
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registry:
+          type: string
+          example: docker.io/library
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+          example: '10.5'
+        dialect:
+          type: string
+          example: org.hibernate.dialect.MariaDBDialect
+        operators:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorDto'
+        driver_class:
+          type: string
+          example: org.mariadb.jdbc.Driver
+        jdbc_method:
+          type: string
+          example: mariadb
+        default:
+          type: boolean
+          example: false
+        default_port:
+          type: integer
+          format: int32
+          example: 3306
+        data_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataTypeDto'
+    OperatorDto:
+      required:
+        - display_name
+        - documentation
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          example: XOR
+        documentation:
+          type: string
+          example: 'https://mariadb.com/kb/en/xor/'
+        display_name:
+          type: string
+          example: XOR
     CreatorSaveDto:
       required:
         - creator_name
@@ -7702,6 +6524,25 @@ components:
             - Subtitle
             - TranslatedTitle
             - Other
+    LicenseDto:
+      required:
+        - identifier
+        - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: 'https://opensource.org/licenses/MIT'
+        description:
+          type: string
+          example: >-
+            A short and simple permissive license with conditions only requiring
+            preservation of copyright and license notices. Licensed works,
+            modifications, and larger works may be distributed under different
+            terms and without source code.
     RelatedIdentifierSaveDto:
       required:
         - id
@@ -7777,12 +6618,974 @@ components:
             - Requires
             - IsObsoletedBy
             - Obsoletes
+    CreatorDto:
+      required:
+        - creator_name
+        - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: 'Carberry, Josiah'
+        name_type:
+          type: string
+          example: Personal
+          enum:
+            - Personal
+            - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+            - ORCID
+            - ROR
+            - ISNI
+            - GRID
+        name_identifier_scheme_uri:
+          type: string
+          example: 'https://orcid.org/'
+        affiliation_identifier:
+          type: string
+          example: 'https://ror.org/05gq02987'
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+            - ROR
+            - GRID
+            - ISNI
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: 'https://ror.org/'
+    IdentifierDescriptionDto:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          example: 'Air quality reports at Stephansplatz, Vienna'
+        language:
+          type: string
+          example: en
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+        type:
+          type: string
+          example: Abstract
+          enum:
+            - Abstract
+            - Methods
+            - SeriesInformation
+            - TableOfContents
+            - TechnicalInfo
+            - Other
+    IdentifierDto:
+      required:
+        - created_by
+        - creators
+        - database_id
+        - execution
+        - id
+        - owner
+        - publication_year
+        - publisher
+        - query
+        - query_hash
+        - query_normalized
+        - titles
+        - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+            - database
+            - subset
+            - table
+            - view
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierTitleDto'
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDescriptionDto'
+        funders:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierFunderDto'
+        query:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        execution:
+          type: string
+          format: date-time
+          example: '2021-03-12T15:26:21.000Z'
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        owner:
+          $ref: '#/components/schemas/UserDto'
+        language:
+          type: string
+          enum:
+            - ab
+            - aa
+            - af
+            - ak
+            - sq
+            - am
+            - ar
+            - an
+            - hy
+            - as
+            - av
+            - ae
+            - ay
+            - az
+            - bm
+            - ba
+            - eu
+            - be
+            - bn
+            - bh
+            - bi
+            - bs
+            - br
+            - bg
+            - my
+            - ca
+            - km
+            - ch
+            - ce
+            - ny
+            - zh
+            - cu
+            - cv
+            - kw
+            - co
+            - cr
+            - hr
+            - cs
+            - da
+            - dv
+            - nl
+            - dz
+            - en
+            - eo
+            - et
+            - ee
+            - fo
+            - fj
+            - fi
+            - fr
+            - ff
+            - gd
+            - gl
+            - lg
+            - ka
+            - de
+            - ki
+            - el
+            - kl
+            - gn
+            - gu
+            - ht
+            - ha
+            - he
+            - hz
+            - hi
+            - ho
+            - hu
+            - is
+            - io
+            - ig
+            - id
+            - ia
+            - ie
+            - iu
+            - ik
+            - ga
+            - it
+            - ja
+            - jv
+            - kn
+            - kr
+            - ks
+            - kk
+            - rw
+            - kv
+            - kg
+            - ko
+            - kj
+            - ku
+            - ky
+            - lo
+            - la
+            - lv
+            - lb
+            - li
+            - ln
+            - lt
+            - lu
+            - mk
+            - mg
+            - ms
+            - ml
+            - mt
+            - gv
+            - mi
+            - mr
+            - mh
+            - ro
+            - mn
+            - na
+            - nv
+            - nd
+            - ng
+            - ne
+            - se
+            - 'no'
+            - nb
+            - nn
+            - ii
+            - oc
+            - oj
+            - or
+            - om
+            - os
+            - pi
+            - pa
+            - ps
+            - fa
+            - pl
+            - pt
+            - qu
+            - rm
+            - rn
+            - ru
+            - sm
+            - sg
+            - sa
+            - sc
+            - sr
+            - sn
+            - sd
+            - si
+            - sk
+            - sl
+            - so
+            - st
+            - nr
+            - es
+            - su
+            - sw
+            - ss
+            - sv
+            - tl
+            - ty
+            - tg
+            - ta
+            - tt
+            - te
+            - th
+            - bo
+            - ti
+            - to
+            - ts
+            - tn
+            - tr
+            - tk
+            - tw
+            - ug
+            - uk
+            - ur
+            - uz
+            - ve
+            - vi
+            - vo
+            - wa
+            - cy
+            - fy
+            - wo
+            - xh
+            - yi
+            - yo
+            - za
+            - zu
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        status:
+          type: string
+          enum:
+            - draft
+            - published
+        database_id:
+          type: integer
+          format: int64
+          example: 1
+        query_id:
+          type: integer
+          format: int64
+          example: 1
+        table_id:
+          type: integer
+          format: int64
+          example: 1
+        view_id:
+          type: integer
+          format: int64
+          example: 1
+        query_normalized:
+          type: string
+          example: >-
+            SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`
+            = "09:STEF"
+        related_identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+        created_by:
+          type: string
+          format: uuid
+    IdentifierFunderDto:
+      required:
+        - funder_name
+        - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: 'http://doi.org/10.13039/501100000780'
+        funder_identifier_type:
+          type: string
+          example: Crossref Funder ID
+          enum:
+            - Crossref Funder ID
+            - ROR
+            - GND
+            - ISNI
+            - Other
+        scheme_uri:
+          type: string
+          example: 'http://doi.org/'
+        award_number:
+          type: string
+          example: '824087'
+        award_title:
+          type: string
+          example: EOSC-Life
+    RelatedIdentifierDto:
+      required:
+        - id
+        - relation
+        - type
+        - value
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+            - DOI
+            - URL
+            - URN
+            - ARK
+            - arXiv
+            - bibcode
+            - EAN13
+            - EISSN
+            - Handle
+            - IGSN
+            - ISBN
+            - ISTC
+            - LISSN
+            - LSID
+            - PMID
+            - PURL
+            - UPC
+            - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+            - IsCitedBy
+            - Cites
+            - IsSupplementTo
+            - IsSupplementedBy
+            - IsContinuedBy
+            - Continues
+            - IsDescribedBy
+            - Describes
+            - HasMetadata
+            - IsMetadataFor
+            - HasVersion
+            - IsVersionOf
+            - IsNewVersionOf
+            - IsPreviousVersionOf
+            - IsPartOf
+            - HasPart
+            - IsPublishedIn
+            - IsReferencedBy
+            - References
+            - IsDocumentedBy
+            - Documents
+            - IsCompiledBy
+            - Compiles
+            - IsVariantFormOf
+            - IsOriginalFormOf
+            - IsIdenticalTo
+            - IsReviewedBy
+            - Reviews
+            - IsDerivedFrom
+            - IsSourceOf
+            - IsRequiredBy
+            - Requires
+            - IsObsoletedBy
+            - Obsoletes
     DatabaseModifyVisibilityDto:
       required:
         - is_public
+        - is_schema_public
       type: object
       properties:
         is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+    ViewUpdateDto:
+      required:
+        - is_public
+        - is_schema_public
+      type: object
+      properties:
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+    ColumnBriefDto:
+      required:
+        - column_type
+        - database_id
+        - id
+        - internal_name
+        - name
+        - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        alias:
+          type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+    ConceptDto:
+      required:
+        - columns
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    UnitDto:
+      required:
+        - columns
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ViewColumnDto:
+      required:
+        - auto_generated
+        - column_type
+        - database_id
+        - id
+        - internal_name
+        - is_null_allowed
+        - is_public
+        - name
+        - ordinal_position
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: Date
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        concept:
+          $ref: '#/components/schemas/ConceptDto'
+        unit:
+          $ref: '#/components/schemas/UnitDto'
+        description:
+          maxLength: 2048
+          minLength: 0
+          type: string
+          example: Column comment
+        database_id:
+          type: integer
+          format: int64
+        ordinal_position:
+          type: integer
+          format: int32
+          example: 0
+        internal_name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: mdb_date
+        auto_generated:
+          type: boolean
+          example: false
+        index_length:
+          type: integer
+          format: int64
+        length:
+          type: integer
+          format: int64
+        column_type:
+          type: string
+          example: string
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+        is_public:
+          type: boolean
+          example: true
+        is_null_allowed:
+          type: boolean
+          example: false
+    ViewDto:
+      required:
+        - columns
+        - database
+        - database_id
+        - id
+        - internal_name
+        - name
+        - owner
+        - query
+        - query_hash
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        database:
+          $ref: '#/components/schemas/DatabaseDto'
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewColumnDto'
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
+    TableUpdateDto:
+      required:
+        - is_public
+        - is_schema_public
+      type: object
+      properties:
+        description:
+          maxLength: 180
+          minLength: 0
+          type: string
+          example: Air Quality in Austria
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
           type: boolean
           example: true
     ColumnSemanticsUpdateDto:
@@ -7792,6 +7595,142 @@ components:
           type: string
         unit_uri:
           type: string
+    ColumnDto:
+      required:
+        - column_type
+        - database_id
+        - id
+        - internal_name
+        - is_null_allowed
+        - is_public
+        - name
+        - ordinal_position
+        - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: Date
+        alias:
+          type: string
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        mean:
+          type: number
+          example: 45.4
+        median:
+          type: number
+          example: 51
+        concept:
+          $ref: '#/components/schemas/ConceptDto'
+        unit:
+          $ref: '#/components/schemas/UnitDto'
+        description:
+          maxLength: 2048
+          minLength: 0
+          type: string
+          example: Column comment
+        enums:
+          type: array
+          items:
+            type: string
+        sets:
+          type: array
+          items:
+            type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        ordinal_position:
+          type: integer
+          format: int32
+          example: 0
+        internal_name:
+          maxLength: 64
+          minLength: 0
+          type: string
+          example: mdb_date
+        index_length:
+          type: integer
+          format: int64
+        length:
+          type: integer
+          format: int64
+        column_type:
+          type: string
+          example: string
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+        data_length:
+          type: integer
+          format: int64
+          example: 34300
+        max_data_length:
+          type: integer
+          format: int64
+          example: 34300
+        num_rows:
+          type: integer
+          format: int64
+          example: 32
+        val_min:
+          type: number
+          example: 0
+        val_max:
+          type: number
+          example: 100
+        std_dev:
+          type: number
+          example: 5.32
+        is_public:
+          type: boolean
+          example: true
+        is_null_allowed:
+          type: boolean
+          example: false
     DatabaseTransferDto:
       required:
         - id
@@ -8185,6 +8124,7 @@ components:
       required:
         - container_id
         - is_public
+        - is_schema_public
         - name
       type: object
       properties:
@@ -8198,9 +8138,13 @@ components:
         is_public:
           type: boolean
           example: true
+        is_schema_public:
+          type: boolean
+          example: true
     ViewCreateDto:
       required:
         - is_public
+        - is_schema_public
         - name
         - query
       type: object
@@ -8216,55 +8160,9 @@ components:
         is_public:
           type: boolean
           example: true
-    ViewBriefDto:
-      required:
-        - created
-        - creator
-        - database_id
-        - id
-        - internal_name
-        - name
-        - query
-        - query_hash
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        identifier:
-          $ref: '#/components/schemas/IdentifierDto'
-        query:
-          type: string
-          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        database_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
+        is_schema_public:
           type: boolean
           example: true
-        initial_view:
-          type: boolean
-          description: True if it is the default view for the database
-          example: true
-        query_hash:
-          type: string
-          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-        last_modified:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
     ColumnCreateDto:
       required:
         - name
@@ -8409,6 +8307,8 @@ components:
       required:
         - columns
         - constraints
+        - is_public
+        - is_schema_public
         - name
       type: object
       properties:
@@ -8428,6 +8328,12 @@ components:
             $ref: '#/components/schemas/ColumnCreateDto'
         constraints:
           $ref: '#/components/schemas/ConstraintsCreateDto'
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
     ContainerCreateDto:
       required:
         - host
@@ -8468,6 +8374,47 @@ components:
         privileged_password:
           type: string
           description: Password of privileged user
+    ContainerDto:
+      required:
+        - count
+        - host
+        - id
+        - image
+        - internal_name
+        - name
+        - port
+        - quota
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        image:
+          $ref: '#/components/schemas/ImageDto'
+        quota:
+          type: integer
+          format: int64
+          example: 50
+        count:
+          type: integer
+          format: int64
+          example: 10
+        internal_name:
+          type: string
+          example: data-db
+        ui_host:
+          type: string
+        ui_port:
+          type: integer
+          format: int32
     OntologyBriefDto:
       required:
         - id
@@ -8523,14 +8470,14 @@ components:
           type: string
         resumptionToken:
           type: string
+        parametersString:
+          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
-        parametersString:
-          type: string
     BannerMessageDto:
       required:
         - id
@@ -8564,30 +8511,6 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
-    ImageBriefDto:
-      required:
-        - default
-        - id
-        - jdbc_method
-        - name
-        - version
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: mariadb
-        version:
-          type: string
-          example: '10.5'
-        jdbc_method:
-          type: string
-          example: mariadb
-        default:
-          type: boolean
-          example: false
     LdCreatorDto:
       required:
         - '@type'
@@ -8650,6 +8573,202 @@ components:
           type: string
         '@type':
           type: string
+    ConstraintsDto:
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            $ref: '#/components/schemas/UniqueDto'
+        checks:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyDto'
+        primary_key:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/PrimaryKeyDto'
+    ForeignKeyBriefDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+    ForeignKeyDto:
+      required:
+        - name
+        - referenced_table
+        - references
+        - table
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyReferenceDto'
+        table:
+          $ref: '#/components/schemas/TableBriefDto'
+        referenced_table:
+          $ref: '#/components/schemas/TableBriefDto'
+        on_update:
+          type: string
+          enum:
+            - restrict
+            - cascade
+            - set_null
+            - no_action
+            - set_default
+        on_delete:
+          type: string
+          enum:
+            - restrict
+            - cascade
+            - set_null
+            - no_action
+            - set_default
+    ForeignKeyReferenceDto:
+      required:
+        - column
+        - foreign_key
+        - referenced_column
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        column:
+          $ref: '#/components/schemas/ColumnBriefDto'
+        foreign_key:
+          $ref: '#/components/schemas/ForeignKeyBriefDto'
+        referenced_column:
+          $ref: '#/components/schemas/ColumnBriefDto'
+    PrimaryKeyDto:
+      required:
+        - column
+        - table
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        table:
+          $ref: '#/components/schemas/TableBriefDto'
+        column:
+          $ref: '#/components/schemas/ColumnBriefDto'
+    TableDto:
+      required:
+        - columns
+        - constraints
+        - database_id
+        - id
+        - internal_name
+        - is_public
+        - is_schema_public
+        - is_versioned
+        - name
+        - owner
+        - queue_name
+        - routing_key
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        alias:
+          type: string
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        description:
+          maxLength: 2048
+          minLength: 0
+          type: string
+          example: Air Quality in Austria
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsDto'
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        queue_name:
+          type: string
+          example: air_quality
+        queue_type:
+          type: string
+          example: quorum
+        routing_key:
+          type: string
+          example: dbrepo.1.2
+        is_public:
+          type: boolean
+          example: true
+        num_rows:
+          type: integer
+          format: int64
+          example: 5
+        data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 16384
+        max_data_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 0
+        avg_row_length:
+          type: integer
+          description: in bytes
+          format: int64
+          example: 3276
+    UniqueDto:
+      required:
+        - columns
+        - id
+        - name
+        - table
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        table:
+          $ref: '#/components/schemas/TableBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
     TableColumnEntityDto:
       required:
         - column_id
@@ -8679,1517 +8798,6 @@ components:
           type: integer
           format: int64
           example: 1
-    ContainerBriefDto:
-      required:
-        - count
-        - created
-        - hash
-        - id
-        - image
-        - internal_name
-        - name
-        - quota
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        hash:
-          type: string
-          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
-        name:
-          type: string
-          example: Air Quality
-        image:
-          $ref: '#/components/schemas/ImageBriefDto'
-        quota:
-          type: integer
-          format: int32
-          example: 50
-        count:
-          type: integer
-          format: int32
-          example: 10
-        created:
-          type: string
-          format: date-time
-          example: '2021-03-12T15:26:21.000Z'
-        internal_name:
-          type: string
-          example: air-quality
-    Constraints:
-      type: object
-      properties:
-        uniques:
-          type: array
-          items:
-            $ref: '#/components/schemas/Unique'
-        foreignKeys:
-          type: array
-          items:
-            $ref: '#/components/schemas/ForeignKey'
-        checks:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        primaryKey:
-          type: array
-          items:
-            $ref: '#/components/schemas/PrimaryKey'
-    Container:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        internalName:
-          type: string
-        host:
-          type: string
-        port:
-          type: integer
-          format: int32
-        uiHost:
-          type: string
-        uiPort:
-          type: integer
-          format: int32
-        quota:
-          type: integer
-          format: int32
-        uiAdditionalFlags:
-          type: string
-        databases:
-          type: array
-          items:
-            $ref: '#/components/schemas/Database'
-        image:
-          $ref: '#/components/schemas/ContainerImage'
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-        privilegedUsername:
-          type: string
-        privilegedPassword:
-          type: string
-    ContainerImage:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        registry:
-          type: string
-        version:
-          type: string
-        driverClass:
-          type: string
-        dialect:
-          type: string
-        jdbcMethod:
-          type: string
-        defaultPort:
-          type: integer
-          format: int32
-        isDefault:
-          type: boolean
-        containers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Container'
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-        dataTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/DataType'
-        operators:
-          type: array
-          items:
-            $ref: '#/components/schemas/Operator'
-    Creator:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        firstname:
-          type: string
-        lastname:
-          type: string
-        creatorName:
-          type: string
-        nameType:
-          type: string
-          enum:
-            - PERSONAL
-            - ORGANIZATIONAL
-        nameIdentifier:
-          type: string
-        nameIdentifierScheme:
-          type: string
-          enum:
-            - ORCID
-            - ROR
-            - ISNI
-            - GRID
-        nameIdentifierSchemeUri:
-          type: string
-        affiliation:
-          type: string
-        affiliationIdentifier:
-          type: string
-        affiliationIdentifierScheme:
-          type: string
-          enum:
-            - ROR
-            - GRID
-            - ISNI
-        affiliationIdentifierSchemeUri:
-          type: string
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-        apaName:
-          type: string
-        bibtexName:
-          type: string
-        ieeeName:
-          type: string
-    DataType:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        displayName:
-          type: string
-        value:
-          type: string
-        sizeMin:
-          type: integer
-          format: int32
-        sizeMax:
-          type: integer
-          format: int32
-        sizeDefault:
-          type: integer
-          format: int32
-        sizeRequired:
-          type: boolean
-        documentation:
-          type: string
-        typeHint:
-          type: string
-        dataHint:
-          type: string
-        quoted:
-          type: boolean
-        buildable:
-          type: boolean
-        image:
-          $ref: '#/components/schemas/ContainerImage'
-        dmin:
-          type: integer
-          format: int32
-        dmax:
-          type: integer
-          format: int32
-        ddefault:
-          type: integer
-          format: int32
-        drequired:
-          type: boolean
-    Database:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        createdBy:
-          type: string
-          format: uuid
-        creator:
-          $ref: '#/components/schemas/User'
-        ownedBy:
-          type: string
-          format: uuid
-        owner:
-          $ref: '#/components/schemas/User'
-        cid:
-          type: integer
-          format: int64
-        container:
-          $ref: '#/components/schemas/Container'
-        name:
-          type: string
-        internalName:
-          type: string
-        exchangeName:
-          type: string
-        description:
-          type: string
-        contactPerson:
-          type: string
-          format: uuid
-        contact:
-          $ref: '#/components/schemas/User'
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Identifier'
-        subsets:
-          type: array
-          items:
-            $ref: '#/components/schemas/Identifier'
-        tables:
-          type: array
-          items:
-            $ref: '#/components/schemas/Table'
-        views:
-          type: array
-          items:
-            $ref: '#/components/schemas/View'
-        accesses:
-          type: array
-          items:
-            $ref: '#/components/schemas/DatabaseAccess'
-        isPublic:
-          type: boolean
-        image:
-          type: array
-          items:
-            type: string
-            format: byte
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-    DatabaseAccess:
-      type: object
-      properties:
-        huserid:
-          type: string
-          format: uuid
-        user:
-          $ref: '#/components/schemas/User'
-        hdbid:
-          type: integer
-          format: int64
-        database:
-          $ref: '#/components/schemas/Database'
-        type:
-          type: string
-          enum:
-            - AccessType.READ
-            - AccessType.WRITE_OWN
-            - AccessType.WRITE_ALL
-        created:
-          type: string
-          format: date-time
-    ForeignKey:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        table:
-          $ref: '#/components/schemas/Table'
-        referencedTable:
-          $ref: '#/components/schemas/Table'
-        references:
-          type: array
-          items:
-            $ref: '#/components/schemas/ForeignKeyReference'
-        onUpdate:
-          type: string
-          enum:
-            - ReferenceType.RESTRICT
-            - ReferenceType.CASCADE
-            - ReferenceType.SET_NULL
-            - ReferenceType.NO_ACTION
-            - ReferenceType.SET_DEFAULT
-        onDelete:
-          type: string
-          enum:
-            - ReferenceType.RESTRICT
-            - ReferenceType.CASCADE
-            - ReferenceType.SET_NULL
-            - ReferenceType.NO_ACTION
-            - ReferenceType.SET_DEFAULT
-    ForeignKeyReference:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        foreignKey:
-          $ref: '#/components/schemas/ForeignKey'
-        column:
-          $ref: '#/components/schemas/TableColumn'
-        referencedColumn:
-          $ref: '#/components/schemas/TableColumn'
-    Identifier:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        queryId:
-          type: integer
-          format: int64
-        tableId:
-          type: integer
-          format: int64
-        viewId:
-          type: integer
-          format: int64
-        creators:
-          type: array
-          items:
-            $ref: '#/components/schemas/Creator'
-        publisher:
-          type: string
-        status:
-          type: string
-          enum:
-            - DRAFT
-            - PUBLISHED
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        titles:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierTitle'
-        descriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDescription'
-        funders:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierFunder'
-        licenses:
-          type: array
-          items:
-            $ref: '#/components/schemas/License'
-        type:
-          type: string
-          enum:
-            - DATABASE
-            - SUBSET
-            - TABLE
-            - VIEW
-        query:
-          type: string
-        queryNormalized:
-          type: string
-        queryHash:
-          type: string
-        resultHash:
-          type: string
-        execution:
-          type: string
-          format: date-time
-        resultNumber:
-          type: integer
-          format: int64
-        publicationYear:
-          type: integer
-          format: int32
-        publicationMonth:
-          type: integer
-          format: int32
-        publicationDay:
-          type: integer
-          format: int32
-        database:
-          $ref: '#/components/schemas/Database'
-        relatedIdentifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedIdentifier'
-        doi:
-          type: string
-        createdBy:
-          type: string
-          format: uuid
-        creator:
-          $ref: '#/components/schemas/User'
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-    IdentifierDescription:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        description:
-          type: string
-        descriptionType:
-          type: string
-          enum:
-            - Abstract
-            - Methods
-            - SeriesInformation
-            - TableOfContents
-            - TechnicalInfo
-            - Other
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-    IdentifierFunder:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        funderName:
-          type: string
-        funderIdentifier:
-          type: string
-        funderIdentifierType:
-          type: string
-          enum:
-            - CROSSREF_FUNDER_ID
-            - ROR
-            - GND
-            - ISNI
-            - OTHER
-        schemeUri:
-          type: string
-        awardNumber:
-          type: string
-        awardTitle:
-          type: string
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-    IdentifierTitle:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        title:
-          type: string
-        titleType:
-          type: string
-          enum:
-            - AlternativeTitle
-            - Subtitle
-            - TranslatedTitle
-            - Other
-        language:
-          type: string
-          enum:
-            - ab
-            - aa
-            - af
-            - ak
-            - sq
-            - am
-            - ar
-            - an
-            - hy
-            - as
-            - av
-            - ae
-            - ay
-            - az
-            - bm
-            - ba
-            - eu
-            - be
-            - bn
-            - bh
-            - bi
-            - bs
-            - br
-            - bg
-            - my
-            - ca
-            - km
-            - ch
-            - ce
-            - ny
-            - zh
-            - cu
-            - cv
-            - kw
-            - co
-            - cr
-            - hr
-            - cs
-            - da
-            - dv
-            - nl
-            - dz
-            - en
-            - eo
-            - et
-            - ee
-            - fo
-            - fj
-            - fi
-            - fr
-            - ff
-            - gd
-            - gl
-            - lg
-            - ka
-            - de
-            - ki
-            - el
-            - kl
-            - gn
-            - gu
-            - ht
-            - ha
-            - he
-            - hz
-            - hi
-            - ho
-            - hu
-            - is
-            - io
-            - ig
-            - id
-            - ia
-            - ie
-            - iu
-            - ik
-            - ga
-            - it
-            - ja
-            - jv
-            - kn
-            - kr
-            - ks
-            - kk
-            - rw
-            - kv
-            - kg
-            - ko
-            - kj
-            - ku
-            - ky
-            - lo
-            - la
-            - lv
-            - lb
-            - li
-            - ln
-            - lt
-            - lu
-            - mk
-            - mg
-            - ms
-            - ml
-            - mt
-            - gv
-            - mi
-            - mr
-            - mh
-            - ro
-            - mn
-            - na
-            - nv
-            - nd
-            - ng
-            - ne
-            - se
-            - 'no'
-            - nb
-            - nn
-            - ii
-            - oc
-            - oj
-            - or
-            - om
-            - os
-            - pi
-            - pa
-            - ps
-            - fa
-            - pl
-            - pt
-            - qu
-            - rm
-            - rn
-            - ru
-            - sm
-            - sg
-            - sa
-            - sc
-            - sr
-            - sn
-            - sd
-            - si
-            - sk
-            - sl
-            - so
-            - st
-            - nr
-            - es
-            - su
-            - sw
-            - ss
-            - sv
-            - tl
-            - ty
-            - tg
-            - ta
-            - tt
-            - te
-            - th
-            - bo
-            - ti
-            - to
-            - ts
-            - tn
-            - tr
-            - tk
-            - tw
-            - ug
-            - uk
-            - ur
-            - uz
-            - ve
-            - vi
-            - vo
-            - wa
-            - cy
-            - fy
-            - wo
-            - xh
-            - yi
-            - yo
-            - za
-            - zu
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-    License:
-      type: object
-      properties:
-        identifier:
-          type: string
-        uri:
-          type: string
-        description:
-          type: string
-    Operator:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        displayName:
-          type: string
-        value:
-          type: string
-        documentation:
-          type: string
-        image:
-          $ref: '#/components/schemas/ContainerImage'
-    PrimaryKey:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        table:
-          $ref: '#/components/schemas/Table'
-        column:
-          $ref: '#/components/schemas/TableColumn'
-    RelatedIdentifier:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        value:
-          type: string
-        type:
-          type: string
-          enum:
-            - DOI
-            - URL
-            - URN
-            - ARK
-            - arXiv
-            - bibcode
-            - EAN13
-            - EISSN
-            - Handle
-            - IGSN
-            - ISBN
-            - ISTC
-            - LISSN
-            - LSID
-            - PMID
-            - PURL
-            - UPC
-            - w3id
-        relation:
-          type: string
-          enum:
-            - IsCitedBy
-            - Cites
-            - IsSupplementTo
-            - IsSupplementedBy
-            - IsContinuedBy
-            - Continues
-            - IsDescribedBy
-            - Describes
-            - HasMetadata
-            - IsMetadataFor
-            - HasVersion
-            - IsVersionOf
-            - IsNewVersionOf
-            - IsPreviousVersionOf
-            - IsPartOf
-            - HasPart
-            - IsPublishedIn
-            - IsReferencedBy
-            - References
-            - IsDocumentedBy
-            - Documents
-            - IsCompiledBy
-            - Compiles
-            - IsVariantFormOf
-            - IsOriginalFormOf
-            - IsIdenticalTo
-            - IsReviewedBy
-            - Reviews
-            - IsDerivedFrom
-            - IsSourceOf
-            - IsRequiredBy
-            - Requires
-            - IsObsoletedBy
-            - Obsoletes
-        identifier:
-          $ref: '#/components/schemas/Identifier'
-    Table:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        tdbid:
-          type: integer
-          format: int64
-        createdBy:
-          type: string
-          format: uuid
-        creator:
-          $ref: '#/components/schemas/User'
-        ownedBy:
-          type: string
-          format: uuid
-        owner:
-          $ref: '#/components/schemas/User'
-        name:
-          type: string
-        internalName:
-          type: string
-        queueName:
-          type: string
-        description:
-          type: string
-        database:
-          $ref: '#/components/schemas/Database'
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Identifier'
-        constraints:
-          $ref: '#/components/schemas/Constraints'
-        isVersioned:
-          type: boolean
-        numRows:
-          type: integer
-          format: int64
-        dataLength:
-          type: integer
-          format: int64
-        maxDataLength:
-          type: integer
-          format: int64
-        avgRowLength:
-          type: integer
-          format: int64
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/TableColumn'
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-    TableColumn:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        table:
-          $ref: '#/components/schemas/Table'
-        name:
-          type: string
-        internalName:
-          type: string
-        description:
-          type: string
-        indexLength:
-          type: integer
-          format: int64
-        alias:
-          type: string
-        columnType:
-          type: string
-          enum:
-            - TableColumnType.CHAR
-            - TableColumnType.VARCHAR
-            - TableColumnType.BINARY
-            - TableColumnType.VARBINARY
-            - TableColumnType.TINYBLOB
-            - TableColumnType.TINYTEXT
-            - TableColumnType.TEXT
-            - TableColumnType.BLOB
-            - TableColumnType.MEDIUMTEXT
-            - TableColumnType.MEDIUMBLOB
-            - TableColumnType.LONGTEXT
-            - TableColumnType.LONGBLOB
-            - TableColumnType.ENUM
-            - TableColumnType.SET
-            - TableColumnType.SERIAL
-            - TableColumnType.BIT
-            - TableColumnType.TINYINT
-            - TableColumnType.BOOL
-            - TableColumnType.SMALLINT
-            - TableColumnType.MEDIUMINT
-            - TableColumnType.INT
-            - TableColumnType.BIGINT
-            - TableColumnType.FLOAT
-            - TableColumnType.DOUBLE
-            - TableColumnType.DECIMAL
-            - TableColumnType.DATE
-            - TableColumnType.DATETIME
-            - TableColumnType.TIMESTAMP
-            - TableColumnType.TIME
-            - TableColumnType.YEAR
-        length:
-          type: integer
-          format: int64
-        isNullAllowed:
-          type: boolean
-        ordinalPosition:
-          type: integer
-          format: int32
-        created:
-          type: string
-          format: date-time
-        concept:
-          $ref: '#/components/schemas/TableColumnConcept'
-        unit:
-          $ref: '#/components/schemas/TableColumnUnit'
-        enums:
-          type: array
-          items:
-            type: string
-        sets:
-          type: array
-          items:
-            type: string
-        size:
-          type: integer
-          format: int64
-        d:
-          type: integer
-          format: int64
-        min:
-          type: number
-        max:
-          type: number
-        mean:
-          type: number
-        median:
-          type: number
-        stdDev:
-          type: number
-        lastModified:
-          type: string
-          format: date-time
-    TableColumnConcept:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/TableColumn'
-    TableColumnUnit:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/TableColumn'
-    Unique:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        table:
-          $ref: '#/components/schemas/Table'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/TableColumn'
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        username:
-          type: string
-        firstname:
-          type: string
-        lastname:
-          type: string
-        email:
-          type: string
-        orcid:
-          type: string
-        affiliation:
-          type: string
-        language:
-          type: string
-        accesses:
-          type: array
-          items:
-            $ref: '#/components/schemas/DatabaseAccess'
-        theme:
-          type: string
-        mariadbPassword:
-          type: string
-    View:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        vdbid:
-          type: integer
-          format: int64
-        createdBy:
-          type: string
-          format: uuid
-        creator:
-          $ref: '#/components/schemas/User'
-        name:
-          type: string
-        internalName:
-          type: string
-        isPublic:
-          type: boolean
-        isInitialView:
-          type: boolean
-        query:
-          type: string
-        queryHash:
-          type: string
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Identifier'
-        database:
-          $ref: '#/components/schemas/Database'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewColumn'
-        created:
-          type: string
-          format: date-time
-        lastModified:
-          type: string
-          format: date-time
-    ViewColumn:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        view:
-          $ref: '#/components/schemas/View'
-        name:
-          type: string
-        internalName:
-          type: string
-        columnType:
-          type: string
-          enum:
-            - TableColumnType.CHAR
-            - TableColumnType.VARCHAR
-            - TableColumnType.BINARY
-            - TableColumnType.VARBINARY
-            - TableColumnType.TINYBLOB
-            - TableColumnType.TINYTEXT
-            - TableColumnType.TEXT
-            - TableColumnType.BLOB
-            - TableColumnType.MEDIUMTEXT
-            - TableColumnType.MEDIUMBLOB
-            - TableColumnType.LONGTEXT
-            - TableColumnType.LONGBLOB
-            - TableColumnType.ENUM
-            - TableColumnType.SET
-            - TableColumnType.SERIAL
-            - TableColumnType.BIT
-            - TableColumnType.TINYINT
-            - TableColumnType.BOOL
-            - TableColumnType.SMALLINT
-            - TableColumnType.MEDIUMINT
-            - TableColumnType.INT
-            - TableColumnType.BIGINT
-            - TableColumnType.FLOAT
-            - TableColumnType.DOUBLE
-            - TableColumnType.DECIMAL
-            - TableColumnType.DATE
-            - TableColumnType.DATETIME
-            - TableColumnType.TIMESTAMP
-            - TableColumnType.TIME
-            - TableColumnType.YEAR
-        isNullAllowed:
-          type: boolean
-        ordinalPosition:
-          type: integer
-          format: int32
-        size:
-          type: integer
-          format: int64
-        d:
-          type: integer
-          format: int64
     IndexDto:
       properties:
         results:

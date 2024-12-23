@@ -693,7 +693,8 @@ public class TableEndpoint extends AbstractEndpoint {
     @GetMapping("/{tableId}/statistic")
     @Observed(name = "dbrepo_table_statistic")
     @Operation(summary = "Get table statistic",
-            description = "Gets basic statistical properties (min, max, mean, median, std.dev) of numerical columns of a table with id.")
+            description = "Gets basic statistical properties (min, max, mean, median, std.dev) of numerical columns of a table with id.",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Generated table statistic",
