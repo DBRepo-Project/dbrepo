@@ -1,6 +1,0 @@
-dbrepo:
-  datacite:
-    url: "${DATACITE_URL}"
-    prefix: "${DATACITE_PREFIX}"
-    username: "${DATACITE_USERNAME}"
-    password: "${DATACITE_PASSWORD}"

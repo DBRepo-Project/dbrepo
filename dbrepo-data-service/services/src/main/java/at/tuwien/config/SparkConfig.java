@@ -30,20 +30,20 @@ public class SparkConfig {
 
     @Bean
     public Map<String, String> sparkOptions() {
-        return new LinkedHashMap<>() {{
-            put("spark.driver.extraJavaOptions", "-Divy.cache.dir=/tmp -Divy.home=/tmp");
-            put("spark.ui.enabled", "false");
-        }};
+        final Map<String, String> options = new LinkedHashMap<>();
+        options.put("spark.driver.extraJavaOptions", "-Divy.cache.dir=/tmp -Divy.home=/tmp");
+        options.put("spark.ui.enabled", "false");
+        return options;
     }
 
     @Bean
     public Map<String, String> hadoopOptions() {
-        return new LinkedHashMap<>() {{
-            put("fs.s3a.path.style.access", "true");
-            put("fs.s3a.endpoint", s3Endpoint);
-            put("fs.s3a.access.key", s3AccessKeyId);
-            put("fs.s3a.secret.key", s3SecretAccessKey);
-        }};
+        final Map<String, String> options = new LinkedHashMap<>();
+        options.put("fs.s3a.path.style.access", "true");
+        options.put("fs.s3a.endpoint", s3Endpoint);
+        options.put("fs.s3a.access.key", s3AccessKeyId);
+        options.put("fs.s3a.secret.key", s3SecretAccessKey);
+        return options;
     }
 
     @Bean

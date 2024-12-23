@@ -395,13 +395,16 @@ public abstract class BaseTest {
             .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
+    @SuppressWarnings("java:S2068")
     public final static String USER_BROKER_PASSWORD = "guest";
 
     public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
+    @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
     public final static String USER_LOCAL_ADMIN_EMAIL = "admin@local";
+    @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
     public final static UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
@@ -425,8 +428,11 @@ public abstract class BaseTest {
     public final static UUID USER_1_LDAP_ID = UUID.fromString("8e541e05-f45c-4d40-ba1b-0e62f04ba3f8");
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "junit1";
+    @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD = "junit1";
+    @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
+    @SuppressWarnings("java:S2068")
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
@@ -581,7 +587,9 @@ public abstract class BaseTest {
     public final static String USER_2_NAME = "Jane Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
     public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
+    @SuppressWarnings("java:S2068")
     public final static String USER_2_PASSWORD = "junit2";
+    @SuppressWarnings("java:S2068")
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static String USER_2_QUALIFIED_NAME = "@" + USER_2_USERNAME + " — " + USER_2_FIRSTNAME + " " + USER_2_LASTNAME;
     public final static Boolean USER_2_VERIFIED = true;
@@ -685,7 +693,9 @@ public abstract class BaseTest {
     public final static String USER_3_ORCID_URL = null;
     public final static String USER_3_ORCID_UNCOMPRESSED = null;
     public final static String USER_3_EMAIL = "system@example.com";
+    @SuppressWarnings("java:S2068")
     public final static String USER_3_PASSWORD = "password";
+    @SuppressWarnings("java:S2068")
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static String USER_3_QUALIFIED_NAME = "@" + USER_3_USERNAME + " — " + USER_3_FIRSTNAME + " " + USER_3_LASTNAME;
     public final static Boolean USER_3_VERIFIED = true;
@@ -774,7 +784,9 @@ public abstract class BaseTest {
     public final static String USER_4_NAME = "JUnit 4";
     public final static String USER_4_AFFILIATION = "TU Wien";
     public final static String USER_4_ORCID_URL = null;
+    @SuppressWarnings("java:S2068")
     public final static String USER_4_PASSWORD = "junit4";
+    @SuppressWarnings("java:S2068")
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_QUALIFIED_NAME = "@" + USER_4_USERNAME + " — " + USER_4_FIRSTNAME + " " + USER_4_LASTNAME;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
@@ -847,7 +859,9 @@ public abstract class BaseTest {
     public final static String USER_5_NAME = "System System";
     public final static String USER_5_AFFILIATION = "TU Wien";
     public final static String USER_5_ORCID = null;
+    @SuppressWarnings("java:S2068")
     public final static String USER_5_PASSWORD = "junit5";
+    @SuppressWarnings("java:S2068")
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_QUALIFIED_NAME = "@" + USER_5_USERNAME + " — " + USER_5_FIRSTNAME + " " + USER_5_LASTNAME;
     public final static String USER_5_EMAIL = "system@ossdip.at";
@@ -920,7 +934,9 @@ public abstract class BaseTest {
     public final static String USER_6_NAME = "System System";
     public final static String USER_6_AFFILIATION = "TU Wien";
     public final static String USER_6_ORCID = null;
+    @SuppressWarnings("java:S2068")
     public final static String USER_6_PASSWORD = "junit5";
+    @SuppressWarnings("java:S2068")
     public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_6_EMAIL = "system@ossdip.at";
     public final static Boolean USER_6_VERIFIED = true;
@@ -1021,15 +1037,15 @@ public abstract class BaseTest {
     public final static ImageDto CONTAINER_1_IMAGE_DTO = IMAGE_1_DTO;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
-    public final static String CONTAINER_1_IP = "127.0.0.1";
     public final static String CONTAINER_1_UI_HOST = "localhost";
     public final static Integer CONTAINER_1_UI_PORT = 3306;
     public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
-    public final static Integer CONTAINER_1_QUOTA = 4;
+    public final static Integer CONTAINER_1_QUOTA = 4;f
     public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
+    @SuppressWarnings("java:S2068")
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629L) /* 2023-02-26 08:20:29 (UTC) */;
 
@@ -1084,12 +1100,12 @@ public abstract class BaseTest {
     public final static ImageDto CONTAINER_2_IMAGE_DTO = IMAGE_1_DTO;
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static String CONTAINER_2_HOST = "localhost";
     public final static Integer CONTAINER_2_PORT = 3309;
     public final static Integer CONTAINER_2_QUOTA = 3;
     public final static Integer CONTAINER_2_COUNT = 3;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
+    @SuppressWarnings("java:S2068")
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655L) /* 2023-02-26 08:20:55 (UTC) */;
 
@@ -1139,11 +1155,11 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static String CONTAINER_3_HOST = "localhost";
     public final static Integer CONTAINER_3_PORT = 3310;
     public final static Integer CONTAINER_3_QUOTA = 20;
     public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
+    @SuppressWarnings("java:S2068")
     public final static String CONTAINER_3_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672L) /* 2023-02-26 08:21:12 (UTC) */;
 
@@ -1165,11 +1181,11 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
     public final static String CONTAINER_4_NAME = "u04";
     public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
-    public final static String CONTAINER_4_IP = "172.30.0.8";
     public final static String CONTAINER_4_HOST = "localhost";
     public final static Integer CONTAINER_4_PORT = 3311;
     public final static Integer CONTAINER_4_QUOTA = 0;
     public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
+    @SuppressWarnings("java:S2068")
     public final static String CONTAINER_4_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688L) /* 2023-02-26 08:21:28 (UTC) */;
 
@@ -1649,6 +1665,7 @@ public abstract class BaseTest {
             .build();
 
     public final static Long TABLE_1_DATA_COUNT = 3L;
+    @SuppressWarnings("java:S3599")
     public final static List<Map<String, Object>> TABLE_1_DATA_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
@@ -2517,6 +2534,7 @@ public abstract class BaseTest {
                     .build());
 
     public final static Long TABLE_8_DATA_COUNT = 6L;
+    @SuppressWarnings("java:S3599")
     public final static List<Map<String, Object>> TABLE_8_DATA_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
@@ -2549,7 +2567,8 @@ public abstract class BaseTest {
                 put(COLUMN_8_3_INTERNAL_NAME, null);
             }}
     ));
-
+    
+    @SuppressWarnings("java:S3599")
     public final static TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
             .columns(new HashMap<>() {{
                 put(COLUMN_8_1_INTERNAL_NAME, ColumnStatisticDto.builder()

@@ -384,7 +384,7 @@ public class UserEndpoint {
                                          @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
             AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
             DataServiceConnectionException, CredentialsInvalidException {
-        log.debug("endpoint modify a user password, userId={}, data.password=(hidden)", userId);
+        log.debug("endpoint modify a user password, userId={}", userId);
         final User user = userService.findById(userId);
         if (!user.equals(principal)) {
             log.error("Failed to modify user password: not current user");

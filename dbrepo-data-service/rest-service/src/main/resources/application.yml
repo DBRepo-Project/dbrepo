@@ -5,8 +5,8 @@ spring:
   datasource:
     url: "jdbc:h2:mem:dbrepo;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS dbrepo;NON_KEYWORDS=value"
     driver-class-name: org.h2.Driver
-    username: sa
-    password: password
+    username: "${H2_USERNAME:sa}"
+    password: "${H2_PASSWORD:sa}"
   jpa:
     show-sql: false
     open-in-view: false
