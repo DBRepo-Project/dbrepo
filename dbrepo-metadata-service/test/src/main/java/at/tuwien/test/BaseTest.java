@@ -1040,7 +1040,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_UI_HOST = "localhost";
     public final static Integer CONTAINER_1_UI_PORT = 3306;
     public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
-    public final static Integer CONTAINER_1_QUOTA = 4;f
+    public final static Integer CONTAINER_1_QUOTA = 4;
     public final static Integer CONTAINER_1_COUNT = 3;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
