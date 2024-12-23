@@ -202,7 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Request pagination is malformed
           content:
@@ -291,7 +291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Request pagination is malformed
           content:
@@ -382,7 +382,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Request pagination or table data select query is malformed
           content:
@@ -642,7 +642,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Request pagination or table data select query is malformed
           content:
@@ -712,17 +712,23 @@ paths:
           description: Retrieved subset data
           headers:
             Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
+              description: Reverse proxy exposing of custom headers
               required: true
               style: simple
             X-Count:
               description: Number of rows
+              style: simple
+            X-Id:
+              description: The subset id
               required: true
+              style: simple
+            X-Headers:
+              description: The list of headers separated by comma
               style: simple
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Invalid pagination
           content:
@@ -793,17 +799,23 @@ paths:
           description: Retrieved subset data
           headers:
             Access-Control-Expose-Headers:
-              description: Expose `X-Count` custom header
+              description: Reverse proxy exposing of custom headers
               required: true
               style: simple
             X-Count:
               description: Number of rows
+              style: simple
+            X-Id:
+              description: The subset id
               required: true
+              style: simple
+            X-Headers:
+              description: The list of headers separated by comma
               style: simple
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Invalid pagination
           content:
@@ -1030,6 +1042,12 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: timestamp
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
         - name: page
           in: query
           required: false
@@ -1042,12 +1060,6 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: timestamp
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date-time
       requestBody:
         content:
           application/json:
@@ -1060,7 +1072,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryResultDto'
+                type: string
         '400':
           description: Malformed select query
           content:
@@ -1125,6 +1137,12 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: timestamp
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
       responses:
         '200':
           description: Exported view data
@@ -4625,29 +4643,6 @@ components:
         code:
           type: string
           example: error.service.code
-    QueryResultDto:
-      required:
-        - headers
-        - id
-        - result
-      type: object
-      properties:
-        result:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: object
-        headers:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-        id:
-          type: integer
-          format: int64
     TupleUpdateDto:
       required:
         - data
@@ -8211,7 +8206,7 @@ components:
       type: object
       properties:
         name:
-          maxLength: 64
+          maxLength: 63
           minLength: 1
           type: string
           example: Air Quality
@@ -8528,14 +8523,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       required:
         - id
