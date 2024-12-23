@@ -34,7 +34,7 @@ public class DataCiteConfig {
     public RestTemplate searchServiceRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(url));
-        log.debug("add basic authentication for data cite: username={}, password=(hidden)", username);
+        log.debug("add basic authentication for data cite: username={}", username);
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(username, password));
         return restTemplate;

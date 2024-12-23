@@ -7,14 +7,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
 public class TableColumnEntityDto {
 
@@ -34,6 +33,7 @@ public class TableColumnEntityDto {
     private Long columnId;
 
     @NotBlank
+    @EqualsAndHashCode.Include
     @Schema(example = "https://www.wikidata.org/entity/Q1686799")
     private String uri;
 
@@ -42,20 +42,5 @@ public class TableColumnEntityDto {
 
     @Schema(example = "open source semantic web framework for Java")
     private String description;
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TableColumnEntityDto other = (TableColumnEntityDto) obj;
-        return Objects.equals(uri, other.uri);
-    }
 
 }

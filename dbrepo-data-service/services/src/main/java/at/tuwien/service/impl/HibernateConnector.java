@@ -21,7 +21,7 @@ public abstract class HibernateConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
-        log.trace("created pooled data source {} in {} ms (user={}, password=(hidden))", url(container, databaseName), System.currentTimeMillis() - start, container.getUsername());
+        log.trace("created pooled data source {} in {} ms, user={}", url(container, databaseName), System.currentTimeMillis() - start, container.getUsername());
         return dataSource;
     }
 

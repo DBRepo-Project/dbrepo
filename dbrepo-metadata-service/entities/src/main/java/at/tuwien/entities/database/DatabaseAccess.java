@@ -2,12 +2,11 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -18,6 +17,7 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @IdClass(DatabaseAccessKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_have_access")
@@ -28,6 +28,7 @@ import java.util.UUID;
 public class DatabaseAccess {
 
     @Id
+    @EqualsAndHashCode.Include
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;
@@ -61,16 +62,5 @@ public class DatabaseAccess {
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof DatabaseAccess other)) {
-            return false;
-        }
-        return this.hdbid.equals(other.getHdbid()) && this.huserid.equals(other.getHuserid());
-    }
 
 }

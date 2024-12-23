@@ -28,6 +28,7 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifiers")
 @NamedQueries({
@@ -176,17 +177,6 @@ public class Identifier implements Serializable {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof Identifier other)) {
-            return false;
-        }
-        return this.id.equals(other.getId());
-    }
 
 }
 
