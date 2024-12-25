@@ -8,10 +8,7 @@ import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
-import at.tuwien.service.CredentialService;
-import at.tuwien.service.StorageService;
-import at.tuwien.service.TableService;
-import at.tuwien.service.ViewService;
+import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -26,6 +23,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -48,15 +47,18 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     private final ViewService viewService;
     private final TableService tableService;
+    private final MetricsService metricsService;
     private final StorageService storageService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, TableService tableService, StorageService storageService,
-                        CredentialService credentialService, EndpointValidator endpointValidator) {
+    public ViewEndpoint(ViewService viewService, TableService tableService, MetricsService metricsService,
+                        StorageService storageService, CredentialService credentialService,
+                        EndpointValidator endpointValidator) {
         this.viewService = viewService;
         this.tableService = tableService;
+        this.metricsService = metricsService;
         this.storageService = storageService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
@@ -286,10 +288,12 @@ public class ViewEndpoint extends AbstractEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
+            final Dataset<Row> dataset = tableService.getData(view.getDatabase(), view.getInternalName(), timestamp,
+                    page, size, null, null);
+            metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(transform(tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, page,
-                            size, null, null)));
+                    .body(transform(dataset));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
