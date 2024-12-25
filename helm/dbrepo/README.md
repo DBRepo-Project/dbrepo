@@ -1,13 +1,13 @@
 # DBRepo Helm chart
 
-[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/) is a database repository system that
+[DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/) is a database repository system that
 allows researchers to ingest data into a central, versioned repository through common interfaces.
 
 ## TL;DR
 
 Download the
 sample [
-`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.5/helm-charts/dbrepo/values.yaml?inline=true)
+`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.6/helm-charts/dbrepo/values.yaml?inline=true)
 for your deployment and update the variables, especially `hostname`.
 
 ```bash
@@ -65,10 +65,10 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Metadata Database
 
 | Name                                     | Description                                                                                                                            | Value                                                                  |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ---------------------------------------- |----------------------------------------------------------------------------------------------------------------------------------------| ---------------------------------------------------------------------- |
 | `metadatadb.enabled`                     | Enable the Metadata datadb.                                                                                                            | `true`                                                                 |
 | `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
-| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `metadatadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
 | `metadatadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
@@ -96,9 +96,9 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Data Database
 
 | Name                                 | Description                                                                                                                            | Value                                                                  |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ------------------------------------ |----------------------------------------------------------------------------------------------------------------------------------------| ---------------------------------------------------------------------- |
 | `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
-| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
 | `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |

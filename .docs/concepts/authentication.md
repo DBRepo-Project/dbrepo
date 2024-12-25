@@ -27,7 +27,7 @@ The [User Interface](../../api/ui) for example refreshes the token on-the-fly by
 of an expired access token, requests a new one without having to terminate the request. This happens only once after the
 access token has expired (after e.g. 15 minutes).
 
-## OpenID Connect (OIDC)
+## OpenID Connect
 
-We use the widely accepted authentication protocol OIDC for client authentication. Other protocols are e.g. SAML2 which
-are not used by DBRepo.
+We use the widely accepted authentication protocol OpenID Connect for client authentication. Other protocols are, e.g. 
+SAML2 which are not used by default in DBRepo.
