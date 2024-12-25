@@ -64,4 +64,22 @@ public interface MetadataMapper {
 
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
+    default String metricToUri(String baseUrl, Long databaseId, Long tableId, Long subsetId, Long viewId) {
+        final StringBuilder uri = new StringBuilder(baseUrl)
+                .append("/database/")
+                .append(databaseId);
+        if (tableId != null) {
+            uri.append("/table/")
+                    .append(tableId);
+        } else if (subsetId != null) {
+            uri.append("/subset/")
+                    .append(subsetId);
+        } else if (viewId != null) {
+            uri.append("/view/")
+                    .append(viewId);
+        }
+        log.trace("count uri: {}", uri);
+        return uri.toString();
+    }
+
 }

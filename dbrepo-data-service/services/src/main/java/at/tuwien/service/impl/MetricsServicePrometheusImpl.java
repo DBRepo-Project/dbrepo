@@ -1,5 +1,7 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.config.MetricsConfig;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.MetricsService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
@@ -10,43 +12,32 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetricsServicePrometheusImpl implements MetricsService {
 
-    @Override
-    public void countDatabaseGetData(Long databaseId) {
-        Counter.builder("dbrepo.database.data.get")
-                .tag("database_id", "" + databaseId)
-                .tag("protocol", "http")
-                .description("The total number of accessed data sources")
-                .register(Metrics.globalRegistry)
-                .increment();
+    private final MetricsConfig metricsConfig;
+    private final MetadataMapper metadataMapper;
+
+    public MetricsServicePrometheusImpl(MetricsConfig metricsConfig, MetadataMapper metadataMapper) {
+        this.metricsConfig = metricsConfig;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
     public void countTableGetData(Long databaseId, Long tableId) {
-        Counter.builder("dbrepo.table.data.get")
-                .tag("database_id", "" + databaseId)
-                .tag("table_id", "" + tableId)
-                .tag("protocol", "http")
-                .description("The total number of accessed data sources")
-                .register(Metrics.globalRegistry)
-                .increment();
+        countGetData(databaseId, tableId, null, null);
     }
 
     @Override
     public void countSubsetGetData(Long databaseId, Long subsetId) {
-        Counter.builder("dbrepo.table.data.get")
-                .tag("database_id", "" + databaseId)
-                .tag("subset_id", "" + subsetId)
-                .tag("protocol", "http")
-                .description("The total number of accessed data sources")
-                .register(Metrics.globalRegistry)
-                .increment();
+        countGetData(databaseId, null, subsetId, null);
     }
 
     @Override
     public void countViewGetData(Long databaseId, Long viewId) {
-        Counter.builder("dbrepo.table.data.get")
-                .tag("database_id", "" + databaseId)
-                .tag("view_id", "" + viewId)
+        countGetData(databaseId, null, null, viewId);
+    }
+
+    public void countGetData(Long databaseId, Long tableId, Long subsetId, Long viewId) {
+        Counter.builder("dbrepo.datasource.data.get")
+                .tag("uri", metadataMapper.metricToUri(metricsConfig.getBaseUrl(), databaseId, tableId, subsetId, viewId))
                 .tag("protocol", "http")
                 .description("The total number of accessed data sources")
                 .register(Metrics.globalRegistry)

@@ -353,9 +353,11 @@ public class ViewEndpoint extends AbstractEndpoint {
             }
             credentialService.getAccess(databaseId, UserUtil.getId(principal));
         }
+        final Dataset<Row> dataset = tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, null,
+                null, null, null);
+        metricsService.countViewGetData(databaseId, viewId);
+        final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResourceDto resource = storageService.transformDataset(tableService.getData(view.getDatabase(),
-                view.getInternalName(), timestamp, null, null, null, null));
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         log.trace("export table resulted in resource {}", resource);
         return ResponseEntity.ok()

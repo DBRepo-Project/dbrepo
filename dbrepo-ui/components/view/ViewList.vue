@@ -61,9 +61,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     user () {
       return this.userStore.getUser
     },

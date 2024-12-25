@@ -626,6 +626,7 @@ public class TableEndpoint extends AbstractEndpoint {
         }
         final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp, null,
                 null, null, null);
+        metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

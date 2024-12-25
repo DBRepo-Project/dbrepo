@@ -187,6 +187,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
                 log.trace("accept header matches csv");
                 try {
                     final Dataset<Row> dataset = subsetService.getData(database, subset, null, null);
+                    metricsService.countSubsetGetData(databaseId, subsetId);
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
                     final HttpHeaders headers = new HttpHeaders();
                     headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
