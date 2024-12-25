@@ -403,7 +403,8 @@ public class TableEndpoint {
                                            @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint update table, databaseId={}, data.is_public={}", databaseId, data.getIsPublic());
+        log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}", databaseId,
+                data.getIsPublic(), data.getIsSchemaPublic());
         final Table table = tableService.findById(databaseId, tableId);
         if (!table.getOwner().equals(principal)) {
             log.error("Failed to update table: not owner");
