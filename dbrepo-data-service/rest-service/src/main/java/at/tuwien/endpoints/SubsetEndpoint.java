@@ -10,10 +10,7 @@ import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.CredentialService;
-import at.tuwien.service.SchemaService;
-import at.tuwien.service.StorageService;
-import at.tuwien.service.SubsetService;
+import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -55,17 +52,19 @@ public class SubsetEndpoint extends AbstractEndpoint {
     private final SchemaService schemaService;
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
+    private final MetricsService metricsService;
     private final StorageService storageService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public SubsetEndpoint(SchemaService schemaService, SubsetService subsetService, MetadataMapper metadataMapper,
-                          StorageService storageService, CredentialService credentialService,
-                          EndpointValidator endpointValidator) {
+                          MetricsService metricsService, StorageService storageService,
+                          CredentialService credentialService, EndpointValidator endpointValidator) {
         this.schemaService = schemaService;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
+        this.metricsService = metricsService;
         this.storageService = storageService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
@@ -188,6 +187,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
                 log.trace("accept header matches csv");
                 try {
                     final Dataset<Row> dataset = subsetService.getData(database, subset, null, null);
+                    metricsService.countSubsetGetData(databaseId, subsetId);
                     final ExportResourceDto resource = storageService.transformDataset(dataset);
                     final HttpHeaders headers = new HttpHeaders();
                     headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
@@ -366,6 +366,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
                         .build();
             }
             final Dataset<Row> dataset = subsetService.getData(database, subset, page, size);
+            metricsService.countSubsetGetData(databaseId, subsetId);
             final ViewDto view = schemaService.inspectView(database, metadataMapper.queryDtoToViewName(subset));
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));

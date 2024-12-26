@@ -6,7 +6,6 @@ import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.QueueService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import io.micrometer.core.instrument.Counter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,14 +20,11 @@ import java.util.Optional;
 @Service
 public class QueueServiceRabbitMqImpl extends HibernateConnector implements QueueService {
 
-    private final Counter amqpDataAccessCounter;
     private final DataMapper dataMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public QueueServiceRabbitMqImpl(Counter amqpDataAccessCounter, DataMapper dataMapper,
-                                    MetadataMapper metadataMapper) {
-        this.amqpDataAccessCounter = amqpDataAccessCounter;
+    public QueueServiceRabbitMqImpl(DataMapper dataMapper, MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.metadataMapper = metadataMapper;
     }
@@ -54,7 +50,6 @@ public class QueueServiceRabbitMqImpl extends HibernateConnector implements Queu
             preparedStatement.executeUpdate();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             log.trace("successfully inserted tuple");
-            amqpDataAccessCounter.increment();
         } finally {
             dataSource.close();
         }

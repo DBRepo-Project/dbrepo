@@ -187,7 +187,7 @@ export default {
       return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
     },
     canReadData () {
-      if (!this.view) {
+      if (!this.cachedView) {
         return false
       }
       if (this.cachedView.is_public) {
