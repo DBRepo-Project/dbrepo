@@ -220,8 +220,8 @@ public class TableServiceImpl implements TableService {
         }
         final Table tableEntity = optional.get();
         tableEntity.setIsPublic(data.getIsPublic());
-        tableEntity.setDescription(data.getDescription());
         tableEntity.setIsSchemaPublic(data.getIsSchemaPublic());
+        tableEntity.setDescription(data.getDescription());
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in search service */
         searchServiceGateway.update(database);

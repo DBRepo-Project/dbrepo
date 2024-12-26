@@ -22,3 +22,9 @@ JSON, a tuple looks like this in RabbitMQ:
 
 DBRepo uses AMQP to route messages which allows for both Basic/Bearer authentication. For more information please
 consult the [RabbitMQ AMQP](https://www.rabbitmq.com/tutorials/amqp-concepts) documentation.
+
+## MQTT
+
+:octicons-tag-16:{ title="Minimum version" } 1.5.0
+
+DBRepo supports MQTT for IoT with Basic authentication.

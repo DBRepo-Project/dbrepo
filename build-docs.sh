@@ -89,6 +89,6 @@ done
 # finalization
 echo "==================================================="
 echo "Moving HTML redirect and JSON versions to /"
-cp ./final/${APP_VERSION}/redirect.html ./final/index.html
+cp ./final/${APP_VERSION}/index.html.tpl ./final/index.html
 cp ./final/${APP_VERSION}/versions.json ./final/versions.json
 echo "==================================================="
