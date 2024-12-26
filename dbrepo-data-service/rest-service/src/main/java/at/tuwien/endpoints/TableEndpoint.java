@@ -12,10 +12,7 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.service.CredentialService;
-import at.tuwien.service.SchemaService;
-import at.tuwien.service.StorageService;
-import at.tuwien.service.TableService;
+import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -55,17 +52,19 @@ public class TableEndpoint extends AbstractEndpoint {
 
     private final TableService tableService;
     private final SchemaService schemaService;
+    private final MetricsService metricsService;
     private final StorageService storageService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, SchemaService schemaService, StorageService storageService,
-                         CredentialService credentialService, EndpointValidator endpointValidator,
-                         MetadataServiceGateway metadataServiceGateway) {
+    public TableEndpoint(TableService tableService, SchemaService schemaService, MetricsService metricsService,
+                         StorageService storageService, CredentialService credentialService,
+                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
         this.schemaService = schemaService;
+        this.metricsService = metricsService;
         this.storageService = storageService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
@@ -291,10 +290,12 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
+            final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
+                    null, null, null, null);
+            metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(transform(tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
-                            null, null, null, null)));
+                    .body(transform(dataset));
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -625,6 +626,7 @@ public class TableEndpoint extends AbstractEndpoint {
         }
         final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp, null,
                 null, null, null);
+        metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

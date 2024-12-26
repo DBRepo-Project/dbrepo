@@ -26,6 +26,21 @@
             :to="link(item)"
             :href="link(item)">
             <template v-slot:append>
+              <v-chip
+                v-if="database.is_public"
+                size="small"
+                class="ml-2"
+                color="success"
+                :text="$t('toolbars.database.public')"
+                variant="outlined" />
+              <v-chip
+                v-if="!database.is_public"
+                size="small"
+                class="ml-2"
+                :color="colorVariant"
+                variant="outlined"
+                :text="$t('toolbars.database.private')"
+                flat />
               <v-tooltip
                 v-if="hasPublishedIdentifier(item)"
                 :text="$t('pages.identifier.pid.title')"
@@ -65,6 +80,15 @@ export default {
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
+    colorVariant () {
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
     }
   },
   mounted () {
@@ -88,25 +112,25 @@ export default {
           toast.error(this.$t(code))
         })
     },
-    title (query) {
-      if (query.identifiers.length === 0) {
-        return formatTimestampUTCLabel(query.created)
+    title (subset) {
+      if (subset.identifiers.length === 0) {
+        return subset.query
       }
       const identifierService = useIdentifierService()
-      return identifierService.identifierPreferEnglishTitle(query.identifiers[0])
+      return identifierService.identifierPreferEnglishTitle(subset.identifiers[0])
     },
-    subtitle (query) {
-      if (query.identifiers.length === 0) {
+    subtitle (subset) {
+      if (subset.identifiers.length === 0) {
         return null
       }
       const identifierService = useIdentifierService()
-      return identifierService.identifierPreferEnglishDescription(query.identifiers[0])
+      return identifierService.identifierPreferEnglishDescription(subset.identifiers[0])
     },
-    link (query) {
-      return `/database/${this.$route.params.database_id}/subset/${query.id}/info`
+    link (subset) {
+      return `/database/${this.$route.params.database_id}/subset/${subset.id}/info`
     },
-    clazz (view) {
-      return this.hasPublishedIdentifier(view) ? 'primary-text' : null
+    clazz (subset) {
+      return this.hasPublishedIdentifier(subset) ? 'primary-text' : null
     },
     hasPublishedIdentifier (subset) {
       if (!subset.identifiers) {

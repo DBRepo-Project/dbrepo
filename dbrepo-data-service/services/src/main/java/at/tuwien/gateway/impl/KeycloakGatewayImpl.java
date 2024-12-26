@@ -1,9 +1,10 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.auth.KeycloakErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.config.KeycloakConfig;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AccountNotSetupException;
+import at.tuwien.exception.AuthServiceConnectionException;
+import at.tuwien.exception.CredentialsInvalidException;
 import at.tuwien.gateway.KeycloakGateway;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,18 +41,6 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
         final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
         log.trace("request user token from url: {}", url);
-        log.trace("request username: {}", username);
-        if (password.isEmpty() || password.isBlank()) {
-            log.warn("request password: (empty)");
-        } else {
-            log.trace("request password: (set)");
-        }
-        log.trace("request client_id: {}", keycloakConfig.getKeycloakClient());
-        if (keycloakConfig.getKeycloakClientSecret().isEmpty() || keycloakConfig.getKeycloakClientSecret().isBlank()) {
-            log.warn("request client_secret: (empty)");
-        } else {
-            log.trace("request client_secret: (set)");
-        }
         final ResponseEntity<TokenDto> response;
         try {
             response = new RestTemplate()

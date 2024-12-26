@@ -82,3 +82,4 @@ dbrepo:
   exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
   routingKey: "${BROKER_ROUTING_KEY:#}"
   connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
+  baseUrl: "${BASE_URL:http://localhost}"
