@@ -483,7 +483,6 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "databaseId", source = "tdbid"),
-            @Mapping(target = "isPublic", source = "database.isPublic"),
     })
     TableBriefDto tableToTableBriefDto(Table data);
 
@@ -535,7 +534,7 @@ public interface MetadataMapper {
                 .internalName(data.getInternalName())
                 .owner(userToUserBriefDto(data.getOwner()))
                 .tdbid(data.getTdbid())
-                .isPublic(data.getDatabase().getIsPublic())
+                .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .isVersioned(true)
                 .description(data.getDescription())
@@ -720,7 +719,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
-            @Mapping(target = "isPublic", source = "table.database.isPublic"),
+            @Mapping(target = "isPublic", source = "table.isSchemaPublic"),
             @Mapping(target = "description", source = "description"),
             @Mapping(target = "table", ignore = true),
             @Mapping(target = "views", ignore = true)
