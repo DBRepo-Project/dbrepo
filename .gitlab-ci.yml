@@ -74,6 +74,9 @@ lint-helm-chart:
   stage: lint
   before_script:
     - apk add helm
+    - helm dependency update ./helm/seaweedfs
+    - helm package ./helm/seaweedfs --destination ./build
+    - helm dependency update ./helm/dbrepo
   script:
     - helm lint ./helm/dbrepo
 
