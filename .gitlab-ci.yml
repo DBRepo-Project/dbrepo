@@ -28,13 +28,54 @@ cache:
     - .m2/repository
 
 stages:
-  - build
   - lint
+  - build
+  - deploy
   - test
   - docs
   - release
   - verify
   - scan
+
+lint-docker-compose:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: lint
+  variables:
+    VERSION: 3.3.0
+    BINARY: yq_linux_amd64
+  before_script:
+    - 'apk --no-cache add bash wget'
+    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+    - 'ls -la .scripts'
+  script:
+    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
+    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+    - "bash .scripts/check-service.sh 'dbrepo-data-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
+    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
+    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
+    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
+
+lint-helm-chart:
+  image: docker.io/alpine:3.20
+  stage: lint
+  before_script:
+    - apk add helm
+  script:
+    - helm lint ./helm/dbrepo
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -125,73 +166,24 @@ build-helm:
     - apk add sed helm curl
     - helm package ./helm/dbrepo --destination ./build
 
-lint-docker-compose:
+deploy-staging:
   image: docker.io/alpine:${ALPINE_VERSION}
-  stage: lint
-  variables:
-    VERSION: 3.3.0
-    BINARY: yq_linux_amd64
+  stage: deploy
+  environment:
+    name: staging/datalab
+    url: ${CI_ENV_STAGING_URL}
   before_script:
-    - 'apk --no-cache add bash wget'
-    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-    - 'ls -la .scripts'
+    - apk add --no-cache helm make
+    - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
+    - make build-helm
+    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME}
+    - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
   script:
-    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
-    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-data-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
-    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
-
-verify-install-script:
-  image: docker.io/docker:24-dind
-  stage: verify
+    - helm -n ${CI_ENV_STAGING_NAMESPACE} upgrade --install ${CI_ENV_STAGING_RELEASE_NAME} ./build/${CI_ENV_STAGING_RELEASE_NAME}-${CHART_VERSION}.tgz --create-namespace -f ./.gitlab/agents/dev/values.yaml
   only:
     refs:
-      - /^release-.*/
-  variables:
-    SKIP_CHECKS: 1
-  before_script:
-    - "apk add bash curl"
-  script:
-    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
-
-verify-dist:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: verify
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apk add curl"
-  script:
-    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
-
-lint-helm-chart:
-  image: docker.io/alpine:3.20
-  stage: lint
-  needs:
-    - build-metadata-service
-  dependencies:
-    - build-metadata-service
-  before_script:
-    - apk add helm
-  script:
-    - helm lint ./helm/dbrepo
+      - dev
+  when: manual
 
 test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -355,27 +347,6 @@ test-ui:
     - "sleep 30"
     - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/test/test_heap.sh"
 
-scan-sonarqube:
-  image: sonarsource/sonar-scanner-cli:10.0
-  stage: scan
-  only:
-    refs:
-      - master
-  needs:
-    - build-data-service
-    - build-metadata-service
-  dependencies:
-    - build-data-service
-    - build-metadata-service
-  script:
-    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
-  allow_failure: true
-  cache:
-    policy: pull
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - sonar-scanner/
-
 release-images:
   stage: release
   image: docker:24-dind
@@ -472,3 +443,48 @@ release-libs:
   script:
     - bash ./lib/python/package.sh
     - bash ./lib/python/release.sh
+
+verify-install-script:
+  image: docker.io/docker:24-dind
+  stage: verify
+  only:
+    refs:
+      - /^release-.*/
+  variables:
+    SKIP_CHECKS: 1
+  before_script:
+    - "apk add bash curl"
+  script:
+    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
+
+verify-dist:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: verify
+  only:
+    refs:
+      - /^release-.*/
+  before_script:
+    - "apk add curl"
+  script:
+    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
+
+scan-sonarqube:
+  image: sonarsource/sonar-scanner-cli:10.0
+  stage: scan
+  only:
+    refs:
+      - master
+  needs:
+    - build-data-service
+    - build-metadata-service
+  dependencies:
+    - build-data-service
+    - build-metadata-service
+  script:
+    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+  allow_failure: true
+  cache:
+    policy: pull
+    key: "${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - sonar-scanner/
