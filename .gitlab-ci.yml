@@ -163,10 +163,10 @@ build-helm:
   image: docker.io/docker:24-dind
   stage: build
   before_script:
+    - apk add --no-cache helm make
     - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
-    - apk add --no-cache helm
     - make build-helm
 
 deploy-staging:
