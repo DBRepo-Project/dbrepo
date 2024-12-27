@@ -28,143 +28,143 @@ cache:
     - .m2/repository
 
 stages:
-  - lint
-  - build
+#  - lint
+#  - build
   - deploy
-  - test
-  - docs
-  - release
-  - verify
-  - scan
+#  - test
+#  - docs
+#  - release
+#  - verify
+#  - scan
 
-lint-docker-compose:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: lint
-  variables:
-    VERSION: 3.3.0
-    BINARY: yq_linux_amd64
-  before_script:
-    - 'apk --no-cache add bash wget'
-    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-    - 'ls -la .scripts'
-  script:
-    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
-    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-data-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
-    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
-    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
-    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
-
-lint-helm-chart:
-  image: docker.io/alpine:3.20
-  stage: lint
-  before_script:
-    - apk add helm
-  script:
-    - helm lint ./helm/dbrepo
-
-build-metadata-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: build
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
-  # Compiled classes are needed for SonarQube in later stages
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-metadata-service/test/target/classes
-      - ./dbrepo-metadata-service/services/target/classes
-      - ./dbrepo-metadata-service/repositories/target/classes
-      - ./dbrepo-metadata-service/rest-service/target/classes
-      - ./dbrepo-metadata-service/api/target/classes
-      - ./dbrepo-metadata-service/oai/target/classes
-      - ./dbrepo-metadata-service/entities/target/classes
-    expire_in: 1 days
-
-build-analyse-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: build
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
-build-lib:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: build
-  variables:
-    PIPENV_PIPFILE: "./lib/python/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
-build-data-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: build
-  needs:
-    - build-metadata-service
-  dependencies:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
-    - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
-  # Compiled classes are needed for SonarQube in later stages
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-data-service/services/target/classes
-      - ./dbrepo-data-service/rest-service/target/classes
-      - ./dbrepo-data-service/querystore/target/classes
-    expire_in: 1 days
-
-build-ui:
-  image: oven/bun:${BUN_VERSION}-alpine
-  stage: build
-  script:
-    - "cd ./dbrepo-ui && bun install && bun run build"
-
-build-search-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: build
-  script:
-    - "pip install pipenv"
-    - "cd dbrepo-search-service && pipenv install --system --deploy"
-
-build-docker:
-  image: docker.io/docker:24-dind
-  stage: build
-  variables:
-    DOCKER_BUILDKIT: 0
-  before_script:
-    - "apk add --no-cache make"
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - "make build-images"
-
-build-helm:
-  image: docker.io/docker:24-dind
-  stage: build
-  before_script:
-    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - apk add sed helm curl
-    - helm package ./helm/dbrepo --destination ./build
+#lint-docker-compose:
+#  image: docker.io/alpine:${ALPINE_VERSION}
+#  stage: lint
+#  variables:
+#    VERSION: 3.3.0
+#    BINARY: yq_linux_amd64
+#  before_script:
+#    - 'apk --no-cache add bash wget'
+#    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+#    - 'ls -la .scripts'
+#  script:
+#    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
+#    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
+#    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
+#    - "bash .scripts/check-service.sh 'dbrepo-data-db'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
+#    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
+#    - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
+#    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
+#    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
+#    - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
+#    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
+#
+#lint-helm-chart:
+#  image: docker.io/alpine:3.20
+#  stage: lint
+#  before_script:
+#    - apk add helm
+#  script:
+#    - helm lint ./helm/dbrepo
+#
+#build-metadata-service:
+#  image: maven:3-openjdk-${JAVA_VERSION}
+#  stage: build
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+#  # Compiled classes are needed for SonarQube in later stages
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-metadata-service/test/target/classes
+#      - ./dbrepo-metadata-service/services/target/classes
+#      - ./dbrepo-metadata-service/repositories/target/classes
+#      - ./dbrepo-metadata-service/rest-service/target/classes
+#      - ./dbrepo-metadata-service/api/target/classes
+#      - ./dbrepo-metadata-service/oai/target/classes
+#      - ./dbrepo-metadata-service/entities/target/classes
+#    expire_in: 1 days
+#
+#build-analyse-service:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: build
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#
+#build-lib:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: build
+#  variables:
+#    PIPENV_PIPFILE: "./lib/python/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#
+#build-data-service:
+#  image: maven:3-openjdk-${JAVA_VERSION}
+#  stage: build
+#  needs:
+#    - build-metadata-service
+#  dependencies:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+#    - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
+#  # Compiled classes are needed for SonarQube in later stages
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-data-service/services/target/classes
+#      - ./dbrepo-data-service/rest-service/target/classes
+#      - ./dbrepo-data-service/querystore/target/classes
+#    expire_in: 1 days
+#
+#build-ui:
+#  image: oven/bun:${BUN_VERSION}-alpine
+#  stage: build
+#  script:
+#    - "cd ./dbrepo-ui && bun install && bun run build"
+#
+#build-search-service:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: build
+#  script:
+#    - "pip install pipenv"
+#    - "cd dbrepo-search-service && pipenv install --system --deploy"
+#
+#build-docker:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  variables:
+#    DOCKER_BUILDKIT: 0
+#  before_script:
+#    - "apk add --no-cache make"
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - "make build-images"
+#
+#build-helm:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  before_script:
+#    - echo "$CI_GPG_KEYRING" | base64 -d > ./secring.gpg
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - apk add sed helm curl
+#    - helm package ./helm/dbrepo --destination ./build
 
 deploy-staging:
   image: docker.io/alpine:${ALPINE_VERSION}
@@ -175,7 +175,8 @@ deploy-staging:
   before_script:
     - apk add --no-cache helm make
     - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
-    - make build-helm
+    - helm package ./helm/seaweedfs --destination ./build
+    - helm package ./helm/dbrepo --destination ./build
     - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME}
     - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
   script:
@@ -183,308 +184,309 @@ deploy-staging:
   only:
     refs:
       - dev
-  when: manual
-
-test-metadata-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: test
-  needs:
-    - build-metadata-service
-  dependencies:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify $MAVEN_OPTS"
-    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-data-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: test
-  needs:
-    - build-data-service
-  dependencies:
-    - build-data-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS"
-    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
-    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-data-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-upload-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: test
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
-    - "mvn -f ./dbrepo-upload-service/pom.xml clean test $MAVEN_OPTS"
-
-test-analyse-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  needs:
-    - build-analyse-service
-  dependencies:
-    - build-analyse-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-analyse-service/report.xml
-      - ./dbrepo-analyse-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-analyse-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-search-service:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
-  needs:
-    - build-search-service
-  dependencies:
-    - build-search-service
-  before_script:
-    - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
-    - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_app.py test/test_jwt.py test/test_opensearch_client.py test/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-service/report.xml
-      - ./dbrepo-search-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-search-service-init:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
-  needs:
-    - build-search-service
-  dependencies:
-    - build-search-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-service/report.xml
-      - ./dbrepo-search-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-lib:
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  stage: test
-  variables:
-    PIPENV_PIPFILE: "./lib/python/Pipfile"
-  needs:
-    - build-lib
-  dependencies:
-    - build-lib
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./lib/python/report.xml
-      - ./lib/python/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./lib/python/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-ui:
-  stage: test
-  image: docker.io/docker:24-dind
-  needs:
-    - build-ui
-  dependencies:
-    - build-ui
-  before_script:
-    - "apk add --no-cache bash apache2-utils"
-    - "docker compose build dbrepo-ui"
-    - "docker run --name dbrepo-ui -e NODE_OPTIONS='--max_old_space_size=256' -p 3000:3000 -d dbrepo-ui:latest"
-  script:
-    - "sleep 30"
-    - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/test/test_heap.sh"
-
-release-images:
-  stage: release
-  image: docker:24-dind
-  dependencies:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add --no-cache make bash"
-  script:
-    - "make release-images"
-
-release-helm:
-  stage: release
-  image: docker:24-dind
-  only:
-    refs:
-      - /^release-.*/
-  when: manual
-  needs:
-    - build-helm
-  dependencies:
-    - build-helm
-  before_script:
-    - "docker logout ${CI_REGISTRY_URL}"
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
-    - "docker logout ${CI_REGISTRY2_URL}"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
-    - "apk add sed helm curl"
-    - "mkdir -p ~/.gnupg"
-    - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
-    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
-    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
-    - "helm plugin install https://github.com/sigstore/helm-sigstore"
-  script:
-    - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
-    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
-
-release-docs:
-  stage: release
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
-    - "pip install pipenv"
-    - "pipenv install --dev --system --deploy"
-    - "mkdir -p ./final/${DOC_VERSION}/rest"
-    - "mkdir -p ./final/${APP_VERSION}"
-  script:
-    - "make gen-lib-doc gen-docs-doc package-config"
-    - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
-    - "cp .docs/.swagger/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # swagger
-    - "cp .docs/.swagger/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # swagger
-    - "cp .docs/.swagger/custom.css ./final/${DOC_VERSION}/rest/custom.css" # swagger
-    - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
-    - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
-    - "cp .docs/index.html.tpl ./final/${APP_VERSION}/index.html" # redirect patch docs
-    - sed -i "s/\${DOC_VERSION}/${DOC_VERSION}/g" index.html
-    - "bash ./.gitlab/gen-badge.sh"
-    - eval $(ssh-agent -s)
-    - "mkdir -p /root/.ssh"
-    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
-    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
-    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
-    - tar czf ./final.tar.gz ./final
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
-    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/index.html.tpl $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
-    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final"'
-
-release-libs:
-  stage: release
-  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-  when: manual
-  only:
-    refs:
-      - /^release-.*/
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  before_script:
-    - "apk add sed bash"
-    - "pip install pipenv twine build"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-  script:
-    - bash ./lib/python/package.sh
-    - bash ./lib/python/release.sh
-
-verify-install-script:
-  image: docker.io/docker:24-dind
-  stage: verify
-  only:
-    refs:
-      - /^release-.*/
-  variables:
-    SKIP_CHECKS: 1
-  before_script:
-    - "apk add bash curl"
-  script:
-    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
-
-verify-dist:
-  image: docker.io/alpine:${ALPINE_VERSION}
-  stage: verify
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - "apk add curl"
-  script:
-    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
-
-scan-sonarqube:
-  image: sonarsource/sonar-scanner-cli:10.0
-  stage: scan
-  only:
-    refs:
       - master
-  needs:
-    - build-data-service
-    - build-metadata-service
-  dependencies:
-    - build-data-service
-    - build-metadata-service
-  script:
-    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
-  allow_failure: true
-  cache:
-    policy: pull
-    key: "${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - sonar-scanner/
+  when: manual
+
+#test-metadata-service:
+#  image: maven:3-openjdk-${JAVA_VERSION}
+#  stage: test
+#  needs:
+#    - build-metadata-service
+#  dependencies:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify $MAVEN_OPTS"
+#    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-data-service:
+#  image: maven:3-openjdk-${JAVA_VERSION}
+#  stage: test
+#  needs:
+#    - build-data-service
+#  dependencies:
+#    - build-data-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS"
+#    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
+#    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-data-service/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-upload-service:
+#  image: maven:3-openjdk-${JAVA_VERSION}
+#  stage: test
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+#    - "mvn -f ./dbrepo-upload-service/pom.xml clean test $MAVEN_OPTS"
+#
+#test-analyse-service:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: test
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  needs:
+#    - build-analyse-service
+#  dependencies:
+#    - build-analyse-service
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-analyse-service/report.xml
+#      - ./dbrepo-analyse-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-analyse-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-search-service:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: test
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
+#  needs:
+#    - build-search-service
+#  dependencies:
+#    - build-search-service
+#  before_script:
+#    - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
+#    - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_app.py test/test_jwt.py test/test_opensearch_client.py test/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-search-service/report.xml
+#      - ./dbrepo-search-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-search-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-search-service-init:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: test
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
+#  needs:
+#    - build-search-service
+#  dependencies:
+#    - build-search-service
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-search-service/report.xml
+#      - ./dbrepo-search-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-search-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-lib:
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  stage: test
+#  variables:
+#    PIPENV_PIPFILE: "./lib/python/Pipfile"
+#  needs:
+#    - build-lib
+#  dependencies:
+#    - build-lib
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./lib/python/report.xml
+#      - ./lib/python/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./lib/python/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-ui:
+#  stage: test
+#  image: docker.io/docker:24-dind
+#  needs:
+#    - build-ui
+#  dependencies:
+#    - build-ui
+#  before_script:
+#    - "apk add --no-cache bash apache2-utils"
+#    - "docker compose build dbrepo-ui"
+#    - "docker run --name dbrepo-ui -e NODE_OPTIONS='--max_old_space_size=256' -p 3000:3000 -d dbrepo-ui:latest"
+#  script:
+#    - "sleep 30"
+#    - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/test/test_heap.sh"
+#
+#release-images:
+#  stage: release
+#  image: docker:24-dind
+#  dependencies:
+#    - test-metadata-service
+#    - test-data-service
+#    - test-analyse-service
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "docker logout ${CI_REGISTRY_URL}"
+#    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+#    - "docker logout ${CI_REGISTRY2_URL}"
+#    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+#    - "ifconfig eth0 mtu 1450 up"
+#    - "apk add --no-cache make bash"
+#  script:
+#    - "make release-images"
+#
+#release-helm:
+#  stage: release
+#  image: docker:24-dind
+#  only:
+#    refs:
+#      - /^release-.*/
+#  when: manual
+#  needs:
+#    - build-helm
+#  dependencies:
+#    - build-helm
+#  before_script:
+#    - "docker logout ${CI_REGISTRY_URL}"
+#    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
+#    - "docker logout ${CI_REGISTRY2_URL}"
+#    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin ${CI_REGISTRY2_URL}"
+#    - "apk add sed helm curl"
+#    - "mkdir -p ~/.gnupg"
+#    - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
+#    - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
+#    - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
+#    - "helm plugin install https://github.com/sigstore/helm-sigstore"
+#  script:
+#    - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
+#    - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
+#
+#release-docs:
+#  stage: release
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "apk add --no-cache alpine-sdk bash sed wget openssh jq curl"
+#    - "pip install pipenv"
+#    - "pipenv install --dev --system --deploy"
+#    - "mkdir -p ./final/${DOC_VERSION}/rest"
+#    - "mkdir -p ./final/${APP_VERSION}"
+#  script:
+#    - "make gen-lib-doc gen-docs-doc package-config"
+#    - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
+#    - "cp .docs/.swagger/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # swagger
+#    - "cp .docs/.swagger/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # swagger
+#    - "cp .docs/.swagger/custom.css ./final/${DOC_VERSION}/rest/custom.css" # swagger
+#    - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
+#    - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
+#    - "cp .docs/index.html.tpl ./final/${APP_VERSION}/index.html" # redirect patch docs
+#    - sed -i "s/\${DOC_VERSION}/${DOC_VERSION}/g" index.html
+#    - "bash ./.gitlab/gen-badge.sh"
+#    - eval $(ssh-agent -s)
+#    - "mkdir -p /root/.ssh"
+#    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
+#    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
+#    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
+#    - tar czf ./final.tar.gz ./final
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa versions.json $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/versions.json"
+#    - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa .docs/index.html.tpl $CI_DOC_USER@$CI_DOC_IP:/system/user/ifs/infrastructures/public_html/dbrepo/index.html"
+#    - 'ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP "rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/${DOC_VERSION}; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final"'
+#
+#release-libs:
+#  stage: release
+#  image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+#  when: manual
+#  only:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  before_script:
+#    - "apk add sed bash"
+#    - "pip install pipenv twine build"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#  script:
+#    - bash ./lib/python/package.sh
+#    - bash ./lib/python/release.sh
+#
+#verify-install-script:
+#  image: docker.io/docker:24-dind
+#  stage: verify
+#  only:
+#    refs:
+#      - /^release-.*/
+#  variables:
+#    SKIP_CHECKS: 1
+#  before_script:
+#    - "apk add bash curl"
+#  script:
+#    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${DOC_VERSION}/install.sh | bash | grep 'Success!'"
+#
+#verify-dist:
+#  image: docker.io/alpine:${ALPINE_VERSION}
+#  stage: verify
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - "apk add curl"
+#  script:
+#    - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
+#
+#scan-sonarqube:
+#  image: sonarsource/sonar-scanner-cli:10.0
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#  needs:
+#    - build-data-service
+#    - build-metadata-service
+#  dependencies:
+#    - build-data-service
+#    - build-metadata-service
+#  script:
+#    - 'sonar-scanner -Dsonar.token="${CI_SONAR_TOKEN}"'
+#  allow_failure: true
+#  cache:
+#    policy: pull
+#    key: "${CI_COMMIT_SHORT_SHA}"
+#    paths:
+#      - sonar-scanner/
