@@ -181,7 +181,7 @@ deploy-staging:
     - helm package ./helm/seaweedfs --destination ./build
     - helm dependency update ./helm/dbrepo
     - helm package ./helm/dbrepo --destination ./build
-    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME}
+    - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME} --ignore-not-found
     - kubectl -n ${CI_ENV_STAGING_NAMESPACE} delete pvc --all
   script:
     - helm -n ${CI_ENV_STAGING_NAMESPACE} upgrade --install ${CI_ENV_STAGING_RELEASE_NAME} ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace -f ./.gitlab/agents/dev/values.yaml
