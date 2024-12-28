@@ -7,10 +7,10 @@ dependencies:
   version: 21.6.1
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 14.0.12
+  version: 10.1.3
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 14.0.12
+  version: 10.1.3
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.0
@@ -26,5 +26,5 @@ dependencies:
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
   version: 18.2.6
-digest: sha256:a61522ad12d742ba8ba763115111687426f9b7cc94d9d89bc0417c8b1034315b
-generated: "2024-12-02T08:42:55.669647829+01:00"
+digest: sha256:9a391d16aa051b7d5410f1167d633a2e072151a4bb8d7e26f9febea34ca63d19
+generated: "2024-12-28T18:13:12.053296401+01:00"
