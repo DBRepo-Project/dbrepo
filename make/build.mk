@@ -31,9 +31,7 @@ build-lib: ## Build the Python Library.
 
 .PHONY: build-helm
 build-helm: ## Build the DBRepo and DBRepo MariaDB Galera Helm Charts.
-	./.scripts/check-helm.sh
 	helm dependency update ./helm/seaweedfs
 	helm package ./helm/seaweedfs --destination ./build
 	helm dependency update ./helm/dbrepo
 	helm package ./helm/dbrepo --destination ./build
-	helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json

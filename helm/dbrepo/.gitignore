@@ -3,4 +3,5 @@
 *.key
 *.srl
 *.csr
-build/*
+build/
+charts/
