@@ -14,7 +14,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
+    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -37,7 +37,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
+    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"

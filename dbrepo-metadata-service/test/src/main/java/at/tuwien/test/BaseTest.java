@@ -159,7 +159,7 @@ public abstract class BaseTest {
 
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
 
-    public final static String MARIADB_IMAGE = "mariadb:11.1.3";
+    public final static String MARIADB_IMAGE = "mariadb:11.3.2";
 
     public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
