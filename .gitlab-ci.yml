@@ -189,7 +189,6 @@ deploy-staging:
     refs:
       - dev
       - master
-  when: manual
 
 test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}

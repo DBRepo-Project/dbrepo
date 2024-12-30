@@ -1013,6 +1013,11 @@ gatewayservice:
   service:
     ## @param gatewayservice.service.type The service type.
     type: ClusterIP
+    ports:
+      ## @param gatewayservice.service.ports.http The port for HTTP traffic.
+      http: 8080
+      ## @param gatewayservice.service.ports.https The port for HTTPS traffic.
+      https: 8443
   ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-config
   ## @param gatewayservice.replicaCount The number of replicas.
