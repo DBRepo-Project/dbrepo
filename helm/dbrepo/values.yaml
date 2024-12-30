@@ -1010,7 +1010,10 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
-  ## @param gatewayservice.serverBlock The extra configuration for the reverse proxy
+  service:
+    ## @param gatewayservice.service.type The service type.
+    type: ClusterIP
+  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
   existingServerBlockConfigmap: gateway-service-config
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
