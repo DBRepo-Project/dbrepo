@@ -1011,7 +1011,7 @@ gatewayservice:
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
   ## @param gatewayservice.serverBlock The extra configuration for the reverse proxy
-  existingServerBlockConfigmap: gateway-service-setup
+  existingServerBlockConfigmap: gateway-service-config
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

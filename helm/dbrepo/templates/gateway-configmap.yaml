@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gateway-service-setup
+  name: gateway-service-config
   namespace: {{ include "common.names.namespace" . | quote }}
 data:
   {{ (.Files.Glob "files/dbrepo.conf").AsConfig | nindent 2 }}
