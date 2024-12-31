@@ -1,0 +1,9 @@
+{{- if .Values.gatewayservice.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-service-config
+  namespace: {{ include "common.names.namespace" . | quote }}
+data:
+{{- end }}
