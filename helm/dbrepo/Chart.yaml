@@ -14,7 +14,7 @@ keywords:
 maintainers:
   - name: Martin Weise
     email: martin.weise@tuwien.ac.at
-home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/
 icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
 dependencies:
   - name: opensearch
@@ -44,12 +44,12 @@ dependencies:
     condition: brokerservice.enabled
   - name: seaweedfs
     alias: storageservice
-    version: 1.0.2
+    version: 4.2.1
     repository: file://../seaweedfs
     condition: storageservice.enabled
   - name: grafana
     alias: dashboardservice
-    version: 10.1.1
+    version: 11.4.2
     repository: https://charts.bitnami.com/bitnami
     condition: dashboardservice.enabled
   - name: prometheus
@@ -59,6 +59,6 @@ dependencies:
     condition: metricdb.enabled
   - name: nginx
     alias: gatewayservice
-    version: 18.2.6
+    version: 18.3.1
     repository: https://charts.bitnami.com/bitnami
     condition: gatewayservice.enabled

@@ -1,7 +1,13 @@
-FROM docker.io/bitnami/seaweedfs:3.80.0-debian-12-r1 AS runtime
+FROM docker.io/python:3.11-alpine3.21 AS runtime
+LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
+
+RUN apk add --no-cache bash \
+    && pip install s3cmd
+
+USER 1001
 
 WORKDIR /app
 
-COPY ./create-buckets.sh ./create-buckets.sh
+COPY --chown=1001 --chmod=0744 ./init.sh /app/init.sh
 
-ENTRYPOINT [ "/bin/sh", "/app/create-buckets.sh" ]
+ENTRYPOINT [ "bash", "-c", "/app/init.sh" ]
