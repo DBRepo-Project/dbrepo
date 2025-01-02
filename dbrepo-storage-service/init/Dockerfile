@@ -8,9 +8,6 @@ USER 1001
 
 WORKDIR /app
 
-COPY --chown=1001 ./init.sh /app/init.sh
-
-RUN chmod 0744 /app/init.sh \
-    && mkdir -p /app/config
+COPY --chown=1001 --chmod=0744 ./init.sh /app/init.sh
 
 ENTRYPOINT [ "bash", "-c", "/app/init.sh" ]
