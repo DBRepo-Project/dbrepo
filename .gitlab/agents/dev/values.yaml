@@ -118,9 +118,9 @@ ui:
       client: https://s155.datalab.tuwien.ac.at
       server: https://s155.datalab.tuwien.ac.at
     title: "Database Repository"
-    logo: "https://s155.datalab.tuwien.ac.at/assets/logo.png"
-    icon: "https://s155.datalab.tuwien.ac.at/assets/favicon.png"
-    touch: "https://s155.datalab.tuwien.ac.at/assets/favicon.png"
+    logo: "https://ec.tuwien.ac.at/~weise/images/DS_white_hiRes.png"
+    icon: "https://ec.tuwien.ac.at/~weise/images/DS-icon_white_hiRes.png"
+    touch: "https://ec.tuwien.ac.at/~weise/images/DS-icon_white_hiRes.png"
     broker:
       host: s155.datalab.tuwien.ac.at
       extra: "128.130.0.0/15"
