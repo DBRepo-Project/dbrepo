@@ -119,6 +119,9 @@ services:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      METADATA_DB: "${METADATA_DB:-dbrepo}"
+      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      METADATA_USERNAME: "root"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
     depends_on:
       dbrepo-auth-service:
