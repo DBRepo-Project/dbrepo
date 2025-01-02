@@ -65,10 +65,10 @@ The command removes all the Kubernetes components associated with the chart and 
 ### Metadata Database
 
 | Name                                     | Description                                                                                                                            | Value                                                                  |
-| ---------------------------------------- |----------------------------------------------------------------------------------------------------------------------------------------| ---------------------------------------------------------------------- |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `metadatadb.enabled`                     | Enable the Metadata datadb.                                                                                                            | `true`                                                                 |
 | `metadatadb.host`                        | The hostname for the microservices.                                                                                                    | `metadata-db`                                                          |
-| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `metadatadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `metadatadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `metadatadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
 | `metadatadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
@@ -81,24 +81,26 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Auth Service
 
-| Name                             | Description                                                  | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `authservice.enabled`            | Enable the Auth Service.                                     | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `authservice.image.debug`        | Set the logging level to `trace`. Otherwise, set to `info`.  | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `authservice.endpoint`           | The hostname for the microservices.                          | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
-| `authservice.resourcesPreset`    | The container resource presets                               | `small`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `authservice.jwt.pubkey`         | The JWT public key from the `dbrepo-client`.                 | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
-| `authservice.tls.enabled`        | Enable TLS/SSL communication. Required for HTTPS.            | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `authservice.tls.existingSecret` | The secret containing the `tls.crt`, `tls.key` and `ca.crt`. | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                             |
-| `authservice.client.id`          | The client id for the microservices.                         | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
-| `authservice.client.secret`      | The client secret for the microservices.                     | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
+| Name                               | Description                                                                                                       | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authservice.enabled`              | Enable the Auth Service.                                                                                          | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `authservice.image.debug`          | Set the logging level to `trace`. Otherwise, set to `info`.                                                       | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `authservice.endpoint`             | The hostname for the microservices.                                                                               | `http://auth-service`                                                                                                                                                                                                                                                                                                                                                                                      |
+| `authservice.resourcesPreset`      | The container resource presets                                                                                    | `small`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `authservice.jwt.pubkey`           | The JWT public key from the `dbrepo-client`.                                                                      | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
+| `authservice.tls.enabled`          | Enable TLS/SSL communication. Required for HTTPS.                                                                 | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `authservice.tls.existingSecret`   | The secret containing the `tls.crt`, `tls.key` and `ca.crt`.                                                      | `ingress-cert`                                                                                                                                                                                                                                                                                                                                                                                             |
+| `authservice.client.id`            | The client id for the microservices.                                                                              | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            |
+| `authservice.client.secret`        | The client secret for the microservices.                                                                          | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         |
+| `authservice.init.resourcesPreset` | The container resource preset                                                                                     | `nano`                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `authservice.init.resources`       | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Data Database
 
 | Name                                 | Description                                                                                                                            | Value                                                                  |
-| ------------------------------------ |----------------------------------------------------------------------------------------------------------------------------------------| ---------------------------------------------------------------------- |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `datadb.host`                        | The hostname for the microservices.                                                                                                    | `data-db`                                                              |
-| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
+| `datadb.extraFlags`                  | Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data | `--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci` |
 | `datadb.rootUser.user`               | The root username.                                                                                                                     | `root`                                                                 |
 | `datadb.rootUser.password`           | The root user password.                                                                                                                | `dbrepo`                                                               |
 | `datadb.db.name`                     | The database name.                                                                                                                     | `dbrepo`                                                               |
@@ -306,20 +308,21 @@ mqtt.prefetch = 10
 
 ### Storage Service
 
-| Name                                          | Description                                                                                                       | Value            |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `storageservice.enabled`                      | Enable the Storage Service.                                                                                       | `true`           |
-| `storageservice.mariadb.enabled`              | Enables the MariaDB database needed for the filer.                                                                | `true`           |
-| `storageservice.mariadb.auth.rootPassword`    | The password for the root user.                                                                                   | `seaweedfsfiler` |
-| `storageservice.filer.enabled`                | Cannot use the filer in the standard component since it's incompatible with OpenShift                             | `true`           |
-| `storageservice.s3.bucket`                    | The S3-bucket name.                                                                                               | `dbrepo`         |
-| `storageservice.s3.auth.enabled`              | Enable the S3 service.                                                                                            | `true`           |
-| `storageservice.s3.auth.adminAccessKeyId`     | The S3 access key id for the admin user. In some systems this is named `username`.                                | `seaweedfsadmin` |
-| `storageservice.s3.auth.adminSecretAccessKey` | The S3 secret access key for the admin user. In some systems this is named `password`.                            | `seaweedfsadmin` |
-| `storageservice.s3.auth.readAccessKeyId`      | The S3 access key id for the read only user.                                                                      | `seaweedfsuser`  |
-| `storageservice.s3.auth.readSecretAccessKey`  | The S3 secret access key for the read only user.                                                                  | `seaweedfsuser`  |
-| `storageservice.init.resourcesPreset`         | The container resource preset                                                                                     | `nano`           |
-| `storageservice.init.resources`               | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`             |
+| Name                                          | Description                                                                                                       | Value                            |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `storageservice.enabled`                      | Enable the Storage Service.                                                                                       | `true`                           |
+| `storageservice.mariadb.enabled`              | Enables the MariaDB database needed for the filer.                                                                | `true`                           |
+| `storageservice.mariadb.auth.rootPassword`    | The password for the root user.                                                                                   | `seaweedfsfiler`                 |
+| `storageservice.filer.enabled`                | Cannot use the filer in the standard component since it's incompatible with OpenShift                             | `true`                           |
+| `storageservice.s3.bucket`                    | The S3-bucket name.                                                                                               | `dbrepo`                         |
+| `storageservice.s3.auth.enabled`              | Enable the S3 service.                                                                                            | `true`                           |
+| `storageservice.s3.auth.adminAccessKeyId`     | The S3 access key id for the admin user. In some systems this is named `username`.                                | `seaweedfsadmin`                 |
+| `storageservice.s3.auth.adminSecretAccessKey` | The S3 secret access key for the admin user. In some systems this is named `password`.                            | `seaweedfsadmin`                 |
+| `storageservice.s3.auth.readAccessKeyId`      | The S3 access key id for the read only user.                                                                      | `seaweedfsuser`                  |
+| `storageservice.s3.auth.readSecretAccessKey`  | The S3 secret access key for the read only user.                                                                  | `seaweedfsuser`                  |
+| `storageservice.init.s3.endpoint`             | The S3-capable endpoint the microservice connects to.                                                             | `http://storage-service-s3:8333` |
+| `storageservice.init.resourcesPreset`         | The container resource preset                                                                                     | `nano`                           |
+| `storageservice.init.resources`               | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | `{}`                             |
 
 ### Identity Service
 
@@ -403,179 +406,13 @@ mqtt.prefetch = 10
 
 ### Gateway Service
 
-| Name                          | Description                                   | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ----------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `gatewayservice.enabled`      | Enable the Gateway Service.                   | `true`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `gatewayservice.serverBlock`  | The extra configuration for the reverse proxy | `# This is required to proxy Grafana Live WebSocket connections.
-map $http_upgrade $connection_upgrade {
-  default upgrade;
-  '' close;
-}
-
-upstream analyse {
-    server analyse-service;
-}
-
-upstream data {
-    server data-service;
-}
-
-upstream metadata {
-    server metadata-service;
-}
-
-upstream search {
-    server search-service;
-}
-
-upstream ui {
-    server ui;
-}
-
-upstream upload {
-    server upload-service;
-}
-
-upstream dashboard-service {
-    server dashboard-service:3000;
-}
-
-server {
-    listen 8080 default_server;
-    server_name _;
-
-    location /assets/ {
-        root                    /etc/nginx/assets;
-        expires                 max;
-        access_log              off;
-        autoindex               on;
-        autoindex_exact_size    off;
-        autoindex_format        html;
-        autoindex_localtime     on;
-    }
-
-    location /dashboard/ {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://dashboard-service;
-        proxy_read_timeout      90;
-    }
-
-    # Proxy Grafana Live WebSocket connections.
-    location /dashboard/api/live/ {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_set_header        Upgrade $http_upgrade;
-        proxy_set_header        Connection $connection_upgrade;
-        proxy_http_version      1.1;
-        proxy_pass              http://dashboard-service;
-        proxy_read_timeout      90;
-    }
-
-    location /api/search {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://search;
-        proxy_read_timeout      90;
-    }
-
-    location /api/upload {
-#         allow 128.130.0.0/16;
-#         deny all;
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_set_header        X-Forwarded-Host $host;
-        proxy_pass              http://upload;
-        proxy_read_timeout      90;
-        # Disable request and response buffering
-        proxy_request_buffering off;
-        proxy_buffering         off;
-        proxy_http_version      1.1;
-    }
-
-    location /api/analyse {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://analyse;
-        proxy_read_timeout      90;
-    }
-
-    location ~ /api/database/([0-9]+)/table/([0-9]+)/(data|history|export|statistic) {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://data;
-        proxy_read_timeout      90;
-    }
-
-    location ~ /api/database/([0-9]+)/view/([0-9]+)/(data|export) {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://data;
-        proxy_read_timeout      90;
-    }
-
-    location ~ /api/database/([0-9]+)/view {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://metadata;
-        proxy_read_timeout      90;
-    }
-
-    location ~ /api/database/([0-9]+)/subset {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://data;
-        proxy_read_timeout      600;
-    }
-
-    location ~ /api/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user) {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://metadata;
-        proxy_read_timeout      90;
-    }
-
-    location ~ /pid/([0-9]+) {
-        rewrite /pid/(.*) /api/identifier/$1 break;
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://metadata;
-        proxy_read_timeout      90;
-    }
-
-    location / {
-        proxy_set_header        Host $host;
-        proxy_set_header        X-Real-IP $remote_addr;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Forwarded-Proto $scheme;
-        proxy_pass              http://ui;
-        proxy_read_timeout      90;
-    }
-}
-` |
-| `gatewayservice.replicaCount` | The number of replicas.                       | `3`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Name                                          | Description                                   | Value                   |
+| --------------------------------------------- | --------------------------------------------- | ----------------------- |
+| `gatewayservice.enabled`                      | Enable the Gateway Service.                   | `true`                  |
+| `gatewayservice.service.type`                 | The service type.                             | `ClusterIP`             |
+| `gatewayservice.metrics.enabled`              | Enable the Prometheus metrics sidecar.        | `false`                 |
+| `gatewayservice.existingServerBlockConfigmap` | The extra configuration for the reverse proxy | `gateway-service-setup` |
+| `gatewayservice.replicaCount`                 | The number of replicas.                       | `3`                     |
 
 ### Analytics Service
 

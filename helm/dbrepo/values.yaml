@@ -109,6 +109,20 @@ authservice:
     id: dbrepo-client
     ## @param authservice.client.secret The client secret for the microservices.
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  init:
+    image:
+      ## @skip authservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.0
+    ## @param authservice.init.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param authservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
   ## @skip authservice.extraEnvVarsCM
   extraEnvVarsCM: auth-service-config
   ## @skip authservice.extraVolumes
