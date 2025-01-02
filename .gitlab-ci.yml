@@ -1,7 +1,6 @@
 variables:
   HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
-  DOCKER_BUILDKIT: 1
   DOCKER_VERSION: "27"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   ALPINE_VERSION: "3.21"
