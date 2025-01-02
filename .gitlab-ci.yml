@@ -2,16 +2,16 @@ variables:
   HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   DOCKER_BUILDKIT: 1
-  DOCKER_VERSION: 27
+  DOCKER_VERSION: "27"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  ALPINE_VERSION: 3.21
-  PYTHON_VERSION: 3.11
-  JAVA_VERSION: 17
-  SONARQUBE_VERSION: 10.0
-  BUN_VERSION: 1.1.40
-  DOC_VERSION: 1.6
-  APP_VERSION: 1.6.0
-  CHART_VERSION: 1.6.0
+  ALPINE_VERSION: "3.21"
+  PYTHON_VERSION: "3.11"
+  JAVA_VERSION: "17"
+  SONARQUBE_VERSION: "10.0"
+  BUN_VERSION: "1.1.40"
+  DOC_VERSION: "1.6"
+  APP_VERSION: "1.6.0"
+  CHART_VERSION: "1.6.0"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
