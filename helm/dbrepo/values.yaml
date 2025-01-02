@@ -721,7 +721,7 @@ storageservice:
   init:
     image:
       ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.0rc2
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.0rc6
     s3:
       ## @param storageservice.init.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333

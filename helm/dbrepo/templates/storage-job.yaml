@@ -50,7 +50,7 @@ spec:
                   key: STORAGE_ENDPOINT
           volumeMounts:
             - name: app-cache
-              mountPath: /app
+              mountPath: /app/config
           {{- if .Values.storageservice.init.resources }}
           resources: {{- toYaml .Values.storageservice.init.resources | nindent 12 }}
           {{- else if ne .Values.storageservice.init.resourcesPreset "none" }}

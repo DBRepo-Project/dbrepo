@@ -10,4 +10,6 @@ WORKDIR /app
 
 COPY --chown=1001 --chmod=0744 ./init.sh /app/init.sh
 
+RUN mkdir -p /app/config
+
 ENTRYPOINT [ "bash", "-c", "/app/init.sh" ]
