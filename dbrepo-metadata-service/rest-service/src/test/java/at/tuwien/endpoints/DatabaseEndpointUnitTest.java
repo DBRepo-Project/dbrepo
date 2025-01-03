@@ -489,6 +489,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(messageQueueService)
                 .setVirtualHostPermissions(user);
+        when(databaseService.findById(anyLong()))
+                .thenReturn(DATABASE_1);
 
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(data, principal);

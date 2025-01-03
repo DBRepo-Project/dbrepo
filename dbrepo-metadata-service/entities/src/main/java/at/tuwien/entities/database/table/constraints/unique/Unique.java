@@ -2,13 +2,13 @@ package at.tuwien.entities.database.table.constraints.unique;
 
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-
 import java.util.List;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -23,8 +23,7 @@ public class Unique {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "constraints-unique-sequence")
-    @GenericGenerator(name = "constraints-unique-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "uid", updatable = false, nullable = false)
     private Long id;
 

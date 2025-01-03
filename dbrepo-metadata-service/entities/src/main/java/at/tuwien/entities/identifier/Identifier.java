@@ -6,13 +6,8 @@ import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -21,6 +16,8 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -43,8 +40,7 @@ public class Identifier implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "identifiers-sequence")
-    @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

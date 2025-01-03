@@ -2,8 +2,9 @@ package at.tuwien.entities.container.image;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -18,8 +19,7 @@ public class DataType {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "image-type-sequence")
-    @GenericGenerator(name = "image-type-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     public Long id;
 

@@ -1,10 +1,10 @@
 package at.tuwien.entities.identifier;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -21,8 +21,7 @@ public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "related-identifiers-sequence")
-    @GenericGenerator(name = "related-identifiers-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

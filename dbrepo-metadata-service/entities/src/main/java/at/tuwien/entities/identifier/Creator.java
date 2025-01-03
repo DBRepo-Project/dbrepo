@@ -1,10 +1,10 @@
 package at.tuwien.entities.identifier;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -19,8 +19,7 @@ public class Creator {
     @Id
     @org.springframework.data.annotation.Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "creators-sequence")
-    @GenericGenerator(name = "creators-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

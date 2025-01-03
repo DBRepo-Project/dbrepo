@@ -19,6 +19,7 @@ coverage = "*"
 pytest = "*"
 requests-mock = "*"
 furo = "*"
+pytest-ordering = "*"
 
 [requires]
 python_version = "3.11"

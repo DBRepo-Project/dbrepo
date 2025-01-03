@@ -3,8 +3,9 @@ package at.tuwien.entities.database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -21,8 +22,7 @@ public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "view-columns-sequence")
-    @GenericGenerator(name = "view-columns-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

@@ -1,11 +1,11 @@
 package at.tuwien.entities.database.table.constraints.foreignKey;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -22,8 +22,7 @@ public class ForeignKeyReference {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "foreign-key-reference-sequence")
-    @GenericGenerator(name = "foreign-key-reference-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

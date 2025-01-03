@@ -4,8 +4,9 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -20,8 +21,7 @@ public class PrimaryKey {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "foreign-key-sequence")
-    @GenericGenerator(name = "foreign-key-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "pkid", updatable = false, nullable = false)
     private Long id;
 

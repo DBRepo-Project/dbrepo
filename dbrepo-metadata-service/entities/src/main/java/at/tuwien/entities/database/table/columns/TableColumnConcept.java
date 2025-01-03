@@ -1,15 +1,15 @@
 package at.tuwien.entities.database.table.columns;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.List;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -30,8 +30,7 @@ public class TableColumnConcept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "concepts-sequence")
-    @GenericGenerator(name = "concepts-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

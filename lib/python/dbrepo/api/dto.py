@@ -970,7 +970,8 @@ class Database(BaseModel):
     exchange_name: str
     internal_name: str
     is_public: bool
-    container: Container
+    is_schema_public: bool
+    container: ContainerBrief
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     subsets: Optional[List[Identifier]] = field(default_factory=list)
     description: Optional[str] = None
