@@ -83,6 +83,8 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
+                .isPublic(true)
+                .isSchemaPublic(true)
                 .columns(List.of(ColumnCreateDto.builder()
                                 .name("id")
                                 .nullAllowed(false)
