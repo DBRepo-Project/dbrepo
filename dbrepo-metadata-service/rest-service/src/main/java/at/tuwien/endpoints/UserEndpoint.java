@@ -281,7 +281,7 @@ public class UserEndpoint {
         log.debug("endpoint find a user, userId={}, principal.name={}", userId, principal.getName());
         /* check */
         final User user = userService.findById(userId);
-        if (!user.equals(principal)) {
+        if (!user.getUsername().equals(principal.getName())) {
             if (!UserUtil.hasRole(principal, "find-foreign-user")) {
                 log.error("Failed to find user: foreign user");
                 throw new NotAllowedException("Failed to find user: foreign user");
@@ -332,13 +332,12 @@ public class UserEndpoint {
                                           @NotNull Principal principal) throws NotAllowedException,
             UserNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
-        User user = userService.findById(userId);
-        if (!user.equals(principal)) {
-            log.error("Failed to modify user: not current user");
-            throw new NotAllowedException("Failed to modify user: not current user");
+        final User user = userService.findById(userId);
+        if (!user.getUsername().equals(principal.getName())) {
+            log.error("Failed to modify user: not current user {}", user.getId());
+            throw new NotAllowedException("Failed to modify user: not current user " + user.getId());
         }
-        user = userService.modify(user, data);
-        final UserDto dto = userMapper.userToUserDto(user);
+        final UserDto dto = userMapper.userToUserDto(userService.modify(user, data));
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -386,7 +385,7 @@ public class UserEndpoint {
             DataServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint modify a user password, userId={}", userId);
         final User user = userService.findById(userId);
-        if (!user.equals(principal)) {
+        if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user password: not current user");
             throw new NotAllowedException("Failed to modify user password: not current user");
         }

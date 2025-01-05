@@ -14,19 +14,19 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Table(name = "mdb_constraints_foreign_key_reference", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"fkid", "cid", "rcid"})
 })
 public class ForeignKeyReference {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumn(name = "fkid", referencedColumnName = "fkid", nullable = false)
     private ForeignKey foreignKey;

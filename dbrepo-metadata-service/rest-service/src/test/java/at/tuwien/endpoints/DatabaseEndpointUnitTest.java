@@ -5,7 +5,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.repository.UserRepository;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.DatabaseServiceImpl;
 import at.tuwien.test.AbstractUnitTest;
@@ -19,13 +18,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,7 +75,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(request, null, null);
         });
     }
@@ -91,7 +90,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(request, USER_4_PRINCIPAL, USER_4);
         });
     }
@@ -123,6 +122,156 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         create_generic(request, USER_1_PRINCIPAL, USER_1);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
+    public void create_quotaExceeded_fails() throws UserNotFoundException, ContainerNotFoundException {
+        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+                .cid(CONTAINER_4_ID)
+                .name(DATABASE_1_NAME)
+                .isPublic(DATABASE_1_PUBLIC)
+                .build();
+
+        /* mock */
+        when(containerService.find(CONTAINER_4_ID))
+                .thenReturn(CONTAINER_4);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+
+        /* test */
+        assertThrows(ContainerQuotaException.class, () -> {
+            create_generic(request, USER_1_PRINCIPAL, USER_1);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void refreshTableMetadata_anonymous_succeeds() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void refreshTableMetadata_noRole_succeeds() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database"})
+    public void refreshTableMetadata_notOwner_fails() throws UserNotFoundException, TableNotFoundException,
+            SearchServiceException, MalformedException, DataServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_2_USERNAME))
+                .thenReturn(USER_2);
+        when(databaseService.updateTableMetadata(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
+    public void refreshTableMetadata_succeeds() throws UserNotFoundException, TableNotFoundException,
+            SearchServiceException, MalformedException, DataServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException, NotAllowedException,
+            QueryNotFoundException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+        when(databaseService.updateTableMetadata(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
+        /* test */
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
+    public void refreshViewMetadata_succeeds() throws UserNotFoundException, SearchServiceException,
+            NotAllowedException, DataServiceException, QueryNotFoundException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException, ViewNotFoundException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+        when(databaseService.updateViewMetadata(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
+        /* test */
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database"})
+    public void refreshViewMetadata_notOwner_fails() throws UserNotFoundException, DatabaseNotFoundException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_2_USERNAME))
+                .thenReturn(USER_2);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void refreshViewMetadata_noRole_fails() throws UserNotFoundException, DatabaseNotFoundException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void refreshViewMetadata_anonymous_fails() throws UserNotFoundException, DatabaseNotFoundException {
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, null);
+        });
     }
 
     @Test
@@ -182,7 +331,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, request, null);
         });
     }
@@ -214,7 +363,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, request, USER_4_PRINCIPAL);
         });
     }
@@ -244,7 +393,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             databaseEndpoint.modifyImage(DATABASE_3_ID, request, USER_4_PRINCIPAL);
         });
     }
@@ -278,7 +427,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             databaseEndpoint.transfer(DATABASE_3_ID, request, USER_4_PRINCIPAL);
         });
     }
@@ -403,7 +552,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         final DatabaseDto response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
         final List<DatabaseAccessDto> accessList = response.getAccesses();
         assertNotNull(accessList);
-        assertEquals(2, accessList.size());
+        assertEquals(3, accessList.size());
     }
 
     @Test

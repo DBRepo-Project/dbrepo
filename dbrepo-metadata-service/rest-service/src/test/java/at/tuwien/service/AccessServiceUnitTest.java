@@ -65,8 +65,6 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
     @Test
     public void find_succeeds() throws AccessNotFoundException {
 
-        /* mock */
-
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1, USER_1);
         assertEquals(AccessType.READ, response.getType());

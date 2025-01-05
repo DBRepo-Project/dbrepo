@@ -18,7 +18,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Table(name = "mdb_concepts", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"uri"})
 })
@@ -29,7 +29,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class TableColumnConcept {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
@@ -43,6 +42,7 @@ public class TableColumnConcept {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

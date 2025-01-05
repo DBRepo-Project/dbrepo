@@ -25,6 +25,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_view")
 @NamedQueries({
@@ -37,7 +38,6 @@ public class View {
 
     @Id
     @org.springframework.data.annotation.Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
@@ -89,6 +89,7 @@ public class View {
     private List<Identifier> identifiers;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -102,11 +103,13 @@ public class View {
     @OrderBy("ordinalPosition")
     private List<ViewColumn> columns;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

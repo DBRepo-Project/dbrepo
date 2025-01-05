@@ -56,6 +56,7 @@ import at.tuwien.api.orcid.activities.employments.affiliation.group.summary.orga
 import at.tuwien.api.orcid.person.OrcidPersonDto;
 import at.tuwien.api.orcid.person.name.OrcidNameDto;
 import at.tuwien.api.orcid.person.name.OrcidValueDto;
+import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
@@ -313,6 +314,12 @@ public abstract class BaseTest {
             .created(CONCEPT_1_CREATED)
             .build();
 
+    public final static EntityDto CONCEPT_1_ENTITY_DTO = EntityDto.builder()
+            .uri(CONCEPT_1_URI)
+            .description(CONCEPT_1_DESCRIPTION)
+            .label(CONCEPT_1_NAME)
+            .build();
+
     public final static Long CONCEPT_2_ID = 2L;
     public final static String CONCEPT_2_NAME = "FAIR data";
     public final static String CONCEPT_2_URI = "http://www.wikidata.org/entity/Q29032648";
@@ -365,6 +372,12 @@ public abstract class BaseTest {
             .name(UNIT_1_NAME)
             .description(UNIT_1_DESCRIPTION)
             .created(UNIT_1_CREATED)
+            .build();
+
+    public final static EntityDto UNIT_1_ENTITY_DTO = EntityDto.builder()
+            .uri(UNIT_1_URI)
+            .description(UNIT_1_DESCRIPTION)
+            .label(UNIT_1_NAME)
             .build();
 
     public final static Long UNIT_2_ID = 2L;
@@ -2339,6 +2352,7 @@ public abstract class BaseTest {
     public final static String ONTOLOGY_1_PREFIX = "om2";
     public final static String ONTOLOGY_1_NEW_PREFIX = "om-2";
     public final static String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
+    public final static String ONTOLOGY_1_URI_PATTERN = "http://www.ontology-of-units-of-measure.org/resource/om-2/.*";
     public final static String ONTOLOGY_1_SPARQL_ENDPOINT = null;
     public final static String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
     public final static UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
@@ -2347,6 +2361,7 @@ public abstract class BaseTest {
             .id(ONTOLOGY_1_ID)
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
+            .uriPattern(ONTOLOGY_1_URI_PATTERN)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
             .rdfPath(ONTOLOGY_1_RDF_PATH)
             .build();
@@ -7759,6 +7774,7 @@ public abstract class BaseTest {
     public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
+                    .id(1L)
                     .name("fk_location")
                     .onDelete(ReferenceType.NO_ACTION)
                     .references(new LinkedList<>(List.of(ForeignKeyReference.builder()

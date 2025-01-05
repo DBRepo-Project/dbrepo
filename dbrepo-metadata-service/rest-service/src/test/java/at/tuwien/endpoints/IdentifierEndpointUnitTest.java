@@ -345,7 +345,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.APA)))
                 .thenReturn(compare);
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1_WITH_DOI);
@@ -437,7 +437,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.IEEE))
+        when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.IEEE)))
                 .thenReturn(compare);
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1_WITH_DOI);
@@ -529,7 +529,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_1, BibliographyTypeDto.BIBTEX))
+        when(identifierService.exportBibliography(any(Identifier.class), eq(BibliographyTypeDto.BIBTEX)))
                 .thenReturn(compare);
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1_WITH_DOI);

@@ -256,9 +256,9 @@ public class ViewEndpoint {
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().equals(principal)) {
-            log.error("Failed to delete view: not the database owner");
-            throw new NotAllowedException("Failed to delete view: not the database owner");
+        if (!database.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to delete view: not the database owner {}", database.getOwner().getId());
+            throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwner().getId());
         }
         final View view = viewService.findById(database, viewId);
         viewService.delete(view);

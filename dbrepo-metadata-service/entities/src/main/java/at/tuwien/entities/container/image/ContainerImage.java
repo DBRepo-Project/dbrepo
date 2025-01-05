@@ -20,7 +20,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Table(name = "mdb_images", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "version"}))
 @NamedQueries({
         @NamedQuery(name = "ContainerImage.findAll", query = "select i from ContainerImage i order by i.id asc")
@@ -28,7 +28,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class ContainerImage {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     public Long id;
@@ -61,11 +60,13 @@ public class ContainerImage {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
     private List<Container> containers;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

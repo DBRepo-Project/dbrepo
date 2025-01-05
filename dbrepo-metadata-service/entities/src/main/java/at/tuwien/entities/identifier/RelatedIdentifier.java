@@ -12,7 +12,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_related_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "pid"})
@@ -20,7 +20,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class RelatedIdentifier {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;

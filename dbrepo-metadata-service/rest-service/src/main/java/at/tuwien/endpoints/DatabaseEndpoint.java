@@ -213,7 +213,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
         final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(principal)) {
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
@@ -259,10 +259,10 @@ public class DatabaseEndpoint {
                                                            @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, UserNotFoundException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
-        log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
+        log.debug("endpoint refresh database metadata, databaseId={}, principal.name={}", databaseId, principal.getName());
         final Database database = databaseService.findById(databaseId);
         final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(principal)) {
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
@@ -429,7 +429,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
         final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(caller)) {
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }
@@ -510,7 +510,7 @@ public class DatabaseEndpoint {
             caller = null;
         }
         final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database, caller);
-        if (database.getOwner().equals(principal)) {
+        if (caller != null && database.getOwner().getId().equals(caller.getId())) {
             log.debug("current logged-in user is also the owner: additionally load access list");
             /* only owner sees the access rights */
             final List<DatabaseAccess> accesses = accessService.list(database);

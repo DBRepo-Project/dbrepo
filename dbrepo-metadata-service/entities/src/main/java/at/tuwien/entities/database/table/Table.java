@@ -30,7 +30,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
@@ -38,7 +38,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Table {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "ID", updatable = false, nullable = false)
     private Long id;
@@ -70,6 +69,7 @@ public class Table {
     private String description;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -88,7 +88,6 @@ public class Table {
     @OrderBy("id DESC")
     private List<Identifier> identifiers;
 
-    @ToString.Exclude
     @Embedded
     private Constraints constraints;
 
@@ -113,17 +112,18 @@ public class Table {
     @Column(name = "avg_row_length")
     private Long avgRowLength;
 
-    @ToString.Exclude
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

@@ -1,21 +1,20 @@
 package at.tuwien.validator;
 
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.SortType;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.validation.EndpointValidator;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -159,12 +158,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
-    public void validateOnlyAccessOrPublic_privateAnonymous_fails() throws DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseService.findById(anyLong()))
-                .thenReturn(DATABASE_1);
+    public void validateOnlyAccessOrPublic_privateAnonymous_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -173,13 +167,9 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
-    public void validateOnlyAccessOrPublic_privateNoAccess_fails() throws DatabaseNotFoundException,
-            AccessNotFoundException {
+    public void validateOnlyAccessOrPublic_privateNoAccess_fails() throws AccessNotFoundException {
 
         /* mock */
-        when(databaseService.findById(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
                 .find(any(Database.class), any(User.class));
@@ -334,12 +324,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
-    public void validateOnlyPrivateHasRole_privatePrincipalMissing_fails() throws DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseService.findById(anyLong()))
-                .thenReturn(DATABASE_1);
+    public void validateOnlyPrivateHasRole_privatePrincipalMissing_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -348,12 +333,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @Disabled
-    public void validateOnlyPrivateHasRole_privateRoleMissing_fails() throws DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseService.findById(anyLong()))
-                .thenReturn(DATABASE_1);
+    public void validateOnlyPrivateHasRole_privateRoleMissing_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {

@@ -12,13 +12,13 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifier_creators")
 public class Creator {
 
     @Id
     @org.springframework.data.annotation.Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;

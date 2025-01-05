@@ -16,6 +16,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_ontologies")
 @NamedQueries({
@@ -26,7 +27,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Ontology {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
@@ -46,10 +46,12 @@ public class Ontology {
     @Column
     private String rdfPath;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

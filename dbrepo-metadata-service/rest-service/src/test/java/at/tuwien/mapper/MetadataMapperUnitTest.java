@@ -64,23 +64,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void containerEquals_identity_succeeds() {
-
-        /* test */
-        assertEquals(CONTAINER_1, CONTAINER_1);
-    }
-
-    @Test
-    public void containerEquals_similar_succeeds() {
-        final Container tmp = Container.builder()
-                .id(CONTAINER_1_ID)
-                .build();
-
-        /* test */
-        assertEquals(CONTAINER_1, tmp);
-    }
-
-    @Test
     public void identifierTypeDtoToIdentifierType_succeeds() {
 
         /* test */

@@ -25,7 +25,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifiers")
 @NamedQueries({
@@ -39,7 +39,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Identifier implements Serializable {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
@@ -139,6 +138,7 @@ public class Identifier implements Serializable {
      * Databases are never created/updated/deleted by the Identifier entity.
      */
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", nullable = false, updatable = false)
@@ -166,10 +166,12 @@ public class Identifier implements Serializable {
     })
     private User owner;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

@@ -16,12 +16,11 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @jakarta.persistence.Table(name = "mdb_constraints_foreign_key")
 public class ForeignKey {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "fkid", updatable = false, nullable = false)
     private Long id;
@@ -30,6 +29,7 @@ public class ForeignKey {
     private String name;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
@@ -37,6 +37,7 @@ public class ForeignKey {
     private Table table;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "rtid", referencedColumnName = "id", nullable = false)

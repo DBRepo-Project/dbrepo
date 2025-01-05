@@ -14,6 +14,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_banner_messages")
 @NamedQueries({
@@ -22,7 +23,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class BannerMessage {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;

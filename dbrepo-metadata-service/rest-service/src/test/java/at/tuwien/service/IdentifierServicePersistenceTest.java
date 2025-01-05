@@ -118,6 +118,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void find_succeeds() throws IdentifierNotFoundException {
 
         /* test */

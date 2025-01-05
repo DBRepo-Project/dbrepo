@@ -540,7 +540,7 @@ public class TableEndpoint {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
         final Table table = tableService.findById(databaseId, tableId);
         /* roles */
-        if (!table.getOwner().equals(principal) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
+        if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");
             throw new NotAllowedException("Failed to delete table: not owned by current user");
         }

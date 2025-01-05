@@ -26,6 +26,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"cid", "internalName"})
@@ -43,12 +44,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Database implements Serializable {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
@@ -62,6 +61,7 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private Long cid;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -80,7 +80,6 @@ public class Database implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
@@ -91,29 +90,24 @@ public class Database implements Serializable {
     })
     private User contact;
 
-    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")
     @OrderBy("id DESC")
     private List<Identifier> identifiers;
 
-    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='SUBSET'")
     @OrderBy("id DESC")
     private List<Identifier> subsets;
 
-    @ToString.Exclude
     @OrderBy("id DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<Table> tables;
 
-    @ToString.Exclude
     @OrderBy("id DESC")
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<View> views;
 
-    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<DatabaseAccess> accesses;
 
@@ -128,11 +122,13 @@ public class Database implements Serializable {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

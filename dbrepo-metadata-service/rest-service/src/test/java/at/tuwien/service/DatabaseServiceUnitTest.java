@@ -2,7 +2,9 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
+import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
@@ -22,10 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -85,6 +85,263 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         assertThrows(DatabaseNotFoundException.class, () -> {
             databaseService.findById(DATABASE_1_ID);
         });
+    }
+
+    @Test
+    public void findByInternalName_notFound_fails() {
+
+        /* mock */
+        when(databaseRepository.findByInternalName(DATABASE_1_INTERNALNAME))
+                .thenReturn(Optional.empty());
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
+        });
+    }
+
+    @Test
+    public void updatePassword_succeeds() throws DataServiceException, DatabaseNotFoundException,
+            DataServiceConnectionException {
+
+        /* mock */
+        when(databaseRepository.findReadAccess(USER_1_ID))
+                .thenReturn(List.of(DATABASE_1));
+        doNothing()
+                .when(dataServiceGateway)
+                .updateDatabase(eq(DATABASE_1_ID), any(UpdateUserPasswordDto.class));
+
+        /* test */
+        databaseService.updatePassword(DATABASE_1, USER_1);
+    }
+
+    @Test
+    public void modifyImage_succeeds() throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException {
+        final byte[] image = new byte[]{1, 2, 3, 4, 5};
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.modifyImage(DATABASE_1, image);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void modifyImage_searchServiceNotFound_fails() throws SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+        final byte[] image = new byte[]{1, 2, 3, 4, 5};
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(DatabaseNotFoundException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            databaseService.modifyImage(DATABASE_1, image);
+        });
+    }
+
+    @Test
+    public void modifyImage_searchServiceConnection_fails() throws SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+        final byte[] image = new byte[]{1, 2, 3, 4, 5};
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(SearchServiceConnectionException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            databaseService.modifyImage(DATABASE_1, image);
+        });
+    }
+
+    @Test
+    public void updateViewMetadata_empty_succeeds() throws SearchServiceException, DataServiceException,
+            QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            DataServiceConnectionException, ViewNotFoundException {
+
+        /* mock */
+        when(dataServiceGateway.getViewSchemas(DATABASE_1_ID))
+                .thenReturn(List.of());
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateViewMetadata(DATABASE_1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void updateViewMetadata_searchServiceConnection_fails() throws SearchServiceException, DataServiceException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException,
+            ViewNotFoundException {
+
+        /* mock */
+        when(dataServiceGateway.getViewSchemas(DATABASE_1_ID))
+                .thenReturn(List.of());
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(SearchServiceConnectionException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            databaseService.updateViewMetadata(DATABASE_1);
+        });
+    }
+
+    @Test
+    public void updateViewMetadata_searchServiceNotFound_fails() throws SearchServiceException, DataServiceException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException,
+            ViewNotFoundException {
+
+        /* mock */
+        when(dataServiceGateway.getViewSchemas(DATABASE_1_ID))
+                .thenReturn(List.of());
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(DatabaseNotFoundException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            databaseService.updateViewMetadata(DATABASE_1);
+        });
+    }
+
+    @Test
+    public void updateViewMetadata_oneMissing_succeeds() throws SearchServiceException, DataServiceException,
+            QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            DataServiceConnectionException, ViewNotFoundException {
+
+        /* mock */
+        when(dataServiceGateway.getViewSchemas(DATABASE_1_ID))
+                .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO, VIEW_4_DTO)); /* <<< */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateViewMetadata(DATABASE_1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void updateViewMetadata_allKnown_succeeds() throws SearchServiceException, DataServiceException,
+            QueryNotFoundException, DatabaseNotFoundException, SearchServiceConnectionException,
+            DataServiceConnectionException, ViewNotFoundException {
+
+        /* mock */
+        when(dataServiceGateway.getViewSchemas(DATABASE_1_ID))
+                .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)); /* <<< */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateViewMetadata(DATABASE_1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void updateTableMetadata_empty_succeeds() throws TableNotFoundException, SearchServiceException,
+            MalformedException, DataServiceException, QueryNotFoundException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableSchemas(DATABASE_1_ID))
+                .thenReturn(List.of());
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateTableMetadata(DATABASE_1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void updateTableMetadata_allKnown_succeeds() throws TableNotFoundException, SearchServiceException,
+            MalformedException, DataServiceException, QueryNotFoundException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableSchemas(DATABASE_1_ID))
+                .thenReturn(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateTableMetadata(DATABASE_1);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void updateTableMetadata_oneMissing_succeeds() throws TableNotFoundException, SearchServiceException,
+            MalformedException, DataServiceException, QueryNotFoundException, DatabaseNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableSchemas(DATABASE_1_ID))
+                .thenReturn(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO, TABLE_5_DTO));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final Database response = databaseService.updateTableMetadata(DATABASE_1);
+        assertNotNull(response);
+        final Optional<Table> optional = response.getTables()
+                .stream()
+                .filter(t -> t.getInternalName().equals(TABLE_5_INTERNALNAME))
+                .findFirst();
+        assertTrue(optional.isPresent());
+        final Table table = optional.get();
+        table.getColumns()
+                .forEach(column -> {
+                    assertNotNull(column.getTable());
+                    assertEquals(TABLE_5_ID, column.getTable().getId());
+                });
+        table.getConstraints()
+                .getUniques()
+                .forEach(uk -> {
+                    assertNotNull(uk.getTable());
+                    assertEquals(TABLE_5_ID, uk.getTable().getId());
+                });
+        table.getConstraints()
+                .getForeignKeys()
+                .forEach(fk -> {
+                    assertNotNull(fk.getTable());
+                    assertEquals(TABLE_5_ID, fk.getTable().getId());
+                });
+        table.getConstraints()
+                .getPrimaryKey()
+                .forEach(pk -> {
+                    assertNotNull(pk.getTable());
+                    assertEquals(TABLE_5_ID, pk.getTable().getId());
+                    assertEquals(TABLE_5_COLUMNS.get(0), pk.getColumn());
+                });
     }
 
     @Test

@@ -13,7 +13,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_view_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"view_id", "internal_name"})
@@ -21,12 +21,12 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "view_id", referencedColumnName = "id", nullable = false)
