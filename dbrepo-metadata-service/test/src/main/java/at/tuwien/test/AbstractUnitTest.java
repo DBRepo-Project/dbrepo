@@ -1,6 +1,7 @@
 package at.tuwien.test;
 
 import at.tuwien.entities.database.AccessType;
+import at.tuwien.entities.identifier.IdentifierStatusType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.LinkedList;
@@ -140,6 +141,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         DATABASE_4.setSubsets(new LinkedList<>());
         DATABASE_4.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS, DATABASE_4_USER_2_WRITE_OWN_ACCESS, DATABASE_4_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));
+        IDENTIFIER_7.setStatus(IdentifierStatusType.DRAFT);
         IDENTIFIER_7.setDatabase(DATABASE_4);
     }
 

@@ -731,7 +731,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
             SearchServiceException, SearchServiceConnectionException {
 
         /* test */
-        this.generic_delete();
+        generic_delete();
     }
 
     @Test
