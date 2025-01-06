@@ -386,7 +386,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME)
+    @WithMockUser(username = USER_3_USERNAME)
     public void modifyImage_noRole_fails() {
         final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
                 .key("s3key_here")
@@ -394,13 +394,32 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            databaseEndpoint.modifyImage(DATABASE_3_ID, request, USER_4_PRINCIPAL);
+            databaseEndpoint.modifyImage(DATABASE_3_ID, request, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-database-image"})
+    public void modifyImage_notOwner_fails() throws DatabaseNotFoundException, UserNotFoundException {
+        final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
+                .key("s3key_here")
+                .build();
+
+        /* mock */
+        when(databaseService.findById(DATABASE_3_ID))
+                .thenReturn(DATABASE_3);
+        when(userService.findByUsername(USER_2_USERNAME))
+                .thenReturn(USER_2);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            databaseEndpoint.modifyImage(DATABASE_3_ID, request, USER_2_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-image"})
-    public void modifyImage_hasRole_succeeds() throws NotAllowedException, UserNotFoundException,
+    public void modifyImage_succeeds() throws NotAllowedException, UserNotFoundException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
@@ -413,7 +432,26 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         when(userService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1);
         when(storageService.getBytes(request.getKey()))
-                .thenReturn(new byte[]{});
+                .thenReturn(new byte[]{1, 2, 3, 4, 5});
+
+        /* test */
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-image"})
+    public void modifyImage_empty_succeeds() throws NotAllowedException, UserNotFoundException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            StorageUnavailableException, StorageNotFoundException {
+        final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
+                .key(null)
+                .build();
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
 
         /* test */
         databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);

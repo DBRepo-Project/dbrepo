@@ -87,7 +87,8 @@ public interface IdentifierService {
 
     /**
      * Publishes a draft identifier with DataCite.
-     * @param identifierId The identifier id.
+     *
+     * @param identifier The identifier.
      * @return The resulting identifier.
      * @throws SearchServiceException
      * @throws DatabaseNotFoundException
@@ -96,9 +97,9 @@ public interface IdentifierService {
      * @throws DataServiceConnectionException
      * @throws IdentifierNotFoundException
      */
-    Identifier publish(Long identifierId) throws SearchServiceException, DatabaseNotFoundException,
+    Identifier publish(Identifier identifier) throws SearchServiceException, DatabaseNotFoundException,
             SearchServiceConnectionException, MalformedException, DataServiceConnectionException,
-            IdentifierNotFoundException, ExternalServiceException;
+            ExternalServiceException;
 
     /**
      * Creates a new identifier in the metadata database for a query or database.

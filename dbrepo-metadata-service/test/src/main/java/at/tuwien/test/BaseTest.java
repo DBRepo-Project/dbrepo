@@ -6,6 +6,7 @@ import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.auth.LoginRequestDto;
+import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
@@ -287,11 +288,15 @@ public abstract class BaseTest {
             .scope("openid")
             .build();
 
+    public final static RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()
+            .refreshToken("ey.yee.skrr")
+            .build();
+
     public final static Long CONCEPT_1_ID = 1L;
     public final static String CONCEPT_1_NAME = "precipitation";
     public final static String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
     public final static String CONCEPT_1_DESCRIPTION = null;
-    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 */;
+    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 (UTC) */;
 
     public final static ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
             .uri(CONCEPT_1_URI)
@@ -5946,6 +5951,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameType.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -5959,6 +5965,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -5972,6 +5979,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -7142,7 +7150,7 @@ public abstract class BaseTest {
     public final static String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
     public final static BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
     public final static BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
-    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L);
+    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L) /* 2022-12-23 22:00:00 (UTC) */;
     public final static Instant BANNER_MESSAGE_1_END = null;
 
     public final static BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
@@ -7171,8 +7179,8 @@ public abstract class BaseTest {
     public final static String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
     public final static BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
     public final static BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
-    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L);
-    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L);
+    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L) /* 2022-12-23 22:00:00 (UTC) */;
+    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L) /* 2022-12-25 22:00:00 (UTC) */;
 
     public final static BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
             .id(BANNER_MESSAGE_2_ID)

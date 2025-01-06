@@ -42,6 +42,10 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         VIEW_1_DTO.setDatabase(DATABASE_1_DTO);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
+        IDENTIFIER_1.setDatabase(DATABASE_1);
+        IDENTIFIER_2.setDatabase(DATABASE_1);
+        IDENTIFIER_3.setDatabase(DATABASE_1);
+        IDENTIFIER_4.setDatabase(DATABASE_1);
         DATABASE_1.setTables(new LinkedList<>(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4)));
         DATABASE_1.setViews(new LinkedList<>(List.of(VIEW_1, VIEW_2, VIEW_3)));
         DATABASE_1_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)));

@@ -205,7 +205,7 @@ public class UserEndpoint {
                     .password(data.getPassword())
                     .build();
             final at.tuwien.api.keycloak.UserDto user = authenticationService.findByUsername(data.getUsername());
-            if (user.getAttributes().getLdapId().length != 1) {
+            if (user.getAttributes().getLdapId() == null || user.getAttributes().getLdapId().length != 1) {
                 log.error("Failed to map ldap id for user with username: {}", data.getUsername());
                 throw new UserNotFoundException("Failed to map ldap id");
             }

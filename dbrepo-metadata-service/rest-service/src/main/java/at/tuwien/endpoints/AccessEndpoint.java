@@ -99,20 +99,20 @@ public class AccessEndpoint {
         log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(user)) {
+        final User caller = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
-        final User otherUser = userService.findById(userId);
+        final User user = userService.findById(userId);
         try {
-            accessService.find(database, otherUser);
+            accessService.find(database, user);
             log.error("Failed to create access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
         } catch (AccessNotFoundException e) {
             /* ignore */
         }
-        accessService.create(database, otherUser, data.getType());
+        accessService.create(database, user, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -159,17 +159,17 @@ public class AccessEndpoint {
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
-                data.getType());
+        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}, principal.name={}",
+                databaseId, userId, data.getType(), principal.getName());
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(user)) {
+        final User caller = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
-        final User otherUser = userService.findById(userId);
-        accessService.find(database, otherUser);
-        accessService.update(database, otherUser, data.getType());
+        final User user = userService.findById(userId);
+        accessService.find(database, user);
+        accessService.update(database, user, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
@@ -204,7 +204,8 @@ public class AccessEndpoint {
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
                 principal.getName());
-        if (!userId.equals(UserUtil.getId(principal))) {
+        final User caller = userService.findByUsername(principal.getName());
+        if (!userId.equals(caller.getId())) {
             if (!UserUtil.hasRole(principal, "check-foreign-database-access")) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
@@ -212,11 +213,9 @@ public class AccessEndpoint {
             log.trace("principal is allowed to check foreign user access");
         }
         final Database database = databaseService.findById(databaseId);
-        final User otherUser = userService.findById(userId);
-        final DatabaseAccess access = accessService.find(database, otherUser);
-        final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
-        log.trace("check access resulted in dto {}", dto);
-        return ResponseEntity.ok(dto);
+        final User user = userService.findById(userId);
+        final DatabaseAccess access = accessService.find(database, user);
+        return ResponseEntity.ok(databaseMapper.databaseAccessToDatabaseAccessDto(access));
     }
 
     @DeleteMapping("/{userId}")
@@ -262,14 +261,14 @@ public class AccessEndpoint {
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(user)) {
+        final User caller = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }
-        final User otherUser = userService.findById(userId);
-        accessService.find(database, otherUser);
-        accessService.delete(database, otherUser);
+        final User user = userService.findById(userId);
+        accessService.find(database, user);
+        accessService.delete(database, user);
         return ResponseEntity.accepted()
                 .build();
     }

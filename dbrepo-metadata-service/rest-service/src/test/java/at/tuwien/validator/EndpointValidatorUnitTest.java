@@ -227,7 +227,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
             TableNotFoundException, AccessNotFoundException {
 
         /* mock */
-        when(tableService.findById(DATABASE_1_ID, TABLE_1_ID))
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
         when(accessService.find(eq(DATABASE_1), any(User.class)))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
@@ -243,7 +243,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException {
 
         /* mock */
-        when(tableService.findById(DATABASE_1_ID, TABLE_1_ID))
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
         when(accessService.find(eq(DATABASE_1), any(User.class)))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
@@ -312,7 +312,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
             TableNotFoundException, AccessNotFoundException {
 
         /* mock */
-        when(tableService.findById(DATABASE_1_ID, TABLE_1_ID))
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
                 .thenReturn(TABLE_1);
         when(accessService.find(DATABASE_1, USER_1))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);

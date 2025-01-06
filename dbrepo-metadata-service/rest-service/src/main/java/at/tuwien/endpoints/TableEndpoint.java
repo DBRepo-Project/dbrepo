@@ -112,7 +112,7 @@ public class TableEndpoint {
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
     @Observed(name = "dbrepo_semantic_table_analyse")
     @Operation(summary = "Suggest semantics",
-            description = "Suggests semantic concepts for a table. Requires role `table-semantic-analyse`.",
+            description = "Suggests semantic concepts for a table. This action can only be performed by the table owner. Requires role `table-semantic-analyse`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -122,6 +122,11 @@ public class TableEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Failed to parse statistic in search service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not the table owner.",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -142,13 +147,19 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                        @NotNull @PathVariable("tableId") Long tableId)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = tableService.findById(databaseId, tableId);
-        final List<EntityDto> dtos = entityService.suggestByTable(table);
+                                                        @NotNull @PathVariable("tableId") Long tableId,
+                                                        @NotNull Principal principal)
+            throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
+        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
+                principal);
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
+        if (!table.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to analyse table semantics: not owner");
+            throw new NotAllowedException("Failed to analyse table semantics: not owner");
+        }
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(entityService.suggestByTable(table));
     }
 
     @PutMapping("/{tableId}/statistic")
@@ -156,18 +167,23 @@ public class TableEndpoint {
     @PreAuthorize("hasAuthority('update-table-statistic')")
     @Observed(name = "dbrepo_statistic_table_update")
     @Operation(summary = "Update statistics",
-            description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. Requires role `update-table-statistic`.",
+            description = "Updates basic statistical properties (min, max, mean, median, std.dev) for numerical columns in a table with id. This action can only be performed by the table owner. Requires role `update-table-statistic`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated table statistics successfully"),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find database/table in metadata database",
+            @ApiResponse(responseCode = "400",
+                    description = "Failed to map column statistic to known columns",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Failed to map column statistic to known columns",
+            @ApiResponse(responseCode = "403",
+                    description = "Not the owner",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database/table in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -183,11 +199,18 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
+                                                @NotNull @PathVariable("tableId") Long tableId,
+                                                @NotNull Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, SearchServiceException, NotAllowedException,
             SearchServiceConnectionException, MalformedException, DataServiceException, DataServiceConnectionException {
-        log.debug("endpoint update table statistics, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = tableService.findById(databaseId, tableId);
+        log.debug("endpoint update table statistics, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
+                principal.getName());
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
+        if (!table.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to update table statistics: not owner");
+            throw new NotAllowedException("Failed to update table statistics: not owner");
+        }
         tableService.updateStatistics(table);
         return ResponseEntity.accepted()
                 .build();
@@ -232,17 +255,19 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                            @NotNull @PathVariable("tableId") Long tableId,
-                                            @NotNull @PathVariable("columnId") Long columnId,
-                                            @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
-                                            @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<ColumnDto> updateColumn(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                  @NotNull @PathVariable("tableId") Long tableId,
+                                                  @NotNull @PathVariable("columnId") Long columnId,
+                                                  @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
+                                                  @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
-        log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
+        log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}, principal.name={}", databaseId,
+                tableId, columnId, principal.getName());
+        final Database database = databaseService.findById(databaseId);
         final User user = userService.findByUsername(principal.getName());
-        final Table table = tableService.findById(databaseId, tableId);
+        final Table table = tableService.findById(database, tableId);
         if (!UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(table.getDatabase(), principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(table, user);
@@ -287,10 +312,13 @@ public class TableEndpoint {
     })
     public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") Long databaseId,
                                                                          @NotNull @PathVariable("tableId") Long tableId,
-                                                                         @NotNull @PathVariable("columnId") Long columnId)
+                                                                         @NotNull @PathVariable("columnId") Long columnId,
+                                                                         @NotNull Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
-        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
-        final Table table = tableService.findById(databaseId, tableId);
+        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}, principal.name={}",
+                databaseId, tableId, columnId, principal.getName());
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
         TableColumn column = tableService.findColumnById(table, columnId);
         final List<TableColumnEntityDto> dtos = entityService.suggestByColumn(column);
         return ResponseEntity.ok()
@@ -347,7 +375,8 @@ public class TableEndpoint {
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
-        log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
+        log.debug("endpoint create table, databaseId={}, data.name={}, principal.name={}", databaseId, data.getName(),
+                principal.getName());
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
@@ -403,10 +432,11 @@ public class TableEndpoint {
                                            @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}", databaseId,
-                data.getIsPublic(), data.getIsSchemaPublic());
-        final Table table = tableService.findById(databaseId, tableId);
-        if (!table.getOwner().equals(principal)) {
+        log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}, principal.name={}",
+                databaseId, data.getIsPublic(), data.getIsSchemaPublic(), principal.getName());
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
+        if (!table.getOwner().getUsername().equals(principal.getName())) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
@@ -462,7 +492,8 @@ public class TableEndpoint {
                                              Principal principal) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = tableService.findById(databaseId, tableId);
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
         boolean hasAccess = UserUtil.isSystem(principal);
         boolean isOwner = false;
         try {
@@ -470,7 +501,7 @@ public class TableEndpoint {
                 final User user = userService.findByUsername(principal.getName());
                 accessService.find(table.getDatabase(), user);
                 hasAccess = true;
-                isOwner = table.getOwner().equals(user);
+                isOwner = table.getOwner().getId().equals(user.getId());
             }
         } catch (UserNotFoundException | AccessNotFoundException e) {
             /* ignore */
@@ -537,8 +568,10 @@ public class TableEndpoint {
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
-        final Table table = tableService.findById(databaseId, tableId);
+        log.debug("endpoint delete table, databaseId={}, tableId={}, principal.name={}", databaseId, tableId,
+                principal.getName());
+        final Database database = databaseService.findById(databaseId);
+        final Table table = tableService.findById(database, tableId);
         /* roles */
         if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");

@@ -58,11 +58,17 @@ public class MessageEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-maintenance-messages"})
-    public void list_hasRole_succeeds() {
+    @WithAnonymousUser
+    public void list_onlyActive_succeeds() {
+
+        /* mock */
+        when(bannerMessageService.getActive())
+                .thenReturn(List.of(BANNER_MESSAGE_1));
 
         /* test */
-        list_generic();
+        final ResponseEntity<List<BannerMessageDto>> response = messageEndpoint.list(true);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
     @Test

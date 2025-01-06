@@ -535,22 +535,22 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.analyseTable(DATABASE_1_ID, TABLE_1_ID);
+            tableEndpoint.analyseTable(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.updateStatistic(DATABASE_1_ID, TABLE_1_ID);
+            tableEndpoint.updateStatistic(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
+            tableEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.update(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(3).getId(), request, USER_1_PRINCIPAL);
+            tableEndpoint.updateColumn(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(3).getId(), request, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

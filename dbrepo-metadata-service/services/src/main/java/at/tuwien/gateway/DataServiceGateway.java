@@ -21,57 +21,62 @@ public interface DataServiceGateway {
 
     /**
      * Create r/w access for a given user to a given database.
+     *
      * @param databaseId The database id.
-     * @param userId The user id.
-     * @param access The access.
+     * @param userId     The user id.
+     * @param access     The access.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws DatabaseNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     void createAccess(Long databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
 
     /**
      * Update r/w access for a given user to a given database.
+     *
      * @param databaseId The database id.
-     * @param userId The user id.
-     * @param access The access.
+     * @param userId     The user id.
+     * @param access     The access.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws AccessNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     void updateAccess(Long databaseId, UUID userId, AccessTypeDto access) throws DataServiceConnectionException,
             DataServiceException, AccessNotFoundException;
 
     /**
      * Deletes access for a given user to a given database.
+     *
      * @param databaseId The database id.
-     * @param userId The user id.
+     * @param userId     The user id.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws AccessNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws AccessNotFoundException        Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     void deleteAccess(Long databaseId, UUID userId) throws DataServiceConnectionException, DataServiceException,
             AccessNotFoundException;
 
     /**
      * Creates a database in the data service.
+     *
      * @param data The data.
      * @return The created database, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws DatabaseNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     DatabaseDto createDatabase(CreateDatabaseDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException;
 
     /**
      * Updates the user password in the given database in the data service.
+     *
      * @param databaseId The database id.
-     * @param data The user password.
+     * @param data       The user password.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws DatabaseNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      */
     void updateDatabase(Long databaseId, UpdateUserPasswordDto data) throws DataServiceConnectionException,
             DataServiceException, DatabaseNotFoundException;
@@ -81,102 +86,111 @@ public interface DataServiceGateway {
 
     /**
      * Creates a table in a given database.
+     *
      * @param databaseId The database id.
-     * @param data The table data.
+     * @param data       The table data.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws DatabaseNotFoundException Some of the privileged parameters of the given database were not provided by the metadata service.
-     * @throws TableExistsException  A table with this internal name exists already in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
+     * @throws TableExistsException           A table with this internal name exists already in the database.
      */
     void createTable(Long databaseId, TableCreateDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException;
 
     /**
      * Deletes a given table in a given database.
+     *
      * @param databaseId The database id.
-     * @param tableId The table id.
+     * @param tableId    The table id.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws TableNotFoundException The given table was not found in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws TableNotFoundException         The given table was not found in the database.
      */
     void deleteTable(Long databaseId, Long tableId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException;
 
     /**
      * Creates a view in the given database.
+     *
      * @param databaseId The database id.
-     * @param data The view data.
+     * @param data       The view data.
      * @return The created view, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
+     * @throws DataServiceException           The data service responded unexpectedly.
      */
     ViewDto createView(Long databaseId, ViewCreateDto data) throws DataServiceConnectionException, DataServiceException;
 
     /**
      * Deletes a given view in the given database.
+     *
      * @param databaseId The database id.
-     * @param viewId The view id.
+     * @param viewId     The view id.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws ViewNotFoundException The given view was not found in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws ViewNotFoundException          The given view was not found in the database.
      */
     void deleteView(Long databaseId, Long viewId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException;
 
     /**
      * Finds a given query in a given database.
+     *
      * @param databaseId The database id.
-     * @param queryId The query id.
+     * @param queryId    The query id.
      * @return The query, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws QueryNotFoundException The given query was not found in the query store.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws QueryNotFoundException         The given query was not found in the query store.
      */
     QueryDto findQuery(Long databaseId, Long queryId) throws DataServiceConnectionException, DataServiceException,
             QueryNotFoundException;
 
     /**
      * Exports a given query.
+     *
      * @param databaseId The database id.
-     * @param queryId The query id.
+     * @param queryId    The query id.
      * @return The exported resource, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws QueryNotFoundException The given query was not found in the query store.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws QueryNotFoundException         The given query was not found in the query store.
      */
     ExportResourceDto exportQuery(Long databaseId, Long queryId) throws DataServiceConnectionException,
             DataServiceException, QueryNotFoundException;
 
     /**
      * Obtain table schemas from a given database.
+     *
      * @param databaseId The database id.
      * @return The list of tables, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws TableNotFoundException The table was not found in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws TableNotFoundException         The table was not found in the database.
      */
     List<TableDto> getTableSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
             TableNotFoundException;
 
     /**
      * Obtain view schemas from a given database.
+     *
      * @param databaseId The database id.
      * @return The list of tables, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws ViewNotFoundException The table was not found in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws ViewNotFoundException          The table was not found in the database.
      */
     List<ViewDto> getViewSchemas(Long databaseId) throws DataServiceConnectionException, DataServiceException,
             ViewNotFoundException;
 
     /**
      * Obtain table statistics for a given table in a given database.
+     *
      * @param databaseId The database id.
-     * @param tableId The table id.
+     * @param tableId    The table id.
      * @return The statistic, if successful.
      * @throws DataServiceConnectionException The connection to the data service could not be established.
-     * @throws DataServiceException The data service responded unexpectedly.
-     * @throws TableNotFoundException The table was not found in the database.
+     * @throws DataServiceException           The data service responded unexpectedly.
+     * @throws TableNotFoundException         The table was not found in the database.
      */
     TableStatisticDto getTableStatistics(Long databaseId, Long tableId) throws DataServiceConnectionException,
             DataServiceException, TableNotFoundException;

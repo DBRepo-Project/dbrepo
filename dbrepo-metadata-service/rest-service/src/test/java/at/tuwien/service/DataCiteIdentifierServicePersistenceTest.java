@@ -217,8 +217,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
-            DatabaseNotFoundException, SearchServiceConnectionException, IdentifierNotFoundException,
-            ExternalServiceException {
+            DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
         final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .body(IDENTIFIER_7_DATA_CITE);
 
@@ -227,7 +226,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7_ID);
+        final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7);
         assertEquals(IDENTIFIER_7_ID, response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
     }

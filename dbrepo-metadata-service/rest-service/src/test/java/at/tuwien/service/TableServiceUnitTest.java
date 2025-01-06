@@ -78,7 +78,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(DATABASE_3));
 
         /* test */
-        final Table response = tableService.findById(DATABASE_3_ID, TABLE_8_ID);
+        final Table response = tableService.findById(DATABASE_3, TABLE_8_ID);
         assertEquals(TABLE_8_ID, response.getId());
         assertEquals(TABLE_8_NAME, response.getName());
         assertEquals(TABLE_8_INTERNAL_NAME, response.getInternalName());
@@ -93,7 +93,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(DATABASE_3_ID, TABLE_1_ID);
+            tableService.findById(DATABASE_3, TABLE_1_ID);
         });
     }
 
@@ -105,7 +105,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(DATABASE_3));
 
         /* test */
-        final Table response = tableService.findByName(DATABASE_3_ID, TABLE_8_INTERNAL_NAME);
+        final Table response = tableService.findByName(DATABASE_3, TABLE_8_INTERNAL_NAME);
         assertEquals(TABLE_8_ID, response.getId());
         assertEquals(TABLE_8_NAME, response.getName());
         assertEquals(TABLE_8_INTERNAL_NAME, response.getInternalName());
@@ -119,8 +119,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.empty());
 
         /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findByName(DATABASE_3_ID, TABLE_1_INTERNAL_NAME);
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.findByName(DATABASE_3, TABLE_1_INTERNAL_NAME);
         });
     }
 
@@ -542,16 +542,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findByName(DATABASE_1_ID, "i_do_not_exist");
-        });
-    }
-
-    @Test
-    public void findById_databaseNotFound_fails() {
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findByName(99999L, TABLE_3_INTERNALNAME);
+            tableService.findByName(DATABASE_1, "i_do_not_exist");
         });
     }
 
