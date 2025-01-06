@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-## v1.6.0 (2025-01-06)
+## v1.6.0 (2025-01-07)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)
 
