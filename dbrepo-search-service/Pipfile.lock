@@ -360,7 +360,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:8ded5ba5f30ab00d753447f98ec8464d88bf0646ebcfcc511e02dc07f9c93a09"
+                "sha256:769c6d9c4475b26d3f752dcc9910346798d31afeca45ef014f48dd293074b8fb"
             ],
             "path": "./lib/dbrepo-1.6.0.tar.gz"
         },
