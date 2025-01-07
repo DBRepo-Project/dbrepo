@@ -95,7 +95,6 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     PRIMARY KEY (id),
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -135,7 +134,6 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     PRIMARY KEY (ID),
     UNIQUE (tDBID, internal_name),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
