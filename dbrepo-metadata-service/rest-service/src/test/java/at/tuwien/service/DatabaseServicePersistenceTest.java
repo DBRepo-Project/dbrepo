@@ -54,79 +54,21 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    @Transactional
+    @Transactional(readOnly = true)
     public void findById_succeeds() throws DatabaseNotFoundException {
 
         /* test */
         final Database response = databaseService.findById(DATABASE_1_ID);
-        assertEquals(DATABASE_1_ID, response.getId());
-        assertEquals(CONTAINER_1_ID, response.getCid());
-        /* container */
-        assertNotNull(response.getContainer());
-        assertEquals(CONTAINER_1_ID, response.getContainer().getId());
-        assertEquals(CONTAINER_1_NAME, response.getContainer().getName());
-        assertEquals(CONTAINER_1_INTERNALNAME, response.getContainer().getInternalName());
-        assertEquals(CONTAINER_1_HOST, response.getContainer().getHost());
-        assertEquals(CONTAINER_1_PORT, response.getContainer().getPort());
-        assertEquals(CONTAINER_1_UI_HOST, response.getContainer().getUiHost());
-        assertEquals(CONTAINER_1_UI_PORT, response.getContainer().getUiPort());
-        assertEquals(CONTAINER_1_UI_ADDITIONAL_FLAGS, response.getContainer().getUiAdditionalFlags());
-        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getContainer().getPrivilegedUsername());
-        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getContainer().getPrivilegedPassword());
-        assertNotNull(response.getContainer().getImage());
-        assertEquals(IMAGE_1_NAME, response.getContainer().getImage().getName());
-        assertEquals(IMAGE_1_VERSION, response.getContainer().getImage().getVersion());
-        assertEquals(IMAGE_1_DIALECT, response.getContainer().getImage().getDialect());
-        assertEquals(IMAGE_1_JDBC, response.getContainer().getImage().getJdbcMethod());
-        assertEquals(IMAGE_1_DRIVER, response.getContainer().getImage().getDriverClass());
-        assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
-        assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
-        /* creator */
-        assertNotNull(response.getOwner());
-        assertEquals(USER_1_ID, response.getOwner().getId());
-        assertEquals(USER_1_USERNAME, response.getOwner().getUsername());
-        assertEquals(USER_1_EMAIL, response.getOwner().getEmail());
-        assertEquals(USER_1_THEME, response.getOwner().getTheme());
-        assertEquals(USER_1_LANGUAGE, response.getOwner().getLanguage());
-        assertNotNull(response.getOwner().getAccesses());
+        assertEquals(DATABASE_1, response);
     }
 
     @Test
-    @Transactional
+    @Transactional(readOnly = true)
     public void findByInternalName_succeeds() throws DatabaseNotFoundException {
 
         /* test */
         final Database response = databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
-        assertEquals(DATABASE_1_ID, response.getId());
-        assertEquals(CONTAINER_1_ID, response.getCid());
-        /* container */
-        assertNotNull(response.getContainer());
-        assertEquals(CONTAINER_1_ID, response.getContainer().getId());
-        assertEquals(CONTAINER_1_NAME, response.getContainer().getName());
-        assertEquals(CONTAINER_1_INTERNALNAME, response.getContainer().getInternalName());
-        assertEquals(CONTAINER_1_HOST, response.getContainer().getHost());
-        assertEquals(CONTAINER_1_PORT, response.getContainer().getPort());
-        assertEquals(CONTAINER_1_UI_HOST, response.getContainer().getUiHost());
-        assertEquals(CONTAINER_1_UI_PORT, response.getContainer().getUiPort());
-        assertEquals(CONTAINER_1_UI_ADDITIONAL_FLAGS, response.getContainer().getUiAdditionalFlags());
-        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getContainer().getPrivilegedUsername());
-        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getContainer().getPrivilegedPassword());
-        assertNotNull(response.getContainer().getImage());
-        assertEquals(IMAGE_1_NAME, response.getContainer().getImage().getName());
-        assertEquals(IMAGE_1_VERSION, response.getContainer().getImage().getVersion());
-        assertEquals(IMAGE_1_DIALECT, response.getContainer().getImage().getDialect());
-        assertEquals(IMAGE_1_JDBC, response.getContainer().getImage().getJdbcMethod());
-        assertEquals(IMAGE_1_DRIVER, response.getContainer().getImage().getDriverClass());
-        assertEquals(IMAGE_1_REGISTRY, response.getContainer().getImage().getRegistry());
-        assertEquals(IMAGE_1_PORT, response.getContainer().getImage().getDefaultPort());
-        /* creator */
-        assertNotNull(response.getOwner());
-        assertEquals(USER_1_ID, response.getOwner().getId());
-        assertEquals(USER_1_USERNAME, response.getOwner().getUsername());
-        assertEquals(USER_1_EMAIL, response.getOwner().getEmail());
-        assertEquals(USER_1_THEME, response.getOwner().getTheme());
-        assertEquals(USER_1_LANGUAGE, response.getOwner().getLanguage());
-        assertNotNull(response.getOwner().getAccesses());
+        assertEquals(DATABASE_1, response);
     }
 
 }

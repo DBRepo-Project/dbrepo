@@ -14,7 +14,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
+    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/1_setup-schema.sql:/docker-entrypoint-initdb.d/1_setup-schema.sql
@@ -37,7 +37,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r8
+    image: docker.io/bitnami/mariadb-galera:11.3.2-debian-12-r9
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_VOLUME:-/tmp}:/tmp"
@@ -112,6 +112,7 @@ services:
     init: true
     restart: "no"
     image: dbrepo-auth-service-init:latest
+    container_name: dbrepo-auth-service-init
     build:
       context: ./dbrepo-auth-service/init
       network: host
@@ -119,6 +120,9 @@ services:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
+      METADATA_DB: "${METADATA_DB:-dbrepo}"
+      METADATA_DB_PASSWORD: "${METADATA_DB_PASSWORD:-dbrepo}"
+      METADATA_USERNAME: "root"
       SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
     depends_on:
       dbrepo-auth-service:
@@ -487,8 +491,10 @@ services:
       context: ./dbrepo-storage-service/init
       network: host
     environment:
-      WEED_CLUSTER_SW_MASTER: "${STORAGE_SERVICE_MASTER_ENDPOINT:-storage-service:9333}"
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-http://storage-service:9000}
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy

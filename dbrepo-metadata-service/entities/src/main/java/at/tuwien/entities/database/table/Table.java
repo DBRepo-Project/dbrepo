@@ -6,12 +6,13 @@ import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OrderBy;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,6 +21,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Data
 @Entity
 @Builder
@@ -27,7 +30,7 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
@@ -35,9 +38,7 @@ import java.util.UUID;
 public class Table {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "tables-sequence")
-    @GenericGenerator(name = "tables-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "ID", updatable = false, nullable = false)
     private Long id;
 
@@ -68,6 +69,7 @@ public class Table {
     private String description;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -86,7 +88,6 @@ public class Table {
     @OrderBy("id DESC")
     private List<Identifier> identifiers;
 
-    @ToString.Exclude
     @Embedded
     private Constraints constraints;
 
@@ -111,17 +112,18 @@ public class Table {
     @Column(name = "avg_row_length")
     private Long avgRowLength;
 
-    @ToString.Exclude
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

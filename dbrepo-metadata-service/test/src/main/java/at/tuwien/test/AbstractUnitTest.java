@@ -1,5 +1,7 @@
 package at.tuwien.test;
 
+import at.tuwien.entities.database.AccessType;
+import at.tuwien.entities.identifier.IdentifierStatusType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.LinkedList;
@@ -25,17 +27,26 @@ public abstract class AbstractUnitTest extends BaseTest {
         /* USER_4 */
         USER_5.setAccesses(new LinkedList<>());
         /* DATABASE 1 */
+        TABLE_1_COLUMNS.get(0).setUnit(null);
+        TABLE_1_COLUMNS.get(0).setConcept(null);
         DATABASE_1.setOwner(USER_1);
         DATABASE_1.setSubsets(new LinkedList<>());
+        DATABASE_1.setIsPublic(false);
+        DATABASE_1_USER_1_READ_ACCESS.setType(AccessType.READ);
         DATABASE_1.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_1_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));
         TABLE_1.setDatabase(DATABASE_1);
+        UNIT_1.setId(UNIT_1_ID);
         TABLE_1.setColumns(new LinkedList<>(TABLE_1_COLUMNS));
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
         TABLE_1_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         VIEW_1_DTO.setDatabase(DATABASE_1_DTO);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
+        IDENTIFIER_1.setDatabase(DATABASE_1);
+        IDENTIFIER_2.setDatabase(DATABASE_1);
+        IDENTIFIER_3.setDatabase(DATABASE_1);
+        IDENTIFIER_4.setDatabase(DATABASE_1);
         DATABASE_1.setTables(new LinkedList<>(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4)));
         DATABASE_1.setViews(new LinkedList<>(List.of(VIEW_1, VIEW_2, VIEW_3)));
         DATABASE_1_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)));
@@ -130,6 +141,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         DATABASE_4.setSubsets(new LinkedList<>());
         DATABASE_4.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS, DATABASE_4_USER_2_WRITE_OWN_ACCESS, DATABASE_4_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));
+        IDENTIFIER_7.setStatus(IdentifierStatusType.DRAFT);
         IDENTIFIER_7.setDatabase(DATABASE_4);
     }
 

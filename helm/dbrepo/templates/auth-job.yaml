@@ -1,0 +1,39 @@
+{{- if .Values.authservice.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: auth-service-setup-job
+  namespace: {{ include "common.names.namespace" . | quote }}
+spec:
+  template:
+    metadata:
+      name: auth-service-setup-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: {{ .Values.authservice.init.image.name }}
+          imagePullPolicy: {{ .Values.authservice.init.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          envFrom:
+            - secretRef:
+                name: auth-service-secret
+          {{- if .Values.authservice.init.resources }}
+          resources: {{- toYaml .Values.authservice.init.resources | nindent 12 }}
+          {{- else if ne .Values.authservice.init.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.authservice.init.resourcesPreset) | nindent 12 }}
+          {{- end }}
+{{- end }}

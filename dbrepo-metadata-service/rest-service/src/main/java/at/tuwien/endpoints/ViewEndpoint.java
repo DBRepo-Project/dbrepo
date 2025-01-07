@@ -141,14 +141,14 @@ public class ViewEndpoint {
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().equals(principal)) {
+        final User caller = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(caller.getId())) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
-        final User user = userService.findByUsername(principal.getName());
         log.trace("create view for database {}", database);
         final View view;
-        view = viewService.create(database, user, data);
+        view = viewService.create(database, caller, data);
         final ViewBriefDto dto = metadataMapper.viewToViewBriefDto(view);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -256,9 +256,9 @@ public class ViewEndpoint {
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().equals(principal)) {
-            log.error("Failed to delete view: not the database owner");
-            throw new NotAllowedException("Failed to delete view: not the database owner");
+        if (!database.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to delete view: not the database owner {}", database.getOwner().getId());
+            throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwner().getId());
         }
         final View view = viewService.findById(database, viewId);
         viewService.delete(view);
@@ -311,7 +311,7 @@ public class ViewEndpoint {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
-        if (!database.getOwner().equals(principal) && !view.getOwner().equals(principal)) {
+        if (!database.getOwner().getUsername().equals(principal.getName()) && !view.getOwner().getUsername().equals(principal.getName())) {
             log.error("Failed to update view: not the database- or view owner");
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }

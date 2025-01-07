@@ -2,20 +2,43 @@
 author: Martin Weise
 ---
 
-## v1.6.0 (2024-xx-xx)
+## v1.6.0 (2025-01-07)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)
 
 ### What's Changed
 
+#### Features
+
+* Added possibility to modify table description and privacy mode that hides metadata of databases, tables, subsets and
+  views in [#472](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/472).
+* Added Auth Service init container to sync internal system ("admin") user into Metadata Database
+  in [#470](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/470.)
+
 #### Changes
 
-* Bumped SeaweedFS version from `3.59` to `3.71` and use the Bitnami image 
-  in [#477](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/477).
+* Drop MariaDB Galera chart version from [
+  `14.0.12`](https://artifacthub.io/packages/helm/bitnami/mariadb-galera/14.0.12)
+  to [`13.2.7`](https://artifacthub.io/packages/helm/bitnami/mariadb-galera/13.2.7) because of stability issues with the
+  newer versions on the OpenShift Kubernetes cluster.
+* Bumped Grafana chart version from [`10.1.1`](https://artifacthub.io/packages/helm/bitnami/grafana/10.1.1)
+  to [`11.4.2`](https://artifacthub.io/packages/helm/bitnami/grafana/11.4.2).
+* Bumped NGINX chart version from [`18.2.6`](https://artifacthub.io/packages/helm/bitnami/nginx/18.2.6)
+  to [`18.3.1`](https://artifacthub.io/packages/helm/bitnami/nginx/18.3.1).
+* Bumped SeaweedFS chart version from [`1.0.2`](https://artifacthub.io/packages/helm/bitnami/seaweedfs/1.0.2)
+  to [`4.2.1`](https://github.com/MartinWeise/charts/tree/main/bitnami/spark) (created a pull request
+  [#31192](https://github.com/bitnami/charts/pull/31192)).
+* Improve RESTfulness of HTTP API to e.g. not include the database image due to size
+  in [#463](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/463).
 
 #### Fixes
 
-* Fixed a bug where the dataset separator was being ignored for imports 
+* Fixed a wrong JPA entity configuration in Hibernate that in some cases causes the `SERIAL` increment to not trigger
+  in MariaDB Galera. Removed the
+  deprecated [
+  `@GenericGenerator`](https://docs.jboss.org/hibernate/orm/6.6/javadocs/org/hibernate/annotations/GenericGenerator.html)
+  annotation on JPA entities.
+* Fixed a bug where the dataset separator was being ignored for imports
   in [#478](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/478).
 
 ## v1.5.3 (2024-12-13)
@@ -38,14 +61,14 @@ author: Martin Weise
 #### Changes
 
 * Adapt Helm chart to support `runAsNonRoot` throughout and specify `resource` presets for the highly-constrained
-  OpenShift Kubernetes environment 
+  OpenShift Kubernetes environment
   in [#467](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/467).
 * Require authentication for uploading files
   in [#466](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/466).
 
 #### Fixes
 
-* Fixed a validation problem failing to validate UUIDs 
+* Fixed a validation problem failing to validate UUIDs
   in [#471](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/471).
 * Fixed the `dist.tar.gz` file not being found in the CI/CD pipeline on `release-` branches
   in [#465](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/465).

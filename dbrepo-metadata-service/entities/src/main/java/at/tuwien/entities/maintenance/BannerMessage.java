@@ -2,10 +2,11 @@ package at.tuwien.entities.maintenance;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -13,6 +14,7 @@ import java.time.Instant;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_banner_messages")
 @NamedQueries({
@@ -21,9 +23,7 @@ import java.time.Instant;
 public class BannerMessage {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "messages-sequence")
-    @GenericGenerator(name = "messages-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

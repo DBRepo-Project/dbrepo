@@ -147,9 +147,8 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier publish(Long identifierId) throws SearchServiceException, DatabaseNotFoundException,
-            SearchServiceConnectionException, IdentifierNotFoundException {
-        Identifier identifier = find(identifierId);
+    public Identifier publish(Identifier identifier) throws SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
         /* publish identifier */
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         identifier = identifierRepository.save(identifier);

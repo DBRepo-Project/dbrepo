@@ -7,24 +7,24 @@ dependencies:
   version: 21.6.1
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 10.1.3
+  version: 13.2.7
 - name: mariadb-galera
   repository: https://charts.bitnami.com/bitnami
-  version: 10.1.3
+  version: 13.2.7
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 14.0.0
 - name: seaweedfs
   repository: file://../seaweedfs
-  version: 1.0.2
+  version: 4.2.1
 - name: grafana
   repository: https://charts.bitnami.com/bitnami
-  version: 10.1.1
+  version: 11.4.2
 - name: prometheus
   repository: https://charts.bitnami.com/bitnami
   version: 1.3.22
 - name: nginx
   repository: https://charts.bitnami.com/bitnami
-  version: 18.2.6
-digest: sha256:9a391d16aa051b7d5410f1167d633a2e072151a4bb8d7e26f9febea34ca63d19
-generated: "2024-12-28T18:13:12.053296401+01:00"
+  version: 18.3.1
+digest: sha256:414c043a3751945d7bd5b02fa00ee0464bee7f08efb469e00a5f059cdbff03b5
+generated: "2025-01-01T15:06:18.720941571+01:00"

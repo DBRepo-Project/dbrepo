@@ -82,6 +82,26 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
+    public void find_noSparql_fails() throws OntologyNotFoundException {
+        final Ontology mock = Ontology.builder()
+                .id(9999L)
+                .uri(ONTOLOGY_1_URI)
+                .uriPattern(ONTOLOGY_1_URI_PATTERN)
+                .sparqlEndpoint(null) // <<<
+                .build();
+
+        /* mock */
+        when(ontologyService.find(9999L))
+                .thenReturn(mock);
+
+        /* test */
+        assertThrows(OntologyNotFoundException.class, () -> {
+            ontologyEndpoint.find(9999L, null, UNIT_1_URI);
+        });
+    }
+
+    @Test
     @WithAnonymousUser
     public void find_notFound_fails() {
 

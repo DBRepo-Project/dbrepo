@@ -1,9 +1,9 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.repository.IdentifierRepository;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.utils.XmlUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,6 +176,24 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
 //        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
         // TODO: currently no strict validation passes
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getRecord_invalidIdentifierPrefix_succeeds() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_datacite");
+        parameters.setIdentifier("ark:1");
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
     }
 
     @Test

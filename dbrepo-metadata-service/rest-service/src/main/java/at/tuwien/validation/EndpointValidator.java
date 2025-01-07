@@ -176,7 +176,7 @@ public class EndpointValidator {
             log.error("validation failed: access is null");
             return false;
         }
-        if (owner.equals(principal) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
+        if (owner.getUsername().equals(principal.getName()) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
             log.debug("validation passed: user {} matches owner {} and has write access {}", principal.getName(), owner.getUsername(), access.getType());
             return true;
         }

@@ -4,7 +4,6 @@ import at.tuwien.entities.database.table.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,13 +12,15 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Data
 @Entity
 @Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tID", "internal_name"})
@@ -30,13 +31,12 @@ import java.util.List;
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "columns-sequence")
-    @GenericGenerator(name = "columns-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "tID", referencedColumnName = "id", nullable = false)
@@ -70,11 +70,6 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column(nullable = false)
     private Integer ordinalPosition;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "mdb_columns_concepts",
@@ -119,6 +114,13 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(name = "std_dev")
     private BigDecimal stdDev;
 
+    @EqualsAndHashCode.Exclude
+    @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+    private Instant created;
+
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

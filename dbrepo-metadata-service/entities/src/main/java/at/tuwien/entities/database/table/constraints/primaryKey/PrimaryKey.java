@@ -4,8 +4,9 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -14,18 +15,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @jakarta.persistence.Table(name = "mdb_constraints_primary_key")
 public class PrimaryKey {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "foreign-key-sequence")
-    @GenericGenerator(name = "foreign-key-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "pkid", updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
@@ -34,6 +34,7 @@ public class PrimaryKey {
     private Table table;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({

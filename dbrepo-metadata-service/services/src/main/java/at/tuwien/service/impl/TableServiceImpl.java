@@ -40,7 +40,6 @@ public class TableServiceImpl implements TableService {
     private final EntityService entityService;
     private final ConceptService conceptService;
     private final MetadataMapper metadataMapper;
-    private final DatabaseService databaseService;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
     private final SearchServiceGateway searchServiceGateway;
@@ -48,15 +47,14 @@ public class TableServiceImpl implements TableService {
     @Autowired
     public TableServiceImpl(UserService userService, UnitService unitService, RabbitConfig rabbitConfig,
                             EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
-                            DatabaseService databaseService, DataServiceGateway dataServiceGateway,
-                            DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
+                            DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
+                            SearchServiceGateway searchServiceGateway) {
         this.userService = userService;
         this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
         this.entityService = entityService;
         this.conceptService = conceptService;
         this.metadataMapper = metadataMapper;
-        this.databaseService = databaseService;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
         this.searchServiceGateway = searchServiceGateway;
@@ -64,10 +62,8 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional(readOnly = true)
-    public Table findById(Long databaseId, Long tableId) throws TableNotFoundException,
-            DatabaseNotFoundException {
-        final Optional<Table> table = databaseService.findById(databaseId)
-                .getTables()
+    public Table findById(Database database, Long tableId) throws TableNotFoundException {
+        final Optional<Table> table = database.getTables()
                 .stream()
                 .filter(t -> t.getId().equals(tableId))
                 .findFirst();
@@ -80,10 +76,8 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional(readOnly = true)
-    public Table findByName(Long databaseId, String internalName) throws TableNotFoundException,
-            DatabaseNotFoundException {
-        final Optional<Table> table = databaseService.findById(databaseId)
-                .getTables()
+    public Table findByName(Database database, String internalName) throws TableNotFoundException {
+        final Optional<Table> table = database.getTables()
                 .stream()
                 .filter(t -> t.getInternalName().equals(internalName))
                 .findFirst();

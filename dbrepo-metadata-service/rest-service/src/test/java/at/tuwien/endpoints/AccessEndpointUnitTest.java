@@ -7,9 +7,9 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.repository.DatabaseRepository;
-import at.tuwien.repository.UserRepository;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.UserService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,12 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,10 +43,10 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     private AccessService accessService;
 
     @MockBean
-    private DatabaseRepository databaseRepository;
+    private DatabaseService databaseService;
 
     @MockBean
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private AccessEndpoint accessEndpoint;
@@ -63,7 +65,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(null, null, null, null);
+            generic_create(null, null, null, null, null);
         });
     }
 
@@ -73,7 +75,37 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(USER_2_PRINCIPAL, USER_2, USER_4_ID, USER_4);
+            generic_create(USER_2_PRINCIPAL, USER_2, USER_4_ID, USER_4, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void create_noRole_fails() {
+
+        /* test */
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_create(USER_2_PRINCIPAL, USER_2, USER_4_ID, USER_4, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {"create-database-access"})
+    public void create_notOwner_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_create(USER_2_PRINCIPAL, USER_2, USER_4_ID, USER_4, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
+    public void create_alreadyAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_create(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2, DATABASE_1_USER_2_READ_ACCESS);
         });
     }
 
@@ -88,7 +120,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
-        generic_create(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2);
+        generic_create(USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2, null);
     }
 
     @Test
@@ -97,7 +129,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(AccessNotFoundException.class, () -> {
-            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_ID, USER_2);
+            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2, USER_2_ID, USER_2);
         });
     }
 
@@ -107,7 +139,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             AccessNotFoundException, NotAllowedException {
 
         /* test */
-        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1_ID, USER_1);
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1, USER_1_ID, USER_1);
     }
 
     @Test
@@ -116,17 +148,20 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_2_ID, USER_2);
+            generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1, USER_2_ID, USER_2);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-foreign-database-access"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access", "check-foreign-database-access"})
     public void find_hasRoleHasAccessForeign_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, AccessNotFoundException {
+        final Principal principal = new UsernamePasswordAuthenticationToken(USER_1_DETAILS, USER_1_PASSWORD, List.of(
+                new SimpleGrantedAuthority("check-database-access"),
+                new SimpleGrantedAuthority("check-foreign-database-access")));
 
         /* test */
-        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1_ID, USER_1);
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_2_READ_ACCESS, principal, USER_1, USER_2_ID, USER_2);
     }
 
     @Test
@@ -155,6 +190,16 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_update(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {"update-database-access"})
+    public void update_notOwner_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
             generic_update(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1, null);
         });
     }
@@ -195,6 +240,16 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {"delete-database-access"})
+    public void revoke_notOwner_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_revoke(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1);
+        });
+    }
+
+    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
     public void revoke_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
@@ -213,30 +268,37 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Principal principal, User principalUser, UUID userId, User user)
+    protected void generic_create(Principal principal, User principalUser, UUID userId, User user, DatabaseAccess access)
             throws NotAllowedException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        doThrow(AccessNotFoundException.class)
-                .when(accessService)
-                .find(DATABASE_1, user);
-        if (principalUser != null) {
-            when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(principalUser));
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        if (access != null) {
+            when(accessService.find(DATABASE_1, user))
+                    .thenReturn(access);
         } else {
-            when(userRepository.findByUsername(anyString()))
-                    .thenReturn(Optional.empty());
+            doThrow(AccessNotFoundException.class)
+                    .when(accessService)
+                    .find(DATABASE_1, user);
+        }
+        if (principalUser != null) {
+            when(userService.findByUsername(principal.getName()))
+                    .thenReturn(principalUser);
+        } else {
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findByUsername(anyString());
         }
         if (user != null) {
-            when(userRepository.findById(userId))
-                    .thenReturn(Optional.of(user));
+            when(userService.findById(userId))
+                    .thenReturn(user);
         } else {
-            when(userRepository.findById(any(UUID.class)))
-                    .thenReturn(Optional.empty());
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findById(any(UUID.class));
         }
 
         /* test */
@@ -246,14 +308,16 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void generic_find(Long databaseId, Database database, DatabaseAccess access, Principal principal,
-                                UUID userId, User user) throws UserNotFoundException, DatabaseNotFoundException,
-            AccessNotFoundException, NotAllowedException {
+                                User caller, UUID userId, User user) throws UserNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, NotAllowedException {
 
         /* mock */
-        when(databaseRepository.findById(databaseId))
-                .thenReturn(Optional.of(database));
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(userService.findByUsername(principal.getName()))
+                .thenReturn(caller);
+        when(databaseService.findById(databaseId))
+                .thenReturn(database);
+        when(userService.findById(userId))
+                .thenReturn(user);
         if (access != null) {
             log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
             when(accessService.find(database, user))
@@ -263,10 +327,6 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             doThrow(AccessNotFoundException.class)
                     .when(accessService)
                     .find(database, user);
-        }
-        if (principal != null) {
-            when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(user));
         }
 
         /* test */
@@ -287,8 +347,8 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
         if (access != null) {
             log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, DATABASE_1_ID);
             when(accessService.find(DATABASE_1, user))
@@ -300,18 +360,20 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
                     .find(DATABASE_1, user);
         }
         if (userId != null) {
-            when(userRepository.findById(userId))
-                    .thenReturn(Optional.of(user));
+            when(userService.findById(userId))
+                    .thenReturn(user);
         } else {
-            when(userRepository.findById(any(UUID.class)))
-                    .thenReturn(Optional.empty());
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findById(any(UUID.class));
         }
         if (principal != null) {
-            when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(principalUser));
+            when(userService.findByUsername(principal.getName()))
+                    .thenReturn(principalUser);
         } else {
-            when(userRepository.findByUsername(anyString()))
-                    .thenReturn(Optional.empty());
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findByUsername(anyString());
         }
 
         /* test */
@@ -326,14 +388,14 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
         if (principal != null) {
-            when(userRepository.findByUsername(principal.getName()))
-                    .thenReturn(Optional.of(principalUser));
+            when(userService.findByUsername(principal.getName()))
+                    .thenReturn(principalUser);
         }
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(user));
+        when(userService.findById(userId))
+                .thenReturn(user);
 
         /* test */
         final ResponseEntity<?> response = accessEndpoint.revoke(DATABASE_1_ID, userId, principal);

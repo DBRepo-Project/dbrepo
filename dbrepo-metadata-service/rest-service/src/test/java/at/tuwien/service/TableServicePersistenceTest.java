@@ -30,11 +30,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -83,6 +85,8 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
+                .isPublic(true)
+                .isSchemaPublic(true)
                 .columns(List.of(ColumnCreateDto.builder()
                                 .name("id")
                                 .nullAllowed(false)
@@ -136,6 +140,23 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         assertEquals(request.getConstraints().getChecks().size(), checks.size());
         final List<ForeignKey> foreignKeys = response.getConstraints().getForeignKeys();
         assertEquals(request.getConstraints().getForeignKeys().size(), foreignKeys.size());
+    }
+
+    @Test
+    public void findColumnById_succeeds() throws MalformedException {
+
+        /* test */
+        final TableColumn response = tableService.findColumnById(TABLE_1, COLUMN_1_1_ID);
+        assertEquals(TABLE_1_COLUMNS.get(0), response);
+    }
+
+    @Test
+    public void findColumnById_fails() {
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            tableService.findColumnById(TABLE_1, 9999L);
+        });
     }
 
 }

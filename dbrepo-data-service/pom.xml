@@ -23,7 +23,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>

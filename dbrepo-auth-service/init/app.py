@@ -12,7 +12,7 @@ user_id = admin.get_user_id(username=system_username)
 print(f'Successfully fetched user id: {user_id}')
 
 try:
-    conn = mariadb.connect(user="root",
+    conn = mariadb.connect(user=os.getenv('METADATA_USERNAME', 'root'),
                            password=os.getenv('METADATA_DB_PASSWORD', 'dbrepo'),
                            host="metadata-db",
                            port=3306,

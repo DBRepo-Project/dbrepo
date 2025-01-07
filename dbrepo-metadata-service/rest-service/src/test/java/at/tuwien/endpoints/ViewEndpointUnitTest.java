@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
@@ -22,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -99,7 +101,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void create_publicAnonymous_succeeds() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, DATABASE_3, null, null, null, null);
         });
     }
@@ -129,9 +131,19 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void create_publicNoRole_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-view"})
+    public void create_succeeds() throws UserNotFoundException, SearchServiceException, MalformedException,
+            NotAllowedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException,
+            SearchServiceConnectionException, DataServiceConnectionException {
+
+        /* test */
+        create_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -175,7 +187,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void delete_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, null, null, null, null);
         });
     }
@@ -195,7 +207,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void delete_publicNoRole_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
         });
     }
@@ -252,10 +264,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void create_privateAnonymous_succeeds() {
+    public void create_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(DATABASE_1_ID, DATABASE_1, null, null, null, null);
         });
     }
@@ -285,7 +297,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void create_privateNoRole_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, null);
         });
     }
@@ -331,7 +343,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void delete_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, null, null, null, null);
         });
     }
@@ -351,7 +363,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     public void delete_privateNoRole_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
         });
     }
@@ -364,6 +376,45 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void update_anonymous_succeeds() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            update_generic(USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void update_noRole_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            update_generic(USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-view-visibility"})
+    public void update_notOwner_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            update_generic(USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-view-visibility"})
+    public void update_succeeds() throws NotAllowedException, DataServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
+
+        /* test */
+        update_generic(USER_1_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -419,6 +470,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
+        if (principal != null) {
+            when(userService.findByUsername(principal.getName()))
+                    .thenReturn(user);
+        }
         if (access != null) {
             log.trace("mock access of database with id {} and user id {}", databaseId, userId);
             when(accessService.find(database, user))
@@ -497,6 +552,28 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<?> response = viewEndpoint.delete(databaseId, viewId, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    protected void update_generic(Principal principal) throws SearchServiceException, NotAllowedException,
+            DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException,
+            ViewNotFoundException {
+        final ViewUpdateDto request = ViewUpdateDto.builder()
+                .isPublic(true)
+                .isSchemaPublic(true)
+                .build();
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(viewService.findById(DATABASE_1, VIEW_1_ID))
+                .thenReturn(VIEW_1);
+        when(viewService.update(DATABASE_1, VIEW_1, request))
+                .thenReturn(VIEW_1);
+
+        /* test */
+        final ResponseEntity<ViewDto> response = viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, principal);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
 }

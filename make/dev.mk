@@ -32,3 +32,9 @@ package-config: ## Package the config files
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
 	cp ./dbrepo-upload-service/pre-create.sh ./.docker/config
 	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
+
+.PHONY: install-staging
+install-staging: build-helm ## Install on staging server
+	helm -n dbrepo uninstall dbrepo --ignore-not-found --wait
+	kubectl -n dbrepo delete pvc --all
+	helm -n dbrepo install dbrepo ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace -f ./.gitlab/agents/dev/values.yaml
