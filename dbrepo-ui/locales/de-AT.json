@@ -1,11 +1,13 @@
 {
   "navigation": {
+    "logo": "Logo",
     "information": "Information",
     "search": "Suchen",
+    "container": "Engine",
     "ontologies": "Ontologien",
-    "logout": "Ausloggen",
-    "login": "Anmelden",
-    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "login": "Login",
+    "signup": "Melden Sie sich an",
     "databases": "Datenbanken",
     "identifiers": "Identifikatoren",
     "tables": "Tabellen",
@@ -16,22 +18,26 @@
     "assign": "Zuordnen",
     "back": "Zurück",
     "schema": "Schema",
-    "persist": "Persistieren",
+    "persist": "Speichern",
     "cancel": "Abbrechen",
     "user": "Benutzer",
-    "import": "Importieren",
+    "import": "Daten importieren",
     "delete": "Löschen",
     "recommend": "Empfehlen",
     "now": "Jetzt",
     "settings": "Einstellungen",
     "views": "Ansichten",
-    "create": "Erstelle",
+    "create": "Erstellen",
     "semantics": "Semantik",
     "yes": "Ja",
     "no": "Nein",
-    "mine": "(Meine)",
-    "loading": "Lade",
-    "view": "Ansicht"
+    "mine": "(meins)",
+    "loading": "Laden",
+    "view": "Sicht",
+    "modify": "Ändern",
+    "help": "Helfen",
+    "visibility": "Sichtbarkeit",
+    "update": "Aktualisieren"
   },
   "pages": {
     "identifier": {
@@ -47,10 +53,10 @@
       },
       "titles": {
         "title": "Titel",
-        "none": "(Kein Titel)"
+        "none": "(kein Titel)"
       },
       "creators": {
-        "title": "Ersteller"
+        "title": "Schöpfer"
       },
       "language": {
         "title": "Sprache"
@@ -72,7 +78,7 @@
       },
       "descriptions": {
         "title": "Beschreibungen",
-        "none": "(Keine Beschreibung)"
+        "none": "(keine Beschreibung)"
       },
       "publisher": {
         "title": "Herausgeber"
@@ -120,7 +126,7 @@
             "subtitle": "Haben Sie bereits einen DOI für diesen Datensatz?",
             "label": "Geben Sie hier Ihren bestehenden DOI an",
             "hint": "Ein DOI ermöglicht die einfache und eindeutige Zitierung Ihres Uploads. ",
-            "mint": "Nach dem Speichern wird ein PID erstellt"
+            "mint": "Nach dem Speichern wird eine PID erstellt"
           },
           "doi": {
             "mint": "Nach dem Speichern wird ein DOI erstellt"
@@ -153,7 +159,7 @@
             "hint": "Erforderlich"
           },
           "related-identifiers": {
-            "title": "Verwandter Bezeichner",
+            "title": "Zugehöriger Bezeichner",
             "subtitle": "Bezeichner verwandter Ressourcen. ",
             "identifier": {
               "label": "Kennung",
@@ -194,7 +200,7 @@
             "subtitle": "Informationen zur finanziellen Unterstützung (Finanzierung) für den zu registrierenden Datensatz",
             "identifier": {
               "label": "Kennung des Geldgebers",
-              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
             },
             "name": {
               "label": "Name des Geldgebers",
@@ -219,7 +225,7 @@
             "subtitle": "Die wichtigsten Forscher, die an der Erstellung der Daten beteiligt waren, in der Reihenfolge ihrer Priorität",
             "identifier": {
               "label": "Namensbezeichner",
-              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
             },
             "insert": {
               "text": "Füge mich ein"
@@ -238,7 +244,7 @@
               "hint": ""
             },
             "family-name": {
-              "label": "Familienname",
+              "label": "Nachname",
               "hint": ""
             },
             "name": {
@@ -247,7 +253,7 @@
             },
             "affiliation-identifier": {
               "label": "Zugehörigkeitskennung",
-              "hint": "Verwenden Sie eine Zugehörigkeitskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)"
+              "hint": "Verwenden Sie eine Zugehörigkeitskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
             },
             "affiliation": {
               "label": "Zugehörigkeitsname",
@@ -270,31 +276,37 @@
       }
     },
     "table": {
-      "title": "Tabelle",
+      "title": "Tisch",
       "id": {
-        "title": "ID"
+        "title": "AUSWEIS"
       },
       "broker": {
-        "title": "Broker"
+        "title": "Erweiterte Datenimportdetails"
       },
       "connection": {
-        "title": "Verbindungsdetails",
-        "secure": "sicher",
-        "insecure": "unsicher",
+        "title": "Verbindung(en)",
+        "secure": "verschlüsselt",
         "permissions": {
           "write": "Sie können in diese Tabelle schreiben",
           "read": "Sie können den gesamten Inhalt dieser Tabelle lesen"
         }
       },
+      "visibility": {
+        "title": "Sichtweite",
+        "open": "Offen",
+        "data": "Daten sind öffentlich",
+        "schema": "Schema ist öffentlich",
+        "closed": "Geschlossen"
+      },
       "description": {
         "title": "Beschreibung",
-        "empty": "(Keine Beschreibung)"
+        "empty": "(keine Beschreibung)"
       },
       "exchange": {
-        "title": "Exchange"
+        "title": "Exchange-Name"
       },
       "queue": {
-        "title": "Queue"
+        "title": "Warteschlangenname"
       },
       "routing-key": {
         "title": "Routing-Schlüssel"
@@ -309,8 +321,8 @@
       "size": {
         "title": "Größe"
       },
-      "result-rows": {
-        "title": "Reihen"
+      "rows": {
+        "title": "Ergebniszeilen"
       },
       "owner": {
         "title": "Eigentümer"
@@ -324,13 +336,16 @@
       "subpages": {
         "import": {
           "title": "Erstellen Sie eine Tabelle aus einem CSV-/TSV-Datensatz",
-          "text": "Importieren",
+          "text": "Import",
           "metadata": {
             "title": "Tabellenmetadaten"
           },
           "schema": {
             "title": "Datensatzstruktur",
-            "text": "das Tabellenschema manuell."
+            "text": "das Tabellenschema manuell.",
+            "primary": {
+              "warn": "Keine Primärschlüsselspalte(n) ausgewählt. "
+            }
           },
           "dataset": {
             "title": "Datensatz importieren",
@@ -359,18 +374,18 @@
             }
           },
           "skip": {
-            "label": "Zeilen überspringen",
-            "hint": "Optional. "
+            "label": "Spaltenüberschriften",
+            "hint": "Erforderlich. "
           },
           "storage": {
-            "text": "Datensatz vom Speicherdienst"
+            "text": "Hochgeladener Datensatz"
           },
           "quote": {
             "label": "Angebotskodierung",
             "hint": "Optional. "
           },
           "terminator": {
-            "label": "Codierung des Leitungsabschlusses",
+            "label": "Kodierung des Leitungsabschlusses",
             "hint": "Optional. ",
             "warn": {
               "prefix": "Wir haben Ihren .csv/.tsv-Datensatz analysiert und festgestellt, dass die von Ihnen angegebene Leitungsabschlusscodierung vorliegt",
@@ -400,8 +415,7 @@
           },
           "summary": {
             "title": "Zusammenfassung",
-            "prefix": "Importiert",
-            "suffix": "Zeilen aus dem Datensatz"
+            "text": "Datensatz erfolgreich importiert"
           },
           "analyse": {
             "text": "Hochladen und analysieren"
@@ -434,7 +448,7 @@
           }
         },
         "drop": {
-          "title": "Tabelle Löschen",
+          "title": "Drop-Tisch",
           "warning": {
             "prefix": "Diese Aktion kann nicht rückgängig gemacht werden! ",
             "suffix": "unten, wenn Sie es wirklich mit allen gespeicherten Daten löschen möchten"
@@ -445,7 +459,7 @@
           }
         },
         "schema": {
-          "title": "Systemversioniert",
+          "title": "Schema",
           "subtitle": "Tabellenbeschränkungen",
           "bullet": "●",
           "assign": "Zuordnen",
@@ -459,7 +473,7 @@
             "title": "Spaltentyp"
           },
           "extra": {
-            "title": "Zusatzinformation"
+            "title": "Zusätzliche Informationen"
           },
           "concept": {
             "title": "Konzept"
@@ -471,7 +485,7 @@
             "title": "Nullbar"
           },
           "sequence": {
-            "title": "Reihenfolge"
+            "title": "Sequenz"
           },
           "description": {
             "title": "Beschreibung"
@@ -497,7 +511,7 @@
             "label": "Primärschlüssel"
           },
           "foreign-key": {
-            "label": "Unbekannter Schlüssel"
+            "label": "Fremdschlüssel"
           },
           "references": {
             "label": "Ausländische Referenzen"
@@ -540,8 +554,9 @@
           "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen",
           "chart": {
             "title": "Datenereignisse",
-            "ylabel": "# Veranstaltungen",
-            "xlabel": "Zeitstempel"
+            "legend": "Diagrammlegende: Grüne Farbe markiert Dateneinfügungen, rote Farbe markiert Datenlöschungen (=Datenaktualisierungen in manchen Fällen)",
+            "ylabel": "# Ereignisse",
+            "xlabel": "Datenzeitstempel (UTC)"
           },
           "timestamp": {
             "label": "Zeitstempel",
@@ -558,14 +573,14 @@
             "hint": "Der Wert ist ein Primärschlüssel"
           },
           "format": {
-            "hint": "Der Wert muss im Format vorliegen"
+            "hint": "Formathinweis:"
           },
           "required": {
             "hint": "Erforderlich. "
           },
           "float": {
             "max": "max",
-            "min": "Mindest",
+            "min": "min",
             "before": "Ziffer(n) vor dem Punkt",
             "after": "Ziffer(n) nach dem Punkt"
           }
@@ -575,8 +590,8 @@
     "database": {
       "title": "Datenbank",
       "image": {
-        "title": "Datenbankbild",
-        "alt": "Datenbanklogo/Standardbild"
+        "title": "Vorschaubild",
+        "alt": "Datenbankvorschaubild, das den Datensatz darstellt"
       },
       "name": {
         "title": "Name"
@@ -585,7 +600,11 @@
         "title": "Interner Name"
       },
       "visibility": {
-        "title": "Sichtweite"
+        "title": "Sichtweite",
+        "open": "Offen",
+        "data": "Daten sind öffentlich",
+        "schema": "Schema ist öffentlich",
+        "closed": "Geschlossen"
       },
       "size": {
         "title": "Größe"
@@ -598,7 +617,7 @@
       },
       "connection": {
         "title": "Verbindung",
-        "username": "Nutzername",
+        "username": "Benutzername",
         "password": "Passwort"
       },
       "contact": {
@@ -608,21 +627,18 @@
         "access": {
           "title": "Datenbankzugriff",
           "subtitle": "Übersicht über Benutzer mit ihrem Zugriff auf die Datenbank",
-          "read": "Sie können alle Inhalte lesen",
-          "write-own": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
-          "write-all": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
-          "revoke": "Widerrufen",
+          "read": "Lesen Sie alle Inhalte",
+          "write-own": "Lesen Sie alle Inhalte und schreiben Sie eigene Tabellen",
+          "write-all": "Lesen Sie alle Inhalte und schreiben Sie alle Tabellen",
+          "revoke": "Kein Zugriff",
           "action": "Aktion",
           "username": {
-            "label": "Nutzername",
+            "label": "Benutzername",
             "hint": "Erforderlich"
           },
           "type": {
-            "label": "Zugangsart",
+            "label": "Zugriffstyp",
             "hint": "Erforderlich"
-          },
-          "submit": {
-            "text": "Ändern"
           }
         },
         "create": {
@@ -637,8 +653,23 @@
             "label": "Motor",
             "hint": "Erforderlich"
           },
+          "visibility": {
+            "label": "Sichtweite",
+            "hint": "Erforderlich",
+            "public": {
+              "label": "Öffentlich",
+              "hint": "Alles ist für die Öffentlichkeit sichtbar, z.B. "
+            },
+            "private": {
+              "label": "Privat",
+              "hint": "Ohne dedizierten Lesezugriff ist für niemanden etwas sichtbar, z.B. "
+            }
+          },
           "submit": {
             "text": "Erstellen"
+          },
+          "utilization": {
+            "label": "Verwendung"
           }
         },
         "tables": {
@@ -670,13 +701,13 @@
             "text": "Bild ändern"
           },
           "image-remove": {
-            "text": "Entferne Bild"
+            "text": "Bild entfernen"
           },
           "scheme": {
             "title": "Schema",
             "subtitle": "Aktualisieren Sie die Metadaten im Datenbankschema, um systemversionierte Tabellen und Ansichten in der Benutzeroberfläche anzuzeigen",
             "submit": {
-              "text": "Aktualisierung"
+              "text": "Aktualisieren"
             }
           },
           "ownership": {
@@ -690,10 +721,16 @@
           },
           "visibility": {
             "title": "Sichtweite",
-            "subtitle": "Private Datenbanken verbergen die Daten, während Metadaten weiterhin sichtbar sind. ",
-            "visibility": {
-              "label": "Datenbanksichtbarkeit",
-              "hint": "Erforderlich"
+            "subtitle": "",
+            "data": {
+              "label": "Datensichtbarkeit",
+              "hint": "Erforderlich",
+              "help": "Öffentlich = für jeden sichtbar, Privat = nur für bestimmte Benutzer sichtbar"
+            },
+            "schema": {
+              "label": "Schema-Sichtbarkeit",
+              "hint": "Erforderlich",
+              "help": "Öffentlich = für jeden sichtbar, Privat = nur für bestimmte Benutzer sichtbar"
             },
             "submit": {
               "text": "Ändern"
@@ -709,7 +746,7 @@
         "hint": "Erforderlich"
       },
       "username": {
-        "label": "Nutzername",
+        "label": "Benutzername",
         "hint": "Erforderlich"
       },
       "password": {
@@ -717,7 +754,7 @@
         "hint": "Erforderlich"
       },
       "confirm": {
-        "label": "Bestätige das Passwort",
+        "label": "Passwort bestätigen",
         "hint": "Erforderlich"
       },
       "submit": {
@@ -725,9 +762,9 @@
       }
     },
     "login": {
-      "name": "Anmeldung",
+      "name": "Login",
       "username": {
-        "label": "Nutzername",
+        "label": "Benutzername",
         "hint": "Erforderlich"
       },
       "password": {
@@ -750,14 +787,14 @@
             "label": "AUSWEIS"
           },
           "username": {
-            "label": "Nutzername"
+            "label": "Benutzername"
           },
           "firstname": {
             "label": "Vorname",
             "hint": ""
           },
           "lastname": {
-            "label": "Familienname",
+            "label": "Nachname",
             "hint": ""
           },
           "affiliation": {
@@ -784,7 +821,7 @@
           "dark": "Dunkel",
           "dark-contrast": "Dunkel – hoher Kontrast",
           "light": "Licht",
-          "light-contrast": "Licht – hoher Kontrast",
+          "light-contrast": "Hell – hoher Kontrast",
           "submit": {
             "text": "Aktualisieren"
           }
@@ -794,14 +831,14 @@
     "settings": {
       "subpages": {
         "authentication": {
-          "title": "Benutzer-Passwort",
+          "title": "Benutzerpasswort",
           "subtitle": "Aktualisieren Sie das Benutzerkennwort, das für die Basisauthentifizierung bei allen Schnittstellen verwendet wird",
           "password": {
             "label": "Passwort",
             "hint": "Erforderlich"
           },
           "confirm": {
-            "label": "Bestätige das Passwort",
+            "label": "Passwort bestätigen",
             "hint": "Erforderlich"
           },
           "submit": {
@@ -814,14 +851,14 @@
             "subtitle": "Sehen Sie sich Ihre Token-Geheimnisse zu Debugging-Zwecken an",
             "expiry": "Läuft ab",
             "access": {
-              "label": "Zugangstoken"
+              "label": "Zugriffstoken"
             },
             "refresh": {
               "label": "Aktualisierungstoken"
             }
           },
           "maintenance": {
-            "title": "Mitteilungen",
+            "title": "Nachrichten",
             "active": "Aktiv",
             "type": "Typ",
             "message": "Text",
@@ -862,7 +899,7 @@
     "view": {
       "title": "Sicht",
       "tabs": {
-        "info": "Die Info",
+        "info": "Info",
         "data": "Daten"
       },
       "name": {
@@ -871,8 +908,8 @@
       "query": {
         "title": "Stellungnahme"
       },
-      "creator": {
-        "title": "Schöpfer"
+      "owner": {
+        "title": "Eigentümer"
       },
       "creation": {
         "title": "Schaffung"
@@ -894,11 +931,6 @@
           "columns": {
             "label": "Datenspalten",
             "hint": "Erforderlich"
-          },
-          "visibility": {
-            "label": "Datensichtbarkeit",
-            "warn": "Nur Personen mit mindestens Leserechten können die Daten einsehen",
-            "hint": "Erforderlich. "
           }
         }
       }
@@ -914,21 +946,21 @@
       "query": {
         "title": "Abfrage"
       },
-      "query-hash": {
-        "prefix": "sha256",
-        "title": "Abfrage-Hash"
+      "hash": {
+        "title": "Hash",
+        "prefix": "sha256"
       },
       "executed": {
         "title": "Erstellt"
       },
-      "result-hash": {
-        "title": "Ergebnis-Hash"
+      "result": {
+        "title": "Ergebnis"
       },
-      "result-rows": {
+      "rows": {
         "title": "Ergebniszeilen"
       },
       "tabs": {
-        "info": "Die Info",
+        "info": "Info",
         "data": "Daten"
       },
       "subpages": {
@@ -940,7 +972,7 @@
           },
           "expert": {
             "text": "Experte",
-            "warn": "Von der Verwendung von Kommentaren, Aggregationsfunktionen und den folgenden Vorgängen wird abgeraten"
+            "warn": "Von der Verwendung von Kommentaren, Aggregationsfunktionen, dem Semikolon und den folgenden Operationen wird abgeraten"
           },
           "name": {
             "label": ""
@@ -1031,9 +1063,12 @@
       }
     },
     "container": {
-      "title": "Container",
+      "title": "Motoren",
       "name": {
         "title": "Name"
+      },
+      "subtitle": {
+        "text": "Motor"
       },
       "internal-name": {
         "title": "Interner Name"
@@ -1042,7 +1077,7 @@
         "title": "Bild"
       },
       "image-tag": {
-        "title": "Ausführung"
+        "title": "Version"
       }
     },
     "semantics": {
@@ -1066,20 +1101,22 @@
     },
     "axios": {
       "connection": "Kontakt zum Backend fehlgeschlagen",
-      "timeout": "Zeitüberschreitung der Verbindung"
+      "malformed": "Fehlerhafte Anfrage",
+      "timeout": "Zeitüberschreitung bei der Verbindung"
     },
     "concept": {
       "missing": "Das Konzept konnte in der Metadatendatenbank nicht gefunden werden"
     },
     "container": {
       "exists": "Der Container ist bereits in der Metadatendatenbank vorhanden",
-      "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden"
+      "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden",
+      "quota": "Das Datenbankkontingent in der Engine wurde überschritten"
     },
     "data": {
       "connection": "Kontaktaufnahme zum Datendienst fehlgeschlagen",
       "invalid": "Die Kommunikation mit dem Datendienst ist fehlgeschlagen",
       "value": "Spaltenwert konnte nicht festgelegt werden",
-      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um 16:00 Uhr verschoben zu sein"
+      "drift": "Die Uhr Ihres Browsers ist nicht mit der UTC-Zeit synchronisiert und scheint um 16 Uhr verschoben zu sein"
     },
     "database": {
       "connection": "Kontakt zur Datenbank konnte nicht hergestellt werden",
@@ -1111,7 +1148,8 @@
     "image": {
       "exists": "Das Bild ist bereits in der Metadatendatenbank vorhanden",
       "missing": "Das Bild konnte nicht in der Metadatendatenbank gefunden werden",
-      "invalid": "Bildmetadaten sind fehlerhaft"
+      "invalid": "Bildmetadaten sind fehlerhaft",
+      "size": "Die Bildgröße ist zu groß"
     },
     "license": {
       "missing": "Die Lizenz konnte in der Metadatendatenbank nicht gefunden werden"
@@ -1134,8 +1172,8 @@
     "query": {
       "missing": "Die Abfrage konnte im Datendienst nicht gefunden werden",
       "invalid": "Die Abfrage ist ungültig",
-      "type.exists": "Abfrage konnte nicht erstellt werden: Kein solcher Spaltentyp",
-      "type.build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp",
+      "exists": "Abfrage konnte nicht erstellt werden: Kein solcher Spaltentyp",
+      "build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp",
       "column.exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen"
     },
     "store": {
@@ -1173,7 +1211,7 @@
     "user": {
       "exists": "Benutzer mit Benutzername ist in der Authentifizierungsdatenbank vorhanden",
       "missing": "Benutzer konnte in der Authentifizierungsdatenbank nicht gefunden werden",
-      "credentials": "Ungültige Benutzername und Passwort Kombination",
+      "credentials": "Ungültige Kombination aus Benutzername und Passwort",
       "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits",
       "setup": "Bitte ändern Sie Ihr Passwort"
     },
@@ -1245,7 +1283,8 @@
     },
     "table": {
       "created": "Tabelle erfolgreich erstellt",
-      "semantics": "Semantische Instanz erfolgreich zugewiesen"
+      "semantics": "Semantische Instanz erfolgreich zugewiesen",
+      "updated": "Tabelle erfolgreich aktualisiert"
     },
     "schema": {
       "tables": "Die Metadaten der Datenbanktabellen wurden erfolgreich aktualisiert.",
@@ -1263,7 +1302,7 @@
     "pid": {
       "saved": "Kennung erfolgreich gespeichert",
       "created": "Kennung erfolgreich erstellt",
-      "published": "Erfolgreich veröffentlichte Kennung",
+      "published": "Identifikator erfolgreich veröffentlicht",
       "updated": "Kennung erfolgreich aktualisiert",
       "deleted": "Kennung erfolgreich gelöscht"
     },
@@ -1275,7 +1314,8 @@
     },
     "view": {
       "create": "Ansicht erfolgreich erstellt",
-      "delete": "Ansicht erfolgreich gelöscht"
+      "delete": "Ansicht erfolgreich gelöscht",
+      "modified": "Die Sichtbarkeit der Ansicht wurde erfolgreich geändert"
     },
     "subset": {
       "create": "Teilmenge erfolgreich erstellt"
@@ -1283,7 +1323,7 @@
   },
   "toolbars": {
     "user": {
-      "info": "Die Info",
+      "info": "Info",
       "authentication": "Authentifizierung",
       "developer": "Entwickler"
     },
@@ -1313,8 +1353,8 @@
         "text": "Datenbank"
       },
       "import-csv": {
-        "permanent": "Importieren",
-        "xl": "CSV"
+        "permanent": "Import",
+        "xl": "Datensatz"
       },
       "dashboard": {
         "permanent": "Visualisieren",
@@ -1328,6 +1368,10 @@
         "permanent": "Sicht",
         "xl": "Erstellen"
       },
+      "update-table": {
+        "permanent": "Tisch",
+        "xl": "Aktualisieren"
+      },
       "create-table": {
         "permanent": "Tisch",
         "xl": "Erstellen"
@@ -1337,7 +1381,7 @@
         "xl": "Erhalten"
       },
       "info": {
-        "tab": "Die Info"
+        "tab": "Info"
       },
       "tables": {
         "tab": "Tische"
@@ -1379,7 +1423,7 @@
     },
     "subset": {
       "save": {
-        "permanent": "Speichern"
+        "permanent": "Stern"
       },
       "export": {
         "data": {
@@ -1396,7 +1440,7 @@
         "permanent": "PID"
       },
       "unsave": {
-        "permanent": "Nicht speichern"
+        "permanent": "Unstar"
       }
     },
     "view": {
@@ -1407,7 +1451,7 @@
     },
     "table": {
       "data": {
-        "refresh": "Aktualisierung",
+        "refresh": "Aktualisieren",
         "add": "Hinzufügen",
         "edit": "Aktualisieren",
         "delete": "Löschen",
@@ -1419,10 +1463,12 @@
     }
   },
   "validation": {
-    "required": "Pflichtfeld",
+    "required": "Erforderliches Feld",
     "integer": "Größer oder gleich Null",
     "max-length": "Die maximale Länge beträgt: ",
     "day": "Ungültiger Tag",
+    "min": "Wert zu klein",
+    "max": "Wert zu groß",
     "matching": "Nicht passend!",
     "doi": {
       "invalid": "Ungültiger DOI. "
@@ -1432,6 +1478,9 @@
       "pattern": "Ungültiger URI",
       "exists": "URI existiert"
     },
+    "column": {
+      "exists": "Es existiert eine Spalte mit diesem Namen"
+    },
     "user": {
       "pattern": "Nur Kleinbuchstaben, min. ",
       "exists": "Dieser Benutzername ist bereits vergeben"
@@ -1440,7 +1489,7 @@
       "exists": "Der Ansichtsname existiert bereits"
     },
     "table": {
-      "exists": "Der Tabellenname existiert bereits"
+      "exists": "Tabellenname existiert bereits"
     },
     "prefix": {
       "pattern": "Ungültiges Präfixmuster",
@@ -1449,6 +1498,9 @@
     },
     "pattern": {
       "timestamp": "Muss im Format jjjj-MM-tt HH:mm:ss vorliegen"
+    },
+    "image": {
+      "size": "Die Bildgröße ist zu groß"
     }
   }
 }

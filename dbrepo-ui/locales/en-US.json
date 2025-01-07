@@ -653,13 +653,17 @@
             "label": "Engine",
             "hint": "Required"
           },
-          "data": {
-            "label": "Data Visibility",
-            "hint": "Required"
-          },
-          "schema": {
-            "label": "Schema Visibility",
-            "hint": "Required"
+          "visibility": {
+            "label": "Visibility",
+            "hint": "Required",
+            "public": {
+              "label": "Public",
+              "hint": "Everything is visible to the public, e.g. to publish data used in a open-access paper. You can later update the visibility of data."
+            },
+            "private": {
+              "label": "Private",
+              "hint": "Nothing is visible to anyone without dedicated read-access, e.g. to work on a dataset. You can later update the visibility of data."
+            }
           },
           "submit": {
             "text": "Create"

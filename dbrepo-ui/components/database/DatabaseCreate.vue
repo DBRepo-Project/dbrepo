@@ -54,13 +54,12 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col
-              md="6">
+            <v-col>
               <v-select
-                v-model="payload.is_public"
-                name="public"
-                :label="$t('pages.database.subpages.create.data.label')"
-                :hint="$t('pages.database.subpages.create.data.hint')"
+                v-model="mode"
+                name="mode"
+                :label="$t('pages.database.subpages.create.visibility.label')"
+                :hint="$t('pages.database.subpages.create.visibility.hint')"
                 persistent-hint
                 :variant="inputVariant"
                 :items="visibilityOptions"
@@ -69,23 +68,19 @@
                 :rules="[v => !!v || $t('validation.required')]"
                 return-object
                 required>
-              </v-select>
-            </v-col>
-            <v-col
-              md="6">
-              <v-select
-                v-model="payload.is_schema_public"
-                name="schema-public"
-                :label="$t('pages.database.subpages.create.schema.label')"
-                :hint="$t('pages.database.subpages.create.schema.hint')"
-                persistent-hint
-                :variant="inputVariant"
-                :items="visibilityOptions"
-                item-title="name"
-                item-value="value"
-                :rules="[v => !!v || $t('validation.required')]"
-                return-object
-                required>
+                <template
+                  v-slot:append-inner>
+                  <v-tooltip
+                    location="bottom">
+                    <template
+                      v-slot:activator="{ props }">
+                      <v-icon
+                        v-bind="props"
+                        icon="mdi-help-circle-outline" />
+                    </template>
+                    {{ mode.hint }}
+                  </v-tooltip>
+                </template>
               </v-select>
             </v-col>
           </v-row>
@@ -125,14 +120,17 @@ export default {
       engines: [],
       visibilityOptions: [
         {
-          name: this.$t('toolbars.database.public'),
+          name: this.$t('pages.database.subpages.create.visibility.public.label'),
+          hint: this.$t('pages.database.subpages.create.visibility.public.hint'),
           value: true
         },
         {
-          name: this.$t('toolbars.database.private'),
+          name: this.$t('pages.database.subpages.create.visibility.private.label'),
+          hint: this.$t('pages.database.subpages.create.visibility.private.hint'),
           value: false
         }
       ],
+      mode: true,
       payload: {
         name: null,
         is_public: true,
@@ -151,6 +149,7 @@ export default {
     }
   },
   mounted () {
+    this.mode = this.visibilityOptions[0]
     this.fetchContainers()
   },
   methods: {
@@ -186,6 +185,8 @@ export default {
     create () {
       this.loading = true
       this.payload.container_id = this.engine.id
+      this.payload.is_public = this.mode.value
+      this.payload.is_schema_public = this.mode.value
       const databaseService = useDatabaseService()
       databaseService.create(this.payload)
         .then(async (database) => {
