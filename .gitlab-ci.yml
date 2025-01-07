@@ -384,7 +384,7 @@ release-helm:
   dependencies:
     - build-helm
   before_script:
-    - "apk add sed helm"
+    - "apk add --no-cache sed helm make"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
