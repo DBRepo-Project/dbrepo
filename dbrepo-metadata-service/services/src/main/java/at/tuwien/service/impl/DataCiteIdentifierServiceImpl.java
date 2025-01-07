@@ -70,9 +70,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier publish(Long identifierId) throws MalformedException, DataServiceConnectionException,
-            IdentifierNotFoundException, ExternalServiceException {
-        final Identifier identifier = find(identifierId);
+    public Identifier publish(Identifier identifier) throws MalformedException, DataServiceConnectionException,
+            ExternalServiceException {
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         identifier.setDoi(remoteSave(identifier, DataCiteDoiEvent.PUBLISH));
         return identifierRepository.save(identifier);

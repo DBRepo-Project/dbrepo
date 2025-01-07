@@ -33,7 +33,7 @@ metadatadb:
   fullnameOverride: metadata-db
   ## @param metadatadb.host The hostname for the microservices.
   host: metadata-db
-  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data
+  ## @param metadatadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param metadatadb.rootUser.user The root username.
@@ -109,6 +109,20 @@ authservice:
     id: dbrepo-client
     ## @param authservice.client.secret The client secret for the microservices.
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  init:
+    image:
+      ## @skip authservice.init.image.name
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.0rc1
+    ## @param authservice.init.resourcesPreset The container resource preset
+    resourcesPreset: "nano"
+    ## @param authservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources: { }
+    ##   requests:
+    ##     cpu: 250m
+    ##     memory: 64Mi
+    ##   limits:
+    ##     cpu: 500m
+    ##     memory: 1024Mi
   ## @skip authservice.extraEnvVarsCM
   extraEnvVarsCM: auth-service-config
   ## @skip authservice.extraVolumes
@@ -130,7 +144,7 @@ datadb:
   fullnameOverride: data-db
   ## @param datadb.host The hostname for the microservices.
   host: data-db
-  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/api/data-db/#data
+  ## @param datadb.extraFlags Extra flags to ensure the query store works as intended, ref https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/data-db/#data
   extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
   rootUser:
     ## @param datadb.rootUser.user The root username.
@@ -430,7 +444,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.0rc6
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -465,7 +479,7 @@ metadataservice:
       ## @param metadataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
   ## @param metadataservice.resourcesPreset The container resource preset
-  resourcesPreset: "micro"
+  resourcesPreset: "small"
   ## @param metadataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources: { }
   ##   requests:
@@ -527,7 +541,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.0
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.0rc3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -721,7 +735,10 @@ storageservice:
   init:
     image:
       ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.0
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.0rc6
+    s3:
+      ## @param storageservice.init.s3.endpoint The S3-capable endpoint the microservice connects to.
+      endpoint: http://storage-service-s3:8333
     ## @param storageservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param storageservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1010,176 +1027,14 @@ gatewayservice:
   enabled: true
   ## @skip gatewayservice.fullnameOverride
   fullnameOverride: gateway-service
-  ## @param gatewayservice.serverBlock The extra configuration for the reverse proxy
-  serverBlock: |
-    # This is required to proxy Grafana Live WebSocket connections.
-    map $http_upgrade $connection_upgrade {
-      default upgrade;
-      '' close;
-    }
-
-    upstream analyse {
-        server analyse-service;
-    }
-
-    upstream data {
-        server data-service;
-    }
-
-    upstream metadata {
-        server metadata-service;
-    }
-
-    upstream search {
-        server search-service;
-    }
-
-    upstream ui {
-        server ui;
-    }
-
-    upstream upload {
-        server upload-service;
-    }
-
-    upstream dashboard-service {
-        server dashboard-service:3000;
-    }
-
-    server {
-        listen 8080 default_server;
-        server_name _;
-
-        location /assets/ {
-            root                    /etc/nginx/assets;
-            expires                 max;
-            access_log              off;
-            autoindex               on;
-            autoindex_exact_size    off;
-            autoindex_format        html;
-            autoindex_localtime     on;
-        }
-
-        location /dashboard/ {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://dashboard-service;
-            proxy_read_timeout      90;
-        }
-
-        # Proxy Grafana Live WebSocket connections.
-        location /dashboard/api/live/ {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_set_header        Upgrade $http_upgrade;
-            proxy_set_header        Connection $connection_upgrade;
-            proxy_http_version      1.1;
-            proxy_pass              http://dashboard-service;
-            proxy_read_timeout      90;
-        }
-
-        location /api/search {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://search;
-            proxy_read_timeout      90;
-        }
-
-        location /api/upload {
-    #         allow 128.130.0.0/16;
-    #         deny all;
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_set_header        X-Forwarded-Host $host;
-            proxy_pass              http://upload;
-            proxy_read_timeout      90;
-            # Disable request and response buffering
-            proxy_request_buffering off;
-            proxy_buffering         off;
-            proxy_http_version      1.1;
-        }
-
-        location /api/analyse {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://analyse;
-            proxy_read_timeout      90;
-        }
-
-        location ~ /api/database/([0-9]+)/table/([0-9]+)/(data|history|export|statistic) {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data;
-            proxy_read_timeout      90;
-        }
-
-        location ~ /api/database/([0-9]+)/view/([0-9]+)/(data|export) {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data;
-            proxy_read_timeout      90;
-        }
-
-        location ~ /api/database/([0-9]+)/view {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata;
-            proxy_read_timeout      90;
-        }
-
-        location ~ /api/database/([0-9]+)/subset {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://data;
-            proxy_read_timeout      600;
-        }
-
-        location ~ /api/(database|concept|container|identifier|image|message|license|oai|ontology|unit|user) {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata;
-            proxy_read_timeout      90;
-        }
-
-        location ~ /pid/([0-9]+) {
-            rewrite /pid/(.*) /api/identifier/$1 break;
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://metadata;
-            proxy_read_timeout      90;
-        }
-
-        location / {
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-            proxy_pass              http://ui;
-            proxy_read_timeout      90;
-        }
-    }
+  service:
+    ## @param gatewayservice.service.type The service type.
+    type: ClusterIP
+  metrics:
+    ## @param gatewayservice.metrics.enabled Enable the Prometheus metrics sidecar.
+    enabled: false
+  ## @param gatewayservice.existingServerBlockConfigmap The extra configuration for the reverse proxy
+  existingServerBlockConfigmap: gateway-service-setup
   ## @param gatewayservice.replicaCount The number of replicas.
   replicaCount: 3
 

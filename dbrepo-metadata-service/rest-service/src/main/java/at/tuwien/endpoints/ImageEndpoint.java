@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -97,11 +96,7 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            @NotNull Principal principal) throws ImageAlreadyExistsException,
             ImageInvalidException {
-        log.debug("endpoint create image, data={}", data);
-        if (data.getDefaultPort() == null) {
-            log.error("Failed to create image, default port is null");
-            throw new ImageInvalidException("Failed to create image, default port is null");
-        }
+        log.debug("endpoint create image, data={}, principal.name={}", data, principal.getName());
         final ContainerImage image = imageService.create(data, principal);
         final ImageDto dto = metadataMapper.containerImageToImageDto(image);
         log.trace("create image resulted in image {}", dto);

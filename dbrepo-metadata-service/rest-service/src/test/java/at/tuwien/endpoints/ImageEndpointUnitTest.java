@@ -1,13 +1,15 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageInvalidException;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.service.impl.ImageServiceImpl;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,19 +122,10 @@ public class ImageEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-image"})
-    public void create_missingEssentialInfo_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .name(IMAGE_1_NAME)
-                .version(IMAGE_1_VERSION)
-                .defaultPort(null)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .build();
+    public void create_succeeds() throws ImageAlreadyExistsException, ImageInvalidException {
 
         /* test */
-        assertThrows(ImageInvalidException.class, () -> {
-            create_generic(request, USER_1_PRINCIPAL);
-        });
+        create_generic(IMAGE_1_CREATE_DTO, USER_1_PRINCIPAL);
     }
 
     @Test

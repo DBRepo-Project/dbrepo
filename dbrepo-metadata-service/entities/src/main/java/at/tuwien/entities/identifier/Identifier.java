@@ -6,13 +6,8 @@ import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -22,13 +17,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Data
 @Entity
 @Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifiers")
 @NamedQueries({
@@ -42,9 +39,7 @@ import java.util.UUID;
 public class Identifier implements Serializable {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "identifiers-sequence")
-    @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -143,6 +138,7 @@ public class Identifier implements Serializable {
      * Databases are never created/updated/deleted by the Identifier entity.
      */
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", nullable = false, updatable = false)
@@ -170,10 +166,12 @@ public class Identifier implements Serializable {
     })
     private User owner;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     private Instant created;
 
+    @EqualsAndHashCode.Exclude
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;

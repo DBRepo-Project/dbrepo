@@ -1,11 +1,11 @@
 import unittest
 
 import requests_mock
-
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Database, Container, Image, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, DataType
+from dbrepo.api.dto import Database, Container, Image, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
+    ContainerBrief, ImageBrief
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
 
@@ -45,27 +45,16 @@ class DatabaseUnitTest(unittest.TestCase):
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
-            container=Container(
+            is_schema_public=True,
+            container=ContainerBrief(
                 id=1,
                 name='MariaDB Galera 11.1.3',
                 internal_name='mariadb',
-                host='data-db',
-                port=3306,
-                sidecar_host='data-db-sidecar',
-                sidecar_port=3305,
-                image=Image(
+                image=ImageBrief(
                     id=1,
-                    registry='docker.io',
                     name='mariadb',
                     version='11.2.2',
-                    dialect='org.hibernate.dialect.MariaDBDialect',
-                    driver_class='org.mariadb.jdbc.Driver',
-                    jdbc_method='mariadb',
-                    default_port=3306,
-                    data_types=[
-                        DataType(display_name="SERIAL", value="serial",
-                                 documentation="https://mariadb.com/kb/en/bigint/",
-                                 is_quoted=False, is_buildable=True)]
+                    jdbc_method='mariadb'
                 )
             )
         )
@@ -111,23 +100,16 @@ class DatabaseUnitTest(unittest.TestCase):
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
-            container=Container(
+            is_schema_public=True,
+            container=ContainerBrief(
                 id=1,
                 name='MariaDB Galera 11.1.3',
                 internal_name='mariadb',
-                host='data-db',
-                port=3306,
-                sidecar_host='data-db-sidecar',
-                sidecar_port=3305,
-                image=Image(
+                image=ImageBrief(
                     id=1,
-                    registry='docker.io',
                     name='mariadb',
                     version='11.2.2',
-                    dialect='org.hibernate.dialect.MariaDBDialect',
-                    driver_class='org.mariadb.jdbc.Driver',
-                    jdbc_method='mariadb',
-                    default_port=3306
+                    jdbc_method='mariadb'
                 )
             )
         )
@@ -180,29 +162,22 @@ class DatabaseUnitTest(unittest.TestCase):
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
-            container=Container(
+            is_schema_public=True,
+            container=ContainerBrief(
                 id=1,
                 name='MariaDB Galera 11.1.3',
                 internal_name='mariadb',
-                host='data-db',
-                port=3306,
-                sidecar_host='data-db-sidecar',
-                sidecar_port=3305,
-                image=Image(
+                image=ImageBrief(
                     id=1,
-                    registry='docker.io',
                     name='mariadb',
                     version='11.2.2',
-                    dialect='org.hibernate.dialect.MariaDBDialect',
-                    driver_class='org.mariadb.jdbc.Driver',
-                    jdbc_method='mariadb',
-                    default_port=3306
+                    jdbc_method='mariadb'
                 )
             )
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1', json=exp.model_dump(), status_code=202)
+            mock.put('/api/database/1/visibility', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
@@ -211,7 +186,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1', status_code=403)
+            mock.put('/api/database/1/visibility', status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -222,7 +197,7 @@ class DatabaseUnitTest(unittest.TestCase):
     def test_update_database_visibility_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1', status_code=404)
+            mock.put('/api/database/1/visibility', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -244,28 +219,21 @@ class DatabaseUnitTest(unittest.TestCase):
         exp = Database(
             id=1,
             name='test',
-            owner=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other'),
+            owner=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='mweise'),
             contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
-            container=Container(
+            is_schema_public=True,
+            container=ContainerBrief(
                 id=1,
                 name='MariaDB Galera 11.1.3',
                 internal_name='mariadb',
-                host='data-db',
-                port=3306,
-                sidecar_host='data-db-sidecar',
-                sidecar_port=3305,
-                image=Image(
+                image=ImageBrief(
                     id=1,
-                    registry='docker.io',
                     name='mariadb',
                     version='11.2.2',
-                    dialect='org.hibernate.dialect.MariaDBDialect',
-                    driver_class='org.mariadb.jdbc.Driver',
-                    jdbc_method='mariadb',
-                    default_port=3306
+                    jdbc_method='mariadb'
                 )
             )
         )

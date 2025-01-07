@@ -17,7 +17,7 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @IdClass(DatabaseAccessKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_have_access")
@@ -28,7 +28,6 @@ import java.util.UUID;
 public class DatabaseAccess {
 
     @Id
-    @EqualsAndHashCode.Include
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;
@@ -42,11 +41,11 @@ public class DatabaseAccess {
     private User user;
 
     @Id
-    @EqualsAndHashCode.Include
     @Column(name = "database_id", updatable = false)
     private Long hdbid;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -57,10 +56,5 @@ public class DatabaseAccess {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     private AccessType type;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
 
 }

@@ -3,10 +3,11 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.database.LanguageType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -14,14 +15,13 @@ import java.io.Serializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifier_titles")
 public class IdentifierTitle implements Serializable {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "identifier-titles-sequence")
-    @GenericGenerator(name = "identifier-titles-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 

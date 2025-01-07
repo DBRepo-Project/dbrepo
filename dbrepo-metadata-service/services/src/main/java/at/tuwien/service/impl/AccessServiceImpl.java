@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +51,7 @@ public class AccessServiceImpl implements AccessService {
     public DatabaseAccess find(Database database, User user) throws AccessNotFoundException {
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getUser().getId().equals(user.getId()))
+                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find database access for database with id: {}", database.getId());
@@ -93,19 +92,16 @@ public class AccessServiceImpl implements AccessService {
         /* update in data database */
         dataServiceGateway.updateAccess(database.getId(), user.getId(), access);
         /* update in metadata database */
-        final DatabaseAccess entity = DatabaseAccess.builder()
-                .hdbid(database.getId())
-                .database(database)
-                .huserid(user.getId())
-                .type(metadataMapper.accessTypeDtoToAccessType(access))
-                .user(user)
-                .build();
-        final int idx = database.getAccesses().indexOf(entity);
-        if (idx == -1) {
-            log.error("Failed to update access");
-            throw new AccessNotFoundException("Failed to find update access");
+        final Optional<DatabaseAccess> optional = database.getAccesses()
+                .stream()
+                .filter(a -> a.getUser().getId().equals(user.getId()))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to update access for user with id: {}", user.getId());
+            throw new AccessNotFoundException("Failed to find update access for user with id: " + user.getId());
         }
-        database.getAccesses().set(idx, entity);
+        optional.get()
+                .setType(metadataMapper.accessTypeDtoToAccessType(access));
         database = databaseRepository.save(database);
         /* update in search service */
         searchServiceGateway.update(database);

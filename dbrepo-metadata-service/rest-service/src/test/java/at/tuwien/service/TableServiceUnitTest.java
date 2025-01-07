@@ -1,8 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
 import at.tuwien.entities.database.Database;
@@ -25,6 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +51,15 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     private UserService userService;
 
     @MockBean
+    private UnitService unitService;
+
+    @MockBean
+    private EntityService entityService;
+
+    @MockBean
+    private ConceptService conceptService;
+
+    @MockBean
     private DataServiceGateway dataServiceGateway;
 
     @Autowired
@@ -65,7 +78,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(DATABASE_3));
 
         /* test */
-        final Table response = tableService.findById(DATABASE_3_ID, TABLE_8_ID);
+        final Table response = tableService.findById(DATABASE_3, TABLE_8_ID);
         assertEquals(TABLE_8_ID, response.getId());
         assertEquals(TABLE_8_NAME, response.getName());
         assertEquals(TABLE_8_INTERNAL_NAME, response.getInternalName());
@@ -80,7 +93,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(DATABASE_3_ID, TABLE_1_ID);
+            tableService.findById(DATABASE_3, TABLE_1_ID);
         });
     }
 
@@ -92,7 +105,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(DATABASE_3));
 
         /* test */
-        final Table response = tableService.findByName(DATABASE_3_ID, TABLE_8_INTERNAL_NAME);
+        final Table response = tableService.findByName(DATABASE_3, TABLE_8_INTERNAL_NAME);
         assertEquals(TABLE_8_ID, response.getId());
         assertEquals(TABLE_8_NAME, response.getName());
         assertEquals(TABLE_8_INTERNAL_NAME, response.getInternalName());
@@ -106,9 +119,149 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.empty());
 
         /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findByName(DATABASE_3_ID, TABLE_1_INTERNAL_NAME);
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.findByName(DATABASE_3, TABLE_1_INTERNAL_NAME);
         });
+    }
+
+    @Test
+    public void updateStatistics_succeeds() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, MalformedException {
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_STATISTIC_DTO);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        tableService.updateStatistics(TABLE_8);
+    }
+
+    @Test
+    public void updateStatistics_searchServiceNotFound_fails() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_STATISTIC_DTO);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(DatabaseNotFoundException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            tableService.updateStatistics(TABLE_8);
+        });
+    }
+
+    @Test
+    public void updateStatistics_searchServiceConnection_fails() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException, SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException {
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8_STATISTIC_DTO);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        doThrow(SearchServiceConnectionException.class)
+                .when(searchServiceGateway)
+                .update(any(Database.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            tableService.updateStatistics(TABLE_8);
+        });
+    }
+
+    @Test
+    public void updateStatistics_columnNotFound_fails() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException {
+        final TableStatisticDto mock = TableStatisticDto.builder()
+                .columns(new HashMap<>() {{
+                    put("unknown_column", ColumnStatisticDto.builder()
+                            .min(BigDecimal.valueOf(11.2))
+                            .max(BigDecimal.valueOf(23.1))
+                            .mean(BigDecimal.valueOf(13.5333))
+                            .median(BigDecimal.valueOf(11.4))
+                            .stdDev(BigDecimal.valueOf(4.2952))
+                            .build());
+                }})
+                .build();
+
+        /* mock */
+        when(dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(mock);
+
+        /* test */
+        assertThrows(MalformedException.class, () -> {
+            tableService.updateStatistics(TABLE_8);
+        });
+    }
+
+    @Test
+    public void update_known_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
+            DatabaseNotFoundException, OntologyNotFoundException, SearchServiceConnectionException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, UnitNotFoundException,
+            ConceptNotFoundException {
+        final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
+                .unitUri(UNIT_1_URI)
+                .conceptUri(CONCEPT_1_URI)
+                .build();
+
+        /* mock */
+        when(unitService.find(UNIT_1_URI))
+                .thenReturn(UNIT_1);
+        when(conceptService.find(CONCEPT_1_URI))
+                .thenReturn(CONCEPT_1);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
+        assertNotNull(response.getUnit());
+        assertNotNull(response.getConcept());
+    }
+
+    @Test
+    public void update_unknown_succeeds() throws SearchServiceException, MalformedException, DataServiceException,
+            DatabaseNotFoundException, OntologyNotFoundException, SearchServiceConnectionException,
+            SemanticEntityNotFoundException, DataServiceConnectionException, UnitNotFoundException,
+            ConceptNotFoundException {
+        final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
+                .unitUri(UNIT_1_URI)
+                .conceptUri(CONCEPT_1_URI)
+                .build();
+
+        /* mock */
+        doThrow(UnitNotFoundException.class)
+                .when(unitService)
+                .find(UNIT_1_URI);
+        when(entityService.findOneByUri(UNIT_1_URI))
+                .thenReturn(UNIT_1_ENTITY_DTO);
+        doThrow(ConceptNotFoundException.class)
+                .when(conceptService)
+                .find(CONCEPT_1_URI);
+        when(entityService.findOneByUri(CONCEPT_1_URI))
+                .thenReturn(CONCEPT_1_ENTITY_DTO);
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
+        assertNotNull(response.getUnit());
+        assertNotNull(response.getConcept());
     }
 
     @Test
@@ -389,16 +542,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findByName(DATABASE_1_ID, "i_do_not_exist");
-        });
-    }
-
-    @Test
-    public void findById_databaseNotFound_fails() {
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findByName(99999L, TABLE_3_INTERNALNAME);
+            tableService.findByName(DATABASE_1, "i_do_not_exist");
         });
     }
 

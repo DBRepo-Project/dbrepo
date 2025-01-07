@@ -1,13 +1,13 @@
 package at.tuwien.entities.database.table.constraints.foreignKey;
 
 import at.tuwien.entities.database.table.Table;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-
 import java.util.List;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -16,14 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @jakarta.persistence.Table(name = "mdb_constraints_foreign_key")
 public class ForeignKey {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "foreign-key-sequence")
-    @GenericGenerator(name = "foreign-key-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "fkid", updatable = false, nullable = false)
     private Long id;
 
@@ -31,6 +29,7 @@ public class ForeignKey {
     private String name;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
@@ -38,6 +37,7 @@ public class ForeignKey {
     private Table table;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "rtid", referencedColumnName = "id", nullable = false)

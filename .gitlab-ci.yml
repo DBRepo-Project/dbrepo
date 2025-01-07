@@ -1,15 +1,17 @@
 variables:
-  HOSTALIASES: ./hosts
+  HOSTALIASES: "./hosts"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
+  DOCKER_VERSION: "27"
   TESTCONTAINERS_RYUK_DISABLED: "false"
   ALPINE_VERSION: "3.21"
   PYTHON_VERSION: "3.11"
   JAVA_VERSION: "17"
+  SONARQUBE_VERSION: "10.0"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.6"
   APP_VERSION: "1.6.0"
   CHART_VERSION: "1.6.0"
-  CACHE_FALLBACK_KEY: ${CI_DEFAULT_BRANCH}
+  CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -Dstyle.color=always"
@@ -70,7 +72,7 @@ lint-docker-compose:
     - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
 
 lint-helm-chart:
-  image: docker.io/alpine:3.20
+  image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
     - apk add helm
@@ -148,11 +150,9 @@ build-search-service:
     - "pip install pipenv"
     - "cd dbrepo-search-service && pipenv install --system --deploy"
 
-build-docker:
-  image: docker.io/docker:24-dind
+build-images:
+  image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: build
-  variables:
-    DOCKER_BUILDKIT: 0
   before_script:
     - "apk add --no-cache make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
@@ -160,7 +160,7 @@ build-docker:
     - "make build-images"
 
 build-helm:
-  image: docker.io/docker:24-dind
+  image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: build
   before_script:
     - apk add --no-cache helm make
@@ -178,7 +178,7 @@ deploy-staging:
     name: staging/datalab
     url: ${CI_ENV_STAGING_URL}
   before_script:
-    - apk add --no-cache helm kubectl
+    - apk add --no-cache helm kubectl make
     - echo ${CI_K8S_CONFIG} | base64 -d > ./kubecfg
     - make build-helm
     - helm -n ${CI_ENV_STAGING_NAMESPACE} uninstall ${CI_ENV_STAGING_RELEASE_NAME} --ignore-not-found
@@ -189,7 +189,6 @@ deploy-staging:
     refs:
       - dev
       - master
-  when: manual
 
 test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -340,7 +339,7 @@ test-lib:
 
 test-ui:
   stage: test
-  image: docker.io/docker:24-dind
+  image: docker.io/docker:${DOCKER_VERSION}-dind
   needs:
     - build-ui
   dependencies:
@@ -355,7 +354,7 @@ test-ui:
 
 release-images:
   stage: release
-  image: docker:24-dind
+  image: docker:${DOCKER_VERSION}-dind
   dependencies:
     - test-metadata-service
     - test-data-service
@@ -375,7 +374,7 @@ release-images:
 
 release-helm:
   stage: release
-  image: docker:24-dind
+  image: docker:${DOCKER_VERSION}-dind
   only:
     refs:
       - /^release-.*/
@@ -452,7 +451,7 @@ release-libs:
     - bash ./lib/python/release.sh
 
 verify-install-script:
-  image: docker.io/docker:24-dind
+  image: docker.io/docker:${DOCKER_VERSION}-dind
   stage: verify
   only:
     refs:
@@ -476,7 +475,7 @@ verify-dist:
     - "curl -v --output /dev/null --fail https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${APP_VERSION}/dist.tar.gz"
 
 scan-sonarqube:
-  image: sonarsource/sonar-scanner-cli:10.0
+  image: sonarsource/sonar-scanner-cli:${SONARQUBE_VERSION}
   stage: scan
   only:
     refs:

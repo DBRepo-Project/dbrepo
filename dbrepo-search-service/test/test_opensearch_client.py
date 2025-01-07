@@ -1,9 +1,8 @@
-import datetime
 import unittest
 
 import opensearchpy
-from dbrepo.api.dto import Database, Container, Image, Table, Column, ColumnType, Constraints, PrimaryKey, \
-  TableMinimal, ColumnMinimal, Concept, Unit, UserBrief
+from dbrepo.api.dto import Database, Table, Column, ColumnType, Constraints, PrimaryKey, \
+    TableMinimal, ColumnMinimal, Concept, Unit, UserBrief, ContainerBrief, ImageBrief
 from opensearchpy import NotFoundError
 
 from app import app
@@ -17,21 +16,14 @@ req = Database(id=1,
                exchange_name="dbrepo",
                is_public=True,
                is_schema_public=True,
-               container=Container(id=1,
-                                   name="MariaDB",
-                                   internal_name="mariadb",
-                                   host="data-db",
-                                   port="3306",
-                                   sidecar_host="data-db-sidecar",
-                                   sidecar_port=3305,
-                                   image=Image(id=1,
-                                               registry="docker.io",
-                                               name="mariadb",
-                                               version="11.1.3",
-                                               dialect="org.hibernate.dialect.MariaDBDialect",
-                                               driver_class="org.mariadb.jdbc.Driver",
-                                               jdbc_method="mariadb",
-                                               default_port=3306)),
+               container=ContainerBrief(id=1,
+                                        name="MariaDB",
+                                        internal_name="mariadb",
+                                        host="data-db",
+                                        image=ImageBrief(id=1,
+                                                         name="mariadb",
+                                                         version="11.1.3",
+                                                         jdbc_method="mariadb")),
                tables=[Table(id=1,
                              database_id=1,
                              name="Data",

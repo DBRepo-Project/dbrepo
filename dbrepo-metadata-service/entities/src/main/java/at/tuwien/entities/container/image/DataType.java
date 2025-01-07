@@ -2,8 +2,9 @@ package at.tuwien.entities.container.image;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -12,14 +13,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Table(name = "mdb_image_types")
 public class DataType {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "image-type-sequence")
-    @GenericGenerator(name = "image-type-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     public Long id;
 
@@ -69,6 +68,7 @@ public class DataType {
     private Boolean buildable;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "image_id", referencedColumnName = "id")

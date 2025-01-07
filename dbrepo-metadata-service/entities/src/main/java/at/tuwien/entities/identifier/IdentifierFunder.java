@@ -2,10 +2,11 @@ package at.tuwien.entities.identifier;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -13,14 +14,13 @@ import java.io.Serializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifier_funders")
 public class IdentifierFunder implements Serializable {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "identifier-titles-sequence")
-    @GenericGenerator(name = "identifier-titles-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -30,7 +30,7 @@ public class IdentifierFunder implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String funderIdentifier;
 
-    @Column(name="funder_identifier_type", columnDefinition = "ENUM('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
+    @Column(name = "funder_identifier_type", columnDefinition = "ENUM('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private IdentifierFunderType funderIdentifierType;
 

@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -121,6 +122,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void find_succeeds() throws IdentifierNotFoundException {
 
         /* test */
@@ -215,8 +217,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
-            DatabaseNotFoundException, SearchServiceConnectionException, IdentifierNotFoundException,
-            ExternalServiceException {
+            DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
         final ResponseEntity<DataCiteBody<DataCiteDoi>> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .body(IDENTIFIER_7_DATA_CITE);
 
@@ -225,7 +226,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7_ID);
+        final Identifier response = dataCiteIdentifierService.publish(IDENTIFIER_7);
         assertEquals(IDENTIFIER_7_ID, response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
     }

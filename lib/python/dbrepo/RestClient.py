@@ -522,7 +522,7 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the update.
         """
-        url = f'/api/database/{database_id}'
+        url = f'/api/database/{database_id}/visibility'
         response = self._wrapper(method="put", url=url, force_auth=True,
                                  payload=ModifyVisibility(is_public=is_public, is_schema_public=is_schema_public))
         if response.status_code == 202:

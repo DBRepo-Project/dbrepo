@@ -176,6 +176,26 @@
                     },
                     "type": "object"
                 },
+                "init": {
+                    "properties": {
+                        "image": {
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "resources": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "resourcesPreset": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
                 "jwt": {
                     "properties": {
                         "pubkey": {
@@ -751,14 +771,30 @@
                 "enabled": {
                     "type": "boolean"
                 },
+                "existingServerBlockConfigmap": {
+                    "type": "string"
+                },
                 "fullnameOverride": {
                     "type": "string"
+                },
+                "metrics": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
                 },
                 "replicaCount": {
                     "type": "integer"
                 },
-                "serverBlock": {
-                    "type": "string"
+                "service": {
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
@@ -1506,6 +1542,14 @@
                         },
                         "resourcesPreset": {
                             "type": "string"
+                        },
+                        "s3": {
+                            "properties": {
+                                "endpoint": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"

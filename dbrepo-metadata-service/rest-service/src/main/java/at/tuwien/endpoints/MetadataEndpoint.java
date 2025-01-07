@@ -18,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -97,9 +100,8 @@ public class MetadataEndpoint {
             log.error("Failed to get record: Identifier is empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
-        } else if (supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
-                || parameters.getIdentifier().indexOf(':') > 3) {
-            log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
+        } else if (supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))) {
+            log.error("Failed to get record: Identifier does not match supported identifier prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         }

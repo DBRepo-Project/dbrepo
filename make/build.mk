@@ -20,6 +20,9 @@ build-ui: ## Build the UI.
 
 .PHONY: build-lib
 build-lib: ## Build the Python Library.
+	rm -f ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}.tar.gz
+	rm -f ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}.tar.gz
+	rm -f ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}.tar.gz
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}.tar.gz

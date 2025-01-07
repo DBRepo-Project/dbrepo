@@ -3,8 +3,8 @@ import time
 import unittest
 
 import jwt
-from dbrepo.api.dto import Database, User, Container, Image, Table, Constraints, Column, ColumnType, Concept, Unit, \
-    UserBrief
+from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, Concept, Unit, \
+    UserBrief, ContainerBrief, ImageBrief
 
 from app import app
 
@@ -16,21 +16,14 @@ req = Database(id=1,
                exchange_name="dbrepo",
                is_public=True,
                is_schema_public=True,
-               container=Container(id=1,
-                                   name="MariaDB",
-                                   internal_name="mariadb",
-                                   host="data-db",
-                                   port="3306",
-                                   sidecar_host="data-db-sidecar",
-                                   sidecar_port=3305,
-                                   image=Image(id=1,
-                                               registry="docker.io",
-                                               name="mariadb",
-                                               version="11.1.3",
-                                               dialect="org.hibernate.dialect.MariaDBDialect",
-                                               driver_class="org.mariadb.jdbc.Driver",
-                                               jdbc_method="mariadb",
-                                               default_port=3306)),
+               container=ContainerBrief(id=1,
+                                        name="MariaDB",
+                                        internal_name="mariadb",
+                                        host="data-db",
+                                        image=ImageBrief(id=1,
+                                                         name="mariadb",
+                                                         version="11.1.3",
+                                                         jdbc_method="mariadb")),
                tables=[Table(id=1, database_id=1, name="Data", internal_name="data",
                              owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                              constraints=Constraints(uniques=[], foreign_keys=[], checks=[], primary_key=[]),

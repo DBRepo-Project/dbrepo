@@ -3,8 +3,9 @@ package at.tuwien.entities.database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -12,7 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_view_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"view_id", "internal_name"})
@@ -20,13 +21,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "view-columns-sequence")
-    @GenericGenerator(name = "view-columns-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "view_id", referencedColumnName = "id", nullable = false)

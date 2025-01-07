@@ -7,7 +7,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -16,20 +15,20 @@ public interface TableService {
     /**
      * Find a table in the metadata database by database and table id.
      *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
+     * @param database The database.
+     * @param tableId  The table id.
      * @return The table, if successful.
      */
-    Table findById(Long databaseId, Long tableId) throws TableNotFoundException, DatabaseNotFoundException;
+    Table findById(Database database, Long tableId) throws TableNotFoundException, DatabaseNotFoundException;
 
     /**
      * Find a table in the metadata database by database id and table name.
      *
-     * @param databaseId   The database id.
+     * @param database     The database.
      * @param internalName The table name.
      * @return The table, if successful.
      */
-    Table findByName(Long databaseId, String internalName) throws TableNotFoundException, DatabaseNotFoundException;
+    Table findByName(Database database, String internalName) throws TableNotFoundException, DatabaseNotFoundException;
 
 
     /**

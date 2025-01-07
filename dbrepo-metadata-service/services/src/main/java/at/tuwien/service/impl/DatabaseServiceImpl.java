@@ -88,7 +88,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     public Database create(Container container, DatabaseCreateDto data, User user) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
-        Database database = Database.builder()
+        final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
                 .name(data.getName())
@@ -112,21 +112,21 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .password(user.getMariadbPassword())
                 .privilegedUsername(container.getPrivilegedUsername())
                 .privilegedPassword(container.getPrivilegedPassword())
-                .internalName(database.getInternalName())
+                .internalName(entity.getInternalName())
                 .build();
         final DatabaseDto dto = dataServiceGateway.createDatabase(payload);
-        database.setExchangeName(dto.getExchangeName());
+        entity.setExchangeName(dto.getExchangeName());
         /* create in metadata database */
-        database = databaseRepository.save(database);
-        database.getAccesses()
+        final Database entity1 = databaseRepository.save(entity);
+        entity1.getAccesses()
                 .add(DatabaseAccess.builder()
                         .type(AccessType.WRITE_ALL)
-                        .hdbid(database.getId())
-                        .database(database)
+                        .hdbid(entity1.getId())
+                        .database(entity1)
                         .huserid(user.getId())
                         .user(user)
                         .build());
-        database = databaseRepository.save(database);
+        final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);
         log.info("Created database with id {}", database.getId());

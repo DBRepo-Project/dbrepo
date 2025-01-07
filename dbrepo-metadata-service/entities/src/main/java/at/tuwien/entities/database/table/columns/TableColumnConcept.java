@@ -1,15 +1,15 @@
 package at.tuwien.entities.database.table.columns;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.List;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Table(name = "mdb_concepts", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"uri"})
 })
@@ -29,9 +29,7 @@ import java.util.List;
 public class TableColumnConcept {
 
     @Id
-    @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "concepts-sequence")
-    @GenericGenerator(name = "concepts-sequence", strategy = "increment")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -44,6 +42,7 @@ public class TableColumnConcept {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @EqualsAndHashCode.Exclude
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

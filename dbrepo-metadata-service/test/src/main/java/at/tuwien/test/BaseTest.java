@@ -6,6 +6,7 @@ import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.auth.LoginRequestDto;
+import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
@@ -56,6 +57,7 @@ import at.tuwien.api.orcid.activities.employments.affiliation.group.summary.orga
 import at.tuwien.api.orcid.person.OrcidPersonDto;
 import at.tuwien.api.orcid.person.name.OrcidNameDto;
 import at.tuwien.api.orcid.person.name.OrcidValueDto;
+import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
@@ -159,7 +161,7 @@ public abstract class BaseTest {
 
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
 
-    public final static String MARIADB_IMAGE = "mariadb:11.1.3";
+    public final static String MARIADB_IMAGE = "mariadb:11.3.2";
 
     public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
@@ -286,11 +288,15 @@ public abstract class BaseTest {
             .scope("openid")
             .build();
 
+    public final static RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()
+            .refreshToken("ey.yee.skrr")
+            .build();
+
     public final static Long CONCEPT_1_ID = 1L;
     public final static String CONCEPT_1_NAME = "precipitation";
     public final static String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
     public final static String CONCEPT_1_DESCRIPTION = null;
-    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 */;
+    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 (UTC) */;
 
     public final static ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
             .uri(CONCEPT_1_URI)
@@ -311,6 +317,12 @@ public abstract class BaseTest {
             .name(CONCEPT_1_NAME)
             .description(CONCEPT_1_DESCRIPTION)
             .created(CONCEPT_1_CREATED)
+            .build();
+
+    public final static EntityDto CONCEPT_1_ENTITY_DTO = EntityDto.builder()
+            .uri(CONCEPT_1_URI)
+            .description(CONCEPT_1_DESCRIPTION)
+            .label(CONCEPT_1_NAME)
             .build();
 
     public final static Long CONCEPT_2_ID = 2L;
@@ -365,6 +377,12 @@ public abstract class BaseTest {
             .name(UNIT_1_NAME)
             .description(UNIT_1_DESCRIPTION)
             .created(UNIT_1_CREATED)
+            .build();
+
+    public final static EntityDto UNIT_1_ENTITY_DTO = EntityDto.builder()
+            .uri(UNIT_1_URI)
+            .description(UNIT_1_DESCRIPTION)
+            .label(UNIT_1_NAME)
             .build();
 
     public final static Long UNIT_2_ID = 2L;
@@ -2339,6 +2357,7 @@ public abstract class BaseTest {
     public final static String ONTOLOGY_1_PREFIX = "om2";
     public final static String ONTOLOGY_1_NEW_PREFIX = "om-2";
     public final static String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
+    public final static String ONTOLOGY_1_URI_PATTERN = "http://www.ontology-of-units-of-measure.org/resource/om-2/.*";
     public final static String ONTOLOGY_1_SPARQL_ENDPOINT = null;
     public final static String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
     public final static UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
@@ -2347,6 +2366,7 @@ public abstract class BaseTest {
             .id(ONTOLOGY_1_ID)
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
+            .uriPattern(ONTOLOGY_1_URI_PATTERN)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
             .rdfPath(ONTOLOGY_1_RDF_PATH)
             .build();
@@ -5931,6 +5951,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameType.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -5944,6 +5965,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -5957,6 +5979,7 @@ public abstract class BaseTest {
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
             .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameType(NameTypeDto.PERSONAL)
             .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
             .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
             .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
@@ -7127,7 +7150,7 @@ public abstract class BaseTest {
     public final static String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
     public final static BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
     public final static BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
-    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L);
+    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L) /* 2022-12-23 22:00:00 (UTC) */;
     public final static Instant BANNER_MESSAGE_1_END = null;
 
     public final static BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
@@ -7156,8 +7179,8 @@ public abstract class BaseTest {
     public final static String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
     public final static BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
     public final static BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
-    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L);
-    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L);
+    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L) /* 2022-12-23 22:00:00 (UTC) */;
+    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L) /* 2022-12-25 22:00:00 (UTC) */;
 
     public final static BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
             .id(BANNER_MESSAGE_2_ID)
@@ -7759,6 +7782,7 @@ public abstract class BaseTest {
     public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
+                    .id(1L)
                     .name("fk_location")
                     .onDelete(ReferenceType.NO_ACTION)
                     .references(new LinkedList<>(List.of(ForeignKeyReference.builder()

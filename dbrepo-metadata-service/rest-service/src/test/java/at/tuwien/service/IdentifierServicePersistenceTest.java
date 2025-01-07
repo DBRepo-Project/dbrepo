@@ -118,6 +118,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void find_succeeds() throws IdentifierNotFoundException {
 
         /* test */
@@ -492,11 +493,10 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     public void publish_succeeds() throws MalformedException, DataServiceConnectionException, SearchServiceException,
-            DatabaseNotFoundException, SearchServiceConnectionException, IdentifierNotFoundException,
-            ExternalServiceException {
+            DatabaseNotFoundException, SearchServiceConnectionException, ExternalServiceException {
 
         /* test */
-        final Identifier response = identifierService.publish(IDENTIFIER_7_ID);
+        final Identifier response = identifierService.publish(IDENTIFIER_7);
         assertEquals(IDENTIFIER_7_ID, response.getId());
         assertEquals(IdentifierStatusType.PUBLISHED, response.getStatus());
     }
