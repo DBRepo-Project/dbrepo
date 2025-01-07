@@ -384,7 +384,7 @@ release-helm:
   dependencies:
     - build-helm
   before_script:
-    - "apk add sed helm"
+    - "apk add --no-cache sed helm make"
     - "docker logout ${CI_REGISTRY_URL}"
     - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY_URL}"
     - "docker logout ${CI_REGISTRY2_URL}"
@@ -420,7 +420,7 @@ release-docs:
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - "cp .docs/index.html.tpl ./final/${APP_VERSION}/index.html" # redirect patch docs
-    - sed -i "s/\${DOC_VERSION}/${DOC_VERSION}/g" index.html
+    - sed -i "s/\${DOC_VERSION}/${DOC_VERSION}/g" ./final/${APP_VERSION}/index.html
     - "bash ./.gitlab/gen-badge.sh"
     - eval $(ssh-agent -s)
     - "mkdir -p /root/.ssh"
