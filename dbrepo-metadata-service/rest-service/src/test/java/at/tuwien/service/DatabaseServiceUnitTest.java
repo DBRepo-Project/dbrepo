@@ -88,15 +88,15 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findByInternalName_notFound_fails() {
+    public void findAllPublicByInternalName_notFound_fails() {
 
         /* mock */
-        when(databaseRepository.findByInternalName(DATABASE_1_INTERNALNAME))
-                .thenReturn(Optional.empty());
+        when(databaseRepository.findAllPublicByInternalNameDesc(DATABASE_1_INTERNALNAME))
+                .thenReturn(List.of());
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
+            databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
         });
     }
 
@@ -105,7 +105,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             DataServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findReadAccess(USER_1_ID))
+        when(databaseRepository.findAllPublicOrReadAccessDesc(USER_1_ID))
                 .thenReturn(List.of(DATABASE_1));
         doNothing()
                 .when(dataServiceGateway)

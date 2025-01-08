@@ -14,7 +14,10 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -22,7 +25,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/concept")
-public class ConceptEndpoint {
+public class ConceptEndpoint extends AbstractEndpoint {
 
     private final ConceptService conceptService;
     private final MetadataMapper metadataMapper;
@@ -47,13 +50,11 @@ public class ConceptEndpoint {
     })
     public ResponseEntity<List<ConceptDto>> findAll() {
         log.debug("endpoint list concepts");
-        final List<ConceptDto> dtos = conceptService.findAll()
-                .stream()
-                .map(metadataMapper::tableColumnConceptToConceptDto)
-                .toList();
-        log.trace("Find all concepts resulted in dtos {}", dtos);
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(conceptService.findAll()
+                        .stream()
+                        .map(metadataMapper::tableColumnConceptToConceptDto)
+                        .toList());
     }
 
 }

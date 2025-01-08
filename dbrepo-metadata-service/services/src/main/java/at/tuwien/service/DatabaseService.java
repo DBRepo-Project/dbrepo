@@ -21,20 +21,23 @@ public interface DatabaseService {
      */
     List<Database> findAll();
 
+    List<Database> findAllPublic();
+
+    List<Database> findAllPublicOrReadAccessByInternalName(UUID userId, String internalName);
+
     /**
      * Finds all databases stored in the metadata database.
      *
      * @param userId The user id.
      * @return List of databases.
      */
-    List<Database> findAllAccess(UUID userId);
+    List<Database> findAllPublicOrReadAccess(UUID userId);
 
     /**
      * @param internalName The database internal name.
-     * @return The database if found.
-     * @throws DatabaseNotFoundException The database was not found.
+     * @return The databases if found.
      */
-    Database findByInternalName(String internalName) throws DatabaseNotFoundException;
+    List<Database> findAllPublicByInternalName(String internalName);
 
     /**
      * Find a database by id, only used in the authentication service

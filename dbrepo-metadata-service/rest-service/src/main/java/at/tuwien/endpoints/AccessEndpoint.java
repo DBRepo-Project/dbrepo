@@ -11,7 +11,6 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
-import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,7 +34,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/access")
-public class AccessEndpoint {
+public class AccessEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
@@ -99,8 +98,7 @@ public class AccessEndpoint {
         log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 data.getType());
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to create access: not owner");
             throw new NotAllowedException("Failed to create access: not owner");
         }
@@ -162,8 +160,7 @@ public class AccessEndpoint {
         log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}, principal.name={}",
                 databaseId, userId, data.getType(), principal.getName());
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
@@ -204,9 +201,8 @@ public class AccessEndpoint {
             UserNotFoundException, AccessNotFoundException, NotAllowedException {
         log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
                 principal.getName());
-        final User caller = userService.findByUsername(principal.getName());
-        if (!userId.equals(caller.getId())) {
-            if (!UserUtil.hasRole(principal, "check-foreign-database-access")) {
+        if (!userId.equals(getId(principal))) {
+            if (!hasRole(principal, "check-foreign-database-access")) {
                 log.error("Failed to find access: foreign user");
                 throw new NotAllowedException("Failed to find access: foreign user");
             }
@@ -261,8 +257,7 @@ public class AccessEndpoint {
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }

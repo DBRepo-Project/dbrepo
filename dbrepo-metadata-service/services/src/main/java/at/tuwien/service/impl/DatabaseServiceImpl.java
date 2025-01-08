@@ -57,19 +57,23 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Database> findAllAccess(UUID userId) {
-        return databaseRepository.findReadAccess(userId);
+    public List<Database> findAllPublic() {
+        return databaseRepository.findAllPublicDesc();
     }
 
     @Override
-    public Database findByInternalName(String internalName) throws DatabaseNotFoundException {
-        log.trace("find database by internal name: {}", internalName);
-        final Optional<Database> database = databaseRepository.findByInternalName(internalName);
-        if (database.isEmpty()) {
-            log.error("Failed to find database with internal name {} in metadata database", internalName);
-            throw new DatabaseNotFoundException("Failed to find database in metadata database");
-        }
-        return database.get();
+    public List<Database> findAllPublicOrReadAccessByInternalName(UUID userId, String internalName) {
+        return databaseRepository.findAllPublicOrReadAccessByInternalNameDesc(userId, internalName);
+    }
+
+    @Override
+    public List<Database> findAllPublicOrReadAccess(UUID userId) {
+        return databaseRepository.findAllPublicOrReadAccessDesc(userId);
+    }
+
+    @Override
+    public List<Database> findAllPublicByInternalName(String internalName) {
+        return databaseRepository.findAllPublicByInternalNameDesc(internalName);
     }
 
     @Override
@@ -137,7 +141,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Transactional(readOnly = true)
     public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
-        final List<Database> databases = databaseRepository.findReadAccess(user.getId())
+        final List<Database> databases = databaseRepository.findAllPublicOrReadAccessDesc(user.getId())
                 .stream()
                 .distinct()
                 .toList();

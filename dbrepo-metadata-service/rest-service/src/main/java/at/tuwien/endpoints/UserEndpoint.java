@@ -16,7 +16,6 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
-import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -44,7 +43,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/user")
-public class UserEndpoint {
+public class UserEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
     private final MetadataMapper userMapper;
@@ -82,7 +81,8 @@ public class UserEndpoint {
         }
         try {
             log.trace("filter by username: {}", username);
-            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(userService.findByUsername(username))));
+            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(
+                    userService.findByUsername(username))));
         } catch (UserNotFoundException e) {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
@@ -141,10 +141,9 @@ public class UserEndpoint {
         log.debug("endpoint create user, data.username={}", data.getUsername());
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
-        final User user = userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0]);
-        log.info("Created user with id: {}", user.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.userToUserDto(user));
+                .body(userMapper.userToUserDto(
+                        userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0])));
     }
 
     @PostMapping("/token")
@@ -193,7 +192,6 @@ public class UserEndpoint {
             AccountNotSetupException {
         log.debug("endpoint get token, data.username={}", data.getUsername());
         /* check */
-        final TokenDto token = authenticationService.obtainToken(data);
         try {
             userService.findByUsername(data.getUsername());
         } catch (UserNotFoundException e) {
@@ -213,7 +211,7 @@ public class UserEndpoint {
             log.info("Patched missing user information for user with username: {}", data.getUsername());
         }
         return ResponseEntity.accepted()
-                .body(token);
+                .body(authenticationService.obtainToken(data));
     }
 
     @PutMapping("/token")
@@ -246,9 +244,8 @@ public class UserEndpoint {
             throws AuthServiceConnectionException, CredentialsInvalidException {
         log.debug("endpoint refresh token");
         /* check */
-        final TokenDto token = authenticationService.refreshToken(data.getRefreshToken());
         return ResponseEntity.accepted()
-                .body(token);
+                .body(authenticationService.refreshToken(data.getRefreshToken()));
     }
 
     @GetMapping("/{userId}")
@@ -281,21 +278,18 @@ public class UserEndpoint {
         log.debug("endpoint find a user, userId={}, principal.name={}", userId, principal.getName());
         /* check */
         final User user = userService.findById(userId);
-        if (!user.getUsername().equals(principal.getName())) {
-            if (!UserUtil.hasRole(principal, "find-foreign-user")) {
-                log.error("Failed to find user: foreign user");
-                throw new NotAllowedException("Failed to find user: foreign user");
-            }
+        if (!user.getId().equals(getId(principal)) && !hasRole(principal, "find-foreign-user")) {
+            log.error("Failed to find user: foreign user");
+            throw new NotAllowedException("Failed to find user: foreign user");
         }
-        final UserDto dto = userMapper.userToUserDto(user);
         final HttpHeaders headers = new HttpHeaders();
-        if (UserUtil.isSystem(principal)) {
+        if (isSystem(principal)) {
             headers.set("X-Username", user.getUsername());
             headers.set("X-Password", user.getMariadbPassword());
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(dto);
+                .body(userMapper.userToUserDto(user));
     }
 
     @PutMapping("/{userId}")
@@ -333,13 +327,13 @@ public class UserEndpoint {
             UserNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);
-        if (!user.getUsername().equals(principal.getName())) {
+        if (!user.getId().equals(getId(principal))) {
             log.error("Failed to modify user: not current user {}", user.getId());
             throw new NotAllowedException("Failed to modify user: not current user " + user.getId());
         }
-        final UserDto dto = userMapper.userToUserDto(userService.modify(user, data));
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(userMapper.userToUserDto(
+                        userService.modify(user, data)));
     }
 
     @PutMapping("/{userId}/password")
@@ -383,14 +377,14 @@ public class UserEndpoint {
                                          @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
             AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
             DataServiceConnectionException, CredentialsInvalidException {
-        log.debug("endpoint modify a user password, userId={}", userId);
+        log.debug("endpoint modify a user password, userId={}, principal.name={}", userId, principal.getName());
         final User user = userService.findById(userId);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user password: not current user");
             throw new NotAllowedException("Failed to modify user password: not current user");
         }
         authenticationService.updatePassword(user, data);
-        for (Database database : databaseService.findAllAccess(userId)) {
+        for (Database database : databaseService.findAllPublicOrReadAccess(userId)) {
             databaseService.updatePassword(database, user);
         }
         userService.updatePassword(user, data);

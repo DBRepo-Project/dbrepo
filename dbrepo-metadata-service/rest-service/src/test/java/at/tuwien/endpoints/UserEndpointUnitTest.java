@@ -512,7 +512,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(userService)
                 .updatePassword(USER_1, data);
-        when(databaseService.findAllAccess(USER_1_ID))
+        when(databaseService.findAllPublicOrReadAccess(USER_1_ID))
                 .thenReturn(List.of(DATABASE_1));
         doNothing()
                 .when(databaseService)

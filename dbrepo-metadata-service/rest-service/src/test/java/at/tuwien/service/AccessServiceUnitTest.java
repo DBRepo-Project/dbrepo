@@ -81,7 +81,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
                         .build());
         when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -228,10 +228,10 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -301,7 +301,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(searchServiceRestTemplate)
@@ -320,7 +320,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(searchServiceRestTemplate)
@@ -339,7 +339,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(searchServiceRestTemplate)
@@ -358,7 +358,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpServerErrorException.InternalServerError.class)
                 .when(searchServiceRestTemplate)
@@ -380,10 +380,10 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -441,7 +441,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(searchServiceRestTemplate)
@@ -462,7 +462,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(searchServiceRestTemplate)
@@ -483,7 +483,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(searchServiceRestTemplate)
@@ -504,7 +504,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
         doThrow(HttpServerErrorException.InternalServerError.class)
                 .when(searchServiceRestTemplate)

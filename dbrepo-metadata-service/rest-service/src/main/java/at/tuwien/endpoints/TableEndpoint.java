@@ -11,12 +11,9 @@ import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +43,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/database/{databaseId}/table")
-public class TableEndpoint {
+public class TableEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
     private final TableService tableService;
@@ -99,12 +96,10 @@ public class TableEndpoint {
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyPrivateAccess(database, principal);
         endpointValidator.validateOnlyPrivateHasRole(database, principal, "list-tables");
-        final List<TableBriefDto> dto = database.getTables()
+        return ResponseEntity.ok(database.getTables()
                 .stream()
                 .map(metadataMapper::tableToTableBriefDto)
-                .collect(Collectors.toList());
-        log.trace("list tables resulted in tables {}", dto);
-        return ResponseEntity.ok(dto);
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/{tableId}/suggest")
@@ -154,7 +149,7 @@ public class TableEndpoint {
                 principal);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(principal.getName())) {
+        if (!table.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to analyse table semantics: not owner");
             throw new NotAllowedException("Failed to analyse table semantics: not owner");
         }
@@ -207,7 +202,7 @@ public class TableEndpoint {
                 principal.getName());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(principal.getName())) {
+        if (!table.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
@@ -266,19 +261,14 @@ public class TableEndpoint {
         log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}, principal.name={}", databaseId,
                 tableId, columnId, principal.getName());
         final Database database = databaseService.findById(databaseId);
-        final User user = userService.findByUsername(principal.getName());
         final Table table = tableService.findById(database, tableId);
-        if (!UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
-            endpointValidator.validateOnlyAccess(table.getDatabase(), principal, true);
-            endpointValidator.validateOnlyOwnerOrWriteAll(table, user);
+        if (!hasRole(principal, "modify-foreign-table-column-semantics")) {
+            endpointValidator.validateOnlyAccess(database, principal, true);
+            endpointValidator.validateOnlyOwnerOrWriteAll(table, userService.findById(getId(principal)));
         }
-        TableColumn column = tableService.findColumnById(table, columnId);
-        column = tableService.update(column, updateDto);
-        log.info("Updated table semantics of table with id {}", tableId);
-        final ColumnDto columnDto = metadataMapper.tableColumnToColumnDto(column);
-        log.trace("find table data resulted in column {}", columnDto);
         return ResponseEntity.accepted()
-                .body(columnDto);
+                .body(metadataMapper.tableColumnToColumnDto(tableService.update(
+                        tableService.findColumnById(table, columnId), updateDto)));
     }
 
     @GetMapping("/{tableId}/column/{columnId}/suggest")
@@ -317,12 +307,10 @@ public class TableEndpoint {
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}, principal.name={}",
                 databaseId, tableId, columnId, principal.getName());
-        final Database database = databaseService.findById(databaseId);
-        final Table table = tableService.findById(database, tableId);
-        TableColumn column = tableService.findColumnById(table, columnId);
-        final List<TableColumnEntityDto> dtos = entityService.suggestByColumn(column);
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(entityService.suggestByColumn(
+                        tableService.findColumnById(
+                                tableService.findById(databaseService.findById(databaseId), tableId), columnId)));
     }
 
     @PostMapping
@@ -380,11 +368,9 @@ public class TableEndpoint {
         final Database database = databaseService.findById(databaseId);
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
-        final Table table = tableService.createTable(database, data, principal);
-        final TableDto dto = metadataMapper.customTableToTableDto(table);
-        log.info("Created table with id {}", dto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.customTableToTableDto(
+                        tableService.createTable(database, data, principal)));
     }
 
     @PutMapping("/{tableId}")
@@ -436,14 +422,13 @@ public class TableEndpoint {
                 databaseId, data.getIsPublic(), data.getIsSchemaPublic(), principal.getName());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getUsername().equals(principal.getName())) {
+        if (!table.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update table: not owner");
             throw new NotAllowedException("Failed to update table: not owner");
         }
-        final TableDto dto = metadataMapper.customTableToTableDto(tableService.updateTable(table, data));
-        log.info("Updated table with id {}", dto.getId());
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(dto);
+        return ResponseEntity.accepted()
+                .body(metadataMapper.customTableToTableDto(
+                        tableService.updateTable(table, data)));
     }
 
     @GetMapping("/{tableId}")
@@ -494,25 +479,22 @@ public class TableEndpoint {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        boolean hasAccess = UserUtil.isSystem(principal);
+        boolean hasAccess = isSystem(principal);
         boolean isOwner = false;
         try {
             if (principal != null) {
-                final User user = userService.findByUsername(principal.getName());
-                accessService.find(table.getDatabase(), user);
+                accessService.find(table.getDatabase(), userService.findById(getId(principal)));
                 hasAccess = true;
-                isOwner = table.getOwner().getId().equals(user.getId());
+                isOwner = table.getOwner().getId().equals(getId(principal));
             }
         } catch (UserNotFoundException | AccessNotFoundException e) {
             /* ignore */
         }
-        final boolean includeSchema = UserUtil.isSystem(principal) || isOwner || table.getIsSchemaPublic();
+        final boolean includeSchema = isSystem(principal) || isOwner || table.getIsSchemaPublic();
         log.trace("user has access: {}", hasAccess);
         log.trace("include schema in mapping: {}", includeSchema);
-        final TableDto dto = metadataMapper.customTableToTableDto(table, hasAccess, table.getDatabase().getIsPublic(),
-                includeSchema);
         final HttpHeaders headers = new HttpHeaders();
-        if (UserUtil.isSystem(principal)) {
+        if (isSystem(principal)) {
             headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
             headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
             headers.set("X-Host", table.getDatabase().getContainer().getHost());
@@ -522,9 +504,10 @@ public class TableEndpoint {
             headers.set("X-Table", table.getInternalName());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table");
         }
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.ok()
                 .headers(headers)
-                .body(dto);
+                .body(metadataMapper.customTableToTableDto(table, hasAccess, table.getDatabase().getIsPublic(),
+                        includeSchema));
     }
 
     @DeleteMapping("/{tableId}")
@@ -573,7 +556,7 @@ public class TableEndpoint {
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
         /* roles */
-        if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
+        if (!table.getOwner().getId().equals(getId(principal)) && !hasRole(principal, "delete-foreign-table")) {
             log.error("Failed to delete table: not owned by current user");
             throw new NotAllowedException("Failed to delete table: not owned by current user");
         }

@@ -56,20 +56,15 @@ public class MessageEndpoint {
     })
     public ResponseEntity<List<BannerMessageDto>> list(@RequestParam(required = false) Boolean active) {
         log.debug("endpoint list messages, active={}", active);
-        List<BannerMessageDto> dtos;
+        final List<BannerMessage> messages;
         if (active != null && active) {
-            dtos = bannerMessageService.getActive()
-                    .stream()
-                    .map(metadataMapper::bannerMessageToBannerMessageDto)
-                    .toList();
+            messages = bannerMessageService.getActive();
         } else {
-            dtos = bannerMessageService.findAll()
-                    .stream()
-                    .map(metadataMapper::bannerMessageToBannerMessageDto)
-                    .toList();
+            messages = bannerMessageService.findAll();
         }
-        log.info("List messages resulted in {} message(s)", dtos.size());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(messages.stream()
+                .map(metadataMapper::bannerMessageToBannerMessageDto)
+                .toList());
     }
 
     @GetMapping("/message/{messageId}")
@@ -91,8 +86,8 @@ public class MessageEndpoint {
     public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("messageId") Long messageId)
             throws MessageNotFoundException {
         log.debug("endpoint find one maintenance message, messageId={}", messageId);
-        final BannerMessageDto dto = metadataMapper.bannerMessageToBannerMessageDto(bannerMessageService.find(messageId));
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(metadataMapper.bannerMessageToBannerMessageDto(
+                bannerMessageService.find(messageId)));
     }
 
     @PostMapping
@@ -110,10 +105,9 @@ public class MessageEndpoint {
     })
     public ResponseEntity<BannerMessageDto> create(@Valid @RequestBody BannerMessageCreateDto data) {
         log.debug("endpoint create maintenance message, data={}", data);
-        final BannerMessageDto dto = metadataMapper.bannerMessageToBannerMessageDto(bannerMessageService.create(data));
-        log.trace("create maintenance message results in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.bannerMessageToBannerMessageDto(
+                        bannerMessageService.create(data)));
     }
 
     @PutMapping("/{messageId}")
@@ -139,10 +133,9 @@ public class MessageEndpoint {
             throws MessageNotFoundException {
         log.debug("endpoint update maintenance message, messageId={}, data={}", messageId, data);
         final BannerMessage message = bannerMessageService.find(messageId);
-        final BannerMessageDto dto = metadataMapper.bannerMessageToBannerMessageDto(bannerMessageService.update(message, data));
-        log.trace("update maintenance message results in dto {}", dto);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(dto);
+        return ResponseEntity.accepted()
+                .body(metadataMapper.bannerMessageToBannerMessageDto(
+                        bannerMessageService.update(message, data)));
     }
 
     @DeleteMapping("/{messageId}")
@@ -166,7 +159,7 @@ public class MessageEndpoint {
         log.debug("endpoint delete maintenance message, messageId={}", messageId);
         final BannerMessage message = bannerMessageService.find(messageId);
         bannerMessageService.delete(message);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .build();
     }
 

@@ -1,9 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.EmailExistsException;
+import at.tuwien.exception.UserExistsException;
+import at.tuwien.exception.UserNotFoundException;
 
 import java.util.List;
 import java.util.UUID;

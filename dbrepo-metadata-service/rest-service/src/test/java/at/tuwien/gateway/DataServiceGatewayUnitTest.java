@@ -116,7 +116,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -184,7 +184,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -322,7 +322,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -502,7 +502,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */
@@ -653,7 +653,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), eq(HttpEntity.EMPTY), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .thenReturn(ResponseEntity.accepted()
                         .build());
 
         /* test */

@@ -64,11 +64,12 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void findByInternalName_succeeds() throws DatabaseNotFoundException {
+    public void findAllPublicByInternalName_succeeds() {
 
         /* test */
-        final Database response = databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
-        assertEquals(DATABASE_1, response);
+        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
+        assertEquals(1, response.size());
+        assertEquals(DATABASE_1, response.get(0));
     }
 
 }

@@ -12,10 +12,8 @@ import at.tuwien.entities.identifier.IdentifierStatusType;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.DataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +27,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,11 +45,9 @@ import java.util.regex.Pattern;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/identifier")
-public class IdentifierEndpoint {
+public class IdentifierEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
-    private final ViewService viewService;
-    private final TableService tableService;
     private final AccessService accessService;
     private final EndpointConfig endpointConfig;
     private final MetadataMapper metadataMapper;
@@ -60,17 +55,15 @@ public class IdentifierEndpoint {
     private final MetadataService metadataService;
     private final EndpointValidator endpointValidator;
     private final IdentifierService identifierService;
-    private final DataServiceGateway dataServiceGateway;
+
+    private static final String CREATE_FOREIGN_IDENTIFIER_ROLE = "create-foreign-identifier";
 
     @Autowired
-    public IdentifierEndpoint(UserService userService, ViewService viewService, TableService tableService,
-                              AccessService accessService, EndpointConfig endpointConfig, MetadataMapper metadataMapper,
-                              DatabaseService databaseService, MetadataService metadataService,
-                              EndpointValidator endpointValidator, IdentifierService identifierService,
-                              DataServiceGateway dataServiceGateway) {
+    public IdentifierEndpoint(UserService userService, AccessService accessService, EndpointConfig endpointConfig,
+                              MetadataMapper metadataMapper, DatabaseService databaseService,
+                              MetadataService metadataService, EndpointValidator endpointValidator,
+                              IdentifierService identifierService) {
         this.userService = userService;
-        this.viewService = viewService;
-        this.tableService = tableService;
         this.accessService = accessService;
         this.endpointConfig = endpointConfig;
         this.metadataMapper = metadataMapper;
@@ -78,7 +71,6 @@ public class IdentifierEndpoint {
         this.metadataService = metadataService;
         this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
-        this.dataServiceGateway = dataServiceGateway;
     }
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json"})
@@ -119,25 +111,24 @@ public class IdentifierEndpoint {
             return ResponseEntity.ok(List.of());
         }
         log.trace("found persistent identifiers {}", identifiers);
-        switch (accept) {
-            case "application/json":
+        return switch (accept) {
+            case "application/json" -> {
                 log.trace("accept header matches json");
-                final List<IdentifierBriefDto> resource1 = identifiers.stream()
+                yield ResponseEntity.ok(identifiers.stream()
                         .map(metadataMapper::identifierToIdentifierBriefDto)
-                        .toList();
-                log.debug("find identifier resulted in identifiers {}", resource1);
-                return ResponseEntity.ok(resource1);
-            case "application/ld+json":
+                        .toList());
+            }
+            case "application/ld+json" -> {
                 log.trace("accept header matches json-ld");
-                final List<LdDatasetDto> resource2 = identifiers.stream()
+                yield ResponseEntity.ok(identifiers.stream()
                         .map(i -> metadataMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
-                        .toList();
-                log.debug("find identifier resulted in identifiers {}", resource2);
-                return ResponseEntity.ok(resource2);
-            default:
+                        .toList());
+            }
+            default -> {
                 log.error("accept header {} is not supported", accept);
                 throw new FormatNotAvailableException("Must provide either application/json or application/ld+json headers");
-        }
+            }
+        };
     }
 
     @GetMapping(value = "/{identifierId}", produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json",
@@ -209,30 +200,20 @@ public class IdentifierEndpoint {
         switch (accept) {
             case "application/json":
                 log.trace("accept header matches json");
-                final IdentifierDto resource1 = metadataMapper.identifierToIdentifierDto(identifier);
-                log.debug("find identifier resulted in identifier {}", resource1);
-                return ResponseEntity.ok(resource1);
+                return ResponseEntity.ok(metadataMapper.identifierToIdentifierDto(identifier));
             case "application/ld+json":
                 log.trace("accept header matches json-ld");
-                final LdDatasetDto resource2 = metadataMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl());
-                log.debug("find identifier resulted in identifier {}", resource2);
-                log.debug("find identifier resulted in identifier {}", resource2);
-                return ResponseEntity.ok(resource2);
+                return ResponseEntity.ok(metadataMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl()));
             case "text/csv":
                 log.trace("accept header matches csv");
                 if (identifier.getType().equals(IdentifierType.DATABASE)) {
                     log.error("Failed to export dataset: identifier type is database");
                     throw new FormatNotAvailableException("Failed to export dataset: identifier type is database");
                 }
-                final InputStreamResource resource3;
-                resource3 = identifierService.exportResource(identifier);
-                log.debug("find identifier resulted in resource {}", resource3);
-                return ResponseEntity.ok(resource3);
+                return ResponseEntity.ok(identifierService.exportResource(identifier));
             case "text/xml":
                 log.trace("accept header matches xml");
-                final InputStreamResource resource4 = identifierService.exportMetadata(identifier);
-                log.debug("find identifier resulted in resource {}", resource4);
-                return ResponseEntity.ok(resource4);
+                return ResponseEntity.ok(identifierService.exportMetadata(identifier));
         }
         final Pattern regex = Pattern.compile("text\\/bibliography(; ?style=(apa|ieee|bibtex))?");
         final Matcher matcher = regex.matcher(accept);
@@ -348,9 +329,9 @@ public class IdentifierEndpoint {
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
             MalformedException, DataServiceConnectionException, IdentifierNotFoundException, ExternalServiceException {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
-        final Identifier identifier = identifierService.find(identifierId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.identifierToIdentifierDto(identifierService.publish(identifier)));
+                .body(metadataMapper.identifierToIdentifierDto(
+                        identifierService.publish(identifierService.find(identifierId))));
     }
 
     @PutMapping("/{identifierId}")
@@ -402,10 +383,10 @@ public class IdentifierEndpoint {
         log.debug("endpoint save identifier, identifierId={}, data.id={}, principal.name={}", identifierId,
                 data.getId(), principal.getName());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findByUsername(principal.getName());
+        final User caller = userService.findById(getId(principal));
         final Identifier identifier = identifierService.find(identifierId);
         /* check owner */
-        if (!identifier.getOwner().getId().equals(caller.getId()) && !UserUtil.hasRole(principal, "create-foreign-identifier")) {
+        if (!identifier.getOwner().getId().equals(getId(principal)) && !hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
             log.error("Failed to save identifier: foreign user");
             throw new NotAllowedException("Failed to save identifier: foreign user");
         }
@@ -419,7 +400,7 @@ public class IdentifierEndpoint {
             final DatabaseAccess access = accessService.find(database, caller);
             log.trace("found access: {}", access);
         } catch (AccessNotFoundException e) {
-            if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
+            if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
                 log.error("Failed to save identifier: insufficient role");
                 throw new NotAllowedException("Failed to save identifier: insufficient role");
             }
@@ -501,12 +482,12 @@ public class IdentifierEndpoint {
             IdentifierNotFoundException, ViewNotFoundException, ExternalServiceException {
         log.debug("endpoint create identifier, data.databaseId={}", data.getDatabaseId());
         final Database database = databaseService.findById(data.getDatabaseId());
-        final User caller = userService.findByUsername(principal.getName());
+        final User caller = userService.findById(getId(principal));
         /* check access */
         try {
             accessService.find(database, caller);
         } catch (AccessNotFoundException e) {
-            if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
+            if (!hasRole(principal, CREATE_FOREIGN_IDENTIFIER_ROLE)) {
                 log.error("Failed to create identifier: insufficient role");
                 throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
@@ -532,8 +513,9 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ExternalMetadataDto> retrieve(@NotNull @Valid @RequestParam String url)
+    public ResponseEntity<ExternalMetadataDto> retrieve(@NotNull @Valid @RequestParam("url") String url)
             throws OrcidNotFoundException, RorNotFoundException, DoiNotFoundException, IdentifierNotSupportedException {
+        log.debug("endpoint retrieve identifier, url={}", url);
         return ResponseEntity.ok(metadataService.findByUrl(url));
     }
 

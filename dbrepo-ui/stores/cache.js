@@ -72,6 +72,7 @@ export const useCacheStore = defineStore('cache', {
       databaseService.findOne(databaseId)
         .then(database => this.database = database)
         .catch((error) => {
+          this.database = null
           console.error('Failed to set route database', error)
         })
     },

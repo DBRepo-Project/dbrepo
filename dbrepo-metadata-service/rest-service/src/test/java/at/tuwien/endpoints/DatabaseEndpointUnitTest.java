@@ -276,51 +276,51 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_anonymous_succeeds() throws DatabaseNotFoundException {
+    public void list_anonymous_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* pre-condition */
         assertFalse(DATABASE_1_PUBLIC);
 
         /* test */
-        list_generic(List.of(DATABASE_1), null);
+        list_generic(List.of(DATABASE_1), null, null);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRole_succeeds() throws DatabaseNotFoundException {
+    public void list_hasRole_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(List.of(DATABASE_3), null);
+        list_generic(List.of(DATABASE_3), null, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleForeign_succeeds() throws DatabaseNotFoundException {
+    public void list_hasRoleForeign_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(List.of(DATABASE_3), null);
+        list_generic(List.of(DATABASE_3), null, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleFilter_succeeds() throws DatabaseNotFoundException {
+    public void list_hasRoleFilter_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
-        list_generic(List.of(DATABASE_3), DATABASE_3_INTERNALNAME);
+        list_generic(List.of(DATABASE_3), DATABASE_3_INTERNALNAME, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleFilterNoResult_succeeds() throws DatabaseNotFoundException {
+    public void list_hasRoleFilterNoResult_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* test */
-        list_generic(List.of(), "i_do_not_exist");
+        list_generic(List.of(), "i_do_not_exist", USER_1_PRINCIPAL);
     }
 
     @Test
@@ -536,11 +536,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException {
+    public void findById_anonymous_fails() {
 
         /* test */
-        findById_generic(DATABASE_1_ID, DATABASE_1, null);
+        assertThrows(NotAllowedException.class, () -> {
+            findById_generic(DATABASE_1_ID, DATABASE_1, null);
+        });
     }
 
     @Test
@@ -556,7 +557,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
     public void findById_hasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException {
+            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -568,7 +569,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
     public void findById_hasRoleForeign_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException {
+            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -580,7 +581,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
     public void findById_ownerSeesAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException {
+            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -643,24 +644,25 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void list_generic(List<Database> databases, String internalName) throws DatabaseNotFoundException {
+    public void list_generic(List<Database> databases, String internalName, Principal principal)
+            throws DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
         when(databaseService.findAll())
                 .thenReturn(databases);
         if (internalName != null) {
             if (!databases.isEmpty()) {
-                when(databaseService.findByInternalName(internalName))
-                        .thenReturn(databases.get(0));
+                when(databaseService.findAllPublicByInternalName(internalName))
+                        .thenReturn(List.of(databases.get(0)));
             } else {
                 doThrow(DatabaseNotFoundException.class)
                         .when(databaseService)
-                        .findByInternalName(internalName);
+                        .findAllPublicByInternalName(internalName);
             }
         }
 
         /* test */
-        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(internalName);
+        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(internalName, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<DatabaseBriefDto> body = response.getBody();
@@ -709,7 +711,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
             throws DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException,
-            DataServiceException, UserNotFoundException {
+            DataServiceException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {

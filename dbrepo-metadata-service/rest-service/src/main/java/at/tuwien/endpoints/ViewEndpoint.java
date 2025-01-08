@@ -13,7 +13,6 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
-import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/database/{databaseId}/view")
-public class ViewEndpoint {
+public class ViewEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
     private final ViewService viewService;
@@ -81,13 +80,16 @@ public class ViewEndpoint {
             DatabaseNotFoundException {
         log.debug("endpoint find all views, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        final User user = principal != null ? userService.findByUsername(principal.getName()) : null;
-        log.trace("find all views for database {}", database);
-        final List<ViewBriefDto> views = viewService.findAll(database, user)
+        final User caller;
+        if (principal != null) {
+            caller = userService.findById(getId(principal));
+        } else {
+            caller = null;
+        }
+        return ResponseEntity.ok(viewService.findAll(database, caller)
                 .stream()
                 .map(metadataMapper::viewToViewBriefDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(views);
+                .collect(Collectors.toList()));
     }
 
     @PostMapping
@@ -141,17 +143,14 @@ public class ViewEndpoint {
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint create view, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
         log.trace("create view for database {}", database);
-        final View view;
-        view = viewService.create(database, caller, data);
-        final ViewBriefDto dto = metadataMapper.viewToViewBriefDto(view);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.viewToViewBriefDto(
+                        viewService.create(database, userService.findById(getId(principal)), data)));
     }
 
     @GetMapping("/{viewId}")
@@ -193,13 +192,13 @@ public class ViewEndpoint {
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
         final HttpHeaders headers = new HttpHeaders();
-        if (UserUtil.isSystem(principal)) {
-            headers.set("X-Username", view.getDatabase().getContainer().getPrivilegedUsername());
-            headers.set("X-Password", view.getDatabase().getContainer().getPrivilegedPassword());
-            headers.set("X-Host", view.getDatabase().getContainer().getHost());
-            headers.set("X-Port", "" + view.getDatabase().getContainer().getPort());
-            headers.set("X-Type", view.getDatabase().getContainer().getImage().getJdbcMethod());
-            headers.set("X-Database", view.getDatabase().getInternalName());
+        if (isSystem(principal)) {
+            headers.set("X-Username", database.getContainer().getPrivilegedUsername());
+            headers.set("X-Password", database.getContainer().getPrivilegedPassword());
+            headers.set("X-Host", database.getContainer().getHost());
+            headers.set("X-Port", "" + database.getContainer().getPort());
+            headers.set("X-Type", database.getContainer().getImage().getJdbcMethod());
+            headers.set("X-Database", database.getInternalName());
             headers.set("X-View", view.getInternalName());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
         }
@@ -256,7 +255,7 @@ public class ViewEndpoint {
             SearchServiceConnectionException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
-        if (!database.getOwner().getUsername().equals(principal.getName())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to delete view: not the database owner {}", database.getOwner().getId());
             throw new NotAllowedException("Failed to delete view: not the database owner " + database.getOwner().getId());
         }
@@ -311,12 +310,13 @@ public class ViewEndpoint {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);
-        if (!database.getOwner().getUsername().equals(principal.getName()) && !view.getOwner().getUsername().equals(principal.getName())) {
+        if (!database.getOwner().getId().equals(getId(principal)) && !view.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update view: not the database- or view owner");
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.viewToViewDto(viewService.update(database, view, data)));
+                .body(metadataMapper.viewToViewDto(
+                        viewService.update(database, view, data)));
     }
 
 }

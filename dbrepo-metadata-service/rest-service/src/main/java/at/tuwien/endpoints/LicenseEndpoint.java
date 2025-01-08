@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -52,12 +51,11 @@ public class LicenseEndpoint {
     })
     public ResponseEntity<List<LicenseDto>> list() {
         log.debug("endpoint list licenses");
-        final List<LicenseDto> licenses = licenseService.findAll()
-                .stream()
-                .map(metadataMapper::licenseToLicenseDto)
-                .toList();
         return ResponseEntity.status(HttpStatus.OK)
-                .body(licenses);
+                .body(licenseService.findAll()
+                        .stream()
+                        .map(metadataMapper::licenseToLicenseDto)
+                        .toList());
     }
 
 }

@@ -13,18 +13,12 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
     List<Database> findAllDesc();
 
-    List<Database> findReadAccess(UUID id);
+    List<Database> findAllPublicDesc();
 
-    List<Database> findWriteAccess(UUID id);
+    List<Database> findAllPublicOrReadAccessDesc(UUID id);
 
-    List<Database> findConfigureAccess(UUID id);
+    List<Database> findAllPublicOrReadAccessByInternalNameDesc(UUID id, String internalName);
 
-    List<Long> findAllOnlyIds();
-
-    Optional<Database> findPublicOrMine(Long databaseId, UUID id);
-
-    Optional<Database> findPublic(Long databaseId);
-
-    Optional<Database> findByInternalName(String internalName);
+    List<Database> findAllPublicByInternalNameDesc(String internalName);
 
 }

@@ -1,9 +1,12 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.EmailExistsException;
+import at.tuwien.exception.UserExistsException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;

@@ -5,6 +5,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.endpoints.AbstractEndpoint;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -13,7 +14,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.UserService;
-import at.tuwien.utils.UserUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @Log4j2
 @Component
-public class EndpointValidator {
+public class EndpointValidator extends AbstractEndpoint {
 
     public static final List<ColumnTypeDto> NEED_NOTHING = List.of(ColumnTypeDto.BOOL, ColumnTypeDto.SERIAL);
     public static final List<ColumnTypeDto> NEED_SIZE = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
@@ -62,8 +62,7 @@ public class EndpointValidator {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
-        final User user = userService.findByUsername(principal.getName());
-        final DatabaseAccess access = accessService.find(database, user);
+        final DatabaseAccess access = accessService.find(database, userService.findById(getId(principal)));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -167,7 +166,7 @@ public class EndpointValidator {
     }
 
     public boolean validateOnlyMineOrWriteAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
-        if (UserUtil.hasRole(principal, role)) {
+        if (hasRole(principal, role)) {
             log.debug("validation passed: role {} present", role);
             return true;
         }
@@ -234,7 +233,7 @@ public class EndpointValidator {
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
         log.trace("principal: {}", principal.getName());
-        if (!UserUtil.hasRole(principal, role)) {
+        if (!hasRole(principal, role)) {
             log.error("Access not allowed: role {} missing", role);
             throw new NotAllowedException("Access not allowed: role " + role + " missing");
         }

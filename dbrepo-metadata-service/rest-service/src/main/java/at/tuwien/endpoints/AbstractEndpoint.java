@@ -1,4 +1,4 @@
-package at.tuwien.utils;
+package at.tuwien.endpoints;
 
 import at.tuwien.api.user.UserDetailsDto;
 import org.springframework.security.core.Authentication;
@@ -6,9 +6,9 @@ import org.springframework.security.core.Authentication;
 import java.security.Principal;
 import java.util.UUID;
 
-public class UserUtil {
+public abstract class AbstractEndpoint {
 
-    public static boolean hasRole(Principal principal, String role) {
+    public boolean hasRole(Principal principal, String role) {
         if (principal == null || role == null) {
             return false;
         }
@@ -18,7 +18,7 @@ public class UserUtil {
                 .anyMatch(a -> a.getAuthority().equals(role));
     }
 
-    public static boolean isSystem(Principal principal) {
+    public boolean isSystem(Principal principal) {
         if (principal == null) {
             return false;
         }
@@ -28,7 +28,7 @@ public class UserUtil {
                 .anyMatch(a -> a.getAuthority().equals("system"));
     }
 
-    public static UUID getId(Principal principal) {
+    public UUID getId(Principal principal) {
         if (principal == null) {
             return null;
         }

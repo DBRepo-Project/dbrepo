@@ -858,18 +858,7 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    default Boolean onlyIsPublicOrOwner(Boolean isPublic, User caller, User owner, User databaseOwner) {
-        if (isPublic) {
-            return true;
-        }
-        /* private schema */
-        if (caller == null) {
-            return false;
-        }
-        return owner.equals(caller) || databaseOwner.equals(caller);
-    }
-
-    default DatabaseDto customDatabaseToDatabaseDto(Database data, User caller) {
+    default DatabaseDto customDatabaseToDatabaseDto(Database data) {
         if (data == null) {
             return null;
         }
@@ -899,14 +888,12 @@ public interface MetadataMapper {
         if (data.getTables() != null) {
             database.setTables(new LinkedList<>(data.getTables()
                     .stream()
-                    .filter(t -> onlyIsPublicOrOwner(t.getIsSchemaPublic() || t.getIsPublic(), caller, t.getOwner(), t.getDatabase().getOwner()))
                     .map(this::tableToTableBriefDto)
                     .toList()));
         }
         if (data.getViews() != null) {
             database.setViews(new LinkedList<>(data.getViews()
                     .stream()
-                    .filter(v -> onlyIsPublicOrOwner(v.getIsSchemaPublic() || v.getIsPublic(), caller, v.getOwner(), v.getDatabase().getOwner()))
                     .map(this::viewToViewBriefDto)
                     .toList()));
         }

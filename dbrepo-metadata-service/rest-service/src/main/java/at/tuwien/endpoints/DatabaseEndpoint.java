@@ -8,8 +8,10 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
+import at.tuwien.service.ContainerService;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.StorageService;
+import at.tuwien.service.UserService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -32,29 +34,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database")
-public class DatabaseEndpoint {
+public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
-    private final AccessService accessService;
     private final MetadataMapper databaseMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
-    public DatabaseEndpoint(UserService userService, AccessService accessService, MetadataMapper databaseMapper,
-                            StorageService storageService, DatabaseService databaseService,
-                            ContainerService containerService) {
+    public DatabaseEndpoint(UserService userService, MetadataMapper databaseMapper, StorageService storageService,
+                            DatabaseService databaseService, ContainerService containerService) {
         this.userService = userService;
-        this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
@@ -75,28 +73,36 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
     })
-    public ResponseEntity<List<DatabaseBriefDto>> list(@RequestParam(name = "internal_name", required = false) String internalName) {
+    public ResponseEntity<List<DatabaseBriefDto>> list(@RequestParam(name = "internal_name", required = false) String internalName,
+                                                       Principal principal) throws UserNotFoundException,
+            DatabaseNotFoundException {
         log.debug("endpoint list databases, internalName={}", internalName);
-        List<DatabaseBriefDto> dtos = new LinkedList<>();
-        if (internalName != null) {
-            try {
-                dtos = List.of(databaseMapper.databaseToDatabaseBriefDto(databaseService.findByInternalName(internalName)));
-            } catch (DatabaseNotFoundException e) {
-                /* ignore */
+        final List<Database> databases;
+        if (principal != null) {
+            if (internalName != null) {
+                log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name {}", getId(principal), internalName);
+                databases = databaseService.findAllPublicOrReadAccessByInternalName(getId(principal), internalName);
+            } else {
+                log.debug("filter request to contain only public databases or where user with id {} has at least read access", getId(principal));
+                databases = databaseService.findAllPublicOrReadAccess(getId(principal));
             }
         } else {
-            dtos = databaseService.findAll()
-                    .stream()
-                    .map(databaseMapper::databaseToDatabaseBriefDto)
-                    .toList();
+            if (internalName != null) {
+                log.debug("filter request to contain only public databases that match internal name {}", internalName);
+                databases = databaseService.findAllPublicByInternalName(internalName);
+            } else {
+                log.debug("filter request to contain only public databases");
+                databases = databaseService.findAllPublic();
+            }
         }
-        log.trace("list databases resulted in {} database(s)", dtos.size());
         final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Count", "" + dtos.size());
+        headers.set("X-Count", "" + databases.size());
         headers.set("Access-Control-Expose-Headers", "X-Count");
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(dtos);
+                .body(databases.stream()
+                        .map(databaseMapper::databaseToDatabaseBriefDto)
+                        .toList());
     }
 
     @PostMapping
@@ -150,20 +156,19 @@ public class DatabaseEndpoint {
     })
     public ResponseEntity<DatabaseDto> create(@Valid @RequestBody DatabaseCreateDto data,
                                               @NotNull Principal principal) throws DataServiceException,
-            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, ContainerQuotaException {
+            DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            ContainerQuotaException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final Container container = containerService.find(data.getCid());
-        final User caller = userService.findByUsername(principal.getName());
         if (container.getDatabases().size() + 1 > container.getQuota()) {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
-        final User user = userService.findByUsername(principal.getName());
-        final Database database = databaseService.create(container, data, user);
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database, caller);
+        final User caller = userService.findById(getId(principal));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(databaseMapper.customDatabaseToDatabaseDto(
+                        databaseService.create(container, data, caller)));
     }
 
     @PutMapping("/{databaseId}/metadata/table")
@@ -212,13 +217,12 @@ public class DatabaseEndpoint {
             TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.updateTableMetadata(database), caller);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(databaseMapper.customDatabaseToDatabaseDto(
+                databaseService.updateTableMetadata(database)));
     }
 
     @PutMapping("/{databaseId}/metadata/view")
@@ -261,13 +265,12 @@ public class DatabaseEndpoint {
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}, principal.name={}", databaseId, principal.getName());
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.updateViewMetadata(database), caller);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(databaseMapper.customDatabaseToDatabaseDto(
+                databaseService.updateViewMetadata(database)));
     }
 
     @PutMapping("/{databaseId}/visibility")
@@ -315,14 +318,13 @@ public class DatabaseEndpoint {
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().equals(caller)) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to modify database visibility: not owner");
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyVisibility(database, data), caller);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(databaseMapper.customDatabaseToDatabaseDto(
+                        databaseService.modifyVisibility(database, data)));
     }
 
     @PutMapping("/{databaseId}/owner")
@@ -371,15 +373,14 @@ public class DatabaseEndpoint {
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.id={}", databaseId, data.getId());
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
         final User newOwner = userService.findById(data.getId());
-        if (!database.getOwner().equals(caller)) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to transfer database: not owner");
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyOwner(database, newOwner), caller);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(databaseMapper.customDatabaseToDatabaseDto(
+                        databaseService.modifyOwner(database, newOwner)));
     }
 
     @PutMapping("/{databaseId}/image")
@@ -395,13 +396,13 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database or user could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "Modify of image is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Modify of image is not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -424,23 +425,21 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> modifyImage(@NotNull @PathVariable("databaseId") Long databaseId,
                                                    @Valid @RequestBody DatabaseModifyImageDto data,
                                                    @NotNull Principal principal) throws NotAllowedException,
-            DatabaseNotFoundException, UserNotFoundException, SearchServiceException, SearchServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
         final Database database = databaseService.findById(databaseId);
-        final User caller = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(caller.getId())) {
+        if (!database.getOwner().getId().equals(getId(principal))) {
             log.error("Failed to update database image: not owner");
             throw new NotAllowedException("Failed to update database image: not owner");
         }
-        final DatabaseDto dto;
         byte[] image = null;
         if (data.getKey() != null) {
             image = storageService.getBytes(data.getKey());
         }
-        dto = databaseMapper.customDatabaseToDatabaseDto(databaseService.modifyImage(database, image), caller);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(databaseMapper.customDatabaseToDatabaseDto(
+                        databaseService.modifyImage(database, image)));
     }
 
     @GetMapping("/{databaseId}/image")
@@ -461,10 +460,9 @@ public class DatabaseEndpoint {
     public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseNotFoundException {
         log.debug("endpoint get database preview image, databaseId={}", databaseId);
-        final Database database = databaseService.findById(databaseId);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("image/webp"))
-                .body(database.getImage());
+                .body(databaseService.findById(databaseId).getImage());
     }
 
     @GetMapping("/{databaseId}")
@@ -482,6 +480,11 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to view database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, user or exchange could not be found",
                     content = {@Content(
@@ -500,27 +503,50 @@ public class DatabaseEndpoint {
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 Principal principal) throws DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException {
+            DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException,
+            NotAllowedException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        final User caller;
         if (principal != null) {
-            caller = userService.findByUsername(principal.getName());
+            final Optional<DatabaseAccess> optional = database.getAccesses()
+                    .stream()
+                    .filter(a -> a.getUser().getId().equals(getId(principal)))
+                    .findFirst();
+            if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty() && !isSystem(principal)) {
+                log.error("Failed to find database: not public and no access found");
+                throw new DatabaseNotFoundException("Failed to find database: not public and no access found");
+            }
+            /* reduce metadata */
+            database.setTables(database.getTables()
+                    .stream()
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
+                    .toList());
+            database.setViews(database.getViews()
+                    .stream()
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
+                    .toList());
+            if (!database.getOwner().getId().equals(getId(principal))) {
+                database.setAccesses(List.of());
+            }
         } else {
-            caller = null;
+            if (!database.getIsPublic() && !database.getIsSchemaPublic()) {
+                log.error("Failed to find database: not public and not authenticated");
+                throw new NotAllowedException("Failed to find database: not public and not authenticated");
+            }
+            /* reduce metadata */
+            database.setTables(database.getTables()
+                    .stream()
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
+                    .toList());
+            database.setViews(database.getViews()
+                    .stream()
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic())
+                    .toList());
+            database.setAccesses(List.of());
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database, caller);
-        if (caller != null && database.getOwner().getId().equals(caller.getId())) {
-            log.debug("current logged-in user is also the owner: additionally load access list");
-            /* only owner sees the access rights */
-            final List<DatabaseAccess> accesses = accessService.list(database);
-            dto.setAccesses(accesses.stream()
-                    .map(databaseMapper::databaseAccessToDatabaseAccessDto)
-                    .collect(Collectors.toList()));
-            log.debug("found {} database accesses", accesses.size());
-        }
+        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
-        if (UserUtil.isSystem(principal)) {
+        if (isSystem(principal)) {
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
             headers.set("X-Host", database.getContainer().getHost());

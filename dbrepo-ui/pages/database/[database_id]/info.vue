@@ -1,7 +1,9 @@
 <template>
   <div>
-    <DatabaseToolbar />
+    <DatabaseToolbar
+      v-if="!isError" />
     <v-window
+      v-if="!isError"
       v-model="tab">
       <v-window-item value="1">
         <Summary
@@ -167,28 +169,23 @@
         </v-card>
       </v-window-item>
     </v-window>
+    <JumboBox
+      v-if="isError"
+      :title="errorTitle"
+      :subtitle="errorSubtitle"
+      :text="errorText" />
     <v-breadcrumbs
       :items="items"
       class="pa-0 mt-2" />
   </div>
 </template>
-
-<script setup>
-const config = useRuntimeConfig()
-const { database_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}`)
-if (data.value) {
-  const identifierService = useIdentifierService()
-  useServerHead(identifierService.databaseToServerHead(data.value))
-  useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
-}
-</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
+import JumboBox from '@/components/JumboBox.vue'
+import { sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
@@ -197,7 +194,25 @@ export default {
     DatabaseToolbar,
     Summary,
     Select,
-    UserBadge
+    UserBadge,
+    JumboBox
+  },
+  setup () {
+    const config = useRuntimeConfig()
+    const { database_id } = useRoute().params
+    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}`, {
+      immediate: true,
+      timeout: 90_000
+    })
+    if (data.value) {
+      const identifierService = useIdentifierService()
+      useServerHead(identifierService.databaseToServerHead(data.value))
+      useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
+    }
+    return {
+      database: data,
+      error
+    }
   },
   data () {
     return {
@@ -274,9 +289,6 @@ export default {
     },
     access () {
       return this.userStore.getAccess
-    },
-    database () {
-      return this.cacheStore.getDatabase
     },
     pid () {
       return this.$route.query.pid
@@ -372,6 +384,33 @@ export default {
         return null
       }
       return this.database.preview_image
+    },
+    isError () {
+      return this.error
+    },
+    errorTitle () {
+      switch (this.error.statusCode) {
+        case 404:
+          return this.$t('error.missing.title')
+        default:
+          return this.$t('error.permission.title')
+      }
+    },
+    errorSubtitle () {
+      switch (this.error.statusCode) {
+        case 404:
+          return 'ERROR_NOT_FOUND'
+        default:
+          return 'ERROR_NOT_AUTHORIZED'
+      }
+    },
+    errorText () {
+      switch (this.error.statusCode) {
+        case 404:
+          return this.$t('error.missing.text')
+        default:
+          return this.$t('error.permission.text')
+      }
     }
   }
 }

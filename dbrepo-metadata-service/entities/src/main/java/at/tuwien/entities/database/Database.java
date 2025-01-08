@@ -32,14 +32,11 @@ import static jakarta.persistence.GenerationType.IDENTITY;
         @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 @NamedQueries({
-        @NamedQuery(name = "Database.findAllDesc", query = "select d from Database d order by d.created desc"),
-        @NamedQuery(name = "Database.findByInternalName", query = "select d from Database d where d.internalName = ?1"),
-        @NamedQuery(name = "Database.findAllOnlyIds", query = "select d.id from Database d order by d.created desc"),
-        @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
-        @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
-        @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.ownedBy = ?1"),
-        @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.ownedBy = ?2)"),
-        @NamedQuery(name = "Database.findPublic", query = "select distinct d from Database d where d.isPublic = true and d.id = ?1"),
+        @NamedQuery(name = "Database.findAllDesc", query = "select distinct d from Database d order by d.id desc"),
+        @NamedQuery(name = "Database.findAllPublicDesc", query = "select distinct d from Database d where d.isPublic = true order by d.id desc"),
+        @NamedQuery(name = "Database.findAllPublicOrReadAccessDesc", query = "select distinct d from Database d where d.isPublic = true or exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.id desc"),
+        @NamedQuery(name = "Database.findAllPublicOrReadAccessByInternalNameDesc", query = "select distinct d from Database d where d.isPublic = true and d.internalName = ?2 or exists(select a.hdbid from DatabaseAccess a where a.huserid = ?1 and a.hdbid = d.id) order by d.id desc"),
+        @NamedQuery(name = "Database.findAllPublicByInternalNameDesc", query = "select distinct d from Database d where d.isPublic = true and d.internalName = ?1 order by d.id desc"),
 })
 public class Database implements Serializable {
 
