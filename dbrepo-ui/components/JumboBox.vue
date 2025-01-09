@@ -1,11 +1,12 @@
 <template>
   <div>
     <v-row>
-      <v-col
-        offset-md="2"
-        md="8">
+      <v-col>
         <v-card
+          elevation="0"
+          variant="flat"
           class="mx-auto"
+          max-width="600"
           :title="title"
           :subtitle="subtitle"
           :text="text">

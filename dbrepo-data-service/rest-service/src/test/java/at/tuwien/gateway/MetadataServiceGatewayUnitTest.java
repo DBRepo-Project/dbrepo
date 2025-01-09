@@ -817,7 +817,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                         .build());
 
         /* test */
-        metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID);
+        metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID, TOKEN_ACCESS_TOKEN);
     }
 
     @Test
@@ -830,7 +830,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID);
+            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID, TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -844,7 +844,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID);
+            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID, TOKEN_ACCESS_TOKEN);
         });
     }
 
@@ -858,7 +858,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID);
+            metadataServiceGateway.updateTableStatistics(DATABASE_1_ID, TABLE_1_ID, TOKEN_ACCESS_TOKEN);
         });
     }
 

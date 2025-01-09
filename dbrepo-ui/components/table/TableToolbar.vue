@@ -16,21 +16,9 @@
           v-if="table && $vuetify.display.lgAndUp">
           {{ table.name }}
         </span>
-        <v-chip
-          v-if="table && table.is_public"
-          size="small"
+        <ResourceStatus
           class="ml-2"
-          color="success"
-          :text="$t('toolbars.database.public')"
-          variant="outlined" />
-        <v-chip
-          v-if="table && !table.is_public"
-          size="small"
-          class="ml-2"
-          :color="colorVariant"
-          variant="outlined"
-          :text="$t('toolbars.database.private')"
-          flat />
+          :resource="table" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn

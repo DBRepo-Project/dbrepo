@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import {format} from 'date-fns'
 import moment from 'moment'
 import type {AxiosError} from 'axios'
 

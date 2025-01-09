@@ -51,11 +51,29 @@ import QueryResults from '@/components/subset/Results.vue'
 import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
+import {useUserStore} from "~/stores/user.js";
 
 export default {
   components: {
     SubsetToolbar,
     QueryResults
+  },
+  setup () {
+    const config = useRuntimeConfig()
+    const userStore = useUserStore()
+    const { database_id, subset_id } = useRoute().params
+    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`, {
+      immediate: true,
+      timeout: 90_000,
+      headers: {
+        Accept: 'application/json',
+        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
+      }
+    })
+    return {
+      subset: data,
+      error
+    }
   },
   data () {
     return {
@@ -84,9 +102,6 @@ export default {
           disabled: true
         }
       ],
-      subset: {
-        id: this.$route.params.subset_id
-      },
       cacheStore: useCacheStore()
     }
   },
@@ -113,11 +128,11 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      return this.subset.creator.username === this.username
+      return this.subset.owner.username === this.username
     },
   },
   mounted () {
-    this.loadSubset()
+    this.loadResult()
   },
   methods: {
     loadSubset () {

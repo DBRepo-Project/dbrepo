@@ -119,23 +119,20 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    view () {
+      return this.cacheStore.getView
     },
     canViewSchema () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_schema_public) {
+      if (this.view.is_schema_public) {
         return true
       }
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     roles () {
       return this.userStore.getRoles

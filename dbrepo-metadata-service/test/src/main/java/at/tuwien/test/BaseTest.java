@@ -283,9 +283,12 @@ public abstract class BaseTest {
             .type(AccessTypeDto.WRITE_ALL)
             .build();
 
+    public final static String TOKEN_ACCESS_TOKEN = "ey.yee.skrr";
+    public final static String TOKEN_ACCESS_SCOPE = "openid";
+
     public final static TokenDto TOKEN_DTO = TokenDto.builder()
-            .accessToken("ey.yee.skrr")
-            .scope("openid")
+            .accessToken(TOKEN_ACCESS_TOKEN)
+            .scope(TOKEN_ACCESS_SCOPE)
             .build();
 
     public final static RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()

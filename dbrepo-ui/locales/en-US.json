@@ -293,10 +293,6 @@
       },
       "visibility": {
         "title": "Visibility",
-        "open": "Open",
-        "data": "Data is public",
-        "schema": "Schema is public",
-        "closed": "Closed"
       },
       "description": {
         "title": "Description",
@@ -599,15 +595,28 @@
       "internal-name": {
         "title": "Internal Name"
       },
-      "visibility": {
-        "title": "Visibility",
-        "open": "Open",
-        "data": "Data is public",
-        "schema": "Schema is public",
-        "closed": "Closed"
-      },
       "size": {
         "title": "Size"
+      },
+      "status": {
+        "title": "Status",
+        "public": "Public",
+        "private": "Private",
+        "draft": "Draft"
+      },
+      "resource": {
+        "data": {
+          "label": "Transparency",
+          "hint": "Required, e.g. can hide the resource so it is hidden.",
+          "enabled": "Visible",
+          "disabled": "Hidden"
+        },
+        "schema": {
+          "label": "Insights",
+          "hint": "Required, e.g. can show metadata on resources.",
+          "enabled": "Visible",
+          "disabled": "Hidden"
+        }
       },
       "owner": {
         "title": "Owner"
@@ -649,21 +658,13 @@
             "hint": "Required. The internal database name will be lowercase alphanumeric, others will be replaced with _",
             "placeholder": "e.g. my_database, air_quality"
           },
+          "draft": {
+            "label": "Draft",
+            "hint": "Hides the database, only users with access can see it"
+          },
           "engine": {
             "label": "Engine",
             "hint": "Required"
-          },
-          "visibility": {
-            "label": "Visibility",
-            "hint": "Required",
-            "public": {
-              "label": "Public",
-              "hint": "Everything is visible to the public, e.g. to publish data used in a open-access paper. You can later update the visibility of data."
-            },
-            "private": {
-              "label": "Private",
-              "hint": "Nothing is visible to anyone without dedicated read-access, e.g. to work on a dataset. You can later update the visibility of data."
-            }
           },
           "submit": {
             "text": "Create"
@@ -724,11 +725,6 @@
             "subtitle": "",
             "data": {
               "label": "Data Visibility",
-              "hint": "Required",
-              "help": "Public = visible to anyone, Private = visible only to designated users"
-            },
-            "schema": {
-              "label": "Schema Visibility",
               "hint": "Required",
               "help": "Public = visible to anyone, Private = visible only to designated users"
             },
@@ -1357,8 +1353,6 @@
     "database": {
       "recent": "Recent Databases",
       "links": "Important Links",
-      "public": "Public",
-      "private": "Private",
       "current": "Current Data",
       "history": "Historic Data",
       "create": {

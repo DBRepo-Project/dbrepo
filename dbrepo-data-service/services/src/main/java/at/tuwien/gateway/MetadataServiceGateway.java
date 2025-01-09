@@ -118,11 +118,13 @@ public interface MetadataServiceGateway {
     /**
      * Update the table statistics in the metadata service.
      *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
+     * @param databaseId    The database id.
+     * @param tableId       The table id.
+     * @param authorization The authorization header.
      * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
      * @throws TableNotFoundException     The table was not found.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    void updateTableStatistics(Long databaseId, Long tableId) throws TableNotFoundException, MetadataServiceException, RemoteUnavailableException;
+    void updateTableStatistics(Long databaseId, Long tableId, String authorization) throws TableNotFoundException,
+            MetadataServiceException, RemoteUnavailableException;
 }

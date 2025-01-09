@@ -513,7 +513,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void findById_publicAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
 
         /* test */
         generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
@@ -543,7 +543,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_publicHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -556,7 +556,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_publicNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
 
         /* test */
         generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, null);
@@ -900,7 +900,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void findById_privateAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
@@ -930,7 +930,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_privateHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
                 USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -943,7 +943,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_privateNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL, USER_4, null);
@@ -1160,7 +1160,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                                                         Table table, Principal principal, User user,
                                                         DatabaseAccess access) throws DataServiceException,
             DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, UserNotFoundException {
+            QueueNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {

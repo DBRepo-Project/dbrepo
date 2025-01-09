@@ -37,7 +37,9 @@
             v-if="database"
             :title="$t('pages.subset.visibility.title')"
             density="compact">
-            {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
+            <ResourceStatus
+              :inline="true"
+              :resource="subset" />
           </v-list-item>
           <v-list-item
             v-if="subset.creator"

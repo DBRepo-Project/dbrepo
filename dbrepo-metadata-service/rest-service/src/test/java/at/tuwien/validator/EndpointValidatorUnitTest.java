@@ -324,20 +324,38 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void validateOnlyPrivateHasRole_privatePrincipalMissing_fails() {
+    public void validateOnlyPrivateDataHasRole_privatePrincipalMissing_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            endpointValidator.validateOnlyPrivateHasRole(DATABASE_1, null, "list-tables");
+            endpointValidator.validateOnlyPrivateDataHasRole(DATABASE_1, null, "list-tables");
         });
     }
 
     @Test
-    public void validateOnlyPrivateHasRole_privateRoleMissing_fails() {
+    public void validateOnlyPrivateDataHasRole_privateRoleMissing_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            endpointValidator.validateOnlyPrivateHasRole(DATABASE_1, USER_4_PRINCIPAL, "list-tables");
+            endpointValidator.validateOnlyPrivateDataHasRole(DATABASE_1, USER_4_PRINCIPAL, "list-tables");
+        });
+    }
+
+    @Test
+    public void validateOnlyPrivateSchemaHasRole_privatePrincipalMissing_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            endpointValidator.validateOnlyPrivateSchemaHasRole(DATABASE_1, null, "list-tables");
+        });
+    }
+
+    @Test
+    public void validateOnlyPrivateSchemaHasRole_privateRoleMissing_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            endpointValidator.validateOnlyPrivateSchemaHasRole(DATABASE_1, USER_4_PRINCIPAL, "list-tables");
         });
     }
 

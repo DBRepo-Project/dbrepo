@@ -27,21 +27,8 @@
         {{ identifierDescription(database) }}
       </div>
       <div class="mt-2 db-tags">
-        <v-chip
-          v-if="database.is_public"
-          size="small"
-          color="success"
-          variant="outlined">
-          {{ $t('toolbars.database.public') }}
-        </v-chip>
-        <v-chip
-          v-if="!database.is_public"
-          size="small"
-          :color="colorVariant"
-          variant="outlined"
-          flat>
-          {{ $t('toolbars.database.private') }}
-        </v-chip>
+        <ResourceStatus
+          :resource="database" />
         <v-chip
           v-if="identifierYear(database)"
           size="small"
@@ -86,8 +73,12 @@
 
 <script>
 import { formatLanguage } from '@/utils'
+import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {
+  components: {
+    ResourceStatus
+  },
   data() {
     return {
       loading: false
@@ -175,7 +166,7 @@ export default {
         return null
       }
       return this.identifiers[0]
-    },
+    }
   }
 }
 </script>

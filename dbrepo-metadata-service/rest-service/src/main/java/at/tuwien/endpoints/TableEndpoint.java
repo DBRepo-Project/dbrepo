@@ -70,7 +70,7 @@ public class TableEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_findall")
     @Operation(summary = "List tables",
-            description = "Lists all tables known to the metadata database.",
+            description = "Lists all tables known to the metadata database. When a database has a hidden schema (i.e. when `is_schema_public` is `false`), then the user needs to have at least read access and the role `list-tables`.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -94,10 +94,11 @@ public class TableEndpoint extends AbstractEndpoint {
             DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException {
         log.debug("endpoint list tables, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
-        endpointValidator.validateOnlyPrivateAccess(database, principal);
-        endpointValidator.validateOnlyPrivateHasRole(database, principal, "list-tables");
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
+        endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-tables");
         return ResponseEntity.ok(database.getTables()
                 .stream()
+                .filter(Table::getIsPublic)
                 .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
     }
@@ -435,7 +436,7 @@ public class TableEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_tables_find")
     @Operation(summary = "Find table",
-            description = "Finds a table with id. When the `system` role is present, the endpoint responds with additional connection metadata in the header.",
+            description = "Finds a table with id. When a table is hidden (i.e. when `is_public` is `false`), then the user needs to have at least read access and the role `find-table`. When the `system` role is present, the endpoint responds with additional connection metadata in the header.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -475,9 +476,12 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal) throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
+            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException,
+            UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
+        endpointValidator.validateOnlyPrivateDataAccess(database, principal);
+        endpointValidator.validateOnlyPrivateDataHasRole(database, principal, "find-table");
         final Table table = tableService.findById(database, tableId);
         boolean hasAccess = isSystem(principal);
         boolean isOwner = false;

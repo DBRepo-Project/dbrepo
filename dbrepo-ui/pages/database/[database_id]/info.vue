@@ -1,9 +1,7 @@
 <template>
   <div>
-    <DatabaseToolbar
-      v-if="!isError" />
+    <DatabaseToolbar />
     <v-window
-      v-if="!isError"
       v-model="tab">
       <v-window-item value="1">
         <Summary
@@ -60,11 +58,6 @@
                 </div>
               </v-list-item>
               <v-list-item
-                :title="$t('pages.database.visibility.title')"
-                density="compact">
-                {{ databaseVisibility }}
-              </v-list-item>
-              <v-list-item
                 :title="$t('pages.database.size.title')"
                 density="compact">
                 <div>
@@ -101,13 +94,6 @@
                     </span>
                   </span>
                 </div>
-              </v-list-item>
-              <v-list-item
-                v-if="access"
-                :title="$t('pages.database.connection.title')"
-                density="compact">
-                <pre
-                  class="pb-1">{{ jdbcString }}</pre>
               </v-list-item>
               <v-list-item
                 v-if="database.contact"
@@ -169,16 +155,12 @@
         </v-card>
       </v-window-item>
     </v-window>
-    <JumboBox
-      v-if="isError"
-      :title="errorTitle"
-      :subtitle="errorSubtitle"
-      :text="errorText" />
     <v-breadcrumbs
       :items="items"
       class="pa-0 mt-2" />
   </div>
 </template>
+
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
@@ -199,10 +181,15 @@ export default {
   },
   setup () {
     const config = useRuntimeConfig()
+    const userStore = useUserStore()
     const { database_id } = useRoute().params
     const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}`, {
       immediate: true,
-      timeout: 90_000
+      timeout: 90_000,
+      headers: {
+        Accept: 'application/json',
+        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
+      }
     })
     if (data.value) {
       const identifierService = useIdentifierService()
@@ -259,6 +246,9 @@ export default {
     },
     user () {
       return this.userStore.getUser
+    },
+    database () {
+      return this.cacheStore.getDatabase
     },
     roles () {
       return this.userStore.getRoles
@@ -349,13 +339,6 @@ export default {
           return { text: null, class: null }
       }
     },
-    jdbcString () {
-      if (!this.database || !this.user) {
-        return
-      }
-      const flags = this.database.container.ui_additional_flags ? this.database.container.ui_additional_flags : ''
-      return `jdbc:${this.database.container.image.jdbc_method}://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (${this.$t('pages.database.connection.username')}=${this.user.username}, ${this.$t('pages.database.connection.password')}=yourpassword)`
-    },
     databaseExtraInfo () {
       return this.$config.public.database.extra
     },
@@ -367,50 +350,11 @@ export default {
       this.database.tables.forEach((t) => { sum += t.data_length })
       return sizeToHumanLabel(sum)
     },
-    databaseVisibility () {
-      if (!this.database) {
-        return null
-      }
-      if (this.database.is_public && this.database.is_schema_public) {
-        return this.$t('pages.database.visibility.open')
-      }
-      if (!this.database.is_public && !this.database.is_schema_public) {
-        return this.$t('pages.database.visibility.closed')
-      }
-      return this.database.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
-    },
     previewImage () {
       if (!this.database) {
         return null
       }
       return this.database.preview_image
-    },
-    isError () {
-      return this.error
-    },
-    errorTitle () {
-      switch (this.error.statusCode) {
-        case 404:
-          return this.$t('error.missing.title')
-        default:
-          return this.$t('error.permission.title')
-      }
-    },
-    errorSubtitle () {
-      switch (this.error.statusCode) {
-        case 404:
-          return 'ERROR_NOT_FOUND'
-        default:
-          return 'ERROR_NOT_AUTHORIZED'
-      }
-    },
-    errorText () {
-      switch (this.error.statusCode) {
-        case 404:
-          return this.$t('error.missing.text')
-        default:
-          return this.$t('error.permission.text')
-      }
     }
   }
 }

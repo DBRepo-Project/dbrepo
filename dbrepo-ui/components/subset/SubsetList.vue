@@ -26,21 +26,8 @@
             :to="link(item)"
             :href="link(item)">
             <template v-slot:append>
-              <v-chip
-                v-if="database.is_public"
-                size="small"
-                class="ml-2"
-                color="success"
-                :text="$t('toolbars.database.public')"
-                variant="outlined" />
-              <v-chip
-                v-if="!database.is_public"
-                size="small"
-                class="ml-2"
-                :color="colorVariant"
-                variant="outlined"
-                :text="$t('toolbars.database.private')"
-                flat />
+              <ResourceStatus
+                :resource="item" />
               <v-tooltip
                 v-if="hasPublishedIdentifier(item)"
                 :text="$t('pages.identifier.pid.title')"

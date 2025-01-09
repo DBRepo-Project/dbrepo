@@ -7,7 +7,7 @@
       <v-spacer />
       <v-btn
         v-if="canCreateDatabase"
-        class="mr-4"
+        class="mr-2"
         prepend-icon="mdi-plus"
         variant="flat"
         :text="$t('toolbars.database.create.text')"

@@ -43,6 +43,11 @@ public class DatabaseBriefDto {
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @NotNull
+    @JsonProperty("is_schema_public")
+    @Schema(example = "true")
+    private Boolean isSchemaPublic;
+
     private List<IdentifierBriefDto> identifiers;
 
     @ToString.Exclude

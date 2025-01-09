@@ -29,7 +29,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/access")
-public class AccessEndpoint {
+public class AccessEndpoint extends AbstractEndpoint {
 
     private final AccessService accessService;
     private final CredentialService credentialService;

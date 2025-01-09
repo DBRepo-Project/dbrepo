@@ -106,12 +106,12 @@
                     <v-select
                       v-model="tableCreate.is_public"
                       name="public"
-                      :label="$t('pages.database.subpages.create.data.label')"
-                      :hint="$t('pages.database.subpages.create.data.hint')"
+                      :label="$t('pages.database.resource.data.label')"
+                      :hint="$t('pages.database.resource.data.hint')"
                       persistent-hint
                       :variant="inputVariant"
-                      :items="visibilityOptions"
-                      item-title="name"
+                      :items="dataOptions"
+                      item-title="title"
                       item-value="value"
                       :rules="[v => v !== null || $t('validation.required')]"
                       required>
@@ -122,12 +122,12 @@
                     <v-select
                       v-model="tableCreate.is_schema_public"
                       name="schema-public"
-                      :label="$t('pages.database.subpages.create.schema.label')"
-                      :hint="$t('pages.database.subpages.create.schema.hint')"
+                      :label="$t('pages.database.resource.schema.label')"
+                      :hint="$t('pages.database.resource.schema.hint')"
                       persistent-hint
                       :variant="inputVariant"
-                      :items="visibilityOptions"
-                      item-title="name"
+                      :items="schemaOptions"
+                      item-title="title"
                       item-value="value"
                       :rules="[v => v !== null || $t('validation.required')]"
                       required>
@@ -235,15 +235,13 @@ export default {
       loadingImport: false,
       fileModel: null,
       rowCount: null,
-      visibilityOptions: [
-        {
-          name: this.$t('toolbars.database.public'),
-          value: true
-        },
-        {
-          name: this.$t('toolbars.database.private'),
-          value: false
-        }
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       file: {
         filename: null,

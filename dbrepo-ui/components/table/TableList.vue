@@ -19,21 +19,8 @@
           :subtitle="table.description ? table.description : ''"
           :to="`/database/${$route.params.database_id}/table/${table.id}/info`">
           <template v-slot:append>
-            <v-chip
-              v-if="table && table.is_public"
-              size="small"
-              class="ml-2"
-              color="success"
-              :text="$t('toolbars.database.public')"
-              variant="outlined" />
-            <v-chip
-              v-if="table && !table.is_public"
-              size="small"
-              class="ml-2"
-              :color="colorVariant"
-              variant="outlined"
-              :text="$t('toolbars.database.private')"
-              flat />
+            <ResourceStatus
+              :resource="table" />
             <v-tooltip
               v-if="hasPublishedIdentifier(table)"
               :text="$t('pages.identifier.pid.title')"

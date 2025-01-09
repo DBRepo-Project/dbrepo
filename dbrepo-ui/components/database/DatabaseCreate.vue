@@ -55,33 +55,12 @@
           </v-row>
           <v-row>
             <v-col>
-              <v-select
-                v-model="mode"
-                name="mode"
-                :label="$t('pages.database.subpages.create.visibility.label')"
-                :hint="$t('pages.database.subpages.create.visibility.hint')"
-                persistent-hint
-                :variant="inputVariant"
-                :items="visibilityOptions"
-                item-title="name"
-                item-value="value"
-                :rules="[v => !!v || $t('validation.required')]"
-                return-object
-                required>
-                <template
-                  v-slot:append-inner>
-                  <v-tooltip
-                    location="bottom">
-                    <template
-                      v-slot:activator="{ props }">
-                      <v-icon
-                        v-bind="props"
-                        icon="mdi-help-circle-outline" />
-                    </template>
-                    {{ mode.hint }}
-                  </v-tooltip>
-                </template>
-              </v-select>
+              <v-checkbox
+                v-model="draft"
+                name="draft"
+                :label="$t('pages.database.subpages.create.draft.label')"
+                :hint="$t('pages.database.subpages.create.draft.hint')"
+                persistent-hint />
             </v-col>
           </v-row>
         </v-card-text>
@@ -130,7 +109,7 @@ export default {
           value: false
         }
       ],
-      mode: true,
+      draft: true,
       payload: {
         name: null,
         is_public: true,

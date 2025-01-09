@@ -35,7 +35,7 @@ import java.sql.SQLException;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database")
-public class DatabaseEndpoint {
+public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final SubsetService queryService;
     private final AccessService accessService;

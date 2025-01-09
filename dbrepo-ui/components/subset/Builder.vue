@@ -68,7 +68,7 @@
               md="4">
               <v-select
                 v-model="view.is_public"
-                :items="visibilities"
+                :items="dataOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
@@ -76,14 +76,14 @@
                 :rules="[
                   v => !!v || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.data.label')"
-                :hint="$t('pages.database.subpages.create.data.hint')" />
+                :label="$t('pages.database.resource.data.label')"
+                :hint="$t('pages.database.resource.data.hint')" />
             </v-col>
             <v-col
               md="4">
               <v-select
                 v-model="view.is_schema_public"
-                :items="visibilities"
+                :items="schemaOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
@@ -91,8 +91,8 @@
                 :rules="[
                   v => !!v || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.schema.label')"
-                :hint="$t('pages.database.subpages.create.schema.hint')" />
+                :label="$t('pages.database.resource.schema.label')"
+                :hint="$t('pages.database.resource.schema.hint')" />
             </v-col>
           </v-row>
           <v-window
@@ -332,9 +332,13 @@ export default {
       columns: [],
       timestamp: null,
       executeDifferentTimestamp: false,
-      visibilities: [
-        { title: this.$t('toolbars.database.public'), value: true },
-        { title: this.$t('toolbars.database.private'), value: false },
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       tableDetails: null,
       resultId: null,

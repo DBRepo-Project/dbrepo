@@ -2,7 +2,7 @@
   <div
     v-if="canReadData">
     <ViewToolbar
-      v-if="cachedView" />
+      v-if="view" />
     <v-toolbar
       color="secondary"
       :title="$t('toolbars.database.current')"
@@ -80,11 +80,8 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    view () {
+      return this.cacheStore.getView
     },
     access () {
       return this.userStore.getAccess
@@ -96,10 +93,10 @@ export default {
       return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
     },
     canReadData () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_public) {
+      if (this.view.is_public) {
         return true
       }
       if (!this.user) {

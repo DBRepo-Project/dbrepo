@@ -31,29 +31,29 @@
               md="6">
               <v-select
                 v-model="modify.is_public"
-                :items="visibilities"
+                :items="dataOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
                 :rules="[
                   v => v !== null || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.data.label')"
-                :hint="$t('pages.database.subpages.create.data.hint')" />
+                :label="$t('pages.database.resource.data.label')"
+                :hint="$t('pages.database.resource.data.hint')" />
             </v-col>
             <v-col
               md="6">
               <v-select
                 v-model="modify.is_schema_public"
-                :items="visibilities"
+                :items="schemaOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
                 :rules="[
                   v => v !== null || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.schema.label')"
-                :hint="$t('pages.database.subpages.create.schema.hint')" />
+                :label="$t('pages.database.resource.schema.label')"
+                :hint="$t('pages.database.resource.schema.hint')" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -98,9 +98,13 @@ export default {
     return {
       valid: false,
       loading: false,
-      visibilities: [
-        { title: this.$t('toolbars.database.public'), value: true },
-        { title: this.$t('toolbars.database.private'), value: false },
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       modify: {
         description: this.table.description,
@@ -153,7 +157,7 @@ export default {
           this.$emit('close', { success: true })
           this.cacheStore.reloadTable()
         })
-        .catch(({code}) => {
+        .catch(({ code }) => {
           this.loading = false
           const toast = useToastInstance()
           toast.error(this.$t(code))

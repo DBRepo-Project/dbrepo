@@ -43,7 +43,7 @@ public class EndpointValidator extends AbstractEndpoint {
         this.accessService = accessService;
     }
 
-    public void validateOnlyPrivateAccess(Database database, Principal principal, boolean writeAccessOnly)
+    public void validateOnlyPrivateDataAccess(Database database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", database.getId());
@@ -52,9 +52,23 @@ public class EndpointValidator extends AbstractEndpoint {
         validateOnlyAccess(database, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateAccess(Database database, Principal principal) throws NotAllowedException,
+    public void validateOnlyPrivateSchemaAccess(Database database, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
+        if (database.getIsSchemaPublic()) {
+            log.trace("database schema with id {} is public: no access needed", database.getId());
+            return;
+        }
+        validateOnlyAccess(database, principal, writeAccessOnly);
+    }
+
+    public void validateOnlyPrivateDataAccess(Database database, Principal principal) throws NotAllowedException,
             UserNotFoundException, AccessNotFoundException {
-        validateOnlyPrivateAccess(database, principal, false);
+        validateOnlyPrivateDataAccess(database, principal, false);
+    }
+
+    public void validateOnlyPrivateSchemaAccess(Database database, Principal principal) throws NotAllowedException,
+            UserNotFoundException, AccessNotFoundException {
+        validateOnlyPrivateSchemaAccess(database, principal, false);
     }
 
     public void validateOnlyAccess(Database database, Principal principal, boolean writeAccessOnly)
@@ -221,13 +235,32 @@ public class EndpointValidator extends AbstractEndpoint {
         throw new NotAllowedException("Access not allowed: insufficient access (neither owner nor write-all access)");
     }
 
-    public void validateOnlyPrivateHasRole(Database database, Principal principal, String role)
+    public void validateOnlyPrivateDataHasRole(Database database, Principal principal, String role)
             throws NotAllowedException {
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", database.getId());
             return;
         }
         log.trace("database with id {} is private", database.getId());
+        if (principal == null) {
+            log.error("Access not allowed: no authorization provided");
+            throw new NotAllowedException("Access not allowed: no authorization provided");
+        }
+        log.trace("principal: {}", principal.getName());
+        if (!hasRole(principal, role)) {
+            log.error("Access not allowed: role {} missing", role);
+            throw new NotAllowedException("Access not allowed: role " + role + " missing");
+        }
+        log.trace("principal has role '{}': access granted", role);
+    }
+
+    public void validateOnlyPrivateSchemaHasRole(Database database, Principal principal, String role)
+            throws NotAllowedException {
+        if (database.getIsSchemaPublic()) {
+            log.trace("database with id {} has public schema: no access needed", database.getId());
+            return;
+        }
+        log.trace("database with id {} has private schema", database.getId());
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");

@@ -9,7 +9,6 @@ import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -275,7 +274,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
-            credentialService.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, getId(principal));
         }
         try {
             final HttpHeaders headers = new HttpHeaders();
@@ -351,7 +350,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                 log.error("Failed to export private view: principal is null");
                 throw new NotAllowedException("Failed to export private view: principal is null");
             }
-            credentialService.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, getId(principal));
         }
         final Dataset<Row> dataset = tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, null,
                 null, null, null);

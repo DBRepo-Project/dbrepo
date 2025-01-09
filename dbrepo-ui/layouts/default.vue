@@ -251,11 +251,14 @@ export default {
         if (this.user) {
           this.userStore.setRouteAccess(newObj.database_id)
         }
-        if (!newObj.table_id) {
-          return
-        }
         /* load table */
-        this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
+        if (newObj.table_id) {
+          this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
+        }
+        /* load view */
+        if (newObj.view_id) {
+          this.cacheStore.setRouteView(newObj.database_id, newObj.view_id)
+        }
       },
       deep: true,
       immediate: true

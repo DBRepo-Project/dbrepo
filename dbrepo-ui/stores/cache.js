@@ -6,6 +6,7 @@ export const useCacheStore = defineStore('cache', {
     return {
       database: null,
       table: null,
+      view: null,
       ontologies: [],
       messages: [],
       uploadProgress: null
@@ -14,6 +15,7 @@ export const useCacheStore = defineStore('cache', {
   getters: {
     getDatabase: (state) => state.database,
     getTable: (state) => state.table,
+    getView: (state) => state.view,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
     getUploadProgress: (state) => state.uploadProgress,
@@ -24,6 +26,9 @@ export const useCacheStore = defineStore('cache', {
     },
     setTable (table) {
       this.table = table
+    },
+    setView (view) {
+      this.view = view
     },
     setOntologies (ontologies) {
       this.ontologies = ontologies
@@ -87,6 +92,19 @@ export const useCacheStore = defineStore('cache', {
         .then(table => this.table = table)
         .catch((error) => {
           console.error('Failed to set route table', error)
+        })
+    },
+    setRouteView (databaseId, view_id) {
+      if (!databaseId || !view_id) {
+        this.view = null
+        console.error('Cannot set route view: missing view id', databaseId, 'or view id', view_id)
+        return
+      }
+      const viewService = useViewService()
+      viewService.findOne(databaseId, view_id)
+        .then(view => this.view = view)
+        .catch((error) => {
+          console.error('Failed to set route view', error)
         })
     }
   },

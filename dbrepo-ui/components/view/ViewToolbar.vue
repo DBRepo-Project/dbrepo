@@ -6,26 +6,14 @@
       icon="mdi-arrow-left"
       :to="`/database/${$route.params.database_id}/view`" />
     <v-toolbar-title
-      v-if="cachedView">
+      v-if="view">
       <span
         v-if="$vuetify.display.lgAndUp">
         {{ title }}
       </span>
-      <v-chip
-        v-if="cachedView.is_public"
-        size="small"
+      <ResourceStatus
         class="ml-2"
-        color="success"
-        :text="$t('toolbars.database.public')"
-        variant="outlined" />
-      <v-chip
-        v-if="!cachedView.is_public"
-        size="small"
-        class="ml-2"
-        :color="colorVariant"
-        variant="outlined"
-        :text="$t('toolbars.database.private')"
-        flat />
+        :resource="view" />
     </v-toolbar-title>
     <v-spacer />
     <v-btn
@@ -58,7 +46,7 @@
       persistent
       max-width="640">
       <ViewVisibility
-        :view="cachedView"
+        :view="view"
         @close="close" />
     </v-dialog>
     <template v-slot:extension>
@@ -69,11 +57,11 @@
           :text="$t('navigation.info')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
         <v-tab
-          v-if="canReadData"
+          v-if="canViewData"
           :text="$t('navigation.data')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
         <v-tab
-          v-if="canReadData"
+          v-if="canViewSchema"
           :text="$t('navigation.schema')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/schema`" />
       </v-tabs>
@@ -113,59 +101,47 @@ export default {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    view () {
+      return this.cacheStore.getView
     },
     canViewData () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_public) {
+      if (this.view.is_public) {
         return true
       }
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canViewSchema () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_schema_public) {
+      if (this.view.is_schema_public) {
         return true
       }
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canDeleteView () {
-      if (!this.roles || !this.user || !this.cachedView) {
+      if (!this.roles || !this.user || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.cachedView.owned_by === this.user.id
+      return this.roles.includes('delete-database-view') && this.view.owner.id === this.user.id
     },
     canUpdateVisibility () {
-      if (!this.roles || !this.user || !this.cachedView) {
+      if (!this.roles || !this.user || !this.view) {
         return false
       }
-      return this.roles.includes('modify-view-visibility') && this.cachedView.owned_by === this.user.id
-    },
-    isContrastTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
-    },
-    isDarkTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
-    },
-    colorVariant () {
-      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
+      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.user.id
     },
     canCreatePid () {
-      if (!this.roles || !this.user || !this.cachedView) {
+      if (!this.roles || !this.user || !this.view) {
         return false
       }
       const userService = useUserService()
@@ -186,23 +162,11 @@ export default {
       }
       return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
     },
-    canReadData () {
-      if (!this.cachedView) {
-        return false
-      }
-      if (this.cachedView.is_public) {
-        return true
-      }
-      if (!this.user) {
-        return false
-      }
-      return this.cachedView.owner.id === this.user.id || this.hasReadAccess
-    },
     identifiers () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return []
       }
-      return this.cachedView.identifiers.filter(s => s.view_id === Number(this.$route.params.view_id))
+      return this.view.identifiers.filter(s => s.view_id === Number(this.$route.params.view_id))
     },
     identifier () {
       /* mount pid */
@@ -217,10 +181,10 @@ export default {
       return this.identifiers[0]
     },
     title () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return null
       }
-      return this.cachedView.name
+      return this.view.name
     }
   },
   methods: {

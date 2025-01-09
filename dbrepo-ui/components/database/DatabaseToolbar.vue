@@ -11,21 +11,9 @@
           v-if="database && $vuetify.display.lgAndUp">
           {{ database.name }}
         </span>
-        <v-chip
-          v-if="database && database.is_public"
-          size="small"
+        <ResourceStatus
           class="ml-2"
-          color="success"
-          :text="$t('toolbars.database.public')"
-          variant="outlined" />
-        <v-chip
-          v-if="database && !database.is_public"
-          size="small"
-          class="ml-2"
-          :color="colorVariant"
-          variant="outlined"
-          :text="$t('toolbars.database.private')"
-          flat />
+          :resource="database" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
@@ -95,8 +83,12 @@
 <script>
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
+import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {
+  components: {
+    ResourceStatus
+  },
   data () {
     return {
       tab: null,
