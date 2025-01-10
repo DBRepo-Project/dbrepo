@@ -46,22 +46,6 @@
         class="mr-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
-        v-if="canUpdateTable"
-        class="mr-2"
-        variant="flat"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-edit' : null"
-        color="warning"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.update-table.xl') + ' ' : '') + $t('toolbars.database.update-table.permanent')"
-        @click="updateTableDialog = true" />
-      <v-btn
-        v-if="canDropTable"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
-        color="error"
-        variant="flat"
-        :text="($vuetify.display.lgAndUp ? 'Drop ' : '') + 'Table'"
-        class="mr-2"
-        @click="dropTableDialog = true" />
-      <v-btn
         v-if="canGetPid"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
@@ -82,37 +66,24 @@
             v-if="canViewSchema"
             :text="$t('navigation.schema')"
             :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`" />
+          <v-tab
+            v-if="canUpdateTable"
+            :text="$t('navigation.settings')"
+            :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/settings`" />
         </v-tabs>
       </template>
     </v-toolbar>
-    <v-dialog
-      v-model="dropTableDialog"
-      max-width="640">
-      <DropTable
-        @close="closeDelete" />
-    </v-dialog>
-    <v-dialog
-      v-model="updateTableDialog"
-      max-width="640">
-      <UpdateTable
-        :table="table"
-        @close="closeUpdate" />
-    </v-dialog>
   </div>
 </template>
 
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
-import DropTable from '@/components/dialogs/DropTable.vue'
-import UpdateTable from '@/components/dialogs/UpdateTable.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
-    EditTuple,
-    DropTable,
-    UpdateTable
+    EditTuple
   },
   data () {
     return {
@@ -121,7 +92,6 @@ export default {
       error: false,
       edit: false,
       dropTableDialog: false,
-      updateTableDialog: false,
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -160,16 +130,6 @@ export default {
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.roles.includes('execute-query')
-    },
-    canDropTable () {
-      if (!this.roles || !this.table || !this.user) {
-        return false
-      }
-      if (this.roles.includes('delete-foreign-table')) {
-        return true
-      }
-      const tableService = useTableService()
-      return tableService.isOwner(this.table, this.user) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     canCreateView () {
       if (!this.roles || !this.table || !this.user) {
@@ -217,27 +177,6 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
-    },
-    isContrastTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
-    },
-    isDarkTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
-    },
-    colorVariant () {
-      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
-    },
-  },
-  methods: {
-    closeDelete ({success}) {
-      this.dropTableDialog = false
-      if (success) {
-        this.cacheStore.reloadDatabase()
-        this.$router.push(`/database/${this.$route.params.database_id}/table`)
-      }
-    },
-    closeUpdate () {
-      this.updateTableDialog = false
     }
   }
 }

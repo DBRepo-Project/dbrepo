@@ -1,4 +1,5 @@
 import os
+
 import mariadb
 from keycloak import KeycloakAdmin
 
@@ -8,8 +9,10 @@ admin = KeycloakAdmin(server_url=os.getenv('AUTH_SERVICE_ENDPOINT', 'http://loca
                       username=os.getenv('AUTH_SERVICE_ADMIN', 'admin'),
                       password=os.getenv('AUTH_SERVICE_ADMIN_PASSWORD', 'admin'),
                       verify=True)
-user_id = admin.get_user_id(username=system_username)
-print(f'Successfully fetched user id: {user_id}')
+keycloak_user_id = admin.get_user_id(username=system_username)
+print(f'Successfully fetched keycloak user id: {keycloak_user_id}')
+ldap_user_id = admin.get_user(user_id=keycloak_user_id).get('attributes')['LDAP_ID'][0]
+print(f'Successfully fetched ldap user id: {ldap_user_id}')
 
 try:
     conn = mariadb.connect(user=os.getenv('METADATA_USERNAME', 'root'),
@@ -20,7 +23,7 @@ try:
     cursor = conn.cursor()
     cursor.execute(
         "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `email`, `mariadb_password`) VALUES (?, ?, ?, PASSWORD(?))",
-        (user_id, system_username, 'some@admin', '1234567890'))
+        (ldap_user_id, system_username, 'some@admin', '1234567890'))
     conn.commit()
     conn.close()
 except mariadb.Error as e:

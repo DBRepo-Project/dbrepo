@@ -5,6 +5,8 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
@@ -519,13 +521,14 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             /* reduce metadata */
             database.setTables(database.getTables()
                     .stream()
-                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
+                    .filter(t -> t.getIsPublic() || optional.isPresent())
                     .toList());
             database.setViews(database.getViews()
                     .stream()
-                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
+                    .filter(v -> v.getIsPublic() || optional.isPresent())
                     .toList());
             if (!database.getOwner().getId().equals(getId(principal))) {
+                log.trace("authenticated user is not owner: remove access list");
                 database.setAccesses(List.of());
             }
         } else {
@@ -536,11 +539,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             /* reduce metadata */
             database.setTables(database.getTables()
                     .stream()
-                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
+                    .filter(Table::getIsPublic)
                     .toList());
             database.setViews(database.getViews()
                     .stream()
-                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic())
+                    .filter(View::getIsPublic)
                     .toList());
             database.setAccesses(List.of());
         }

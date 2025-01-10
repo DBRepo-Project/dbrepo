@@ -291,8 +291,13 @@
           "read": "You can read all contents of this table"
         }
       },
-      "visibility": {
-        "title": "Visibility",
+      "settings": {
+        "title": "Metadata",
+        "subtitle": "Optional table description for humans and visibility settings."
+      },
+      "delete": {
+        "title": "Delete this table",
+        "subtitle": "This action deletes {table} and all data in it. There is no going back."
       },
       "description": {
         "title": "Description",
