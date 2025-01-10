@@ -100,7 +100,7 @@
           class="mr-2"
           color="secondary"
           variant="flat"
-          prepend-icon="mdi-login"
+          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-login' : null"
           to="/login">
           {{ $t('navigation.login') }}
         </v-btn>
@@ -108,7 +108,7 @@
           v-if="!user"
           color="primary"
           variant="flat"
-          prepend-icon="mdi-account-plus"
+          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-account-plus' : null"
           to="/signup">
           {{ $t('navigation.signup') }}
         </v-btn>
@@ -258,6 +258,10 @@ export default {
         /* load view */
         if (newObj.view_id) {
           this.cacheStore.setRouteView(newObj.database_id, newObj.view_id)
+        }
+        /* load subset */
+        if (newObj.subset_id) {
+          this.cacheStore.setRouteSubset(newObj.database_id, newObj.subset_id)
         }
       },
       deep: true,

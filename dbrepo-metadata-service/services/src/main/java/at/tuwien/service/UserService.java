@@ -29,6 +29,8 @@ public interface UserService {
      */
     User findByUsername(String username) throws UserNotFoundException;
 
+    List<User> findAllInternalUsers();
+
     /**
      * Finds a specific user in the metadata database by given id.
      *

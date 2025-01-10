@@ -25,10 +25,6 @@
         <v-list
           dense>
           <v-list-item
-            :title="$t('pages.table.id.title')">
-            {{ table.id }}
-          </v-list-item>
-          <v-list-item
             :title="$t('pages.table.name.title')">
             {{ table.internal_name }}
           </v-list-item>
@@ -44,12 +40,6 @@
           <v-list-item
             :title="$t('pages.table.description.title')">
             {{ hasDescription ? table.description : $t('pages.table.description.empty') }}
-          </v-list-item>
-          <v-list-item
-            :title="$t('pages.table.owner.title')">
-            <UserBadge
-              :user="table.owner"
-              :other-user="user" />
           </v-list-item>
           <v-list-item
             v-if="accessDescription"
@@ -69,6 +59,12 @@
                 {{ accessDescription }}
               </span>
             </span>
+          </v-list-item>
+          <v-list-item
+            :title="$t('pages.table.owner.title')">
+            <UserBadge
+              :user="table.owner"
+              :other-user="user" />
           </v-list-item>
         </v-list>
       </v-card-text>

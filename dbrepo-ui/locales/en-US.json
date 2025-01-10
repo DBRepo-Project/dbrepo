@@ -37,7 +37,8 @@
     "modify": "Modify",
     "help": "Help",
     "visibility": "Visibility",
-    "update": "Update"
+    "update": "Update",
+    "you": "You"
   },
   "pages": {
     "identifier": {
@@ -293,11 +294,11 @@
       },
       "settings": {
         "title": "Metadata",
-        "subtitle": "Optional table description for humans and visibility settings."
+        "subtitle": "Optional table description for humans and visibility settings"
       },
       "delete": {
         "title": "Delete this table",
-        "subtitle": "This action deletes {table} and all data in it. There is no going back."
+        "subtitle": "This action deletes {table} and all data in it, there is no going back"
       },
       "description": {
         "title": "Description",
@@ -612,13 +613,13 @@
       "resource": {
         "data": {
           "label": "Transparency",
-          "hint": "Required, e.g. can hide the resource so it is hidden.",
+          "hint": "Required, e.g. can hide the {resource} from lists, search, etc.",
           "enabled": "Visible",
           "disabled": "Hidden"
         },
         "schema": {
           "label": "Insights",
-          "hint": "Required, e.g. can show metadata on resources.",
+          "hint": "Required, e.g. can hide insights on the {resource} such as {schema}.",
           "enabled": "Visible",
           "disabled": "Hidden"
         }
@@ -639,7 +640,7 @@
       },
       "subpages": {
         "access": {
-          "title": "Database Access",
+          "title": "Access to database",
           "subtitle": "Overview on users with their access to the database",
           "read": "Read all contents",
           "write-own": "Read all contents & write own tables",
@@ -917,6 +918,14 @@
       },
       "visibility": {
         "title": "Visibility"
+      },
+      "delete": {
+        "title": "Delete this view",
+        "subtitle": "This action deletes {view}, there is no going back"
+      },
+      "settings": {
+        "title": "Metadata",
+        "subtitle": "Visibility settings"
       },
       "subpages": {
         "create": {
@@ -1286,18 +1295,18 @@
       "dataset": "Successfully analysed dataset"
     },
     "access": {
-      "created": "Successfully provisioned access",
-      "modified": "Successfully modified access",
-      "revoked": "Successfully revoked access"
+      "created": "Granted {access} access successfully",
+      "modified": "Updated {access} access successfully",
+      "revoked": "Revoked {access} access successfully"
     },
     "data": {
       "add": "Successfully added data entry",
       "update": "Successfully updated data entry"
     },
     "table": {
-      "created": "Successfully created table",
+      "created": "Created table {table} successfully",
       "semantics": "Successfully assigned semantic instance",
-      "updated": "Successfully updated table"
+      "updated": "Updated table {table} successfully"
     },
     "schema": {
       "tables": "Successfully refreshed database tables metadata.",
@@ -1323,7 +1332,7 @@
       "info": "Successfully updated user information",
       "theme": "Successfully updated user theme",
       "password": "Successfully updated user password",
-      "login": "Successfully logged in"
+      "login": "Welcome back, {username}!"
     },
     "view": {
       "create": "Successfully created view",

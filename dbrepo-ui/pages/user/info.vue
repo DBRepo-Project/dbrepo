@@ -14,11 +14,9 @@
                 <v-col md="6">
                   <v-text-field
                     v-model="model.id"
-                    readonly
+                    disabled
                     :variant="inputVariant"
-                    :label="$t('pages.user.subpages.info.id.label')"
-                    append-inner-icon="mdi-content-copy"
-                    @click:append-inner="copy" />
+                    :label="$t('pages.user.subpages.info.id.label')" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -284,11 +282,6 @@ export default {
         .finally(() => {
           this.orcidLoading = false
         })
-    },
-    copy () {
-      navigator.clipboard.writeText(this.model.id)
-      const toast = useToastInstance()
-      toast.success(this.$t('success.clipboard.user'))
     }
   }
 }

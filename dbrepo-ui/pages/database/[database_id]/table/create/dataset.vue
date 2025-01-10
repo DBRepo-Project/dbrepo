@@ -107,7 +107,7 @@
                       v-model="tableCreate.is_public"
                       name="public"
                       :label="$t('pages.database.resource.data.label')"
-                      :hint="$t('pages.database.resource.data.hint')"
+                      :hint="$t('pages.database.resource.data.hint', { resource: 'table' })"
                       persistent-hint
                       :variant="inputVariant"
                       :items="dataOptions"
@@ -123,7 +123,7 @@
                       v-model="tableCreate.is_schema_public"
                       name="schema-public"
                       :label="$t('pages.database.resource.schema.label')"
-                      :hint="$t('pages.database.resource.schema.hint')"
+                      :hint="$t('pages.database.resource.schema.hint', { resource: 'table', schema: 'columns' })"
                       persistent-hint
                       :variant="inputVariant"
                       :items="schemaOptions"
@@ -374,7 +374,7 @@ export default {
         .then((table) => {
           this.table = table
           const toast = useToastInstance()
-          toast.success(this.$t('success.table.created'))
+          toast.success(this.$t('success.table.created', { table: table.internal_name }))
           this.step = 5
         })
         .catch(({code, message}) => {

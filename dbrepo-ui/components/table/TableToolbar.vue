@@ -9,48 +9,49 @@
       <v-toolbar-title
         v-if="table">
         <v-skeleton-loader
-          v-if="!table && $vuetify.display.lgAndUp"
+          v-if="!table && $vuetify.display.mdAndUp"
           type="subtitle"
           width="200" />
         <span
-          v-if="table && $vuetify.display.lgAndUp">
+          class="mr-2"
+          v-if="table && $vuetify.display.mdAndUp">
           {{ table.name }}
         </span>
         <ResourceStatus
-          class="ml-2"
+          :size="$vuetify.display.mdAndUp ? 'small' : 'default'"
           :resource="table" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canImportCsv"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
+        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
       <v-btn
         v-if="canExecuteQuery"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/subset/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canCreateView"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canGetPid"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? 'Get ' : '') + 'PID'"
+        :text="($vuetify.display.mdAndUp ? 'Get ' : '') + 'PID'"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`" />
       <template v-slot:extension>

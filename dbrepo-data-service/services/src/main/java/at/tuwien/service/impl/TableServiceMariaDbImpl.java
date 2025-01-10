@@ -170,7 +170,11 @@ public class TableServiceMariaDbImpl extends HibernateConnector implements Table
             final long start = System.currentTimeMillis();
             final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.tableNameToUpdateTableRawQuery(table.getInternalName()));
             log.trace("prepare with arg 1={}", data.getDescription());
-            statement.setString(1, data.getDescription());
+            if (data.getDescription() == null) {
+                statement.setString(1, "");
+            } else {
+                statement.setString(1, data.getDescription());
+            }
             statement.executeUpdate();
             log.debug("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();

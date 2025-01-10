@@ -63,7 +63,7 @@ public class UserEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_users_list")
     @Operation(summary = "List users",
-            description = "Lists users known to the metadata database.")
+            description = "Lists users known to the metadata database. Internal users are omitted from the result list. If the optional query parameter `username` is present, the result list can be filtered by matching this exact username.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List users",
@@ -71,18 +71,23 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
     })
-    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username) {
+    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username)
+            throws UserNotFoundException {
         log.debug("endpoint find all users, username={}", username);
         if (username == null) {
             return ResponseEntity.ok(userService.findAll()
                     .stream()
+                    .filter(user -> !user.getIsInternal())
                     .map(userMapper::userToUserBriefDto)
                     .toList());
         }
+        log.trace("filter by username: {}", username);
         try {
-            log.trace("filter by username: {}", username);
-            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(
-                    userService.findByUsername(username))));
+            final User user = userService.findByUsername(username);
+            if (user.getIsInternal()) {
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(List.of(userMapper.userToUserBriefDto(user)));
         } catch (UserNotFoundException e) {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
@@ -149,7 +154,7 @@ public class UserEndpoint extends AbstractEndpoint {
     @PostMapping("/token")
     @Observed(name = "dbrepo_user_token")
     @Operation(summary = "Create token",
-            description = "Creates a user token via the auth service.")
+            description = "Creates a user token via the Auth Service.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Obtained user token",
@@ -253,7 +258,7 @@ public class UserEndpoint extends AbstractEndpoint {
     @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbrepo_user_find")
     @Operation(summary = "Get user",
-            description = "Gets user with id from the metadata database. Requires authentication.",
+            description = "Gets own user information from the metadata database. Requires authentication. Foreign user information can only be obtained if additional role `find-foreign-user` is present. Finding information about internal users results in a 404 error.",
             security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -281,6 +286,9 @@ public class UserEndpoint extends AbstractEndpoint {
         if (!user.getId().equals(getId(principal)) && !hasRole(principal, "find-foreign-user")) {
             log.error("Failed to find user: foreign user");
             throw new NotAllowedException("Failed to find user: foreign user");
+        }
+        if (user.getIsInternal()) {
+            throw new UserNotFoundException("Failed to find user with username: " + user.getUsername());
         }
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {

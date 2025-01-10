@@ -58,19 +58,11 @@
                 </div>
               </v-list-item>
               <v-list-item
+                v-if="databaseSize"
                 :title="$t('pages.database.size.title')"
                 density="compact">
                 <div>
                   {{ databaseSize }}
-                </div>
-              </v-list-item>
-              <v-list-item
-                :title="$t('pages.database.owner.title')"
-                density="compact">
-                <div>
-                  <UserBadge
-                    :user="database.owner"
-                    :other-user="user" />
                 </div>
               </v-list-item>
               <v-list-item
@@ -93,6 +85,15 @@
                       {{ accessDescription.text }}
                     </span>
                   </span>
+                </div>
+              </v-list-item>
+              <v-list-item
+                :title="$t('pages.database.owner.title')"
+                density="compact">
+                <div>
+                  <UserBadge
+                    :user="database.owner"
+                    :other-user="user" />
                 </div>
               </v-list-item>
               <v-list-item

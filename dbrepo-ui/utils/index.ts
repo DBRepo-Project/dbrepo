@@ -10,6 +10,13 @@ export function notEmpty(str: string) {
   return str.trim().length > 0
 }
 
+export function max(str: string, len: number) {
+  if (str === null) {
+    return false
+  }
+  return str.trim().length <= len
+}
+
 export function notFile(files: [File[]]) {
   if (!files) {
     return false

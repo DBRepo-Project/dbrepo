@@ -7,6 +7,7 @@ export const useCacheStore = defineStore('cache', {
       database: null,
       table: null,
       view: null,
+      subset: null,
       ontologies: [],
       messages: [],
       uploadProgress: null
@@ -16,6 +17,7 @@ export const useCacheStore = defineStore('cache', {
     getDatabase: (state) => state.database,
     getTable: (state) => state.table,
     getView: (state) => state.view,
+    getSubset: (state) => state.subset,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
     getUploadProgress: (state) => state.uploadProgress,
@@ -29,6 +31,9 @@ export const useCacheStore = defineStore('cache', {
     },
     setView (view) {
       this.view = view
+    },
+    setSubset (subset) {
+      this.subset = subset
     },
     setOntologies (ontologies) {
       this.ontologies = ontologies
@@ -68,6 +73,14 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload table', error)
         })
     },
+    reloadView () {
+      const viewService = useViewService()
+      viewService.findOne(this.table.database_id, this.view.id)
+        .then(view => this.view = view)
+        .catch((error) => {
+          console.error('Failed to reload view', error)
+        })
+    },
     setRouteDatabase (databaseId) {
       if (!databaseId) {
         this.database = null
@@ -94,17 +107,30 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to set route table', error)
         })
     },
-    setRouteView (databaseId, view_id) {
-      if (!databaseId || !view_id) {
+    setRouteView (databaseId, viewId) {
+      if (!databaseId || !viewId) {
         this.view = null
-        console.error('Cannot set route view: missing view id', databaseId, 'or view id', view_id)
+        console.error('Cannot set route view: database view id', databaseId, 'or view id', viewId)
         return
       }
       const viewService = useViewService()
-      viewService.findOne(databaseId, view_id)
+      viewService.findOne(databaseId, viewId)
         .then(view => this.view = view)
         .catch((error) => {
           console.error('Failed to set route view', error)
+        })
+    },
+    setRouteSubset (databaseId, subsetId) {
+      if (!databaseId || !subsetId) {
+        this.subset = null
+        console.error('Cannot set route subset: missing database id', databaseId, 'or subset id', subsetId)
+        return
+      }
+      const subsetService = useQueryService()
+      subsetService.findOne(databaseId, subsetId)
+        .then(subset => this.subset = subset)
+        .catch((error) => {
+          console.error('Failed to set route subset', error)
         })
     }
   },

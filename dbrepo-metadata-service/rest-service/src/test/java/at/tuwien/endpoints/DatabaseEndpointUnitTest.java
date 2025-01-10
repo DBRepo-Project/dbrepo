@@ -110,7 +110,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(containerService.find(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1);
-        when(databaseService.create(CONTAINER_1, request, USER_1))
+        when(databaseService.create(CONTAINER_1, request, USER_1, List.of(USER_LOCAL)))
                 .thenReturn(DATABASE_1);
         doNothing()
                 .when(messageQueueService)

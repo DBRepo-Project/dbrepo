@@ -92,7 +92,7 @@
                   v => !!v || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.schema.label')"
-                :hint="$t('pages.database.resource.schema.hint')" />
+                :hint="$t('pages.database.resource.schema.hint', { resource: 'subset', schema: 'query' })" />
             </v-col>
           </v-row>
           <v-window
@@ -489,9 +489,12 @@ export default {
           this.loadingColumns = false
         })
         .catch(({code}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
           this.loadingColumns = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
     },
     validViewName (name) {

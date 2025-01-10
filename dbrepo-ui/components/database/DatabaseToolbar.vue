@@ -8,50 +8,51 @@
           type="subtitle"
           width="200" />
         <span
-          v-if="database && $vuetify.display.lgAndUp">
+          class="mr-2"
+          v-if="database && $vuetify.display.mdAndUp">
           {{ database.name }}
         </span>
         <ResourceStatus
-          class="ml-2"
+          :size="$vuetify.display.mdAndUp ? 'small' : 'default'"
           :resource="database" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="false"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-chart-timeline-variant-shimmer' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-chart-timeline-variant-shimmer' : null"
         color="tertiary"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
+        :text="$t('toolbars.database.dashboard.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.dashboard.xl') : '')" />
       <v-btn
         v-if="canCreateTable"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-large-plus' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-table-large-plus' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/create/dataset`" />
       <v-btn
         v-if="canCreateSubset"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="mr-2 white--text"
         :to="`/database/${$route.params.database_id}/subset/create`" />
       <v-btn
         v-if="canCreateView"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel-outline' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel-outline' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2 white--text"
         :to="`/database/${$route.params.database_id}/view/create`" />
       <v-btn
         v-if="canCreateIdentifier"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/persist`" />
       <template v-slot:extension>

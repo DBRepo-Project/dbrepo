@@ -313,9 +313,12 @@ export default {
         }
         const tupleService = useTupleService()
         wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
-          .catch(({message}) => {
+          .catch(({code, message}) => {
             const toast = useToastInstance()
-            toast.error(message)
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           }))
       }
       Promise.all(wait)
@@ -345,6 +348,9 @@ export default {
           .catch(({code}) => {
             this.downloadLoading = false
             const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
             toast.error(this.$t(code))
           })
           .finally(() => {
@@ -364,6 +370,9 @@ export default {
           .catch(({code}) => {
             this.downloadLoading = false
             const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
             toast.error(this.$t(code))
           })
           .finally(() => {

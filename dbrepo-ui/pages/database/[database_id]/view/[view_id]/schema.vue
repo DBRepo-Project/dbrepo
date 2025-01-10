@@ -63,7 +63,6 @@ export default {
   data () {
     return {
       loading: false,
-      view: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -100,15 +99,15 @@ export default {
       cacheStore: useCacheStore()
     }
   },
-  mounted () {
-    this.fetchView()
-  },
   computed: {
     user () {
       return this.userStore.getUser
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    view () {
+      return this.cacheStore.getView
     },
     access () {
       return this.userStore.getAccess
@@ -118,9 +117,6 @@ export default {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    view () {
-      return this.cacheStore.getView
     },
     canViewSchema () {
       if (!this.view) {
@@ -176,23 +172,6 @@ export default {
     },
     hasConcept (item) {
       return item.concept && 'uri' in item.concept
-    },
-    fetchView () {
-      this.loading = true
-      const viewService = useViewService()
-      viewService.findOne(this.$route.params.database_id, this.$route.params.view_id)
-        .then((view) => {
-          this.view = view
-          this.loading = false
-        })
-        .catch(({code}) => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.loading = false
-        })
     }
   }
 }

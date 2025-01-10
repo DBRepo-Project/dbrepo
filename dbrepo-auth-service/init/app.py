@@ -22,8 +22,8 @@ try:
                            database=os.getenv('METADATA_DB', 'dbrepo'))
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `email`, `mariadb_password`) VALUES (?, ?, ?, PASSWORD(?))",
-        (ldap_user_id, system_username, 'some@admin', '1234567890'))
+        "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `email`, `mariadb_password`, `is_internal`) VALUES (?, ?, LEFT(UUID(), 20), PASSWORD(LEFT(UUID(), 20)), true)",
+        (ldap_user_id, system_username))
     conn.commit()
     conn.close()
 except mariadb.Error as e:

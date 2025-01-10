@@ -8,14 +8,14 @@
       :title="$t('toolbars.database.current')"
       flat>
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
         :text="$t('toolbars.table.data.download')"
         class="mr-2"
         @click.stop="download" />
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
         class="mr-2"
@@ -132,6 +132,9 @@ export default {
         .catch(({code}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {

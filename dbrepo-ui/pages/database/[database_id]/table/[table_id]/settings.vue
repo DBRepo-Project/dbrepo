@@ -24,7 +24,7 @@
                     v-model="modify.description"
                     rows="2"
                     :rules="[
-                      v => (!!v || v.length <= 180) || ($t('validation.max-length') + 180),
+                      v => !max(v, 180) || ($t('validation.max-length') + 180),
                     ]"
                     clearable
                     counter="180"
@@ -49,7 +49,7 @@
                       v => v !== null || $t('validation.required')
                     ]"
                     :label="$t('pages.database.resource.data.label')"
-                    :hint="$t('pages.database.resource.data.hint')" />
+                    :hint="$t('pages.database.resource.data.hint', { resource: 'table' })" />
                 </v-col>
                 <v-col
                   md="4">
@@ -63,7 +63,7 @@
                       v => v !== null || $t('validation.required')
                     ]"
                     :label="$t('pages.database.resource.schema.label')"
-                    :hint="$t('pages.database.resource.schema.hint')" />
+                    :hint="$t('pages.database.resource.schema.hint', { resource: 'table', schema: 'columns' })" />
                 </v-col>
               </v-row>
               <v-row>
@@ -100,7 +100,7 @@
                   variant="flat"
                   color="error"
                   @click="askDelete">
-                  Delete
+                  {{ $t('navigation.delete')}}
                 </v-btn>
               </v-col>
             </v-row>
@@ -115,6 +115,7 @@
 </template>
 
 <script>
+import { max } from '@/utils'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
@@ -129,7 +130,7 @@ export default {
       valid: null,
       loading: false,
       modify: {
-        description: '',
+        description: null,
         is_public: null,
         is_schema_public: null
       },
@@ -159,8 +160,8 @@ export default {
           to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`
         },
         {
-          title: this.$t('navigation.schema'),
-          to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/schema`,
+          title: this.$t('navigation.settings'),
+          to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/settings`,
           disabled: true
         }
       ],
@@ -252,6 +253,7 @@ export default {
     this.modify.description = this.table.description
   },
   methods: {
+    max,
     submit () {
       this.$refs.form.validate()
     },
@@ -296,13 +298,16 @@ export default {
         .then(() => {
           this.loading = false
           const toast = useToastInstance()
-          toast.success(this.$t('success.table.updated'))
+          toast.success(this.$t('success.table.updated', { table: this.table.internal_name }))
           this.$emit('close', { success: true })
           this.cacheStore.reloadTable()
         })
         .catch(({ code }) => {
           this.loading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {
@@ -325,6 +330,9 @@ export default {
         })
         .catch(({code, message}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {

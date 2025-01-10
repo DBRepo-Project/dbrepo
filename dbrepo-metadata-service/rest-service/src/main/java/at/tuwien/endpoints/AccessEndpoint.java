@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @Log4j2
@@ -164,7 +165,15 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Failed to update access: not owner");
             throw new NotAllowedException("Failed to update access: not owner");
         }
+        if (database.getOwner().getId().equals(userId)) {
+            log.error("Failed to update access: the owner must have write-all access");
+            throw new NotAllowedException("Failed to update access: the owner must have write-all access");
+        }
         final User user = userService.findById(userId);
+        if (user.getIsInternal()) {
+            log.error("Failed to update access: the internal user must have write-all access");
+            throw new NotAllowedException("Failed to update access: the internal user must have write-all access");
+        }
         accessService.find(database, user);
         accessService.update(database, user, data.getType());
         return ResponseEntity.accepted()
@@ -261,7 +270,15 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Failed to revoke access: not owner");
             throw new NotAllowedException("Failed to revoke access: not owner");
         }
+        if (database.getOwner().getId().equals(userId)) {
+            log.error("Failed to revoke access: the owner must have write-all access");
+            throw new NotAllowedException("Failed to revoke access: the owner must have write-all access");
+        }
         final User user = userService.findById(userId);
+        if (user.getIsInternal()) {
+            log.error("Failed to revoke access: the internal user must have write-all access");
+            throw new NotAllowedException("Failed to revoke access: the internal user must have write-all access");
+        }
         accessService.find(database, user);
         accessService.delete(database, user);
         return ResponseEntity.accepted()

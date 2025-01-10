@@ -139,7 +139,7 @@ public class AccessEndpoint extends AbstractEndpoint {
                 access.getType());
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         final PrivilegedUserDto user = credentialService.getUser(userId);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
+        if (database.getAccesses().stream().noneMatch(a -> a.getHuserid().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
         }

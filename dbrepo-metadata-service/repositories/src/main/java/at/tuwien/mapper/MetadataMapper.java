@@ -523,11 +523,17 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default TableDto customTableToTableDto(Table data) {
-        return customTableToTableDto(data, true, true, true);
+    default DatabaseAccess userToWriteAllAccess(Database database, User user) {
+        return DatabaseAccess.builder()
+                .type(AccessType.WRITE_ALL)
+                .hdbid(database.getId())
+                .database(database)
+                .huserid(user.getId())
+                .user(user)
+                .build();
     }
 
-    default TableDto customTableToTableDto(Table data, Boolean broker, Boolean statistic, Boolean schema) {
+    default TableDto customTableToTableDto(Table data) {
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -548,58 +554,52 @@ public interface MetadataMapper {
                     .map(this::identifierToIdentifierDto)
                     .toList()));
         }
-        if (broker) {
-            table.setQueueName(data.getQueueName());
-            table.setQueueType("quorum");
-            table.setRoutingKey("dbrepo." + data.getTdbid() + "." + data.getId());
+        table.setQueueName(data.getQueueName());
+        table.setQueueType("quorum");
+        table.setRoutingKey("dbrepo." + data.getTdbid() + "." + data.getId());
+        table.setAvgRowLength(data.getAvgRowLength());
+        table.setMaxDataLength(data.getMaxDataLength());
+        table.setDataLength(data.getDataLength());
+        table.setNumRows(data.getNumRows());
+        table.getConstraints()
+                .getPrimaryKey()
+                .forEach(pk -> {
+                    pk.getTable().setDatabaseId(data.getDatabase().getId());
+                    pk.getColumn().setTableId(data.getId());
+                    pk.getColumn().setDatabaseId(data.getDatabase().getId());
+                });
+        table.getConstraints()
+                .getForeignKeys()
+                .forEach(fk -> {
+                    fk.getTable().setDatabaseId(table.getTdbid());
+                    fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                    fk.getReferences()
+                            .forEach(ref -> {
+                                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                                ref.getColumn().setTableId(table.getId());
+                                ref.getColumn().setDatabaseId(table.getTdbid());
+                                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
+                                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                            });
+                });
+        table.getConstraints()
+                .getUniques()
+                .forEach(uk -> {
+                    uk.getTable().setDatabaseId(data.getDatabase().getId());
+                    uk.getColumns()
+                            .forEach(column -> {
+                                column.setTableId(data.getId());
+                                column.setDatabaseId(data.getDatabase().getId());
+                            });
+                });
+        if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
+            table.getConstraints().setChecks(new LinkedHashSet<>());
         }
-        if (statistic) {
-            table.setAvgRowLength(data.getAvgRowLength());
-            table.setMaxDataLength(data.getMaxDataLength());
-            table.setDataLength(data.getDataLength());
-            table.setNumRows(data.getNumRows());
-        }
-        if (schema) {
-            table.getConstraints()
-                    .getPrimaryKey()
-                    .forEach(pk -> {
-                        pk.getTable().setDatabaseId(data.getDatabase().getId());
-                        pk.getColumn().setTableId(data.getId());
-                        pk.getColumn().setDatabaseId(data.getDatabase().getId());
-                    });
-            table.getConstraints()
-                    .getForeignKeys()
-                    .forEach(fk -> {
-                        fk.getTable().setDatabaseId(table.getTdbid());
-                        fk.getReferencedTable().setDatabaseId(table.getTdbid());
-                        fk.getReferences()
-                                .forEach(ref -> {
-                                    ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
-                                    ref.getColumn().setTableId(table.getId());
-                                    ref.getColumn().setDatabaseId(table.getTdbid());
-                                    ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
-                                    ref.getReferencedColumn().setDatabaseId(table.getTdbid());
-                                });
-                    });
-            table.getConstraints()
-                    .getUniques()
-                    .forEach(uk -> {
-                        uk.getTable().setDatabaseId(data.getDatabase().getId());
-                        uk.getColumns()
-                                .forEach(column -> {
-                                    column.setTableId(data.getId());
-                                    column.setDatabaseId(data.getDatabase().getId());
-                                });
-                    });
-            if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
-                table.getConstraints().setChecks(new LinkedHashSet<>());
-            }
-            if (data.getColumns() != null) {
-                table.setColumns(new LinkedList<>(data.getColumns()
-                        .stream()
-                        .map(this::tableColumnToColumnDto)
-                        .toList()));
-            }
+        if (data.getColumns() != null) {
+            table.setColumns(new LinkedList<>(data.getColumns()
+                    .stream()
+                    .map(this::tableColumnToColumnDto)
+                    .toList()));
         }
         return table;
     }
@@ -900,6 +900,7 @@ public interface MetadataMapper {
         if (data.getAccesses() != null) {
             database.setAccesses(new LinkedList<>(data.getAccesses()
                     .stream()
+                    .filter(a -> !a.getUser().getIsInternal())
                     .map(this::databaseAccessToDatabaseAccessDto)
                     .toList()));
         }

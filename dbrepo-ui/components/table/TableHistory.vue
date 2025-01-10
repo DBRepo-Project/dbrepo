@@ -173,9 +173,12 @@ export default {
           }
         })
         .catch(({message}) => {
-          const toast = useToastInstance()
-          toast.error(message)
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
         })
     }
   }

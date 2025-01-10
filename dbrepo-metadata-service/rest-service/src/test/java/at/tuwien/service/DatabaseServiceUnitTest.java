@@ -535,7 +535,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1);
+        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1, List.of(USER_LOCAL));
         assertTrue(response.getInternalName().startsWith(DATABASE_1_INTERNALNAME));
         assertNotNull(response.getContainer());
         assertNotNull(response.getTables());

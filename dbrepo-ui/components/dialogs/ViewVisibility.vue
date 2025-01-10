@@ -22,7 +22,7 @@
                   v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.data.label')"
-                :hint="$t('pages.database.resource.data.hint')" />
+                :hint="$t('pages.database.resource.data.hint', { resource: 'view' })" />
             </v-col>
             <v-col
               md="6">
@@ -36,7 +36,7 @@
                   v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.schema.label')"
-                :hint="$t('pages.database.resource.schema.hint')" />
+                :hint="$t('pages.database.resource.schema.hint', { resource: 'view', schema: 'columns' })" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -126,25 +126,6 @@ export default {
     cancel () {
       this.$emit('close', { success: false })
     },
-    updateVisibility () {
-      this.loading = true
-      const viewService = useViewService()
-      viewService.update(this.$route.params.database_id, this.$route.params.view_id, this.modify)
-        .then(() => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.success(this.$t('success.view.modified'))
-          this.$emit('close', { success: true })
-        })
-        .catch(({code, message}) => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.error(message)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    }
   }
 }
 </script>

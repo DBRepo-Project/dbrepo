@@ -483,20 +483,20 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyPrivateDataAccess(database, principal);
         endpointValidator.validateOnlyPrivateDataHasRole(database, principal, "find-table");
         final Table table = tableService.findById(database, tableId);
-        boolean hasAccess = isSystem(principal);
         boolean isOwner = false;
-        try {
-            if (principal != null) {
+        if (principal != null) {
+            isOwner = table.getOwner().getId().equals(getId(principal));
+            try {
                 accessService.find(table.getDatabase(), userService.findById(getId(principal)));
-                hasAccess = true;
-                isOwner = table.getOwner().getId().equals(getId(principal));
+            } catch (UserNotFoundException | AccessNotFoundException e) {
+                /* ignore */
             }
-        } catch (UserNotFoundException | AccessNotFoundException e) {
-            /* ignore */
         }
-        final boolean includeSchema = isSystem(principal) || isOwner || table.getIsSchemaPublic();
-        log.trace("user has access: {}", hasAccess);
-        log.trace("include schema in mapping: {}", includeSchema);
+        if (!table.getIsSchemaPublic() && !isOwner && !isSystem(principal)) {
+            log.debug("remove schema from table: {}.{}", database.getInternalName(), table.getInternalName());
+            table.setColumns(List.of());
+            table.setConstraints(null);
+        }
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
@@ -510,8 +510,7 @@ public class TableEndpoint extends AbstractEndpoint {
         }
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(metadataMapper.customTableToTableDto(table, hasAccess, table.getDatabase().getIsPublic(),
-                        includeSchema));
+                .body(metadataMapper.customTableToTableDto(table));
     }
 
     @DeleteMapping("/{tableId}")

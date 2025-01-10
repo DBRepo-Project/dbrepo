@@ -3,7 +3,7 @@
     v-if="mode">
     <v-chip
       v-if="!inline"
-      size="small"
+      :size="size"
       :color="color"
       variant="outlined">
       {{ status }}
@@ -25,6 +25,11 @@ export default {
     inline: {
       default: () => {
         return false
+      }
+    },
+    size: {
+      default: () => {
+        return 'small'
       }
     }
   },

@@ -33,7 +33,9 @@
         :loading="loadingSubset"
         @click="loadSubset" />
     </v-toolbar>
-    <v-card tile>
+    <v-card
+      v-if="subset"
+      tile>
       <QueryResults
         id="query-results"
         ref="queryResults"
@@ -151,8 +153,10 @@ export default {
         })
     },
     loadResult () {
-      this.$refs.queryResults.reExecute(this.subset.id)
-      this.$refs.queryResults.reExecuteCount(this.subset.id)
+      if (this.subset) {
+        this.$refs.queryResults.reExecute(this.subset.id)
+        this.$refs.queryResults.reExecuteCount(this.subset.id)
+      }
     },
     download () {
       this.downloadLoading = true
@@ -170,6 +174,9 @@ export default {
         .catch(({code}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {

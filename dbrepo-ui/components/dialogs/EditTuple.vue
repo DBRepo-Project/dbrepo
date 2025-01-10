@@ -462,9 +462,12 @@ export default {
           this.loading = false
         })
         .catch(({message}) => {
-          const toast = useToastInstance()
-          toast.error(message)
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false
@@ -492,9 +495,12 @@ export default {
           this.loading = false
         })
         .catch(({message}) => {
-          const toast = useToastInstance()
-          toast.error(message)
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
         })
         .finally(() => {
           this.loading = false

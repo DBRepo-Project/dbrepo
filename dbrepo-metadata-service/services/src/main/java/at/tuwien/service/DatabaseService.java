@@ -54,12 +54,13 @@ public interface DatabaseService {
      * @param container The container.
      * @param createDto The metadata.
      * @param user      The user.
+     * @param internalUsers      The list of internal users.
      * @return The database, if successful.
      * @throws UserNotFoundException          If the container/user was not found in the metadata database.
      * @throws DataServiceException           If the data service returned non-successfully.
      * @throws DataServiceConnectionException If failing to connect to the data service/search service.
      */
-    Database create(Container container, DatabaseCreateDto createDto, User user) throws UserNotFoundException,
+    Database create(Container container, DatabaseCreateDto createDto, User user, List<User> internalUsers) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException;
 

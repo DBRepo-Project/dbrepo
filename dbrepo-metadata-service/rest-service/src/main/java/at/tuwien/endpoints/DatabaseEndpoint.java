@@ -170,7 +170,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final User caller = userService.findById(getId(principal));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.customDatabaseToDatabaseDto(
-                        databaseService.create(container, data, caller)));
+                        databaseService.create(container, data, caller, userService.findAllInternalUsers())));
     }
 
     @PutMapping("/{databaseId}/metadata/table")
@@ -527,8 +527,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .stream()
                     .filter(v -> v.getIsPublic() || optional.isPresent())
                     .toList());
-            if (!database.getOwner().getId().equals(getId(principal))) {
-                log.trace("authenticated user is not owner: remove access list");
+            if (!isSystem(principal) && !database.getOwner().getId().equals(getId(principal))) {
+                log.trace("authenticated user {} is not owner: remove access list", principal.getName());
                 database.setAccesses(List.of());
             }
         } else {

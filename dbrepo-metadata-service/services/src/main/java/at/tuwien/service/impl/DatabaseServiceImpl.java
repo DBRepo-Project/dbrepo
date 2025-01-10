@@ -8,7 +8,9 @@ import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.database.*;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
@@ -89,9 +91,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(Container container, DatabaseCreateDto data, User user) throws UserNotFoundException,
-            ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public Database create(Container container, DatabaseCreateDto data, User user, List<User> internalUsers)
+            throws UserNotFoundException, ContainerNotFoundException, DataServiceException, SearchServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceConnectionException {
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -123,13 +125,11 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
         entity1.getAccesses()
-                .add(DatabaseAccess.builder()
-                        .type(AccessType.WRITE_ALL)
-                        .hdbid(entity1.getId())
-                        .database(entity1)
-                        .huserid(user.getId())
-                        .user(user)
-                        .build());
+                .add(metadataMapper.userToWriteAllAccess(entity1, user));
+        entity1.getAccesses()
+                .addAll(internalUsers.stream()
+                        .map(internalUser -> metadataMapper.userToWriteAllAccess(entity1, internalUser))
+                        .toList());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);

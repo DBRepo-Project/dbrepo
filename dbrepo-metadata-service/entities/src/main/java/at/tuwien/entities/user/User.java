@@ -7,7 +7,6 @@ import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +20,9 @@ import java.util.UUID;
 @EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_users")
+@NamedQueries({
+        @NamedQuery(name = "User.findAllInternal", query = "select distinct u from User u where u.isInternal = true")
+})
 public class User {
 
     @Id
@@ -60,5 +62,8 @@ public class User {
 
     @Column(name = "mariadb_password", nullable = false)
     private String mariadbPassword;
+
+    @Column(name = "is_internal", nullable = false, insertable = false, updatable = false)
+    private Boolean isInternal;
 
 }

@@ -1,45 +1,28 @@
 <template>
   <v-toolbar flat>
     <v-btn
-      class="mr-2"
       size="small"
       icon="mdi-arrow-left"
       :to="`/database/${$route.params.database_id}/view`" />
     <v-toolbar-title
       v-if="view">
       <span
-        v-if="$vuetify.display.lgAndUp">
+        v-if="$vuetify.display.mdAndUp"
+        class="mr-2">
         {{ title }}
       </span>
       <ResourceStatus
-        class="ml-2"
+        :size="$vuetify.display.mdAndUp ? 'small' : 'default'"
         :resource="view" />
     </v-toolbar-title>
     <v-spacer />
     <v-btn
-      v-if="canDeleteView"
-      class="mr-2"
-      variant="flat"
-      :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
-      :loading="loadingDelete"
-      color="error"
-      :text="$t('navigation.delete')"
-      @click="deleteView" />
-    <v-btn
-      v-if="canUpdateVisibility"
-      class="mr-2"
-      variant="flat"
-      :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-eye' : null"
-      color="warning"
-      :text="$t('navigation.visibility')"
-      @click="updateViewDialog = true" />
-    <v-btn
       v-if="canCreatePid"
       class="mr-2"
-      :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
       variant="flat"
       color="primary"
-      :text="($vuetify.display.lgAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
+      :text="($vuetify.display.mdAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
       :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`" />
     <v-dialog
       v-model="updateViewDialog"
@@ -64,6 +47,10 @@
           v-if="canViewSchema"
           :text="$t('navigation.schema')"
           :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/schema`" />
+        <v-tab
+          v-if="canViewSettings"
+          :text="$t('navigation.settings')"
+          :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/settings`" />
       </v-tabs>
     </template>
   </v-toolbar>
@@ -128,17 +115,11 @@ export default {
       }
       return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
-    canDeleteView () {
-      if (!this.roles || !this.user || !this.view) {
+    canViewSettings () {
+      if (!this.user || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.view.owner.id === this.user.id
-    },
-    canUpdateVisibility () {
-      if (!this.roles || !this.user || !this.view) {
-        return false
-      }
-      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.user.id
+      return this.view.owner.id === this.user.id
     },
     canCreatePid () {
       if (!this.roles || !this.user || !this.view) {
@@ -185,35 +166,6 @@ export default {
         return null
       }
       return this.view.name
-    }
-  },
-  methods: {
-    deleteView () {
-      this.loadingDelete = true
-      const viewService = useViewService()
-      viewService.remove(this.$route.params.database_id, this.$route.params.view_id)
-        .then(() => {
-          const toast = useToastInstance()
-          toast.success(this.$t('success.view.delete'))
-          this.cacheStore.reloadDatabase()
-          this.$router.push(`/database/${this.$route.params.database_id}/view`)
-        })
-        .catch(({code, message}) => {
-          const toast = useToastInstance()
-          if (typeof code !== 'string' || typeof message !== 'string') {
-            return
-          }
-          toast.error(this.$t(code) + ": " + message)
-        })
-        .finally(() => {
-          this.loadingDelete = false
-        })
-    },
-    close ({success}) {
-      this.updateViewDialog = false
-      if (success) {
-        this.cacheStore.reloadDatabase()
-      }
     }
   }
 }

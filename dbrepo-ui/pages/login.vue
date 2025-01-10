@@ -117,7 +117,7 @@ export default {
           userService.findOne(userId)
             .then((user) => {
               const toast = useToastInstance()
-              toast.success(this.$t('success.user.login'))
+              toast.success(this.$t('success.user.login', { username : user.username }))
               switch (user.attributes.theme) {
                 case 'dark':
                   this.$vuetify.theme.global.name = 'tuwThemeDark'
@@ -137,12 +137,18 @@ export default {
             })
             .catch(({code}) => {
               const toast = useToastInstance()
+              if (typeof code !== 'string') {
+                return
+              }
               toast.error(this.$t(code))
             })
         })
         .catch(({code}) => {
           this.loading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {
