@@ -123,11 +123,6 @@ public class ColumnDto {
     private transient List<ViewDto> views;
 
     @NotNull
-    @JsonProperty("is_public")
-    @Schema(example = "true")
-    private Boolean isPublic;
-
-    @NotNull
     @JsonProperty("is_null_allowed")
     @Schema(example = "false")
     private Boolean isNullAllowed;

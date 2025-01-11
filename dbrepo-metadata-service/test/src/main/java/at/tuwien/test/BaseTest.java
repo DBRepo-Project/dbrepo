@@ -460,12 +460,10 @@ public abstract class BaseTest {
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
-    public final static String USER_1_QUALIFIED_NAME = "@" + USER_1_USERNAME + " — " + USER_1_FIRSTNAME + " " + USER_1_LASTNAME;
+    public final static String USER_1_QUALIFIED_NAME = USER_1_FIRSTNAME + " " + USER_1_LASTNAME + " — @" + USER_1_USERNAME;
     public final static String USER_1_NAME = "John Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
-    public final static String USER_1_ORCID = "000000034216302X";
-    public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
-    public final static String USER_1_ORCID_URL = "https://orcid.org/" + USER_1_ORCID_UNCOMPRESSED;
+    public final static String USER_1_ORCID_URL = "https://orcid.org/0000-0003-4216-302X";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
@@ -486,7 +484,7 @@ public abstract class BaseTest {
 
     public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_1_THEME)
-            .orcid(USER_1_ORCID_UNCOMPRESSED)
+            .orcid(USER_1_ORCID_URL)
             .affiliation(USER_1_AFFILIATION)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .language(USER_1_LANGUAGE)
@@ -531,7 +529,7 @@ public abstract class BaseTest {
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
-            .orcid(USER_1_ORCID)
+            .orcid(USER_1_ORCID_URL)
             .theme(USER_1_THEME)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .language(USER_1_LANGUAGE)
@@ -552,7 +550,7 @@ public abstract class BaseTest {
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
-            .orcid(USER_1_ORCID)
+            .orcid(USER_1_ORCID_URL)
             .theme(USER_1_THEME)
             .language(USER_1_LANGUAGE)
             .build();
@@ -581,6 +579,7 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .name(USER_1_NAME)
             .qualifiedName(USER_1_QUALIFIED_NAME)
+            .orcid(USER_1_ORCID_URL)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -4967,6 +4966,7 @@ public abstract class BaseTest {
     public final static List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(1L)
+                    .ordinalPosition(0)
                     .databaseId(DATABASE_1_ID)
                     .name("location")
                     .internalName("location")
@@ -4977,24 +4977,29 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(2L)
+                    .ordinalPosition(1)
                     .databaseId(DATABASE_1_ID)
                     .name("lat")
                     .internalName("lat")
                     .ordinalPosition(1)
-                    .columnType(ColumnTypeDto.DOUBLE)
-                    .size(22L)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
                     .id(3L)
+                    .ordinalPosition(2)
                     .databaseId(DATABASE_1_ID)
                     .name("lng")
                     .internalName("lng")
                     .ordinalPosition(2)
-                    .columnType(ColumnTypeDto.DOUBLE)
-                    .size(22L)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
                     .isNullAllowed(true)
-                    .build());
+                    .build()
+    );
 
     public final static View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
@@ -5076,6 +5081,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
+            .identifiers(null /* VIEW_1_DTO_IDENTIFIERS */)
             .owner(USER_1_BRIEF_DTO)
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
@@ -7969,6 +7975,8 @@ public abstract class BaseTest {
             .database(DATABASE_4)
             .huserid(USER_3_ID)
             .build();
+
+    public final static List<IdentifierDto> VIEW_1_DTO_IDENTIFIERS = List.of(IDENTIFIER_3_DTO);
 
     public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())

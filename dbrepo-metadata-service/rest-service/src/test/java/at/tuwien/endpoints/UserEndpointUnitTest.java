@@ -192,7 +192,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_URL)
                 .build();
 
         /* test */
@@ -208,7 +208,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_URL)
                 .build();
 
         /* test */
@@ -224,7 +224,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_URL)
                 .build();
 
         /* test */
@@ -240,7 +240,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_URL)
                 .build();
 
         /* test */

@@ -110,15 +110,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(containerService.find(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1);
-        when(databaseService.create(CONTAINER_1, request, USER_1, List.of(USER_LOCAL)))
-                .thenReturn(DATABASE_1);
-        doNothing()
-                .when(messageQueueService)
-                .setVirtualHostPermissions(USER_1);
-        when(keycloakGateway.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_KEYCLOAK_DTO);
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
+        when(userService.findAllInternalUsers())
+                .thenReturn(List.of(USER_LOCAL));
+        when(databaseService.create(CONTAINER_1, request, USER_1, List.of(USER_LOCAL)))
+                .thenReturn(DATABASE_1);
 
         /* test */
         create_generic(request, USER_1_PRINCIPAL, USER_1);
@@ -278,11 +275,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void list_anonymous_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
-        /* pre-condition */
-        assertFalse(DATABASE_1_PUBLIC);
+        /* mock */
+        when(databaseService.findAllPublic())
+                .thenReturn(List.of(DATABASE_1));
 
         /* test */
-        list_generic(List.of(DATABASE_1), null, null);
+        list_generic(null, null, 1);
     }
 
     @Test
@@ -292,8 +290,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
+        /* mock */
+        when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
+                .thenReturn(List.of(DATABASE_3));
+
         /* test */
-        list_generic(List.of(DATABASE_3), null, USER_1_PRINCIPAL);
+        list_generic(null, USER_1_PRINCIPAL, 1);
     }
 
     @Test
@@ -303,24 +305,36 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
+        /* mock */
+        when(databaseService.findAllPublicOrReadAccess(USER_1_ID))
+                .thenReturn(List.of(DATABASE_3));
+
         /* test */
-        list_generic(List.of(DATABASE_3), null, USER_1_PRINCIPAL);
+        list_generic(null, USER_1_PRINCIPAL, 1);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
     public void list_hasRoleFilter_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
+        /* mock */
+        when(databaseService.findAllPublicOrReadAccessByInternalName(USER_1_ID, DATABASE_3_INTERNALNAME))
+                .thenReturn(List.of(DATABASE_3));
+
         /* test */
-        list_generic(List.of(DATABASE_3), DATABASE_3_INTERNALNAME, USER_1_PRINCIPAL);
+        list_generic(DATABASE_3_INTERNALNAME, USER_1_PRINCIPAL, 1);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
     public void list_hasRoleFilterNoResult_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
+        /* mock */
+        when(databaseService.findAllPublicOrReadAccessByInternalName(USER_1_ID, "i_do_not_exist"))
+                .thenReturn(List.of());
+
         /* test */
-        list_generic(List.of(), "i_do_not_exist", USER_1_PRINCIPAL);
+        list_generic("i_do_not_exist", USER_1_PRINCIPAL, 0);
     }
 
     @Test
@@ -644,46 +658,15 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void list_generic(List<Database> databases, String internalName, Principal principal)
+    public void list_generic(String internalName, Principal principal, Integer expectedSize)
             throws DatabaseNotFoundException, UserNotFoundException {
-
-        /* mock */
-        when(databaseService.findAll())
-                .thenReturn(databases);
-        if (principal != null) {
-            if (internalName != null) {
-                if (databases.isEmpty()) {
-                    when(databaseService.findAllPublicOrReadAccessByInternalName(any(UUID.class), eq(internalName)))
-                            .thenReturn(List.of());
-                } else {
-                    when(databaseService.findAllPublicOrReadAccessByInternalName(any(UUID.class), eq(internalName)))
-                            .thenReturn(List.of(databases.get(0)));
-                }
-            } else {
-                when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
-                        .thenReturn(databases);
-            }
-        } else {
-            if (internalName != null) {
-                if (databases.isEmpty()) {
-                    when(databaseService.findAllPublicByInternalName(eq(internalName)))
-                            .thenReturn(List.of());
-                } else {
-                    when(databaseService.findAllPublicByInternalName(eq(internalName)))
-                            .thenReturn(List.of(databases.get(0)));
-                }
-            } else {
-                when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
-                        .thenReturn(databases);
-            }
-        }
 
         /* test */
         final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(internalName, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<DatabaseBriefDto> body = response.getBody();
-        assertEquals(databases.size(), body.size());
+        assertEquals(expectedSize, body.size());
     }
 
     public void create_generic(DatabaseCreateDto data, Principal principal, User user) throws DataServiceException,

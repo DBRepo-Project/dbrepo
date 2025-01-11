@@ -721,7 +721,6 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
-            @Mapping(target = "isPublic", source = "table.isSchemaPublic"),
             @Mapping(target = "description", source = "description"),
             @Mapping(target = "table", ignore = true),
             @Mapping(target = "views", ignore = true)
@@ -833,7 +832,6 @@ public interface MetadataMapper {
 
     @Mappings({
             @Mapping(target = "databaseId", source = "view.vdbid"),
-            @Mapping(target = "isPublic", source = "view.isPublic")
     })
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 

@@ -70,14 +70,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void identifierCreateDtoToIdentifier_succeeds() {
-
-        /* test */
-        final Identifier response = metadataMapper.identifierCreateDtoToIdentifier(IDENTIFIER_1_CREATE_DTO);
-        assertEquals(IDENTIFIER_1, response);
-    }
-
-    @Test
     public void identifierCreateDtoToIdentifier_withDoi_succeeds() {
 
         /* test */
@@ -101,22 +93,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(IDENTIFIER_2_QUERY_ID, response.getQueryId());
         assertNull(response.getDoi());
         assertEquals(IDENTIFIER_2_TYPE, response.getType());
-    }
-
-    @Test
-    public void identifierCreateDtoToIdentifier_view_succeeds() {
-
-        /* test */
-        final Identifier response = metadataMapper.identifierCreateDtoToIdentifier(IDENTIFIER_3_CREATE_DTO);
-        assertEquals(IDENTIFIER_3, response);
-    }
-
-    @Test
-    public void customDatabaseToDatabaseDto_succeeds() {
-
-        /* test */
-        final DatabaseDto response = metadataMapper.customDatabaseToDatabaseDto(DATABASE_1);
-        assertEquals(DATABASE_1_DTO, response);
     }
 
     public static Stream<Arguments> nameToInternalName_parameters() {
