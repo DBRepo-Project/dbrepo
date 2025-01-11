@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.repository.ContainerRepository;
@@ -30,6 +31,9 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Autowired
     private DatabaseService databaseService;
+
+    @Autowired
+    private AccessService accessService;
 
     @Autowired
     private UserRepository userRepository;
@@ -67,9 +71,43 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
     public void findAllPublicByInternalName_succeeds() {
 
         /* test */
-        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
+        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_3_INTERNALNAME);
         assertEquals(1, response.size());
-        assertEquals(DATABASE_1, response.get(0));
+        assertEquals(DATABASE_3, response.get(0));
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllPublicByInternalName_privateEmpty_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllPublicOrReadAccess_privateNoAccessEmpty_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllPublicOrReadAccess(USER_4_ID);
+        assertEquals(3, response.size());
+        assertEquals(DATABASE_4, response.get(0));
+        assertEquals(DATABASE_3, response.get(1));
+        assertEquals(DATABASE_2, response.get(2));
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllPublicOrReadAccess_privateAccess_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllPublicOrReadAccess(USER_2_ID);
+        assertEquals(4, response.size());
+        assertEquals(DATABASE_4, response.get(0));
+        assertEquals(DATABASE_3, response.get(1));
+        assertEquals(DATABASE_2, response.get(2));
+        assertEquals(DATABASE_1, response.get(3));
     }
 
 }

@@ -184,42 +184,42 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.setType(metadataMapper.identifierTypeDtoToIdentifierType(data.getType()));
         /* create in metadata database */
         if (data.getCreators() != null) {
-            identifier.setCreators(data.getCreators()
+            identifier.setCreators(new LinkedList<>(data.getCreators()
                     .stream()
                     .map(metadataMapper::creatorCreateDtoToCreator)
-                    .toList());
+                    .toList()));
             identifier.getCreators()
                     .forEach(c -> c.setIdentifier(identifier));
         }
         if (data.getRelatedIdentifiers() != null) {
-            identifier.setRelatedIdentifiers(data.getRelatedIdentifiers()
+            identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
                     .stream()
                     .map(metadataMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
-                    .toList());
+                    .toList()));
             identifier.getRelatedIdentifiers()
                     .forEach(r -> r.setIdentifier(identifier));
         }
         if (data.getTitles() != null) {
-            identifier.setTitles(data.getTitles()
+            identifier.setTitles(new LinkedList<>(data.getTitles()
                     .stream()
                     .map(metadataMapper::identifierCreateTitleDtoToIdentifierTitle)
-                    .toList());
+                    .toList()));
             identifier.getTitles()
                     .forEach(t -> t.setIdentifier(identifier));
         }
         if (data.getDescriptions() != null) {
-            identifier.setDescriptions(data.getDescriptions()
+            identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
                     .stream()
                     .map(metadataMapper::identifierCreateDescriptionDtoToIdentifierDescription)
-                    .toList());
+                    .toList()));
             identifier.getDescriptions()
                     .forEach(d -> d.setIdentifier(identifier));
         }
         if (data.getFunders() != null) {
-            identifier.setFunders(data.getFunders()
+            identifier.setFunders(new LinkedList<>(data.getFunders()
                     .stream()
                     .map(metadataMapper::identifierFunderSaveDtoToIdentifierFunder)
-                    .toList());
+                    .toList()));
             identifier.getFunders()
                     .forEach(f -> f.setIdentifier(identifier));
         }

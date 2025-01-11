@@ -88,19 +88,6 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findAllPublicByInternalName_notFound_fails() {
-
-        /* mock */
-        when(databaseRepository.findAllPublicByInternalNameDesc(DATABASE_1_INTERNALNAME))
-                .thenReturn(List.of());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    @Test
     public void updatePassword_succeeds() throws DataServiceException, DatabaseNotFoundException,
             DataServiceConnectionException {
 

@@ -76,6 +76,9 @@ public class EndpointValidator extends AbstractEndpoint {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
+        if (isSystem(principal)) {
+            return;
+        }
         final DatabaseAccess access = accessService.find(database, userService.findById(getId(principal)));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {

@@ -63,7 +63,7 @@ public class User {
     @Column(name = "mariadb_password", nullable = false)
     private String mariadbPassword;
 
-    @Column(name = "is_internal", nullable = false, insertable = false, updatable = false)
+    @Column(name = "is_internal", nullable = false, updatable = false)
     private Boolean isInternal;
 
 }

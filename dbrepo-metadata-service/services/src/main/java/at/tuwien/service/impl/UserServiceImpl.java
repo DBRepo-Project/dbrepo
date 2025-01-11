@@ -73,6 +73,7 @@ public class UserServiceImpl implements UserService {
                 .theme("light")
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .language("en")
+                .isInternal(false)
                 .build();
         /* create at metadata database */
         final User user = userRepository.save(entity);

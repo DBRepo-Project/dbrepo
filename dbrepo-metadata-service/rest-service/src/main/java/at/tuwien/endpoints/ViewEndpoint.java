@@ -252,7 +252,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                     @NotNull @PathVariable("viewId") Long viewId,
                                     @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         if (!database.getOwner().getId().equals(getId(principal))) {
@@ -306,7 +306,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                           @NotNull @Valid @RequestBody ViewUpdateDto data,
                                           @NotNull Principal principal) throws NotAllowedException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
         final Database database = databaseService.findById(databaseId);
         final View view = viewService.findById(database, viewId);

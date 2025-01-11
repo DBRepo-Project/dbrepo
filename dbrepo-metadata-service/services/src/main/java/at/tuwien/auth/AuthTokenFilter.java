@@ -73,6 +73,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final JWTVerifier verifier = verification.build();
         final DecodedJWT jwt = verifier.verify(token);
         final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);
+        log.trace("token contains uid: {}", jwt.getClaim("uid").asString());
         return UserDetailsDto.builder()
                 .id(jwt.getClaim("uid").asString())
                 .username(jwt.getClaim("preferred_username").asString())

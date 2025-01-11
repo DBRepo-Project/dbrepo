@@ -214,9 +214,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-database-view"})
-    public void delete_publicOwner_succeeds() throws NotAllowedException, DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
+    public void delete_publicOwner_succeeds() throws NotAllowedException, DataServiceException, UserNotFoundException,
+            DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException, ViewNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
 
         /* test */
         delete_generic(DATABASE_3_ID, DATABASE_3, VIEW_5_ID, VIEW_5, USER_3_PRINCIPAL, USER_3_ID, USER_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS);
@@ -372,7 +372,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-view"})
     public void delete_privateOwner_succeeds() throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, ViewNotFoundException {
+            SearchServiceConnectionException, ViewNotFoundException, UserNotFoundException {
 
         /* test */
         delete_generic(DATABASE_1_ID, DATABASE_1, VIEW_1_ID, VIEW_1, USER_1_PRINCIPAL, USER_1_ID, USER_1, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
@@ -411,7 +411,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-view-visibility"})
     public void update_succeeds() throws NotAllowedException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
+            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException, UserNotFoundException {
 
         /* test */
         update_generic(USER_1_PRINCIPAL);
@@ -531,7 +531,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     protected void delete_generic(Long databaseId, Database database, Long viewId, View view, Principal principal,
                                   UUID userId, User user, DatabaseAccess access) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
-            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException {
+            SearchServiceException, SearchServiceConnectionException, ViewNotFoundException, UserNotFoundException {
 
         /* mock */
         when(databaseService.findById(databaseId))
@@ -556,7 +556,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
     protected void update_generic(Principal principal) throws SearchServiceException, NotAllowedException,
             DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException,
-            ViewNotFoundException {
+            ViewNotFoundException, UserNotFoundException {
         final ViewUpdateDto request = ViewUpdateDto.builder()
                 .isPublic(true)
                 .isSchemaPublic(true)

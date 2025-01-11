@@ -40,10 +40,7 @@ import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.*;
-import at.tuwien.api.keycloak.CredentialDto;
-import at.tuwien.api.keycloak.CredentialTypeDto;
-import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.keycloak.UserCreateDto;
+import at.tuwien.api.keycloak.*;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
@@ -60,6 +57,8 @@ import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
+import at.tuwien.api.user.UserAttributesDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.*;
 import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
@@ -163,6 +162,8 @@ public abstract class BaseTest {
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
 
     public final static String MARIADB_IMAGE = "mariadb:11.3.2";
+
+    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:24.0";
 
     public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
@@ -426,11 +427,18 @@ public abstract class BaseTest {
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
     public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
+    public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
     public final static String USER_LOCAL_ADMIN_EMAIL = "admin@local";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
+    public final static LoginRequestDto USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
+            .username(USER_LOCAL_ADMIN_USERNAME)
+            .password(USER_LOCAL_ADMIN_PASSWORD)
+            .build();
+
     public final static UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
+            .id(String.valueOf(USER_LOCAL_ADMIN_ID))
             .username(USER_LOCAL_ADMIN_USERNAME)
             .password(USER_LOCAL_ADMIN_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
@@ -449,7 +457,7 @@ public abstract class BaseTest {
             USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static UUID USER_1_LDAP_ID = UUID.fromString("8e541e05-f45c-4d40-ba1b-0e62f04ba3f8");
+    public final static UUID USER_1_LDAP_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "junit1";
     @SuppressWarnings("java:S2068")
@@ -496,19 +504,31 @@ public abstract class BaseTest {
             .value(USER_1_PASSWORD)
             .build();
 
+    public final static CredentialDto USER_LOCAL_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
+            .type(CredentialTypeDto.PASSWORD)
+            .temporary(false)
+            .value(USER_LOCAL_ADMIN_PASSWORD)
+            .build();
+
     public final static UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .enabled(USER_1_ENABLED)
-            .credentials(List.of(USER_1_KEYCLOAK_CREDENTIAL_1))
+            .credentials(new LinkedList<>(List.of(USER_1_KEYCLOAK_CREDENTIAL_1)))
+            .attributes(UserCreateAttributesDto.builder()
+                    .ldapId(String.valueOf(USER_1_ID))
+                    .build())
             .build();
 
-    public final static UserCreateDto USER_1_KEYCLOAK_SYSTEM_SIGNUP_REQUEST = UserCreateDto.builder()
-            .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
-            .enabled(USER_1_ENABLED)
-            .credentials(List.of(USER_1_KEYCLOAK_CREDENTIAL_1))
-            .groups(List.of("system"))
+    public final static UserCreateDto USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
+            .username(USER_LOCAL_ADMIN_USERNAME)
+            .email(USER_LOCAL_ADMIN_EMAIL)
+            .enabled(USER_LOCAL_ADMIN_ENABLED)
+            .credentials(new LinkedList<>(List.of(USER_LOCAL_KEYCLOAK_CREDENTIAL_1)))
+            .groups(new LinkedList<>(List.of("system")))
+            .attributes(UserCreateAttributesDto.builder()
+                    .ldapId(String.valueOf(USER_LOCAL_ADMIN_ID))
+                    .build())
             .build();
 
     public final static PrivilegedUserDto USER_1_PRIVILEGED_DTO = PrivilegedUserDto.builder()
@@ -605,6 +625,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
+    public final static UUID USER_2_LDAP_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
@@ -712,6 +733,7 @@ public abstract class BaseTest {
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
+    public final static UUID USER_3_LDAP_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
@@ -751,7 +773,7 @@ public abstract class BaseTest {
             .orcid(USER_3_ORCID_URL)
             .theme(USER_3_THEME)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
-            .isInternal(USER_2_IS_INTERNAL)
+            .isInternal(USER_3_IS_INTERNAL)
             .build();
 
     public final static UserDto USER_3_DTO = UserDto.builder()
@@ -807,6 +829,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
+    public final static UUID USER_4_LDAP_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
@@ -884,6 +907,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public final static UUID USER_5_LDAP_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_5_USERNAME = "system";
     public final static String USER_5_FIRSTNAME = "System";
     public final static String USER_5_LASTNAME = "System";
@@ -1152,7 +1176,7 @@ public abstract class BaseTest {
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
             .quota(CONTAINER_2_QUOTA)
-            .databases(List.of())
+            .databases(new LinkedList<>(List.of()))
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -1206,7 +1230,7 @@ public abstract class BaseTest {
             .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
             .quota(CONTAINER_3_QUOTA)
-            .databases(List.of())
+            .databases(new LinkedList<>(List.of()))
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
@@ -1310,10 +1334,6 @@ public abstract class BaseTest {
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
     public final static UUID DATABASE_3_OWNER = USER_3_ID;
-    public final static UUID DATABASE_3_CREATOR_ID = USER_3_ID;
-    public final static User DATABASE_3_CREATOR = USER_3;
-    public final static UserDto DATABASE_3_CREATOR_DTO = USER_3_DTO;
-    public final static UserDto DATABASE_3_OWNER_DTO = USER_3_DTO;
 
     public final static DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()
             .id(DATABASE_3_ID)
@@ -1443,13 +1463,13 @@ public abstract class BaseTest {
                             .name("col13")
                             .type(ColumnTypeDto.ENUM)
                             .nullAllowed(true)
-                            .enums(List.of("val1", "val2"))
+                            .enums(new LinkedList<>(List.of("val1", "val2")))
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col14")
                             .type(ColumnTypeDto.SET)
                             .nullAllowed(true)
-                            .sets(List.of("val1", "val2"))
+                            .sets(new LinkedList<>(List.of("val1", "val2")))
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col15")
@@ -1902,8 +1922,9 @@ public abstract class BaseTest {
             .uniques(new LinkedList<>())
             .foreignKeys(List.of(ForeignKeyCreateDto.builder()
                     .referencedTable("weather_location")
-                    .columns(List.of("fahrzeug"))
-                    .referencedColumns(List.of("doesnotexist")).build()))
+                    .columns(new LinkedList<>(List.of("fahrzeug")))
+                    .referencedColumns(new LinkedList<>(List.of("doesnotexist")))
+                    .build()))
             .build();
 
     public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
@@ -2242,7 +2263,7 @@ public abstract class BaseTest {
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>(Set.of("Timestamp")))
             .foreignKeys(new LinkedList<>())
-            .uniques(List.of(List.of("Timestamp")))
+            .uniques(new LinkedList<>(List.of(List.of("Timestamp"))))
             .build();
 
     public final static TableCreateDto TABLE_4_CREATE_DTO = TableCreateDto.builder()
@@ -2799,7 +2820,7 @@ public abstract class BaseTest {
                 put(COLUMN_8_3_INTERNAL_NAME, null);
             }}
     ));
-    
+
     @SuppressWarnings("java:S3599")
     public final static TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
             .columns(new HashMap<>() {{
@@ -3126,14 +3147,14 @@ public abstract class BaseTest {
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>(List.of("id")))
             .foreignKeys(new LinkedList<>())
-            .uniques(List.of(List.of("date")))
+            .uniques(new LinkedList<>(List.of(List.of("date"))))
             .build();
 
     public final static ConstraintsCreateDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = ConstraintsCreateDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
-            .uniques(List.of(List.of("date")))
+            .uniques(new LinkedList<>(List.of(List.of("date"))))
             .build();
 
     public final static TableCreateDto TABLE_1_CREATE_DTO = TableCreateDto.builder()
@@ -4597,9 +4618,9 @@ public abstract class BaseTest {
                     .build());
 
     public final static List<ForeignKeyCreateDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
-            .columns(List.of("somecolumn"))
+            .columns(new LinkedList<>(List.of("somecolumn")))
             .referencedTable("sometable")
-            .referencedColumns(List.of("someothercolumn"))
+            .referencedColumns(new LinkedList<>(List.of("someothercolumn")))
             .build());
 
     public final static ConstraintsCreateDto TABLE_5_CONSTRAINTS_INVALID_CREATE = ConstraintsCreateDto.builder()
@@ -4714,7 +4735,7 @@ public abstract class BaseTest {
 
     public final static ConstraintsCreateDto TABLE_5_CREATE_CONSTRAINTS_DTO = ConstraintsCreateDto.builder()
             .primaryKey(Set.of("id"))
-            .uniques(List.of(List.of("id")))
+            .uniques(new LinkedList<>(List.of(List.of("id"))))
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .build();
@@ -4860,9 +4881,9 @@ public abstract class BaseTest {
             List.of("firstname", "lastname"));
 
     public final static List<ForeignKeyCreateDto> TABLE_6_FOREIGN_KEYS_CREATE = List.of(ForeignKeyCreateDto.builder()
-            .columns(List.of("ref_id"))
+            .columns(new LinkedList<>(List.of("ref_id")))
             .referencedTable("zoo")
-            .referencedColumns(List.of("id"))
+            .referencedColumns(new LinkedList<>(List.of("id")))
             .build());
 
     public final static Set<String> TABLE_6_CHECKS_CREATE = Set.of("firstname != lastname");
@@ -6276,8 +6297,8 @@ public abstract class BaseTest {
     public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
             .id(IDENTIFIER_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
-            .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2)))
             .doi(IDENTIFIER_1_DOI)
             .database(null /* for jpa */)
             .created(IDENTIFIER_1_CREATED)
@@ -6293,9 +6314,9 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
             .owner(USER_1)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of(IDENTIFIER_1_CREATOR_1))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1))
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1)))
             .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
@@ -6303,8 +6324,8 @@ public abstract class BaseTest {
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO)))
             .doi(IDENTIFIER_1_DOI)
             .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -6317,9 +6338,9 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .owner(USER_1_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_DTO)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_DTO)))
             .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
 
@@ -6327,7 +6348,7 @@ public abstract class BaseTest {
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO)))
             .doi(IDENTIFIER_1_DOI)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_1_PUBLISHER)
@@ -6340,16 +6361,16 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE_DTO)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_1_PUBLISHER)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .doi(IDENTIFIER_1_DOI)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_CREATE_WITH_DOI_DTO = IdentifierCreateDto.builder()
@@ -6358,45 +6379,45 @@ public abstract class BaseTest {
             .doi(IDENTIFIER_1_DOI)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_1_PUBLISHER)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
             .build();
 
     public final static IdentifierSaveDto IDENTIFIER_1_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO)))
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
     public final static IdentifierSaveDto IDENTIFIER_1_SAVE_MODIFY_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .descriptions(List.of()) // <<<
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO)) // <<<
+            .descriptions(new LinkedList<>(List.of())) // <<<
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))) // <<<
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(List.of()) // <<<
-            .funders(List.of()) // <<<
+            .creators(new LinkedList<>(List.of())) // <<<
+            .funders(new LinkedList<>(List.of())) // <<<
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .licenses(List.of()) // <<<
+            .licenses(new LinkedList<>(List.of())) // <<<
             .build();
 
     public final static Long IDENTIFIER_5_ID = 5L;
@@ -6591,8 +6612,8 @@ public abstract class BaseTest {
             .id(IDENTIFIER_5_ID)
             .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_5_DESCRIPTION_1_DTO))
-            .titles(List.of(IDENTIFIER_5_TITLE_1_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_5_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_5_TITLE_1_DTO)))
             .doi(IDENTIFIER_5_DOI)
             .execution(IDENTIFIER_5_EXECUTION)
             .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
@@ -6606,14 +6627,14 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE_DTO)
             .owner(USER_2_DTO)
-            .creators(List.of(IDENTIFIER_5_CREATOR_1_DTO, IDENTIFIER_5_CREATOR_2_DTO))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1_DTO, IDENTIFIER_5_CREATOR_2_DTO)))
             .build();
 
     public final static IdentifierBriefDto IDENTIFIER_5_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_5_ID)
             .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
-            .titles(List.of(IDENTIFIER_5_TITLE_1_DTO))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_5_TITLE_1_DTO)))
             .doi(IDENTIFIER_5_DOI)
             .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_5_PUBLISHER)
@@ -6652,15 +6673,15 @@ public abstract class BaseTest {
             .id(IDENTIFIER_5_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
             .databaseId(IDENTIFIER_5_DATABASE_ID)
-            .descriptions(List.of(IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_5_TITLE_1_CREATE_DTO))
-            .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_5_TITLE_1_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO)))
             .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO)))
             .publisher(IDENTIFIER_5_PUBLISHER)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .type(IDENTIFIER_5_TYPE_DTO)
             .build();
 
@@ -6827,7 +6848,10 @@ public abstract class BaseTest {
             .creatorName(CREATOR_3_NAME)
             .nameIdentifier(CREATOR_3_ORCID)
             .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
+            .affiliation(CREATOR_3_AFFIL)
             .affiliationIdentifier(CREATOR_3_AFFIL_ROR)
+            .affiliationIdentifierScheme(AffiliationIdentifierSchemeType.ROR)
+            .affiliationIdentifierSchemeUri("https://ror.org/")
             .build();
 
     public final static CreatorDto IDENTIFIER_6_CREATOR_3_DTO = CreatorDto.builder()
@@ -6871,8 +6895,8 @@ public abstract class BaseTest {
             .id(IDENTIFIER_6_ID)
             .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_6_DESCRIPTION_1_DTO))
-            .titles(List.of(IDENTIFIER_6_TITLE_1_DTO))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_6_DESCRIPTION_1_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_6_TITLE_1_DTO)))
             .doi(IDENTIFIER_6_DOI)
             .execution(IDENTIFIER_6_EXECUTION)
             .publicationDay(IDENTIFIER_6_PUBLICATION_DAY)
@@ -6896,7 +6920,7 @@ public abstract class BaseTest {
             .id(IDENTIFIER_6_ID)
             .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
-            .titles(List.of(IDENTIFIER_6_TITLE_1_DTO))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_6_TITLE_1_DTO)))
             .doi(IDENTIFIER_6_DOI)
             .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_6_PUBLISHER)
@@ -7022,7 +7046,7 @@ public abstract class BaseTest {
             .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_7_CREATOR_1_CREATE_DTO))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_CREATE_DTO)))
             .funders(new LinkedList<>())
             .licenses(new LinkedList<>())
             .publisher(IDENTIFIER_7_PUBLISHER)
@@ -7134,7 +7158,7 @@ public abstract class BaseTest {
             .creators(new LinkedList<>())
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .queryId(QUERY_1_ID)
             .build();
 
@@ -7424,7 +7448,7 @@ public abstract class BaseTest {
             .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
             .name(DATABASE_1_NAME)
             .description(DATABASE_1_DESCRIPTION)
-            .identifiers(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)))
             .cid(CONTAINER_1_ID)
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
@@ -7452,9 +7476,9 @@ public abstract class BaseTest {
             .container(CONTAINER_1_BRIEF_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
-            .identifiers(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO))
-            .tables(List.of(TABLE_1_BRIEF_DTO, TABLE_2_BRIEF_DTO, TABLE_3_BRIEF_DTO, TABLE_4_BRIEF_DTO))
-            .views(List.of(VIEW_1_BRIEF_DTO, VIEW_2_BRIEF_DTO, VIEW_3_BRIEF_DTO))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_1_BRIEF_DTO, TABLE_2_BRIEF_DTO, TABLE_3_BRIEF_DTO, TABLE_4_BRIEF_DTO)))
+            .views(new LinkedList<>(List.of(VIEW_1_BRIEF_DTO, VIEW_2_BRIEF_DTO, VIEW_3_BRIEF_DTO)))
             .build();
 
     public final static PrivilegedDatabaseDto DATABASE_1_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
@@ -7464,9 +7488,9 @@ public abstract class BaseTest {
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
-            .identifiers(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO))
-            .tables(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO))
-            .views(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)))
+            .views(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)))
             .owner(USER_1_BRIEF_DTO)
             .lastRetrieved(Instant.now())
             .build();
@@ -7609,9 +7633,9 @@ public abstract class BaseTest {
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
-            .identifiers(List.of(IDENTIFIER_5_DTO))
-            .tables(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO))
-            .views(List.of(VIEW_4_DTO))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO)))
+            .views(new LinkedList<>(List.of(VIEW_4_DTO)))
             .owner(USER_2_BRIEF_DTO)
             .lastRetrieved(Instant.now())
             .build();
@@ -7623,9 +7647,9 @@ public abstract class BaseTest {
             .container(CONTAINER_1_BRIEF_DTO)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
-            .identifiers(List.of(IDENTIFIER_5_BRIEF_DTO))
-            .tables(List.of(TABLE_5_BRIEF_DTO, TABLE_6_BRIEF_DTO, TABLE_7_BRIEF_DTO))
-            .views(List.of(VIEW_4_BRIEF_DTO))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_5_BRIEF_DTO, TABLE_6_BRIEF_DTO, TABLE_7_BRIEF_DTO)))
+            .views(new LinkedList<>(List.of(VIEW_4_BRIEF_DTO)))
             .identifiers(new LinkedList<>())
             .owner(USER_2_BRIEF_DTO)
             .build();
@@ -7743,7 +7767,7 @@ public abstract class BaseTest {
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .accesses(new LinkedList<>()) /* DATABASE_3_USER_1_WRITE_ALL_ACCESS */
-            .identifiers(new LinkedList<>())
+            .identifiers(new LinkedList<>()) /* IDENTIFIER_6 */
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -7860,9 +7884,9 @@ public abstract class BaseTest {
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .identifiers(List.of(IDENTIFIER_6_DTO))
-            .tables(List.of(TABLE_8_DTO))
-            .views(List.of(VIEW_5_DTO))
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_6_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_8_DTO)))
+            .views(new LinkedList<>(List.of(VIEW_5_DTO)))
             .owner(USER_3_BRIEF_DTO)
             .lastRetrieved(Instant.now())
             .build();
@@ -8149,6 +8173,7 @@ public abstract class BaseTest {
     public final static Constraints TABLE_7_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
+                            .id(8L)
                             .name("fk_name_id")
                             .onDelete(ReferenceType.NO_ACTION)
                             .references(new LinkedList<>(List.of(ForeignKeyReference.builder()
@@ -8162,6 +8187,7 @@ public abstract class BaseTest {
                             .onUpdate(ReferenceType.NO_ACTION)
                             .build(),
                     ForeignKey.builder()
+                            .id(9L)
                             .name("fk_zoo_id")
                             .onDelete(ReferenceType.NO_ACTION)
                             .references(new LinkedList<>(List.of(ForeignKeyReference.builder()

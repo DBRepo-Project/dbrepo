@@ -32,6 +32,7 @@ public class BasicAuthenticationProvider implements AuthenticationManager {
         try {
             final TokenDto tokenDto = keycloakGateway.obtainUserToken(auth.getName(), auth.getCredentials().toString());
             final UserDetails userDetails = authTokenFilter.verifyJwt(tokenDto.getAccessToken());
+            log.debug("set basic auth principal: {}", userDetails);
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         } catch (ServletException | CredentialsInvalidException | AccountNotSetupException |
                  AuthServiceConnectionException e) {
