@@ -117,7 +117,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .setVirtualHostPermissions(USER_1);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -136,7 +136,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(containerService.find(CONTAINER_4_ID))
                 .thenReturn(CONTAINER_4);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -174,7 +174,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
         when(databaseService.updateTableMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -195,7 +195,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(databaseService.updateTableMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -215,7 +215,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(databaseService.updateViewMetadata(any(Database.class)))
                 .thenReturn(DATABASE_1);
@@ -233,7 +233,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
 
         /* test */
@@ -249,7 +249,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -265,7 +265,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -348,7 +348,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -376,7 +376,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
 
         /* test */
@@ -408,7 +408,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_3_ID))
                 .thenReturn(DATABASE_3);
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
 
         /* test */
@@ -429,7 +429,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(storageService.getBytes(request.getKey()))
                 .thenReturn(new byte[]{1, 2, 3, 4, 5});
@@ -450,7 +450,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -480,7 +480,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
         when(userService.findById(USER_4_ID))
                 .thenReturn(USER_4);
@@ -505,7 +505,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(userService.findById(USER_4_ID))
                 .thenReturn(USER_4);
@@ -650,14 +650,31 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findAll())
                 .thenReturn(databases);
-        if (internalName != null) {
-            if (!databases.isEmpty()) {
-                when(databaseService.findAllPublicByInternalName(internalName))
-                        .thenReturn(List.of(databases.get(0)));
+        if (principal != null) {
+            if (internalName != null) {
+                if (databases.isEmpty()) {
+                    when(databaseService.findAllPublicOrReadAccessByInternalName(any(UUID.class), eq(internalName)))
+                            .thenReturn(List.of());
+                } else {
+                    when(databaseService.findAllPublicOrReadAccessByInternalName(any(UUID.class), eq(internalName)))
+                            .thenReturn(List.of(databases.get(0)));
+                }
             } else {
-                doThrow(DatabaseNotFoundException.class)
-                        .when(databaseService)
-                        .findAllPublicByInternalName(internalName);
+                when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
+                        .thenReturn(databases);
+            }
+        } else {
+            if (internalName != null) {
+                if (databases.isEmpty()) {
+                    when(databaseService.findAllPublicByInternalName(eq(internalName)))
+                            .thenReturn(List.of());
+                } else {
+                    when(databaseService.findAllPublicByInternalName(eq(internalName)))
+                            .thenReturn(List.of(databases.get(0)));
+                }
+            } else {
+                when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
+                        .thenReturn(databases);
             }
         }
 
