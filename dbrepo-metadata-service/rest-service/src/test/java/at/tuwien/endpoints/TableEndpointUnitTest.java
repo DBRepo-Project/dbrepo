@@ -101,11 +101,21 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_publicAnonymous_succeeds() throws NotAllowedException, UserNotFoundException,
+    public void list_publicDataPrivateSchemaAnonymous_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_list(DATABASE_3_ID, DATABASE_3, null, null, null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void list_publicDataPublicSchemaAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
-        generic_list(DATABASE_3_ID, DATABASE_3, null, null, null);
+        generic_list(DATABASE_4_ID, DATABASE_4, null, null, null);
     }
 
     @Test
@@ -132,10 +142,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void list_publicNoRole_succeeds() throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException {
+    public void list_publicDataPrivateSchemaNoRole_fails() {
 
         /* test */
-        generic_list(DATABASE_3_ID, DATABASE_3, USER_4_PRINCIPAL, USER_4, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_list(DATABASE_3_ID, DATABASE_3, USER_4_PRINCIPAL, USER_4, null);
+        });
     }
 
     @Test
@@ -511,12 +523,24 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_publicDatabasePrivateDataPrivateSchemaAnonymous_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
 
         /* test */
-        generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
+        final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
+        final TableDto body = response.getBody();
+        assertNull(body.getConstraints());
+        assertEquals(List.of(), body.getColumns());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws DataServiceException,
+            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
+            QueueNotFoundException, UserNotFoundException, NotAllowedException {
+
+        /* test */
+        generic_findById(DATABASE_4_ID, DATABASE_4, TABLE_9_ID, TABLE_9, null, null, null);
     }
 
     @Test
@@ -898,12 +922,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_privateAnonymous_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_privateDatabasePrivateDataPublicSchemaAnonymous_fails() {
 
         /* test */
-        generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, null, null, null);
+        });
     }
 
     @Test
@@ -941,12 +965,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_privateNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_privateNoRole_fails() {
 
         /* test */
-        generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL, USER_4, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL, USER_4, null);
+        });
     }
 
     @Test
@@ -1132,7 +1156,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findById(user.getId()))
                     .thenReturn(user);
         }
         if (database != null) {
@@ -1180,7 +1204,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                     .findById(any(Database.class), eq(tableId));
         }
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findById(user.getId()))
                     .thenReturn(user);
             when(accessService.find(any(Database.class), eq(user)))
                     .thenReturn(access);
@@ -1231,7 +1255,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         }
         if (principal != null) {
             log.trace("mock user {}", user);
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findById(user.getId()))
                     .thenReturn(user);
         }
         if (access != null) {

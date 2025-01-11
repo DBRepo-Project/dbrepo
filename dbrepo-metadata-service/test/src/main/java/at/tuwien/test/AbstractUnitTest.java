@@ -138,6 +138,11 @@ public abstract class AbstractUnitTest extends BaseTest {
         VIEW_5_DTO.setColumns(VIEW_5_COLUMNS_DTO);
         IDENTIFIER_6.setDatabase(DATABASE_3);
         /* DATABASE 4 */
+        TABLE_9.setDatabase(DATABASE_4);
+        TABLE_9.setColumns(TABLE_9_COLUMNS);
+        TABLE_9.setConstraints(TABLE_9_CONSTRAINTS);
+        TABLE_9_DTO.setColumns(TABLE_9_COLUMNS_DTO);
+        TABLE_9_DTO.setConstraints(TABLE_9_CONSTRAINTS_DTO);
         DATABASE_4.setSubsets(new LinkedList<>());
         DATABASE_4.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS, DATABASE_4_USER_2_WRITE_OWN_ACCESS, DATABASE_4_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));

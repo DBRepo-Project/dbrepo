@@ -561,39 +561,41 @@ public interface MetadataMapper {
         table.setMaxDataLength(data.getMaxDataLength());
         table.setDataLength(data.getDataLength());
         table.setNumRows(data.getNumRows());
-        table.getConstraints()
-                .getPrimaryKey()
-                .forEach(pk -> {
-                    pk.getTable().setDatabaseId(data.getDatabase().getId());
-                    pk.getColumn().setTableId(data.getId());
-                    pk.getColumn().setDatabaseId(data.getDatabase().getId());
-                });
-        table.getConstraints()
-                .getForeignKeys()
-                .forEach(fk -> {
-                    fk.getTable().setDatabaseId(table.getTdbid());
-                    fk.getReferencedTable().setDatabaseId(table.getTdbid());
-                    fk.getReferences()
-                            .forEach(ref -> {
-                                ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
-                                ref.getColumn().setTableId(table.getId());
-                                ref.getColumn().setDatabaseId(table.getTdbid());
-                                ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
-                                ref.getReferencedColumn().setDatabaseId(table.getTdbid());
-                            });
-                });
-        table.getConstraints()
-                .getUniques()
-                .forEach(uk -> {
-                    uk.getTable().setDatabaseId(data.getDatabase().getId());
-                    uk.getColumns()
-                            .forEach(column -> {
-                                column.setTableId(data.getId());
-                                column.setDatabaseId(data.getDatabase().getId());
-                            });
-                });
-        if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
-            table.getConstraints().setChecks(new LinkedHashSet<>());
+        if (table.getConstraints() != null) {
+            table.getConstraints()
+                    .getPrimaryKey()
+                    .forEach(pk -> {
+                        pk.getTable().setDatabaseId(data.getDatabase().getId());
+                        pk.getColumn().setTableId(data.getId());
+                        pk.getColumn().setDatabaseId(data.getDatabase().getId());
+                    });
+            table.getConstraints()
+                    .getForeignKeys()
+                    .forEach(fk -> {
+                        fk.getTable().setDatabaseId(table.getTdbid());
+                        fk.getReferencedTable().setDatabaseId(table.getTdbid());
+                        fk.getReferences()
+                                .forEach(ref -> {
+                                    ref.setForeignKey(foreignKeyDtoToForeignKeyBriefDto(fk));
+                                    ref.getColumn().setTableId(table.getId());
+                                    ref.getColumn().setDatabaseId(table.getTdbid());
+                                    ref.getReferencedColumn().setTableId(fk.getReferencedTable().getId());
+                                    ref.getReferencedColumn().setDatabaseId(table.getTdbid());
+                                });
+                    });
+            table.getConstraints()
+                    .getUniques()
+                    .forEach(uk -> {
+                        uk.getTable().setDatabaseId(data.getDatabase().getId());
+                        uk.getColumns()
+                                .forEach(column -> {
+                                    column.setTableId(data.getId());
+                                    column.setDatabaseId(data.getDatabase().getId());
+                                });
+                    });
+            if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
+                table.getConstraints().setChecks(new LinkedHashSet<>());
+            }
         }
         if (data.getColumns() != null) {
             table.setColumns(new LinkedList<>(data.getColumns()

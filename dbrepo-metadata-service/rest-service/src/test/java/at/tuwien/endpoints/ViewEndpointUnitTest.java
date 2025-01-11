@@ -429,7 +429,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (principal != null) {
-            when(userService.findByUsername(user.getUsername()))
+            when(userService.findById(userId))
                     .thenReturn(user);
         }
         if (access != null) {
@@ -471,7 +471,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         when(databaseService.findById(databaseId))
                 .thenReturn(database);
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findById(userId))
                     .thenReturn(user);
         }
         if (access != null) {
@@ -511,7 +511,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                     .thenThrow(AccessNotFoundException.class);
         }
         if (principal != null) {
-            when(userService.findByUsername(principal.getName()))
+            when(userService.findById(userId))
                     .thenReturn(user);
             when(viewService.findById(any(Database.class), anyLong()))
                     .thenReturn(VIEW_1);

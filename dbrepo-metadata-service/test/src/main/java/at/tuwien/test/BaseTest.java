@@ -111,8 +111,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 /**
  * Database 1 (Private Data, Private Schema, User 1) -> Container 1
  * <ul>
- * <li>Table 1</li>
- * <li>Table 2</li>
+ * <li>Table 1 (Private Data, Private Schema)</li>
+ * <li>Table 2 (Private Data, Public Schema)</li>
  * <li>Table 3</li>
  * <li>Table 4</li>
  * <li>Query 1</li>
@@ -147,6 +147,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * </ul>
  * <p>
  * Database 4 (Public Data, Public Schema, User 4) -> Container 4
+ * <li>Table 9</li>
  * <li>Identifier 7 (Database=4)</li>
  * <ul>
  * </ul>
@@ -424,6 +425,7 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
+    public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
     public final static String USER_LOCAL_ADMIN_EMAIL = "admin@local";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
@@ -440,6 +442,7 @@ public abstract class BaseTest {
             .email(USER_LOCAL_ADMIN_EMAIL)
             .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
             .theme(USER_LOCAL_ADMIN_THEME)
+            .isInternal(USER_LOCAL_ADMIN_IS_INTERNAL)
             .build();
 
     public final static Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS,
@@ -469,6 +472,7 @@ public abstract class BaseTest {
     public final static Boolean USER_1_TOTP = false;
     public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
+    public final static Boolean USER_1_IS_INTERNAL = false;
     public final static String USER_1_THEME = "light";
     public final static String USER_1_LANGUAGE = "en";
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
@@ -531,6 +535,7 @@ public abstract class BaseTest {
             .theme(USER_1_THEME)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .language(USER_1_LANGUAGE)
+            .isInternal(USER_1_IS_INTERNAL)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -617,6 +622,7 @@ public abstract class BaseTest {
     public final static Boolean USER_2_TOTP = false;
     public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
+    public final static Boolean USER_2_IS_INTERNAL = false;
     public final static String USER_2_THEME = "light";
     public final static String USER_2_LANGUAGE = "de";
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528L) /* 2023-02-26 08:18:48 (UTC) */;
@@ -642,6 +648,7 @@ public abstract class BaseTest {
             .theme(USER_2_THEME)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .language(USER_2_LANGUAGE)
+            .isInternal(USER_2_IS_INTERNAL)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -723,6 +730,7 @@ public abstract class BaseTest {
     public final static Boolean USER_3_TOTP = false;
     public final static Long USER_3_NOT_BEFORE = 0L;
     public final static Boolean USER_3_ENABLED = true;
+    public final static Boolean USER_3_IS_INTERNAL = false;
     public final static String USER_3_THEME = "light";
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559L) /* 2023-02-26 08:19:19 (UTC) */;
     public final static UUID USER_3_REALM_ID = REALM_DBREPO_ID;
@@ -744,6 +752,7 @@ public abstract class BaseTest {
             .orcid(USER_3_ORCID_URL)
             .theme(USER_3_THEME)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
+            .isInternal(USER_2_IS_INTERNAL)
             .build();
 
     public final static UserDto USER_3_DTO = UserDto.builder()
@@ -813,6 +822,7 @@ public abstract class BaseTest {
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
+    public final static Boolean USER_4_IS_INTERNAL = false;
     public final static String USER_4_THEME = "light";
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
@@ -834,6 +844,7 @@ public abstract class BaseTest {
             .orcid(USER_4_ORCID_URL)
             .theme(USER_4_THEME)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
+            .isInternal(USER_4_IS_INTERNAL)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
@@ -888,6 +899,7 @@ public abstract class BaseTest {
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
+    public final static Boolean USER_5_IS_INTERNAL = false;
     public final static String USER_5_THEME = "dark";
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
@@ -946,6 +958,7 @@ public abstract class BaseTest {
             .affiliation(USER_5_AFFILIATION)
             .theme(USER_5_THEME)
             .mariadbPassword(USER_5_DATABASE_PASSWORD)
+            .isInternal(USER_5_IS_INTERNAL)
             .build();
 
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
@@ -962,6 +975,7 @@ public abstract class BaseTest {
     public final static String USER_6_EMAIL = "system@ossdip.at";
     public final static Boolean USER_6_VERIFIED = true;
     public final static Boolean USER_6_ENABLED = true;
+    public final static Boolean USER_6_IS_INTERNAL = false;
     public final static Boolean USER_6_THEME_DARK = false;
     public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_6_REALM_ID = REALM_DBREPO_ID;
@@ -1716,7 +1730,7 @@ public abstract class BaseTest {
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static Boolean TABLE_2_VERSIONED = true;
     public final static Boolean TABLE_2_IS_PUBLIC = false;
-    public final static Boolean TABLE_2_SCHEMA_PUBLIC = false;
+    public final static Boolean TABLE_2_SCHEMA_PUBLIC = true;
     public final static Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
@@ -2267,7 +2281,7 @@ public abstract class BaseTest {
 
     public final static Long TABLE_8_ID = 8L;
     public final static Long TABLE_8_DATABASE_ID = DATABASE_3_ID;
-    public final static String TABLE_8_NAME = "mfcc";
+    public final static String TABLE_8_NAME = "location";
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
     public final static Boolean TABLE_8_VERSIONED = true;
     public final static Boolean TABLE_8_IS_PUBLIC = false;
@@ -2338,6 +2352,202 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .isPublic(DATABASE_3_PUBLIC)
             .lastRetrieved(Instant.now())
+            .build();
+
+    public final static Long TABLE_9_ID = 9L;
+    public final static Long TABLE_9_DATABASE_ID = DATABASE_4_ID;
+    public final static String TABLE_9_NAME = "mfcc";
+    public final static String TABLE_9_INTERNAL_NAME = "mfcc";
+    public final static Boolean TABLE_9_VERSIONED = true;
+    public final static Boolean TABLE_9_IS_PUBLIC = false;
+    public final static Boolean TABLE_9_SCHEMA_PUBLIC = true;
+    public final static Boolean TABLE_9_PROCESSED_CONSTRAINTS = true;
+    public final static String TABLE_9_DESCRIPTION = "Hello mfcc";
+    public final static String TABLE_9_QUEUE_NAME = TABLE_9_INTERNAL_NAME;
+    public final static String TABLE_9_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_9_ID;
+    public final static Instant TABLE_9_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+    public final static Instant TABLE_9_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+
+    public final static Table TABLE_9 = Table.builder()
+            .id(TABLE_9_ID)
+            .tdbid(TABLE_9_DATABASE_ID)
+            .internalName(TABLE_9_INTERNAL_NAME)
+            .description(TABLE_9_DESCRIPTION)
+            .isVersioned(TABLE_9_VERSIONED)
+            .isPublic(TABLE_9_IS_PUBLIC)
+            .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
+            .database(null /* DATABASE_1 */)
+            .name(TABLE_9_NAME)
+            .queueName(TABLE_9_QUEUE_NAME)
+            .columns(new LinkedList<>()) /* TABLE_9_COLUMNS */
+            .constraints(null) /* TABLE_9_CONSTRAINTS */
+            .ownedBy(USER_1_ID)
+            .owner(USER_1)
+            .created(TABLE_9_CREATED)
+            .lastModified(TABLE_9_LAST_MODIFIED)
+            .build();
+
+    public final static TableDto TABLE_9_DTO = TableDto.builder()
+            .id(TABLE_9_ID)
+            .tdbid(TABLE_9_DATABASE_ID)
+            .internalName(TABLE_9_INTERNAL_NAME)
+            .description(TABLE_9_DESCRIPTION)
+            .isVersioned(TABLE_9_VERSIONED)
+            .isPublic(TABLE_9_IS_PUBLIC)
+            .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
+            .name(TABLE_9_NAME)
+            .queueName(TABLE_9_QUEUE_NAME)
+            .columns(new LinkedList<>()) /* TABLE_9_COLUMNS_DTO */
+            .constraints(null) /* TABLE_9_CONSTRAINTS_DTO */
+            .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final static TableBriefDto TABLE_9_BRIEF_DTO = TableBriefDto.builder()
+            .id(TABLE_9_ID)
+            .internalName(TABLE_9_INTERNAL_NAME)
+            .description(TABLE_9_DESCRIPTION)
+            .isVersioned(TABLE_9_VERSIONED)
+            .isPublic(TABLE_9_IS_PUBLIC)
+            .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
+            .name(TABLE_9_NAME)
+            .ownedBy(USER_1_ID)
+            .build();
+
+    public final static PrivilegedTableDto TABLE_9_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+            .id(TABLE_9_ID)
+            .tdbid(TABLE_9_DATABASE_ID)
+            .internalName(TABLE_9_INTERNAL_NAME)
+            .description(TABLE_9_DESCRIPTION)
+            .isVersioned(TABLE_9_VERSIONED)
+            .isPublic(TABLE_9_IS_PUBLIC)
+            .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
+            .name(TABLE_9_NAME)
+            .queueName(TABLE_9_QUEUE_NAME)
+            .columns(new LinkedList<>()) /* TABLE_9_COLUMNS_DTO */
+            .owner(USER_1_BRIEF_DTO)
+            .isPublic(DATABASE_3_PUBLIC)
+            .lastRetrieved(Instant.now())
+            .build();
+
+    public final static Long COLUMN_9_1_ID = 78L;
+    public final static String COLUMN_9_1_NAME = "location";
+    public final static String COLUMN_9_1_INTERNAL_NAME = "location";
+
+    public final static ColumnBriefDto TABLE_9_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+            .id(COLUMN_9_1_ID)
+            .name(COLUMN_9_1_NAME)
+            .internalName(COLUMN_9_1_INTERNAL_NAME)
+            .columnType(ColumnTypeDto.BIGINT)
+            .build();
+
+    public final static Long COLUMN_9_2_ID = 79L;
+
+    public final static Long COLUMN_9_3_ID = 80L;
+
+    public final static List<TableColumn> TABLE_9_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_9_1_ID)
+                    .ordinalPosition(0)
+                    .table(TABLE_9)
+                    .name(COLUMN_9_1_NAME)
+                    .internalName(COLUMN_9_1_INTERNAL_NAME)
+                    .ordinalPosition(0)
+                    .columnType(TableColumnType.VARCHAR)
+                    .size(255L)
+                    .isNullAllowed(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_9_2_ID)
+                    .ordinalPosition(1)
+                    .table(TABLE_9)
+                    .name("lat")
+                    .internalName("lat")
+                    .ordinalPosition(1)
+                    .columnType(TableColumnType.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_9_3_ID)
+                    .ordinalPosition(2)
+                    .table(TABLE_9)
+                    .name("lng")
+                    .internalName("lng")
+                    .ordinalPosition(2)
+                    .columnType(TableColumnType.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .enums(null)
+                    .sets(null)
+                    .build());
+
+    public final static List<ColumnDto> TABLE_9_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(COLUMN_9_1_ID)
+                    .ordinalPosition(0)
+                    .table(TABLE_9_DTO)
+                    .name(COLUMN_9_1_NAME)
+                    .internalName(COLUMN_9_1_INTERNAL_NAME)
+                    .ordinalPosition(0)
+                    .columnType(ColumnTypeDto.VARCHAR)
+                    .size(255L)
+                    .isNullAllowed(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_9_2_ID)
+                    .ordinalPosition(1)
+                    .table(TABLE_9_DTO)
+                    .name("lat")
+                    .internalName("lat")
+                    .ordinalPosition(1)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_9_3_ID)
+                    .ordinalPosition(2)
+                    .table(TABLE_9_DTO)
+                    .name("lng")
+                    .internalName("lng")
+                    .ordinalPosition(2)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .enums(null)
+                    .sets(null)
+                    .build());
+
+    public final static Constraints TABLE_9_CONSTRAINTS = Constraints.builder()
+            .checks(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .uniques(new LinkedList<>())
+            .primaryKey(new LinkedList<>(List.of(PrimaryKey.builder()
+                    .table(TABLE_9)
+                    .column(TABLE_9_COLUMNS.get(0))
+                    .id(9L)
+                    .build())))
+            .build();
+
+    public final static ConstraintsDto TABLE_9_CONSTRAINTS_DTO = ConstraintsDto.builder()
+            .checks(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .uniques(new LinkedList<>())
+            .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+                    .table(TABLE_9_BRIEF_DTO)
+                    .column(TABLE_9_COLUMNS_BRIEF_0_DTO)
+                    .id(9L)
+                    .build())))
             .build();
 
     public final static String QUEUE_NAME = "dbrepo";
