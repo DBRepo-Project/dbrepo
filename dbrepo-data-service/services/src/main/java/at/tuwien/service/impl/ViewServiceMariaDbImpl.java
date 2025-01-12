@@ -141,7 +141,6 @@ public class ViewServiceMariaDbImpl extends HibernateConnector implements ViewSe
                 .identifiers(new LinkedList<>())
                 .isInitialView(false)
                 .vdbid(database.getId())
-                .database(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database))
                 .columns(new LinkedList<>())
                 .build();
         try {

@@ -140,7 +140,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <p>
  * Database 4 (Public Data, Public Schema, User 4) -> Container 4
  * <li>Table 9</li>
- * <li>Identifier 7 (Database=4)</li>
+ * <li>Identifier 7</li>
+ * <li>Query 7</li>
  * <ul>
  * </ul>
  * <br />
@@ -2978,8 +2979,31 @@ public abstract class BaseTest {
             .isPersisted(QUERY_3_PERSISTED)
             .resultNumber(2L)
             .build();
-
+    
+    public final static Long QUERY_7_ID = 7L;
     public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
+    public final static String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
+    public final static String QUERY_7_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
+    public final static Instant QUERY_7_CREATED = Instant.now().minus(4, MINUTES);
+    public final static Instant QUERY_7_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_7_LAST_MODIFIED = Instant.ofEpochSecond(1541588454L);
+    public final static Long QUERY_7_RESULT_NUMBER = 6L;
+    public final static Long QUERY_7_RESULT_ID = 4L;
+    public final static Boolean QUERY_7_PERSISTED = false;
+
+    public final static QueryDto QUERY_7_DTO = QueryDto.builder()
+            .id(QUERY_7_ID)
+            .databaseId(DATABASE_4_ID)
+            .query(QUERY_7_STATEMENT)
+            .queryNormalized(QUERY_7_STATEMENT)
+            .resultNumber(QUERY_7_RESULT_NUMBER)
+            .resultHash(QUERY_7_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_7_QUERY_HASH)
+            .execution(QUERY_7_EXECUTION)
+            .isPersisted(QUERY_7_PERSISTED)
+            .resultNumber(2L)
+            .build();
 
     public final static Long QUERY_4_ID = 4L;
     public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
@@ -7505,6 +7529,7 @@ public abstract class BaseTest {
     public final static PrivilegedDatabaseDto DATABASE_1_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
+            .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
             .name(DATABASE_1_NAME)
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
@@ -7650,6 +7675,7 @@ public abstract class BaseTest {
     public final static PrivilegedDatabaseDto DATABASE_2_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
+            .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
             .name(DATABASE_2_NAME)
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_2_INTERNALNAME)
@@ -7901,6 +7927,7 @@ public abstract class BaseTest {
     public final static PrivilegedDatabaseDto DATABASE_3_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
+            .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
             .name(DATABASE_3_NAME)
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_3_INTERNALNAME)
@@ -7956,6 +7983,21 @@ public abstract class BaseTest {
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .identifiers(new LinkedList<>())
+            .build();
+
+    public final static PrivilegedDatabaseDto DATABASE_4_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+            .id(DATABASE_4_ID)
+            .isPublic(DATABASE_4_PUBLIC)
+            .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .exchangeName(DATABASE_4_EXCHANGE)
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_7_DTO)))
+            .tables(new LinkedList<>(List.of(TABLE_9_DTO)))
+            .views(new LinkedList<>(List.of()))
+            .owner(USER_3_BRIEF_DTO)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()

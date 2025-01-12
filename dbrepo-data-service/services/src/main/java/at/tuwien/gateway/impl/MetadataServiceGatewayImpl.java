@@ -1,6 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.ViewDto;
@@ -18,6 +19,7 @@ import at.tuwien.mapper.MetadataMapper;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,13 +37,16 @@ import java.util.UUID;
 public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
 
     private final RestTemplate restTemplate;
+    private final RestTemplate internalRestTemplate;
     private final GatewayConfig gatewayConfig;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public MetadataServiceGatewayImpl(RestTemplate restTemplate, GatewayConfig gatewayConfig,
+    public MetadataServiceGatewayImpl(@Qualifier("internalRestTemplate") RestTemplate internalRestTemplate,
+                                      RestTemplate restTemplate, GatewayConfig gatewayConfig,
                                       MetadataMapper metadataMapper) {
         this.restTemplate = restTemplate;
+        this.internalRestTemplate = internalRestTemplate;
         this.gatewayConfig = gatewayConfig;
         this.metadataMapper = metadataMapper;
     }
@@ -53,7 +58,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/container/" + containerId;
         log.debug("get privileged container info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
                     ContainerDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find container with id {}: {}", containerId, e.getMessage());
@@ -91,7 +96,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/database/" + id;
         log.debug("get privileged database info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, PrivilegedDatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database with id {}: {}", id, e.getMessage());
             throw new RemoteUnavailableException("Failed to find database: " + e.getMessage(), e);
@@ -130,7 +135,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/database/" + databaseId + "/table/" + id;
         log.debug("get privileged table info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find table with id {}: {}", id, e.getMessage());
             throw new RemoteUnavailableException("Failed to find table: " + e.getMessage(), e);
@@ -172,7 +177,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/database/" + databaseId + "/view/" + id;
         log.debug("get privileged view info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, ViewDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find view with id {}: {}", id, e.getMessage());
             throw new RemoteUnavailableException("Failed to find view: " + e.getMessage(), e);
@@ -196,12 +201,18 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to find view with id " + id + ": body is empty");
         }
         final PrivilegedViewDto view = metadataMapper.viewDtoToPrivilegedViewDto(response.getBody());
-        view.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Type").get(0));
-        view.getDatabase().getContainer().setHost(response.getHeaders().get("X-Host").get(0));
-        view.getDatabase().getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
-        view.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
-        view.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
-        view.getDatabase().setInternalName(response.getHeaders().get("X-Database").get(0));
+        view.setDatabase(PrivilegedDatabaseDto.builder()
+                .internalName(response.getHeaders().get("X-Database").get(0))
+                .container(PrivilegedContainerDto.builder()
+                        .host(response.getHeaders().get("X-Host").get(0))
+                        .port(Integer.parseInt(response.getHeaders().get("X-Port").get(0)))
+                        .username(response.getHeaders().get("X-Username").get(0))
+                        .password(response.getHeaders().get("X-Password").get(0))
+                        .image(ImageDto.builder()
+                                .jdbcMethod(response.getHeaders().get("X-Type").get(0))
+                                .build())
+                        .build())
+                .build());
         view.setInternalName(response.getHeaders().get("X-View").get(0));
         view.setLastRetrieved(Instant.now());
         return view;
@@ -214,7 +225,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/user/" + userId;
         log.debug("get user info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find user with id {}: {}", userId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
@@ -240,7 +251,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/user/" + userId;
         log.debug("get privileged user info from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, UserDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find user with id {}: {}", userId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find user: " + e.getMessage(), e);
@@ -277,7 +288,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/database/" + databaseId + "/access/" + userId;
         log.debug("get database access from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseAccessDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find database access for user with id {}: {}", userId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find database access: " + e.getMessage(), e);
@@ -303,7 +314,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
         log.debug("get identifiers from metadata service: {}", url);
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, IdentifierBriefDto[].class);
+            response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, IdentifierBriefDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to find identifiers for database with id {} and subset with id {}: {}", databaseId, subsetId, e.getMessage());
             throw new RemoteUnavailableException("Failed to find identifiers: " + e.getMessage(), e);
@@ -328,12 +339,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";
         log.debug("update table statistics in metadata service: {}", url);
-        final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
+        internalRestTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayConfig.getMetadataEndpoint()));
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorization);
         try {
-            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(null, headers), Void.class);
+            response = internalRestTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(null, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
             log.error("Failed to update table statistic for table with id {}: {}", tableId, e.getMessage());
             throw new RemoteUnavailableException("Failed to update table statistic: " + e.getMessage(), e);
