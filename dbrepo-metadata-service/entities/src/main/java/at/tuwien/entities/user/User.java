@@ -52,6 +52,7 @@ public class User {
     private String language;
 
     @OneToMany(fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
     })

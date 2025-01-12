@@ -1,7 +1,10 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
@@ -133,16 +136,92 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     public void userToUserDto_succeeds() {
 
         /* test */
-        final UserDto response = metadataMapper.userToUserDto(USER_1);
-        assertEquals(USER_1_DTO, response);
+        assertEquals(USER_1_DTO, metadataMapper.userToUserDto(USER_1));
+        assertEquals(USER_2_DTO, metadataMapper.userToUserDto(USER_2));
+        assertEquals(USER_3_DTO, metadataMapper.userToUserDto(USER_3));
+        assertEquals(USER_4_DTO, metadataMapper.userToUserDto(USER_4));
+        assertEquals(USER_5_DTO, metadataMapper.userToUserDto(USER_5));
+    }
+
+    @Test
+    public void identifierToIdentifierDto_succeeds() {
+
+        /* test */
+        assertEquals(IDENTIFIER_1_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_1));
+        assertEquals(IDENTIFIER_2_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_2));
+        assertEquals(IDENTIFIER_3_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_3));
+        assertEquals(IDENTIFIER_4_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_4));
+        assertEquals(IDENTIFIER_5_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_5));
+        assertEquals(IDENTIFIER_6_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_6));
+        assertEquals(IDENTIFIER_7_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_7));
     }
 
     @Test
     public void viewToViewDto_succeeds() {
 
         /* test */
-        final ViewDto response = metadataMapper.viewToViewDto(VIEW_1);
-        assertEquals(VIEW_1_DTO, response);
+        assertEquals(VIEW_1_DTO, metadataMapper.viewToViewDto(VIEW_1));
+        assertEquals(VIEW_2_DTO, metadataMapper.viewToViewDto(VIEW_2));
+        assertEquals(VIEW_3_DTO, metadataMapper.viewToViewDto(VIEW_3));
+        assertEquals(VIEW_4_DTO, metadataMapper.viewToViewDto(VIEW_4));
+        assertEquals(VIEW_5_DTO, metadataMapper.viewToViewDto(VIEW_5));
+    }
+
+    @Test
+    public void tableToTableBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(TABLE_1_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_1));
+        assertEquals(TABLE_2_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_2));
+        assertEquals(TABLE_3_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_3));
+        assertEquals(TABLE_4_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_4));
+        assertEquals(TABLE_5_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_5));
+        assertEquals(TABLE_6_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_6));
+        assertEquals(TABLE_7_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_7));
+        assertEquals(TABLE_8_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_8));
+        assertEquals(TABLE_9_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_9));
+    }
+
+    @Test
+    public void containerToContainerBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(CONTAINER_1_BRIEF_DTO, metadataMapper.containerToContainerBriefDto(CONTAINER_1));
+    }
+
+    @Test
+    public void bannerMessageToBannerMessageDto_succeeds() {
+
+        /* test */
+        assertEquals(BANNER_MESSAGE_1_DTO, metadataMapper.bannerMessageToBannerMessageDto(BANNER_MESSAGE_1));
+    }
+
+    @Test
+    public void containerImageToImageBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(IMAGE_1_BRIEF_DTO, metadataMapper.containerImageToImageBriefDto(IMAGE_1));
+    }
+
+    @Test
+    public void containerImageToImageDto_succeeds() {
+
+        /* test */
+        assertEquals(IMAGE_1_DTO, metadataMapper.containerImageToImageDto(IMAGE_1));
+    }
+
+    @Test
+    public void ontologyToOntologyBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(ONTOLOGY_1_BRIEF_DTO, metadataMapper.ontologyToOntologyBriefDto(ONTOLOGY_1));
+    }
+
+    @Test
+    public void ontologyToOntologyDto_succeeds() {
+
+        /* test */
+        assertEquals(ONTOLOGY_1_DTO, metadataMapper.ontologyToOntologyDto(ONTOLOGY_1));
     }
 
 }

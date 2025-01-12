@@ -4,11 +4,11 @@ import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExternalMetadataDto {

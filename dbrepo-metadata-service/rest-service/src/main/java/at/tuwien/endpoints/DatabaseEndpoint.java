@@ -76,8 +76,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
     })
     public ResponseEntity<List<DatabaseBriefDto>> list(@RequestParam(name = "internal_name", required = false) String internalName,
-                                                       Principal principal) throws UserNotFoundException,
-            DatabaseNotFoundException {
+                                                       Principal principal) {
         log.debug("endpoint list databases, internalName={}", internalName);
         final List<Database> databases;
         if (principal != null) {

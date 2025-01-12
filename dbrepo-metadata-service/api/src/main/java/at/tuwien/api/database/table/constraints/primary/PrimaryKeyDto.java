@@ -18,10 +18,8 @@ public class PrimaryKeyDto {
     private Long id;
 
     @NotNull
-    @ToString.Exclude
     private TableBriefDto table;
 
     @NotNull
-    @ToString.Exclude
     private ColumnBriefDto column;
 }

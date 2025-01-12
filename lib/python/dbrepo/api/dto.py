@@ -656,7 +656,7 @@ class ViewBrief(BaseModel):
     owned_by: str
 
 
-class Concept(BaseModel):
+class ConceptBrief(BaseModel):
     id: int
     uri: str
     name: Optional[str] = None
@@ -691,7 +691,7 @@ class TableStatistics(BaseModel):
     columns: dict[str, ColumnStatistic]
 
 
-class Unit(BaseModel):
+class UnitBrief(BaseModel):
     id: int
     uri: str
     name: Optional[str] = None
@@ -886,8 +886,9 @@ class Column(BaseModel):
     name: str
     database_id: int
     table_id: int
+    ord: int
     internal_name: str
-    column_type: ColumnType
+    type: ColumnType
     is_public: bool
     is_null_allowed: bool
     alias: Optional[str] = None
@@ -896,8 +897,8 @@ class Column(BaseModel):
     d: Optional[int] = None
     mean: Optional[float] = None
     median: Optional[float] = None
-    concept: Optional[Concept] = None
-    unit: Optional[Unit] = None
+    concept: Optional[ConceptBrief] = None
+    unit: Optional[UnitBrief] = None
     enums: Optional[List[str]] = field(default_factory=list)
     sets: Optional[List[str]] = field(default_factory=list)
     index_length: Optional[int] = None
@@ -915,7 +916,7 @@ class ViewColumn(BaseModel):
     name: str
     database_id: int
     internal_name: str
-    column_type: ColumnType
+    type: ColumnType
     is_public: bool
     is_null_allowed: bool
     alias: Optional[str] = None
@@ -923,8 +924,8 @@ class ViewColumn(BaseModel):
     d: Optional[int] = None
     mean: Optional[float] = None
     median: Optional[float] = None
-    concept: Optional[Concept] = None
-    unit: Optional[Unit] = None
+    concept: Optional[ConceptBrief] = None
+    unit: Optional[UnitBrief] = None
     index_length: Optional[int] = None
     length: Optional[int] = None
 

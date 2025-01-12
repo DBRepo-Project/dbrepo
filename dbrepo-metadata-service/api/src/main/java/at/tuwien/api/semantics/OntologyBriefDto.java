@@ -10,6 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized

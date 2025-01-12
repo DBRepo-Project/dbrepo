@@ -15,15 +15,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PrivilegedUserDto extends PrivilegedObjectDto {
 
     @NotNull
-    @EqualsAndHashCode.Include
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;
 

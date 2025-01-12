@@ -10,10 +10,7 @@ import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.ImageBriefDto;
-import at.tuwien.api.container.image.ImageChangeDto;
-import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.api.container.image.ImageDto;
+import at.tuwien.api.container.image.*;
 import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
@@ -26,10 +23,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.*;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
+import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.*;
@@ -42,6 +36,7 @@ import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.keycloak.*;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
+import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.api.orcid.OrcidDto;
@@ -54,9 +49,7 @@ import at.tuwien.api.orcid.activities.employments.affiliation.group.summary.orga
 import at.tuwien.api.orcid.person.OrcidPersonDto;
 import at.tuwien.api.orcid.person.name.OrcidNameDto;
 import at.tuwien.api.orcid.person.name.OrcidValueDto;
-import at.tuwien.api.semantics.EntityDto;
-import at.tuwien.api.semantics.OntologyCreateDto;
-import at.tuwien.api.semantics.OntologyModifyDto;
+import at.tuwien.api.semantics.*;
 import at.tuwien.api.user.UserAttributesDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.*;
@@ -316,6 +309,13 @@ public abstract class BaseTest {
             .description(CONCEPT_1_DESCRIPTION)
             .build();
 
+    public final static ConceptBriefDto CONCEPT_1_BRIEF_DTO = ConceptBriefDto.builder()
+            .id(CONCEPT_1_ID)
+            .uri(CONCEPT_1_URI)
+            .name(CONCEPT_1_NAME)
+            .description(CONCEPT_1_DESCRIPTION)
+            .build();
+
     public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
             .id(CONCEPT_1_ID)
             .uri(CONCEPT_1_URI)
@@ -349,6 +349,13 @@ public abstract class BaseTest {
             .description(CONCEPT_2_DESCRIPTION)
             .build();
 
+    public final static ConceptBriefDto CONCEPT_2_BRIEF_DTO = ConceptBriefDto.builder()
+            .id(CONCEPT_2_ID)
+            .uri(CONCEPT_2_URI)
+            .name(CONCEPT_2_NAME)
+            .description(CONCEPT_2_DESCRIPTION)
+            .build();
+
     public final static TableColumnConcept CONCEPT_2 = TableColumnConcept.builder()
             .id(CONCEPT_2_ID)
             .uri(CONCEPT_2_URI)
@@ -370,6 +377,13 @@ public abstract class BaseTest {
             .build();
 
     public final static UnitDto UNIT_1_DTO = UnitDto.builder()
+            .id(UNIT_1_ID)
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
+            .build();
+
+    public final static UnitBriefDto UNIT_1_BRIEF_DTO = UnitBriefDto.builder()
             .id(UNIT_1_ID)
             .uri(UNIT_1_URI)
             .name(UNIT_1_NAME)
@@ -403,6 +417,13 @@ public abstract class BaseTest {
             .build();
 
     public final static UnitDto UNIT_2_DTO = UnitDto.builder()
+            .id(UNIT_2_ID)
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
+            .build();
+
+    public final static UnitBriefDto UNIT_2_BRIEF_DTO = UnitBriefDto.builder()
             .id(UNIT_2_ID)
             .uri(UNIT_2_URI)
             .name(UNIT_2_NAME)
@@ -637,7 +658,7 @@ public abstract class BaseTest {
     public final static String USER_2_PASSWORD = "junit2";
     @SuppressWarnings("java:S2068")
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
-    public final static String USER_2_QUALIFIED_NAME = "@" + USER_2_USERNAME + " — " + USER_2_FIRSTNAME + " " + USER_2_LASTNAME;
+    public final static String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_TOTP = false;
     public final static Long USER_2_NOT_BEFORE = 0L;
@@ -687,6 +708,7 @@ public abstract class BaseTest {
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .name(USER_2_NAME)
+            .orcid(USER_2_ORCID_URL)
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .build();
 
@@ -746,7 +768,7 @@ public abstract class BaseTest {
     public final static String USER_3_PASSWORD = "password";
     @SuppressWarnings("java:S2068")
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
-    public final static String USER_3_QUALIFIED_NAME = "@" + USER_3_USERNAME + " — " + USER_3_FIRSTNAME + " " + USER_3_LASTNAME;
+    public final static String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
     public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_TOTP = false;
     public final static Long USER_3_NOT_BEFORE = 0L;
@@ -782,6 +804,8 @@ public abstract class BaseTest {
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
             .name(USER_3_NAME)
+            .qualifiedName(USER_3_QUALIFIED_NAME)
+            .attributes(USER_3_ATTRIBUTES_DTO)
             .build();
 
     public final static UserBriefDto USER_3_BRIEF_DTO = UserBriefDto.builder()
@@ -790,6 +814,7 @@ public abstract class BaseTest {
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
             .name(USER_3_NAME)
+            .qualifiedName(USER_3_QUALIFIED_NAME)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
@@ -840,7 +865,7 @@ public abstract class BaseTest {
     public final static String USER_4_PASSWORD = "junit4";
     @SuppressWarnings("java:S2068")
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
-    public final static String USER_4_QUALIFIED_NAME = "@" + USER_4_USERNAME + " — " + USER_4_FIRSTNAME + " " + USER_4_LASTNAME;
+    public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
@@ -874,7 +899,9 @@ public abstract class BaseTest {
             .username(USER_4_USERNAME)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
+            .name(USER_4_NAME)
             .attributes(USER_4_ATTRIBUTES_DTO)
+            .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
     public final static UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
@@ -882,6 +909,8 @@ public abstract class BaseTest {
             .username(USER_4_USERNAME)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
+            .name(USER_4_NAME)
+            .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
@@ -908,17 +937,17 @@ public abstract class BaseTest {
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static UUID USER_5_LDAP_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static String USER_5_USERNAME = "system";
-    public final static String USER_5_FIRSTNAME = "System";
-    public final static String USER_5_LASTNAME = "System";
-    public final static String USER_5_NAME = "System System";
+    public final static String USER_5_USERNAME = "nobody";
+    public final static String USER_5_FIRSTNAME = "No";
+    public final static String USER_5_LASTNAME = "Body";
+    public final static String USER_5_NAME = "No Body";
     public final static String USER_5_AFFILIATION = "TU Wien";
     public final static String USER_5_ORCID = null;
     @SuppressWarnings("java:S2068")
     public final static String USER_5_PASSWORD = "junit5";
     @SuppressWarnings("java:S2068")
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
-    public final static String USER_5_QUALIFIED_NAME = "@" + USER_5_USERNAME + " — " + USER_5_FIRSTNAME + " " + USER_5_LASTNAME;
+    public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
@@ -938,6 +967,7 @@ public abstract class BaseTest {
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
+            .name(USER_5_NAME)
             .qualifiedName(USER_5_QUALIFIED_NAME)
             .attributes(USER_5_ATTRIBUTES_DTO)
             .build();
@@ -1059,6 +1089,7 @@ public abstract class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
+            .operators(new LinkedList<>()) /* IMAGE_1_OPERATORS */
             .build();
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
@@ -1071,6 +1102,7 @@ public abstract class BaseTest {
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
             .isDefault(IMAGE_1_IS_DEFAULT)
+            .operators(null)
             .build();
 
     public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
@@ -1081,14 +1113,27 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .build();
 
-    public final static List<Operator> IMAGE_1_OPERATORS = List.of(
+    public final static Long IMAGE_1_OPERATORS_1_ID = 1L;
+    public final static String IMAGE_1_OPERATORS_1_DISPLAY_NAME = "XOR";
+    public final static String IMAGE_1_OPERATORS_1_VALUE = "XOR";
+    public final static String IMAGE_1_OPERATORS_1_DOCUMENTATION = "https://mariadb.com/kb/en/xor/";
+
+    public final static List<Operator> IMAGE_1_OPERATORS = new LinkedList<>(List.of(
             Operator.builder()
-                    .id(1L)
+                    .id(IMAGE_1_OPERATORS_1_ID)
                     .image(IMAGE_1)
-                    .displayName("XOR")
-                    .value("XOR")
-                    .documentation("https://mariadb.com/kb/en/xor/")
-                    .build());
+                    .displayName(IMAGE_1_OPERATORS_1_DISPLAY_NAME)
+                    .value(IMAGE_1_OPERATORS_1_VALUE)
+                    .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
+                    .build()));
+
+    public final static List<OperatorDto> IMAGE_1_OPERATORS_DTO = new LinkedList<>(List.of(
+            OperatorDto.builder()
+                    .id(IMAGE_1_OPERATORS_1_ID)
+                    .displayName(IMAGE_1_OPERATORS_1_DISPLAY_NAME)
+                    .value(IMAGE_1_OPERATORS_1_VALUE)
+                    .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
+                    .build()));
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
@@ -1636,12 +1681,11 @@ public abstract class BaseTest {
 
     public final static List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(1L)
-                    .table(TABLE_1_DTO)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(0)
                     .name("id")
                     .internalName("id")
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.SERIAL)
                     .isNullAllowed(false)
                     .enums(null)
@@ -1649,12 +1693,11 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(2L)
-                    .table(TABLE_1_DTO)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(1)
                     .name("Date")
                     .internalName("date")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DATE)
                     .isNullAllowed(true)
                     .enums(null)
@@ -1662,12 +1705,11 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(3L)
-                    .table(TABLE_1_DTO)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(2)
                     .name("Location")
                     .internalName("location")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
@@ -1676,12 +1718,11 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(4L)
-                    .table(TABLE_1_DTO)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(3)
                     .name("MinTemp")
                     .internalName("mintemp")
-                    .ordinalPosition(3)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -1691,17 +1732,16 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(5L)
-                    .table(TABLE_1_DTO)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(4)
                     .name("Rainfall")
                     .internalName("rainfall")
-                    .ordinalPosition(4)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
-                    .concept(CONCEPT_1_DTO)
-                    .unit(UNIT_1_DTO)
+                    .concept(CONCEPT_1_BRIEF_DTO)
+                    .unit(UNIT_1_BRIEF_DTO)
                     .isNullAllowed(true)
                     .enums(null)
                     .sets(null)
@@ -1709,6 +1749,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_1_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .isPublic(TABLE_1_IS_PUBLIC)
@@ -1829,6 +1870,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_2_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_2_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNALNAME)
             .isVersioned(TABLE_2_VERSIONED)
             .isPublic(TABLE_2_IS_PUBLIC)
@@ -1900,6 +1942,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_3_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_3_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_3_INTERNALNAME)
             .isVersioned(TABLE_3_VERSIONED)
             .isPublic(TABLE_3_IS_PUBLIC)
@@ -2018,6 +2061,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_5_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNALNAME)
             .isVersioned(TABLE_5_VERSIONED)
             .isPublic(TABLE_5_IS_PUBLIC)
@@ -2077,6 +2121,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_6_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_6_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_6_INTERNALNAME)
             .isVersioned(TABLE_6_VERSIONED)
             .isPublic(TABLE_6_IS_PUBLIC)
@@ -2136,6 +2181,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_7_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_7_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_7_INTERNAL_NAME)
             .isVersioned(TABLE_7_VERSIONED)
             .isPublic(TABLE_7_IS_PUBLIC)
@@ -2207,6 +2253,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_4_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
             .description(TABLE_4_DESCRIPTION)
             .name(TABLE_4_NAME)
@@ -2349,6 +2396,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_8_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_8_ID)
+            .databaseId(DATABASE_3_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
             .description(TABLE_8_DESCRIPTION)
             .isVersioned(TABLE_8_VERSIONED)
@@ -2424,6 +2472,7 @@ public abstract class BaseTest {
 
     public final static TableBriefDto TABLE_9_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_9_ID)
+            .databaseId(DATABASE_4_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
             .description(TABLE_9_DESCRIPTION)
             .isVersioned(TABLE_9_VERSIONED)
@@ -2470,7 +2519,6 @@ public abstract class BaseTest {
                     .table(TABLE_9)
                     .name(COLUMN_9_1_NAME)
                     .internalName(COLUMN_9_1_INTERNAL_NAME)
-                    .ordinalPosition(0)
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -2483,7 +2531,6 @@ public abstract class BaseTest {
                     .table(TABLE_9)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -2497,7 +2544,6 @@ public abstract class BaseTest {
                     .table(TABLE_9)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -2509,10 +2555,8 @@ public abstract class BaseTest {
     public final static List<ColumnDto> TABLE_9_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_9_1_ID)
                     .ordinalPosition(0)
-                    .table(TABLE_9_DTO)
                     .name(COLUMN_9_1_NAME)
                     .internalName(COLUMN_9_1_INTERNAL_NAME)
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -2522,10 +2566,8 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_9_2_ID)
                     .ordinalPosition(1)
-                    .table(TABLE_9_DTO)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -2536,10 +2578,8 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_9_3_ID)
                     .ordinalPosition(2)
-                    .table(TABLE_9_DTO)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -2592,7 +2632,9 @@ public abstract class BaseTest {
     public final static String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
     public final static String ONTOLOGY_1_URI_PATTERN = "http://www.ontology-of-units-of-measure.org/resource/om-2/.*";
     public final static String ONTOLOGY_1_SPARQL_ENDPOINT = null;
+    public final static Boolean ONTOLOGY_1_SPARQL = false;
     public final static String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
+    public final static Boolean ONTOLOGY_1_RDF = true;
     public final static UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
 
     public final static Ontology ONTOLOGY_1 = Ontology.builder()
@@ -2602,6 +2644,26 @@ public abstract class BaseTest {
             .uriPattern(ONTOLOGY_1_URI_PATTERN)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
             .rdfPath(ONTOLOGY_1_RDF_PATH)
+            .build();
+
+    public final static OntologyDto ONTOLOGY_1_DTO = OntologyDto.builder()
+            .id(ONTOLOGY_1_ID)
+            .prefix(ONTOLOGY_1_PREFIX)
+            .uri(ONTOLOGY_1_URI)
+            .uriPattern(ONTOLOGY_1_URI_PATTERN)
+            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
+            .sparql(ONTOLOGY_1_SPARQL)
+            .rdfPath(ONTOLOGY_1_RDF_PATH)
+            .rdf(ONTOLOGY_1_RDF)
+            .build();
+
+    public final static OntologyBriefDto ONTOLOGY_1_BRIEF_DTO = OntologyBriefDto.builder()
+            .id(ONTOLOGY_1_ID)
+            .prefix(ONTOLOGY_1_PREFIX)
+            .uri(ONTOLOGY_1_URI)
+            .uriPattern(ONTOLOGY_1_URI_PATTERN)
+            .sparql(ONTOLOGY_1_SPARQL)
+            .rdf(ONTOLOGY_1_RDF)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
@@ -2761,7 +2823,6 @@ public abstract class BaseTest {
     public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_8_1_ID)
                     .ordinalPosition(COLUMN_8_1_ORDINALPOS)
-                    .table(TABLE_8_DTO)
                     .name(COLUMN_8_1_NAME)
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE_DTO)
@@ -2770,7 +2831,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_8_2_ID)
                     .ordinalPosition(COLUMN_8_2_ORDINALPOS)
-                    .table(TABLE_8_DTO)
                     .name(COLUMN_8_2_NAME)
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE_DTO)
@@ -2779,7 +2839,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_8_3_ID)
                     .ordinalPosition(COLUMN_8_3_ORDINALPOS)
-                    .table(TABLE_8_DTO)
                     .name(COLUMN_8_3_NAME)
                     .internalName(COLUMN_8_3_INTERNAL_NAME)
                     .columnType(COLUMN_8_3_TYPE_DTO)
@@ -3190,7 +3249,6 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -3203,7 +3261,6 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -3217,7 +3274,6 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -3242,12 +3298,11 @@ public abstract class BaseTest {
 
     public final static List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_2_1_ID)
-                    .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(0)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -3256,12 +3311,11 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_2_2_ID)
-                    .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(1)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
@@ -3270,12 +3324,11 @@ public abstract class BaseTest {
                     .build(),
             ColumnDto.builder()
                     .id(COLUMN_2_3_ID)
-                    .table(TABLE_2_DTO)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(2)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.DOUBLE)
                     .size(22L)
                     .isNullAllowed(true)
@@ -3749,7 +3802,6 @@ public abstract class BaseTest {
     public final static List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_3_1_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.BIGINT)
                     .name("id")
@@ -3761,7 +3813,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_2_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("linie")
@@ -3773,7 +3824,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_3_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("richtung")
@@ -3785,7 +3835,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_4_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.DATE)
                     .name("betriebsdatum")
@@ -3797,7 +3846,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_5_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrzeug")
@@ -3809,7 +3857,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_6_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("kurs")
@@ -3821,7 +3868,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_7_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("seq_von")
@@ -3833,7 +3879,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_8_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_diva_von")
@@ -3845,7 +3890,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_9_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_diva_von")
@@ -3857,7 +3901,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_10_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_kurz_von1")
@@ -3869,7 +3912,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_11_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.DATE)
                     .name("datum_von")
@@ -3881,7 +3923,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_12_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_an_von")
@@ -3893,7 +3934,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_13_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_an_von")
@@ -3905,7 +3945,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_14_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_ab_von")
@@ -3917,7 +3956,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_15_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_ab_von")
@@ -3929,7 +3967,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_16_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("seq_nach")
@@ -3941,7 +3978,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_17_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_diva_nach")
@@ -3953,7 +3989,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_18_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_diva_nach")
@@ -3965,7 +4000,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_19_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_kurz_nach1")
@@ -3977,7 +4011,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_20_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.DATE)
                     .name("datum_nach")
@@ -3989,7 +4022,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_21_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_an_nach")
@@ -4001,7 +4033,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_22_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_an_nach1")
@@ -4013,7 +4044,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_23_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("soll_ab_nach")
@@ -4025,7 +4055,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_24_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("ist_ab_nach")
@@ -4037,7 +4066,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_25_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrt_id")
@@ -4049,7 +4077,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_26_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fahrweg_id")
@@ -4061,7 +4088,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_27_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_no")
@@ -4073,7 +4099,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_28_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_typ")
@@ -4085,7 +4110,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_29_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_kurz")
@@ -4097,7 +4121,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_30_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("fw_lang")
@@ -4109,7 +4132,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_31_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("umlauf_von")
@@ -4121,7 +4143,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_32_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_id_von")
@@ -4133,7 +4154,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_33_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_id_nach")
@@ -4145,7 +4165,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_34_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_id_von")
@@ -4157,7 +4176,6 @@ public abstract class BaseTest {
             ColumnDto.builder()
                     .id(COLUMN_3_35_ID)
                     .tableId(TABLE_3_ID)
-                    .table(TABLE_3_DTO)
                     .databaseId(DATABASE_1_ID)
                     .columnType(ColumnTypeDto.INT)
                     .name("halt_punkt_id_nach")
@@ -4410,7 +4428,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("id")
                     .internalName("id")
                     .columnType(ColumnTypeDto.BIGINT)
@@ -4420,7 +4437,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_2_ID)
                     .ordinalPosition(1)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Animal Name")
                     .internalName("animal_name")
                     .columnType(ColumnTypeDto.VARCHAR)
@@ -4430,7 +4446,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_3_ID)
                     .ordinalPosition(2)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Hair")
                     .internalName("hair")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4440,7 +4455,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_4_ID)
                     .ordinalPosition(3)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Feathers")
                     .internalName("feathers")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4450,7 +4464,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_5_ID)
                     .ordinalPosition(4)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Bread")
                     .internalName("bread")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4460,7 +4473,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_6_ID)
                     .ordinalPosition(5)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Eggs")
                     .internalName("eggs")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4470,7 +4482,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_7_ID)
                     .ordinalPosition(6)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Milk")
                     .internalName("milk")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4480,7 +4491,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_8_ID)
                     .ordinalPosition(7)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Water")
                     .internalName("water")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4490,7 +4500,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_9_ID)
                     .ordinalPosition(8)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Airborne")
                     .internalName("airborne")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4500,7 +4509,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_10_ID)
                     .ordinalPosition(9)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Waterborne")
                     .internalName("waterborne")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4510,7 +4518,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_11_ID)
                     .ordinalPosition(10)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Aquantic")
                     .internalName("aquantic")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4520,7 +4527,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_12_ID)
                     .ordinalPosition(11)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Predator")
                     .internalName("predator")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4530,7 +4536,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_13_ID)
                     .ordinalPosition(12)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Backbone")
                     .internalName("backbone")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4540,7 +4545,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_14_ID)
                     .ordinalPosition(13)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Breathes")
                     .internalName("breathes")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4550,7 +4554,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_15_ID)
                     .ordinalPosition(14)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Venomous")
                     .internalName("venomous")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4560,7 +4563,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_16_ID)
                     .ordinalPosition(15)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Fin")
                     .internalName("fin")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4570,7 +4572,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_17_ID)
                     .ordinalPosition(16)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Legs")
                     .internalName("legs")
                     .columnType(ColumnTypeDto.INT)
@@ -4580,7 +4581,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_18_ID)
                     .ordinalPosition(17)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Tail")
                     .internalName("tail")
                     .columnType(ColumnTypeDto.DECIMAL)
@@ -4590,7 +4590,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_19_ID)
                     .ordinalPosition(18)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Domestic")
                     .internalName("domestic")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4600,7 +4599,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_20_ID)
                     .ordinalPosition(19)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Catsize")
                     .internalName("catsize")
                     .columnType(ColumnTypeDto.BOOL)
@@ -4610,7 +4608,6 @@ public abstract class BaseTest {
                     .id(COLUMN_5_21_ID)
                     .ordinalPosition(20)
                     .tableId(TABLE_5_ID)
-                    .table(TABLE_5_DTO)
                     .name("Class Type")
                     .internalName("class_type")
                     .columnType(ColumnTypeDto.DECIMAL)
@@ -4820,7 +4817,6 @@ public abstract class BaseTest {
                     .id(67L)
                     .ordinalPosition(0)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("id")
                     .internalName("id")
                     .columnType(ColumnTypeDto.BIGINT)
@@ -4830,7 +4826,6 @@ public abstract class BaseTest {
                     .id(68L)
                     .ordinalPosition(1)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("firstname")
                     .internalName("firstname")
                     .columnType(ColumnTypeDto.VARCHAR)
@@ -4840,7 +4835,6 @@ public abstract class BaseTest {
                     .id(69L)
                     .ordinalPosition(2)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("lastname")
                     .internalName("lastname")
                     .columnType(ColumnTypeDto.VARCHAR)
@@ -4850,7 +4844,6 @@ public abstract class BaseTest {
                     .id(70L)
                     .ordinalPosition(3)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("birth")
                     .internalName("birth")
                     .columnType(ColumnTypeDto.YEAR)
@@ -4860,7 +4853,6 @@ public abstract class BaseTest {
                     .id(71L)
                     .ordinalPosition(4)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("reminder")
                     .internalName("reminder")
                     .columnType(ColumnTypeDto.TIME)
@@ -4870,7 +4862,6 @@ public abstract class BaseTest {
                     .id(72L)
                     .ordinalPosition(5)
                     .tableId(TABLE_6_ID)
-                    .table(TABLE_6_DTO)
                     .name("ref_id")
                     .internalName("ref_id")
                     .columnType(ColumnTypeDto.BIGINT)
@@ -4956,7 +4947,6 @@ public abstract class BaseTest {
                     .id(COLUMN_7_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_7_ID)
-                    .table(TABLE_7_DTO)
                     .name("name_id")
                     .internalName("name_id")
                     .columnType(ColumnTypeDto.BIGINT)
@@ -4966,7 +4956,6 @@ public abstract class BaseTest {
                     .id(COLUMN_7_2_ID)
                     .ordinalPosition(1)
                     .tableId(TABLE_7_ID)
-                    .table(TABLE_7_DTO)
                     .name("zoo_id")
                     .internalName("zoo_id")
                     .columnType(ColumnTypeDto.BIGINT)
@@ -4991,7 +4980,6 @@ public abstract class BaseTest {
                     .databaseId(DATABASE_1_ID)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -5002,7 +4990,6 @@ public abstract class BaseTest {
                     .databaseId(DATABASE_1_ID)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5014,7 +5001,6 @@ public abstract class BaseTest {
                     .databaseId(DATABASE_1_ID)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5034,6 +5020,7 @@ public abstract class BaseTest {
             .queryHash(VIEW_1_QUERY_HASH)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
+            .identifiers(new LinkedList<>()) /* IDENTIFIER_3 */
             .columns(null) /* VIEW_1_COLUMNS */
             .build();
 
@@ -5062,7 +5049,6 @@ public abstract class BaseTest {
                     .ordinalPosition(0)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -5073,7 +5059,6 @@ public abstract class BaseTest {
                     .ordinalPosition(1)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5085,7 +5070,6 @@ public abstract class BaseTest {
                     .ordinalPosition(2)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5107,7 +5091,6 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .columns(VIEW_1_COLUMNS_DTO)
-            .database(null)
             .build();
 
     public final static PrivilegedViewDto VIEW_1_PRIVILEGED_DTO = PrivilegedViewDto.builder()
@@ -5158,26 +5141,29 @@ public abstract class BaseTest {
     public final static List<ViewColumnDto> VIEW_2_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(4L)
-                    .name("date")
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(0)
+                    .name("Date")
                     .internalName("date")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DATE)
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
                     .id(5L)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(1)
                     .name("loc")
                     .internalName("loc")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
                     .id(6L)
-                    .name("mintemp")
-                    .internalName("mintemp")
-                    .ordinalPosition(3)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(2)
+                    .name("Rainfall")
+                    .internalName("rainfall")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5185,9 +5171,10 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(7L)
-                    .name("rainfall")
-                    .internalName("rainfall")
-                    .ordinalPosition(4)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(3)
+                    .name("MinTemp")
+                    .internalName("mintemp")
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5313,9 +5300,10 @@ public abstract class BaseTest {
     public final static List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(8L)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(0)
                     .name("MinTemp")
                     .internalName("mintemp")
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5323,30 +5311,31 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(9L)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(1)
                     .name("Rainfall")
                     .internalName("rainfall")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
-                    .concept(CONCEPT_1_DTO)
-                    .unit(UNIT_1_DTO)
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
                     .id(10L)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(2)
                     .name("Location")
                     .internalName("location")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
                     .id(11L)
+                    .databaseId(DATABASE_1_ID)
+                    .ordinalPosition(3)
                     .name("Date")
                     .internalName("date")
-                    .ordinalPosition(3)
                     .columnType(ColumnTypeDto.DATE)
                     .isNullAllowed(true)
                     .build()
@@ -5470,6 +5459,7 @@ public abstract class BaseTest {
     public final static List<ViewColumnDto> VIEW_4_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(12L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(0)
                     .name("Animal Name")
                     .internalName("animal_name")
@@ -5478,6 +5468,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(13L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(1)
                     .name("Hair")
                     .internalName("hair")
@@ -5486,6 +5477,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(14L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(2)
                     .name("Feathers")
                     .internalName("feathers")
@@ -5494,6 +5486,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(15L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(3)
                     .name("Eggs")
                     .internalName("eggs")
@@ -5502,6 +5495,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(16L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(4)
                     .name("Milk")
                     .internalName("milk")
@@ -5510,6 +5504,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(17L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(5)
                     .name("Airborne")
                     .internalName("airborne")
@@ -5518,6 +5513,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(18L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(6)
                     .name("Aquantic")
                     .internalName("aquantic")
@@ -5526,6 +5522,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(19L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(7)
                     .name("Predator")
                     .internalName("predator")
@@ -5534,6 +5531,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(20L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(8)
                     .name("Backbone")
                     .internalName("backbone")
@@ -5542,6 +5540,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(21L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(9)
                     .name("Breathes")
                     .internalName("breathes")
@@ -5550,6 +5549,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(22L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(10)
                     .name("Venomous")
                     .internalName("venomous")
@@ -5558,6 +5558,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(23L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(11)
                     .name("Fin")
                     .internalName("fin")
@@ -5566,6 +5567,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(24L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(12)
                     .name("Legs")
                     .internalName("legs")
@@ -5574,6 +5576,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(25L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(13)
                     .name("Tail")
                     .internalName("tail")
@@ -5582,6 +5585,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(26L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(14)
                     .name("Domestic")
                     .internalName("domestic")
@@ -5590,6 +5594,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(27L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(15)
                     .name("Catsize")
                     .internalName("catsize")
@@ -5598,6 +5603,7 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(28L)
+                    .databaseId(DATABASE_2_ID)
                     .ordinalPosition(16)
                     .name("Class Type")
                     .internalName("class_type")
@@ -5860,7 +5866,6 @@ public abstract class BaseTest {
                     .ordinalPosition(0)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
@@ -5871,7 +5876,6 @@ public abstract class BaseTest {
                     .ordinalPosition(1)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5883,7 +5887,6 @@ public abstract class BaseTest {
                     .ordinalPosition(2)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5894,20 +5897,20 @@ public abstract class BaseTest {
     public final static List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(29L)
+                    .databaseId(DATABASE_3_ID)
                     .ordinalPosition(0)
                     .name("location")
                     .internalName("location")
-                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
                     .build(),
             ViewColumnDto.builder()
                     .id(30L)
+                    .databaseId(DATABASE_3_ID)
                     .ordinalPosition(1)
                     .name("lat")
                     .internalName("lat")
-                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -5915,10 +5918,10 @@ public abstract class BaseTest {
                     .build(),
             ViewColumnDto.builder()
                     .id(31L)
+                    .databaseId(DATABASE_3_ID)
                     .ordinalPosition(2)
                     .name("lng")
                     .internalName("lng")
-                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
@@ -6009,6 +6012,8 @@ public abstract class BaseTest {
     public final static String CREATOR_3_ORCID = "00000-00000-00000";
     public final static String CREATOR_3_AFFIL = "TU Graz";
     public final static String CREATOR_3_AFFIL_ROR = "https://ror.org/04wn28048";
+    public final static AffiliationIdentifierSchemeType CREATOR_3_AFFIL_SCHEME_TYPE = AffiliationIdentifierSchemeType.ROR;
+    public final static AffiliationIdentifierSchemeTypeDto CREATOR_3_AFFIL_SCHEME_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
     public final static String CREATOR_3_AFFIL_URI = "https://ror.org/";
     public final static String CREATOR_3_FIRSTNAME = "Max";
     public final static String CREATOR_3_LASTNAME = "Mustermann";
@@ -6337,7 +6342,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .owner(USER_1_DTO)
+            .owner(USER_1_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1_DTO)))
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_DTO)))
@@ -6523,6 +6528,9 @@ public abstract class BaseTest {
             .nameIdentifier(CREATOR_1_ORCID)
             .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
             .affiliation(CREATOR_1_AFFIL)
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
+            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
     public final static CreatorSaveDto IDENTIFIER_5_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
@@ -6626,7 +6634,8 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE_DTO)
-            .owner(USER_2_DTO)
+            .owner(USER_2_BRIEF_DTO)
+            .status(IDENTIFIER_5_STATUS_TYPE_DTO)
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1_DTO, IDENTIFIER_5_CREATOR_2_DTO)))
             .build();
 
@@ -6780,6 +6789,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
+            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
     public final static CreatorDto IDENTIFIER_6_CREATOR_1_DTO = CreatorDto.builder()
@@ -6850,8 +6860,8 @@ public abstract class BaseTest {
             .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
             .affiliation(CREATOR_3_AFFIL)
             .affiliationIdentifier(CREATOR_3_AFFIL_ROR)
-            .affiliationIdentifierScheme(AffiliationIdentifierSchemeType.ROR)
-            .affiliationIdentifierSchemeUri("https://ror.org/")
+            .affiliationIdentifierScheme(CREATOR_3_AFFIL_SCHEME_TYPE)
+            .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
             .build();
 
     public final static CreatorDto IDENTIFIER_6_CREATOR_3_DTO = CreatorDto.builder()
@@ -6863,6 +6873,8 @@ public abstract class BaseTest {
             .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
             .affiliation(CREATOR_3_AFFIL)
             .affiliationIdentifier(CREATOR_3_AFFIL_ROR)
+            .affiliationIdentifierScheme(CREATOR_3_AFFIL_SCHEME_TYPE_DTO)
+            .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
             .build();
 
     public final static Identifier IDENTIFIER_6 = Identifier.builder()
@@ -6909,7 +6921,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE_DTO)
-            .owner(USER_3_DTO)
+            .owner(USER_3_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1_DTO, IDENTIFIER_6_CREATOR_2_DTO, IDENTIFIER_6_CREATOR_3_DTO)))
             .status(IDENTIFIER_6_STATUS_TYPE_DTO)
@@ -7015,10 +7027,11 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_7_RESULT_NUMBER)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE_DTO)
-            .owner(USER_4_DTO)
+            .owner(USER_4_BRIEF_DTO)
+            .relatedIdentifiers(new LinkedList<>())
             .licenses(new LinkedList<>())
             .funders(new LinkedList<>())
-            .creators(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1_DTO)))
             .status(IDENTIFIER_7_STATUS_TYPE_DTO)
             .build();
 
@@ -7128,7 +7141,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
-            .owner(USER_1_DTO)
+            .owner(USER_1_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_2_STATUS_TYPE_DTO)
@@ -7229,7 +7242,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
-            .owner(USER_1_DTO)
+            .owner(USER_1_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_3_STATUS_TYPE_DTO)
@@ -7328,7 +7341,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
-            .owner(USER_1_DTO)
+            .owner(USER_1_BRIEF_DTO)
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .creators(new LinkedList<>())
             .status(IDENTIFIER_4_STATUS_TYPE_DTO)
@@ -7400,6 +7413,14 @@ public abstract class BaseTest {
             .id(BANNER_MESSAGE_1_ID)
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BANNER_MESSAGE_1_TYPE)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+
+    public final static BannerMessageDto BANNER_MESSAGE_1_DTO = BannerMessageDto.builder()
+            .id(BANNER_MESSAGE_1_ID)
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BANNER_MESSAGE_1_TYPE_DTO)
             .displayStart(BANNER_MESSAGE_1_START)
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();

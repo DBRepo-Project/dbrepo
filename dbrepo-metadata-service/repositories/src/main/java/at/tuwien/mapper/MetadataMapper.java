@@ -236,8 +236,6 @@ public interface MetadataMapper {
     })
     DataCiteDoiRelatedIdentifier relatedIdentifierToDoiRelatedIdentifier(RelatedIdentifier relatedIdentifier);
 
-    Date instantToDate(Instant data);
-
     @Mappings({
             @Mapping(target = "givenNames", source = "person.name.givenNames.value"),
             @Mapping(target = "familyName", source = "person.name.familyName.value"),
@@ -721,9 +719,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
-            @Mapping(target = "description", source = "description"),
-            @Mapping(target = "table", ignore = true),
-            @Mapping(target = "views", ignore = true)
+            @Mapping(target = "description", source = "description")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 
@@ -785,6 +781,7 @@ public interface MetadataMapper {
             @Mapping(target = "attributes.orcid", source = "orcid"),
             @Mapping(target = "attributes.affiliation", source = "affiliation"),
             @Mapping(target = "attributes.theme", source = "theme"),
+            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
@@ -825,9 +822,6 @@ public interface MetadataMapper {
                 .trim();
     }
 
-    @Mappings({
-            @Mapping(target = "database.views", ignore = true)
-    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({

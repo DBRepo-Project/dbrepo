@@ -1,10 +1,7 @@
 package at.tuwien.api.database.table.columns;
 
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import at.tuwien.api.database.table.columns.concepts.ConceptBriefDto;
+import at.tuwien.api.database.table.columns.concepts.UnitBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,11 +17,11 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ColumnDto {
 
     @NotNull
@@ -40,7 +37,7 @@ public class ColumnDto {
 
     @NotNull
     @Schema(example = "0")
-    @JsonProperty("ordinal_position")
+    @JsonProperty("ord")
     private Integer ordinalPosition;
 
     @NotBlank
@@ -52,7 +49,6 @@ public class ColumnDto {
     @Size(max = 64)
     @JsonProperty("internal_name")
     @Schema(example = "mdb_date")
-    @EqualsAndHashCode.Include
     private String internalName;
 
     @Schema
@@ -65,7 +61,7 @@ public class ColumnDto {
     private Long length;
 
     @NotNull
-    @JsonProperty("column_type")
+    @JsonProperty("type")
     @Schema(example = "string")
     private ColumnTypeDto columnType;
 
@@ -105,22 +101,13 @@ public class ColumnDto {
     @JsonProperty("std_dev")
     private BigDecimal stdDev;
 
-    private ConceptDto concept;
+    private ConceptBriefDto concept;
 
-    private UnitDto unit;
+    private UnitBriefDto unit;
 
     @Size(max = 2048)
     @Schema(example = "Column comment")
     private String description;
-
-    @ToString.Exclude
-    @JsonIgnore
-    @EqualsAndHashCode.Include
-    private TableDto table;
-
-    @ToString.Exclude
-    @JsonIgnore
-    private transient List<ViewDto> views;
 
     @NotNull
     @JsonProperty("is_null_allowed")

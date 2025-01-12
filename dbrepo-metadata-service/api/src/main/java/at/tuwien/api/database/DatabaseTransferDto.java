@@ -1,8 +1,7 @@
 package at.tuwien.api.database;
 
-import lombok.*;
-
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.UUID;
@@ -10,6 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized

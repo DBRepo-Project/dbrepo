@@ -4,7 +4,6 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -13,17 +12,16 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TableDto {
 
     @NotNull
@@ -31,7 +29,6 @@ public class TableDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @EqualsAndHashCode.Include
     private Long tdbid;
 
     @NotBlank
@@ -41,7 +38,6 @@ public class TableDto {
     @NotBlank
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
-    @EqualsAndHashCode.Include
     private String internalName;
 
     @Schema

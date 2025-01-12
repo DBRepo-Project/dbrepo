@@ -2,7 +2,7 @@ package at.tuwien.api.identifier;
 
 import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,11 +13,11 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -71,7 +71,6 @@ public class IdentifierDto {
     @Schema(description = "query hash in sha512")
     private String queryHash;
 
-    @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
@@ -92,7 +91,7 @@ public class IdentifierDto {
     private String publisher;
 
     @NotNull
-    private UserDto owner;
+    private UserBriefDto owner;
 
     @JsonProperty("publication_day")
     @Schema(example = "15")
@@ -115,9 +114,5 @@ public class IdentifierDto {
     private List<CreatorDto> creators;
 
     private IdentifierStatusTypeDto status;
-
-    @NotNull
-    @JsonProperty("created_by")
-    private UUID createdBy;
 
 }

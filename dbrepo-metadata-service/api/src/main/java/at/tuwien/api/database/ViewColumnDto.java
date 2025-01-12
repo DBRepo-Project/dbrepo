@@ -1,8 +1,6 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -29,7 +28,7 @@ public class ViewColumnDto {
 
     @NotNull
     @Schema(example = "0")
-    @JsonProperty("ordinal_position")
+    @JsonProperty("ord")
     private Integer ordinalPosition;
 
     @NotBlank
@@ -55,7 +54,7 @@ public class ViewColumnDto {
     private Long length;
 
     @NotNull
-    @JsonProperty("column_type")
+    @JsonProperty("type")
     @Schema(example = "string")
     private ColumnTypeDto columnType;
 
@@ -64,10 +63,6 @@ public class ViewColumnDto {
 
     @Schema(example = "0")
     private Long d;
-
-    private ConceptDto concept;
-
-    private UnitDto unit;
 
     @Size(max = 2048)
     @Schema(example = "Column comment")

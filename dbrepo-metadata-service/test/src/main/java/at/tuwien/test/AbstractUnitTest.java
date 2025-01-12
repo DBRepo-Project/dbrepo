@@ -11,6 +11,7 @@ import java.util.List;
 public abstract class AbstractUnitTest extends BaseTest {
 
     public void genesis() {
+        IMAGE_1_DTO.setOperators(IMAGE_1_OPERATORS_DTO);
         CONTAINER_1_PRIVILEGED_DTO.setImage(IMAGE_1_DTO);
         IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
@@ -41,7 +42,6 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
         TABLE_1_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
-        VIEW_1_DTO.setDatabase(DATABASE_1_DTO);
         VIEW_1_DTO.setIdentifiers(VIEW_1_DTO_IDENTIFIERS);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
         IDENTIFIER_1.setDatabase(DATABASE_1);

@@ -71,8 +71,7 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
     })
-    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username)
-            throws UserNotFoundException {
+    public ResponseEntity<List<UserBriefDto>> findAll(@RequestParam(required = false) String username) {
         log.debug("endpoint find all users, username={}", username);
         if (username == null) {
             return ResponseEntity.ok(userService.findAll()
