@@ -1,18 +1,17 @@
+import logging
 import os
 import sys
-import logging
 import time
 
 import requests
-from pydantic import TypeAdapter
-from tusclient.client import TusClient
 from pandas import DataFrame
+from pydantic import TypeAdapter
 
 from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
-    AuthenticationError, UploadError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
+    AuthenticationError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
 
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
@@ -172,7 +171,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find users: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_units(self) -> List[Unit]:
+    def get_units(self) -> List[UnitBrief]:
         """
         Get all units known to the metadata database.
 
@@ -184,7 +183,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Unit]).validate_python(body)
+            return TypeAdapter(List[UnitBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find units: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
@@ -1940,7 +1939,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get licenses: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_concepts(self) -> List[Concept]:
+    def get_concepts(self) -> List[ConceptBrief]:
         """
         Get list of concepts known to the metadata database.
 
@@ -1950,7 +1949,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Concept]).validate_python(body)
+            return TypeAdapter(List[ConceptBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to get concepts: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 

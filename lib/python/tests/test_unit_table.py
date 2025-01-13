@@ -2,14 +2,12 @@ import json
 import unittest
 
 import requests_mock
-import datetime
-
-from dbrepo.RestClient import RestClient
 from pandas import DataFrame
 
-from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, \
-    Concept, Unit, TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
-from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, QueryStoreError, \
+from dbrepo.RestClient import RestClient
+from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, ConceptBrief, UnitBrief, \
+    TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
+from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
     AuthenticationError, ExternalSystemError
 
 
@@ -35,13 +33,14 @@ class TableUnitTest(unittest.TestCase):
                                                                     column=ColumnMinimal(id=1, table_id=2,
                                                                                          database_id=1))]),
                     columns=[Column(id=1,
+                                    ord=0,
                                     name="ID",
                                     database_id=1,
                                     table_id=2,
                                     internal_name="id",
                                     auto_generated=True,
                                     is_primary_key=True,
-                                    column_type=ColumnType.BIGINT,
+                                    type=ColumnType.BIGINT,
                                     is_public=True,
                                     is_null_allowed=False)])
         with requests_mock.Mocker() as mock:
@@ -165,12 +164,13 @@ class TableUnitTest(unittest.TestCase):
                                                                                              database_id=1))]),
                         columns=[Column(id=1,
                                         name="ID",
+                                        ord=0,
                                         database_id=1,
                                         table_id=2,
                                         internal_name="id",
                                         auto_generated=True,
                                         is_primary_key=True,
-                                        column_type=ColumnType.BIGINT,
+                                        type=ColumnType.BIGINT,
                                         is_public=True,
                                         is_null_allowed=False)])
             # mock
@@ -487,20 +487,21 @@ class TableUnitTest(unittest.TestCase):
     def test_update_table_column_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = Column(id=1,
+                         ord=0,
                          name="ID",
                          database_id=1,
                          table_id=2,
                          internal_name="id",
                          auto_generated=True,
                          is_primary_key=True,
-                         column_type=ColumnType.BIGINT,
+                         type=ColumnType.BIGINT,
                          is_public=True,
-                         concept=Concept(id=2,
-                                         uri="http://dbpedia.org/page/Category:Precipitation",
-                                         name="Precipitation"),
-                         unit=Unit(id=2,
-                                   uri="http://www.wikidata.org/entity/Q119856947",
-                                   name="liters per square meter"),
+                         concept=ConceptBrief(id=2,
+                                              uri="http://dbpedia.org/page/Category:Precipitation",
+                                              name="Precipitation"),
+                         unit=UnitBrief(id=2,
+                                        uri="http://www.wikidata.org/entity/Q119856947",
+                                        name="liters per square meter"),
                          is_null_allowed=False)
             # mock
             mock.put('/api/database/1/table/2/column/1', json=exp.model_dump(), status_code=202)
