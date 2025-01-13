@@ -1,0 +1,16 @@
+<section id="identifiers_info" aria-label="identifier_info" class="info-box">
+    <div id="identifier_header">
+    <h3>Identifiers</h3>
+</div>
+    <div id="identifiers_list_div">
+    <ul id="identifiers_list">
+        {%- for identifier in  database.identifiers -%}
+            <li id="identifiers_list_item">
+            {{identifier.titles[0].title}}
+            {{identifier.doi}}
+            </li>
+        {%- endfor -%}
+
+    </ul>
+    </div>
+</section>

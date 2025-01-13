@@ -1,0 +1,66 @@
+{%- macro preview_info(view_data) %}
+    <table id="preview_table">
+    <thead>
+            <tr>
+                {% for column in view_data[0].keys() %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+    <tbody>
+        {% for row in view_data %}
+            <tr>
+            {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{%- endmacro %}
+
+
+{% macro preview_info_box(view_data) %}
+    <div role="button" class="accordion link-box">
+        <span class="box-title"> Dataset </span>
+        <i class="angle right icon" aria-hidden="true"></i>
+    </div>
+    <div class="panel">
+        {{ preview_info(view_data) }}
+    </div>
+{%- endmacro %}
+
+{% macro schema_table(view) %}
+    <table id="dataset_list">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Size</th>
+        </tr>
+    </thead>
+    <tbody>
+            {% for column in view.columns %}
+            <tr>
+                <td>{{ column.name }}</td>
+                <td>{{ column.column_type.value }}</td>
+                <td>{% if column.size == None %}
+                    {% else %}
+                        {{ column.size }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{%- endmacro %}
+
+{% macro view_schema_box(view) %}
+    <div role="button" class="accordion link-box">
+        <span class="box-title"> Schema </span>
+        <i class="angle right icon" aria-hidden="true"></i>
+    </div>
+    <div class="panel">
+        {{ schema_table(view) }}
+    </div>
+{%- endmacro %}

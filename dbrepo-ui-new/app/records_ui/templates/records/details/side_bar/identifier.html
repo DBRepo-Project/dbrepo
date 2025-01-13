@@ -1,0 +1,23 @@
+<section id="identifier_info" aria-label="identifier_info" class="info-box">
+
+    <div class="label">Persistent Identifier</div>
+    <div class="value">{{ database.identifiers[doi_id].doi}}</div>
+    <br>
+
+    <div class="label">Publisher</div>
+    <div class="value">{{ database.identifiers[doi_id].publisher}}</div>
+    <br>
+
+    <div class="label">Publication Date</div>
+    <div class="value">{{ database.identifiers[doi_id].created}}</div>
+    <br>
+
+    <div class="label">Licenses</div>
+    <div class="value">{% for license in database.identifiers[doi_id].licenses %}
+        {{ license.identifier }} {{ "; " if not loop.last }}
+    {%- endfor -%}</div>
+    <br>
+
+    <div class="label">Citation</div>
+    <div class="value">{{ database.identifiers[doi_id].query }}</div>
+</section>

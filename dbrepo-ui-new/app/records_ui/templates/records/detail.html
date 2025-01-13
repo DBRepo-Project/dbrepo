@@ -1,0 +1,39 @@
+{%- extends 'page.html' %}
+
+{%- from "records/macros/data.html" import preview_info_box,dataset_list_box %}
+{%- from "records/macros/metadata.html" import creators_list %}
+
+
+{% block content %}
+
+    <div class="container">
+
+
+        <div class="left-section">
+            <div id="static-header">Created {{ database.created }}
+                <div id="access"><i class="lock open icon"></i>Open</div>
+            </div>
+            <h1>{{ database.name }}</h1>
+            <a id="creator">{{ creators_list(database.identifiers[0].creators)}}</a>
+            <p style="white-space: pre-line;">{{ database.identifiers[0].descriptions[0].description }}</p>
+            <h2>Data</h2>
+            {{ preview_info_box(table, table_data) }}
+            {{ dataset_list_box(database.views) }}
+            <div class="ui grid">
+                <div class="centered row rel-mt-1">
+                  <button id="jump-btn" class="jump-to-top ui button labeled icon"
+                          aria-label="Jump to top of page ">
+                    <i class="arrow alternate circle up outline icon"></i>
+                    Jump Up
+                  </button>
+                </div>
+            </div>
+        </div>
+        <div class="right-section">
+            {%- include "/records/details/side_bar.html" %}
+
+        </div>
+
+    </div>
+
+{% endblock %}

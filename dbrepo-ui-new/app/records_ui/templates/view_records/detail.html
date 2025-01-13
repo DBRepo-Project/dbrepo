@@ -1,0 +1,34 @@
+{%- extends 'page.html' %}
+
+{%- from "view_records/macros/data.html" import preview_info_box,view_schema_box %}
+{%- from "records/macros/metadata.html" import creators_list %}
+
+
+{% block content %}
+    <script>
+    </script>
+    <div class="container">
+
+        <div class="left-section">
+            <div id="static-header">Created {{ view.created }}
+
+                <div id="type"><i class="lock open icon"></i>View</div>
+                <div id="access"><i class="lock open icon"></i>Open</div>
+
+
+            </div>
+            <h1>{{ view.name }}</h1>
+            <a id="creator">{{ view.creator.username }}</a>
+            <p style="white-space: pre-line;">{{ view.description }}</p>
+            <h2>Data</h2>
+            {{ preview_info_box(view_data) }}
+            {{ view_schema_box(view) }}
+        </div>
+        <div class="right-section">
+            {%- include "/view_records/details/side_bar.html" %}
+
+
+        </div>
+    </div>
+
+{% endblock %}

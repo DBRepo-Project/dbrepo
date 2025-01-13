@@ -1,0 +1,7 @@
+{%- macro creators_list(creators) %}
+    <p>
+    {% for creator in creators %}
+        {{ creator.creator_name }} {{ "; " if not loop.last }}
+    {%- endfor -%}
+    </p>
+{%- endmacro %}

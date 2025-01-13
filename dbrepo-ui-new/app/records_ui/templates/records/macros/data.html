@@ -1,0 +1,79 @@
+{%- macro preview_info(table, table_data) %}
+    <table id="preview_table">
+    <thead>
+            <tr>
+                {% for column in table_data[0].keys() %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+    <tbody>
+        {% for row in table_data %}
+            <tr>
+            {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{%- endmacro %}
+
+
+{% macro preview_info_box(table, table_data) %}
+    <div role="button" class="accordion link-box">
+        <span class="box-title"> {{ table.name }} </span>
+        <i class="angle right icon" aria-hidden="true"></i>
+    </div>
+    <div class="panel">
+        {{ preview_info(table, table_data) }}
+    </div>
+{%- endmacro %}
+
+{% macro dataset_list(views) %}
+    <table id="dataset_list">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>
+                <a role="button" class="ui compact mini button right floated" href="">
+                  <i class="file archive icon button" aria-hidden="true"></i>Download all
+                </a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for view in views %}
+            <tr>
+                <td>{{ view.name }}</td>
+                <td>{{ view.size }}</td>
+                <td>
+                    <span>
+                        <a role="button" class="ui compact mini button right floated">
+                            <i class="download icon" aria-hidden="true"></i>Download
+                        </a>
+                        <a role="button" class="ui compact mini button preview-link right floated" href="/view">
+                          <i class="info icon" aria-hidden="true"></i>Details
+                        </a>
+                        <a role="button" class="ui compact mini button preview-link right floated preview_button" data-value="{{ view.id }}">
+                          <i class="eye icon" aria-hidden="true"></i>Preview
+                        </a>
+
+                    </span>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+{%- endmacro %}
+
+{% macro dataset_list_box(views) %}
+        <div role="button" class="accordion link-box">
+            <span class="box-title"> Datasets </span>
+            <i class="angle right icon" aria-hidden="true"></i>
+        </div>
+        <div class="panel">
+            {{ dataset_list(views) }}
+        </div>
+{%- endmacro %}
