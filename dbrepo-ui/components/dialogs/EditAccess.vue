@@ -229,7 +229,7 @@ export default {
       const userService = useUserService()
       userService.findAll()
         .then((users) => {
-          this.users = users.filter(u => u.username !== this.database.owner.username)
+          this.users = users.filter(u => u.id !== this.database.owner.id)
         })
         .catch(({code}) => {
           const toast = useToastInstance()

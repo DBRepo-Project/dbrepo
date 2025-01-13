@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSchema">
     <DatabaseToolbar />
     <v-window
       v-model="tab">
@@ -160,6 +161,12 @@
       :items="items"
       class="pa-0 mt-2" />
   </div>
+  <JumboBox
+    v-if="error"
+    :title="$t(errorCodeKey(error).title, { resource: 'database' })"
+    :subtitle="$t(errorCodeKey(error).subtitle)"
+    :text="$t(errorCodeKey(error).text, { resource: 'database' })" />
+  <pre v-if="error">{{ error }}</pre>
 </template>
 
 <script>
@@ -168,7 +175,7 @@ import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import JumboBox from '@/components/JumboBox.vue'
-import { sizeToHumanLabel } from '@/utils'
+import { sizeToHumanLabel, errorCodeKey } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
@@ -198,7 +205,6 @@ export default {
       useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
     }
     return {
-      database: data,
       error
     }
   },
@@ -356,7 +362,16 @@ export default {
         return null
       }
       return this.database.preview_image
+    },
+    canViewSchema () {
+      if (this.error) {
+        return false
+      }
+      return this.database
     }
+  },
+  methods: {
+    errorCodeKey
   }
 }
 </script>

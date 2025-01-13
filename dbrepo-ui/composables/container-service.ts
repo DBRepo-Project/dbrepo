@@ -17,5 +17,21 @@ export const useContainerService = (): any => {
     })
   }
 
-  return {findAll}
+  async function findOne(containerId: number): Promise<ContainerDto> {
+    const axios = useAxiosInstance();
+    console.debug('find containers');
+    return new Promise<ContainerDto>((resolve, reject) => {
+      axios.get<ContainerDto>(`/api/container/${containerId}`)
+        .then((response) => {
+          console.info(`Find container with id ${containerId}`)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to find container', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
+  return {findAll, findOne}
 }

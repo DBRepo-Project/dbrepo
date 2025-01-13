@@ -287,6 +287,7 @@ export const useTableService = (): any => {
     exportData,
     create,
     remove,
+    updateSemantics,
     removeTuple,
     history,
     suggest,

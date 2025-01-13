@@ -244,7 +244,7 @@
       "created": {
         "type": "date"
       },
-      "creator": {
+      "owner": {
         "properties": {
           "id": {
             "type": "text",
@@ -310,7 +310,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -359,9 +359,9 @@
               }
             }
           },
-          "creators": {
+          "owners": {
             "properties": {
-              "creator_name": {
+              "owner_name": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -610,7 +610,7 @@
               "auto_generated": {
                 "type": "boolean"
               },
-              "column_type": {
+              "type": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -638,9 +638,6 @@
                 }
               },
               "is_null_allowed": {
-                "type": "boolean"
-              },
-              "is_public": {
                 "type": "boolean"
               },
               "mean": {
@@ -733,7 +730,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -906,7 +903,7 @@
               "auto_generated": {
                 "type": "boolean"
               },
-              "column_type": {
+              "type": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -950,7 +947,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -1010,7 +1007,7 @@
               "created": {
                 "type": "date"
               },
-              "creator": {
+              "owner": {
                 "properties": {
                   "id": {
                     "type": "text",
@@ -1059,9 +1056,9 @@
                   }
                 }
               },
-              "creators": {
+              "owners": {
                 "properties": {
-                  "creator_name": {
+                  "owner_name": {
                     "type": "text",
                     "fields": {
                       "keyword": {

@@ -27,7 +27,7 @@
                 type="number">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -61,7 +61,7 @@
                 type="text">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -94,7 +94,7 @@
                 type="number">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -126,7 +126,7 @@
                 :hint="hint(column)">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -161,7 +161,7 @@
                 :items="isSet(column) ? column.sets : column.enums">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -192,7 +192,7 @@
                 :clearable="!required(column)">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -221,7 +221,7 @@
                 :hint="hint(column)">
                 <template
                   v-slot:append>
-                  {{ column.column_type.toUpperCase() }}
+                  {{ column.type.toUpperCase() }}
                   <NuxtLink
                     target="_blank"
                     class="ml-2"
@@ -313,6 +313,8 @@ export default {
       oldTuple: null,
       error: false,
       menu: false,
+      loadContainer: false,
+      container: null,
       bools: [
         { title: 'true', value: true },
         { title: 'false', value: false }
@@ -321,6 +323,7 @@ export default {
     }
   },
   mounted() {
+    this.fetchContainer()
     this.$refs.form.validate()
     this.oldTuple = Object.assign({}, this.tuple)
   },
@@ -328,11 +331,20 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    table () {
+      return this.cacheStore.getTable
+    },
     columnTypes () {
-      if (!this.database) {
+      if (!this.container) {
         return []
       }
-      return this.database.container.image.data_types
+      return this.container.image.data_types
+    },
+    primaryKeyColumns () {
+      if (!this.table) {
+        return []
+      }
+      return this.table.constraints.primary_key.map(pk => pk.column)
     },
     title () {
       return (this.edit ? this.$t('toolbars.table.data.edit') : this.$t('toolbars.table.data.add')) + ' ' + this.$t('toolbars.table.data.tuple')
@@ -360,7 +372,7 @@ export default {
       if (!is_null_allowed) {
         hint += this.$t('pages.table.subpages.data.required.hint')
       }
-      if (column.column_type === 'sequence') {
+      if (column.type === 'sequence') {
         hint += ' ' + this.$t('pages.table.subpages.data.auto.hint')
       }
       if (is_primary_key) {
@@ -371,47 +383,47 @@ export default {
       }
       return hint
     },
-    documentationLink ({column_type}) {
-      const filter = this.columnTypes.filter(t => t.value === column_type)
+    documentationLink ({type}) {
+      const filter = this.columnTypes.filter(t => t.value === type)
       if (filter.length !== 1) {
         return null
       }
       return filter[0].documentation
     },
-    formatHint ({column_type}) {
-      const filter = this.columnTypes.filter(t => t.value === column_type)
+    formatHint ({type}) {
+      const filter = this.columnTypes.filter(t => t.value === type)
       if (filter.length !== 1) {
         return null
       }
       return filter[0].data_hint
     },
     isTextField (column) {
-      const { column_type } = column
-      return ['char', 'varchar', 'tinytext', 'mediumtext'].includes(column_type)
+      const { type } = column
+      return ['char', 'varchar', 'tinytext', 'mediumtext'].includes(type)
     },
     isTextArea (column) {
-      return ['text'].includes(column.column_type)
+      return ['text'].includes(column.type)
     },
     isFileField (column) {
-      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
+      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.type)
     },
     isBoolean (column) {
-      return ['bool'].includes(column.column_type)
+      return ['bool'].includes(column.type)
     },
     isNumber (column) {
-      return ['int', 'binary', 'bit', 'tinyint', 'smallint', 'mediumint', 'bigint'].includes(column.column_type)
+      return ['int', 'binary', 'bit', 'tinyint', 'smallint', 'mediumint', 'bigint', 'serial'].includes(column.type)
     },
     isFloatingPoint (column) {
-      return ['float', 'double', 'decimal'].includes(column.column_type)
+      return ['float', 'double', 'decimal'].includes(column.type)
     },
     isEnum (column) {
-      return column.column_type === 'enum'
+      return column.type === 'enum'
     },
     isSet (column) {
-      return column.column_type === 'set'
+      return column.type === 'set'
     },
     isTimeField (column) {
-      return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
+      return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.type)
     },
     rules (column) {
       if (column.is_null_allowed) {
@@ -419,7 +431,7 @@ export default {
       }
       const rules = []
       rules.push(v => v !== null || this.$t('validation.required'))
-      if (column.column_type === 'decimal' || column.column_type === 'double') {
+      if (column.type === 'decimal' || column.type === 'double') {
         rules.push(v => !(!v || v.split('.')[0].length > column.size) || `${this.$t('pages.table.subpages.data.float.max')} ${column.size} ${this.$t('pages.table.subpages.data.float.before')}`)
         rules.push(v => !(!v || (column.d && v.split('.')[1].length > column.d)) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
       }
@@ -439,19 +451,11 @@ export default {
     },
     updateTuple () {
       const constraints = {}
-      if (this.table.constraints.primary_key.length > 0) {
-        this.table.constraints.primary_key
-          .forEach((pk) => {
-            constraints[pk.column.internal_name] = this.oldTuple[pk.column.internal_name]
-          })
-        console.debug('table has primary key: set update tuple constraints', constraints)
-      } else {
-        this.table.columns
-          .forEach((column) => {
-            constraints[column.internal_name] = this.oldTuple[column.internal_name]
-          })
-        console.debug('table does not have a primary key: set update tuple constraints', constraints)
-      }
+      this.primaryKeyColumns
+        .forEach((pk) => {
+          constraints[pk.internal_name] = this.oldTuple[pk.internal_name]
+        })
+      console.debug('table has primary key: set update tuple constraints', constraints)
       const tupleService = useTupleService()
       this.loading = true
       tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })
@@ -494,7 +498,7 @@ export default {
           this.$emit('close', { success: true })
           this.loading = false
         })
-        .catch(({message}) => {
+        .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
           if (typeof code !== 'string') {
@@ -510,6 +514,29 @@ export default {
       const toast = useToastInstance()
       toast.success(this.$t('success.upload.blob'))
       this.tuple[column.internal_name] = s3key
+    },
+    fetchContainer () {
+      if (!this.database) {
+        return
+      }
+      this.loadContainer = true
+      const containerService = useContainerService()
+      containerService.findOne(this.database.container.id)
+        .then((container) => {
+          this.container = container
+          this.loadContainer = false
+        })
+        .catch(({code, message}) => {
+          this.loadContainer = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
+        })
+        .finally(() => {
+          this.loadContainer = false
+        })
     }
   }
 }

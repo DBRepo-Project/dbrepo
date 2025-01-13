@@ -56,7 +56,7 @@ export default {
       dialogDelete: false,
       headers: [
         { value: 'name', title: 'Name' },
-        { value: 'column_type', title: 'Type' },
+        { value: 'type', title: 'Type' },
         { value: 'column_concept', title: 'Concept' },
         { value: 'column_unit', title: 'Unit' },
         { value: 'is_primary_key', title: 'Primary Key' },

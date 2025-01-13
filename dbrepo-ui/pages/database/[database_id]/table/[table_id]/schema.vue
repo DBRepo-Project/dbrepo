@@ -118,16 +118,43 @@
       :items="items"
       class="pa-0 mt-2" />
   </div>
+  <JumboBox
+    v-if="error"
+    :title="$t(errorCodeKey(error).title, { resource: 'table' })"
+    :subtitle="$t(errorCodeKey(error).subtitle)"
+    :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
+import { errorCodeKey } from '@/utils'
 
 export default {
   components: {
     TableToolbar
+  },
+  setup () {
+    const config = useRuntimeConfig()
+    const userStore = useUserStore()
+    const { database_id, table_id } = useRoute().params
+    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}/table/${table_id}`, {
+      immediate: true,
+      timeout: 90_000,
+      headers: {
+        Accept: 'application/json',
+        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
+      }
+    })
+    if (data.value) {
+      const identifierService = useIdentifierService()
+      useServerHead(identifierService.databaseToServerHead(data.value))
+      useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
+    }
+    return {
+      error
+    }
   },
   data () {
     return {
@@ -160,7 +187,7 @@ export default {
       ],
       headers: [
         { value: 'internal_name', title: this.$t('pages.table.subpages.schema.internal-name.title') },
-        { value: 'column_type', title: this.$t('pages.table.subpages.schema.column-type.title') },
+        { value: 'type', title: this.$t('pages.table.subpages.schema.column-type.title') },
         { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
@@ -195,6 +222,9 @@ export default {
       return this.userStore.getRoles
     },
     canViewSchema () {
+      if (this.error) {
+        return false
+      }
       if (!this.table) {
         return false
       }
@@ -204,7 +234,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
@@ -235,10 +265,11 @@ export default {
     }
   },
   methods: {
+    errorCodeKey,
     extra (column) {
-      if (column.column_type === 'float') {
+      if (column.type === 'float') {
         return `precision=${column.size}`
-      } else if (['decimal', 'double'].includes(column.column_type)) {
+      } else if (['decimal', 'double'].includes(column.type)) {
         let extra = ''
         if (column.size !== null) {
           extra += `size=${column.size}`
@@ -250,11 +281,11 @@ export default {
           extra += `d=${column.d}`
         }
         return extra
-      } else if (column.column_type === 'enum') {
+      } else if (column.type === 'enum') {
         return `(${column.enums.join(', ')})`
-      } else if (column.column_type === 'set') {
+      } else if (column.type === 'set') {
         return `(${column.sets.join(', ')})`
-      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.column_type)) {
+      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.type)) {
         return column.size !== null ? `size=${column.size}` : ''
       }
       return null

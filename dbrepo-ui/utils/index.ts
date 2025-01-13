@@ -1,6 +1,7 @@
 import {format} from 'date-fns'
 import moment from 'moment'
 import type {AxiosError} from 'axios'
+import type {H3Error} from "h3";
 
 
 export function notEmpty(str: string) {
@@ -22,6 +23,29 @@ export function notFile(files: [File[]]) {
     return false
   }
   return files.length === 1
+}
+
+export function errorCodeKey(error: H3Error): any {
+  switch (error.statusCode) {
+    case 404:
+      return {
+        title: 'error.missing.title',
+        subtitle: 'ERR_NOT_FOUND',
+        text: 'error.missing.text'
+      }
+    case 403:
+      return {
+        title: 'error.permission.title',
+        subtitle: 'ERR_NOT_AUTHORIZED',
+        text: 'error.permission.text'
+      }
+    default:
+      return {
+        title: 'error.gone.title',
+        subtitle: 'ERR_GONE',
+        text: 'error.gone.text'
+      }
+  }
 }
 
 export function castNumberOptional(str: string): string | number {
@@ -1055,6 +1079,14 @@ export function isActiveMessage(message: any) {
 }
 
 export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
+  if (!error || !('data' in error.response)) {
+    const errorObj: ApiErrorDto = {
+      status: 'NOT_SET',
+      code: 'error.axios.connection',
+      message: ''
+    }
+    return errorObj
+  }
   if (error.code === 'ECONNABORTED') {
     /* timeout */
     const errorObj: ApiErrorDto = {
@@ -1064,15 +1096,7 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
     }
     return errorObj
   }
-  if ('data' in error.response) {
-    const errorObj: ApiErrorDto = (error.response.data as ApiErrorDto)
-    return errorObj
-  }
-  const errorObj: ApiErrorDto = {
-    status: error.code ? error.code : 'NOT_SET',
-    code: 'error.axios.connection',
-    message: error.message
-  }
+  const errorObj: ApiErrorDto = (error.response.data as ApiErrorDto)
   return errorObj
 }
 

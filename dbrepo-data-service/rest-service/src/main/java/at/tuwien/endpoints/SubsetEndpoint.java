@@ -76,7 +76,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping
     @Observed(name = "dbrepo_subset_list")
     @Operation(summary = "Find subsets",
-            description = "Finds subsets in the query store. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
+            description = "Finds subsets in the query store. When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database and have the role `list-queries`. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -107,13 +107,8 @@ public class SubsetEndpoint extends AbstractEndpoint {
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        if (!database.getIsPublic() || !database.getIsSchemaPublic()) {
-            if (principal == null) {
-                log.error("Failed to find subset: database is private & missing authentication");
-                throw new NotAllowedException("Failed to find subset: database is private & missing authentication");
-            }
-            metadataServiceGateway.getAccess(databaseId, getId(principal));
-        }
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
+        endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-queries");
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -128,7 +123,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping("/{subsetId}")
     @Observed(name = "dbrepo_subset_find")
     @Operation(summary = "Find subset",
-            description = "Finds a subset in the data database. Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
+            description = "Finds a subset in the data database.  When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database and have the role `find-query`.  Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -175,13 +170,8 @@ public class SubsetEndpoint extends AbstractEndpoint {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        if (!database.getIsPublic() || !database.getIsSchemaPublic()) {
-            if (principal == null) {
-                log.error("Failed to find subset: database is private & missing authentication");
-                throw new NotAllowedException("Failed to find subset: database is private & missing authentication");
-            }
-            metadataServiceGateway.getAccess(databaseId, getId(principal));
-        }
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
+        endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "find-query");
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);
@@ -194,7 +184,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        if (accept == null) {
+        if (accept == null || accept.isEmpty() || accept.isBlank()) {
             accept = MediaType.APPLICATION_JSON_VALUE;
             log.debug("accept header not set: default to {}", accept);
         }
@@ -219,7 +209,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
                     throw new DatabaseUnavailableException("Failed to find data: " + e.getMessage(), e);
                 }
         }
-        throw new FormatNotAvailableException("Must provide either application/json or text/csv headers");
+        throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
     }
 
     @PostMapping
@@ -303,13 +293,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
         }
         /* create */
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        if (!database.getIsPublic() || !database.getIsSchemaPublic()) {
-            if (principal == null) {
-                log.error("Failed to find subset: database is private & missing authentication");
-                throw new NotAllowedException("Failed to find subset: database is private & missing authentication");
-            }
-            metadataServiceGateway.getAccess(databaseId, getId(principal));
-        }
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
             final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
             return getData(databaseId, subsetId, principal, request, page, size);
@@ -375,6 +359,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             }
             credentialService.getAccess(databaseId, getId(principal));
         }
+        log.trace("visibility for database: is_public={}, is_schema_public={}", database.getIsPublic(), database.getIsSchemaPublic());
         /* parameters */
         if (page == null) {
             page = 0L;

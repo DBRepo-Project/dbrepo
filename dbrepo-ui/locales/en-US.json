@@ -1099,16 +1099,16 @@
   },
   "error": {
     "permission": {
-      "title": "You do not have permission to view this resource",
-      "text": "This a default-fallback error message since this resource marked as private. Please try logging in or request read-access permissions from the owner."
+      "title": "You do not have permission to view this {resource}",
+      "text": "This a default-fallback error message since this {resource} marked as private. Please try logging in or request read-access permissions from the owner."
     },
     "missing": {
-      "title": "The requested resource was not found",
-      "text": "We could not find the requested resource anywhere."
+      "title": "The requested {resource} was not found",
+      "text": "We could not find the requested {resource} anywhere."
     },
     "gone": {
-      "title": "The requested resource does not exist anymore",
-      "text": "We could not find the requested resource anymore."
+      "title": "The requested {resource} does not exist anymore",
+      "text": "We could not find the requested {resource} anymore."
     },
     "auth": {
       "connection": "Failed to contact auth service",

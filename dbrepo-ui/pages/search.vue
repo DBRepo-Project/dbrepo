@@ -230,7 +230,7 @@ export default {
         }
         return description
       } else if (this.isColumn(item)) {
-        let text = item.column_type
+        let text = item.type
         if (item.size) {
           text += `(${item.size}${item.d ? ',' + item.d : ''})`
         }

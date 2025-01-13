@@ -88,7 +88,11 @@ export default {
       queryService.findAll(this.$route.params.database_id, true)
         .then((subsets) => {
           this.loadingSubsets = false
-          this.subsets = subsets
+          this.subsets = subsets.map(subset => {
+            subset.is_public = this.database.is_public
+            subset.is_schema_public = this.database.is_schema_public
+            return subset
+          })
         })
         .catch(({code}) => {
           this.loadingSubsets = false

@@ -44,6 +44,9 @@ export default {
         }
         return 'private'
       }
+      if (!this.resource.is_schema_public) {
+        return 'private'
+      }
       return 'public'
     },
     status () {

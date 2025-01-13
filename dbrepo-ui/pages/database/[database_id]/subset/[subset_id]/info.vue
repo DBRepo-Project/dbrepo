@@ -38,8 +38,13 @@
             :title="$t('pages.subset.visibility.title')"
             density="compact">
             <ResourceStatus
+              v-if="!identifier"
               :inline="true"
-              :resource="subset" />
+              :resource="database" />
+            <ResourceStatus
+              v-else
+              :inline="true"
+              :resource="identifier" />
           </v-list-item>
           <v-list-item
             v-if="subset.creator"

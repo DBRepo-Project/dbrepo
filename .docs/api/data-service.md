@@ -24,25 +24,32 @@ author: Martin Weise
 
 ## Overview
 
-The Data Service is responsible for inserting AMQP tuples from the Broker Service into the Data DB 
+The Data Service is responsible for inserting AMQP tuples from the Broker Service into the Data DB
 via [Spring AMQP](https://docs.spring.io/spring-amqp/reference/html/). To increase the number of consumers, scale the
 Data Service up.
 
 ## Data Processing
 
-The Data Service uses [Apache Spark](https://spark.apache.org/), a data engine to load data from/into 
+The Data Service uses [Apache Spark](https://spark.apache.org/), a data engine to load data from/into
 the [Data Database](../data-db) with a wide range of open-source connectors. The default deployment uses a local mode of
-embedded processing directly in the service until there exists 
+embedded processing directly in the service until there exists
 a [Bitnami Chart](https://artifacthub.io/packages/helm/bitnami/spark) for Spark 4.
 
 Retrieving data from a subset internally generates a view with the 64-character hash of the query. This view is not
 automatically deleted currently.
 
+## Caching
+
+The Data Service uses [Caffeine](https://github.com/ben-manes/caffeine), a caching solution that is used to temporarily
+cache the connection details from the [Metadata Service](../metadata-service) such that they don't have to be queried
+everytime e.g. a sensor measurement is inserted. By default, this information is stored for 60 minutes. System
+administrators can disable this behavior by setting `CREDENTIAL_CACHE_TIMEOUT=0` (cache is deleted after 0 seconds).
+
 ## Limitations
 
-* Views in DBRepo can only have 63-character length (it is assumed only internal views have the maximum length of 64 
+* Views in DBRepo can only have 63-character length (it is assumed only internal views have the maximum length of 64
   characters).
-* Local mode of embedded processing of Apache Spark directly in the service using 
+* Local mode of embedded processing of Apache Spark directly in the service using
   a [`local[2]`](https://spark.apache.org/docs/latest/#running-the-examples-and-shell) configuration.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"

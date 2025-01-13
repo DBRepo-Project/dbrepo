@@ -203,7 +203,7 @@ public class TableEndpoint extends AbstractEndpoint {
                 principal.getName());
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);
-        if (!table.getOwner().getId().equals(getId(principal))) {
+        if (!table.getOwner().getId().equals(getId(principal)) && !isSystem(principal)) {
             log.error("Failed to update table statistics: not owner");
             throw new NotAllowedException("Failed to update table statistics: not owner");
         }
@@ -480,16 +480,24 @@ public class TableEndpoint extends AbstractEndpoint {
             UserNotFoundException, NotAllowedException, AccessNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
-        endpointValidator.validateOnlyPrivateDataAccess(database, principal);
-        endpointValidator.validateOnlyPrivateDataHasRole(database, principal, "find-table");
         final Table table = tableService.findById(database, tableId);
         boolean isOwner = false;
         if (principal != null) {
             isOwner = table.getOwner().getId().equals(getId(principal));
-            try {
-                accessService.find(table.getDatabase(), userService.findById(getId(principal)));
-            } catch (UserNotFoundException | AccessNotFoundException e) {
-                /* ignore */
+            if (table.getIsSchemaPublic()) {
+                try {
+                    accessService.find(table.getDatabase(), userService.findById(getId(principal)));
+                } catch (UserNotFoundException | AccessNotFoundException e) {
+                    if (!isOwner && !isSystem(principal)) {
+                        log.error("Failed to find table with id {}: private and not authorized", table);
+                        throw new NotAllowedException("Failed to find table with id " + tableId + ": private and not authorized");
+                    }
+                }
+            }
+        } else {
+            if (!table.getIsSchemaPublic()) {
+                log.error("Failed to find table with id {}: private and not authorized", table);
+                throw new NotAllowedException("Failed to find table with id " + tableId + ": private and not authorized");
             }
         }
         if (!table.getIsSchemaPublic() && !isOwner && !isSystem(principal)) {

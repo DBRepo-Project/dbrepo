@@ -117,7 +117,7 @@ class ColumnBrief(BaseModel):
     database_id: int
     table_id: int
     internal_name: str
-    column_type: ColumnType
+    type: ColumnType
 
 
 class TableBrief(BaseModel):
@@ -889,8 +889,6 @@ class Column(BaseModel):
     ord: int
     internal_name: str
     type: ColumnType
-    is_public: bool
-    is_null_allowed: bool
     alias: Optional[str] = None
     description: Optional[str] = None
     size: Optional[int] = None

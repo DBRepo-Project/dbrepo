@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="table">
+    v-if="canViewSchema">
     <TableToolbar
       :selection="selection" />
     <v-card
@@ -116,6 +116,11 @@
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
+  <JumboBox
+    v-if="error"
+    :title="$t(errorCodeKey(error).title, { resource: 'table' })"
+    :subtitle="$t(errorCodeKey(error).subtitle)"
+    :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
 <script>
@@ -125,6 +130,7 @@ import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
+import { errorCodeKey } from '@/utils'
 
 export default {
   components: {
@@ -151,7 +157,6 @@ export default {
       useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
     }
     return {
-      table: data,
       error
     }
   },
@@ -201,6 +206,9 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    table () {
+      return this.cacheStore.getTable
+    },
     roles () {
       return this.userStore.getRoles
     },
@@ -212,6 +220,21 @@ export default {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+    },
+    canViewSchema () {
+      if (this.error) {
+        return false
+      }
+      if (!this.table) {
+        return false
+      }
+      if (this.table.is_schema_public || this.table.is_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canWrite () {
       if (!this.table || !this.user || !this.access) {
@@ -288,6 +311,9 @@ export default {
         return this.$t('pages.table.connection.permissions.read')
       }
     }
-  }
+  },
+  methods: {
+    errorCodeKey
+  },
 }
 </script>
