@@ -607,7 +607,8 @@
       "status": {
         "title": "Status",
         "public": "Public",
-        "private": "Private",
+        "data": "Data-only",
+        "schema": "Schema-only",
         "draft": "Draft"
       },
       "resource": {

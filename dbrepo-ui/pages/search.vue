@@ -215,7 +215,7 @@ export default {
         }
         return title
       } else if (this.isUser(item)) {
-        return item.creator.qualified_name
+        return item.owner.qualified_name
       }
       return null
     },
@@ -296,7 +296,7 @@ export default {
       } else if (this.isUnit(item)) {
       } else if (this.isConcept(item)) {
       } else if (this.isUser(item)) {
-        if (item.creator.attributes.orcid) {
+        if (item.owner.attributes.orcid) {
           tags.push({ text: 'ORCID', color: 'success' })
         }
       }

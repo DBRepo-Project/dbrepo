@@ -33,9 +33,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
     private DatabaseService databaseService;
 
     @Autowired
-    private AccessService accessService;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -68,29 +65,29 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void findAllPublicByInternalName_succeeds() {
+    public void findAllPublicOrSchemaPublicByInternalName_succeeds() {
 
         /* test */
-        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_3_INTERNALNAME);
+        final List<Database> response = databaseService.findAllPublicOrSchemaPublicByInternalName(DATABASE_3_INTERNALNAME);
         assertEquals(1, response.size());
         assertEquals(DATABASE_3, response.get(0));
     }
 
     @Test
     @Transactional(readOnly = true)
-    public void findAllPublicByInternalName_privateEmpty_succeeds() {
+    public void findAllPublicOrSchemaPublicByInternalName_privateEmpty_succeeds() {
 
         /* test */
-        final List<Database> response = databaseService.findAllPublicByInternalName(DATABASE_1_INTERNALNAME);
+        final List<Database> response = databaseService.findAllPublicOrSchemaPublicByInternalName(DATABASE_1_INTERNALNAME);
         assertEquals(0, response.size());
     }
 
     @Test
     @Transactional(readOnly = true)
-    public void findAllPublicOrReadAccess_privateNoAccessEmpty_succeeds() {
+    public void findAllAtLestReadAccess_privateNoAccessEmpty_succeeds() {
 
         /* test */
-        final List<Database> response = databaseService.findAllPublicOrReadAccess(USER_4_ID);
+        final List<Database> response = databaseService.findAllAtLestReadAccess(USER_4_ID);
         assertEquals(3, response.size());
         assertEquals(DATABASE_4, response.get(0));
         assertEquals(DATABASE_3, response.get(1));
@@ -99,10 +96,10 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void findAllPublicOrReadAccess_privateAccess_succeeds() {
+    public void findAllAtLestReadAccess_privateAccess_succeeds() {
 
         /* test */
-        final List<Database> response = databaseService.findAllPublicOrReadAccess(USER_2_ID);
+        final List<Database> response = databaseService.findAllAtLestReadAccess(USER_2_ID);
         assertEquals(4, response.size());
         assertEquals(DATABASE_4, response.get(0));
         assertEquals(DATABASE_3, response.get(1));

@@ -59,23 +59,28 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Database> findAllPublic() {
-        return databaseRepository.findAllPublicDesc();
+    public List<Database> findAllPublicOrSchemaPublic() {
+        return databaseRepository.findAllPublicOrSchemaPublicDesc();
     }
 
     @Override
-    public List<Database> findAllPublicOrReadAccessByInternalName(UUID userId, String internalName) {
-        return databaseRepository.findAllPublicOrReadAccessByInternalNameDesc(userId, internalName);
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc(userId, internalName);
     }
 
     @Override
-    public List<Database> findAllPublicOrReadAccess(UUID userId) {
-        return databaseRepository.findAllPublicOrReadAccessDesc(userId);
+    public List<Database> findAllAtLestReadAccess(UUID userId) {
+        return databaseRepository.findAllAtLestReadAccessDesc(userId);
     }
 
     @Override
-    public List<Database> findAllPublicByInternalName(String internalName) {
-        return databaseRepository.findAllPublicByInternalNameDesc(internalName);
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessDesc(userId);
+    }
+
+    @Override
+    public List<Database> findAllPublicOrSchemaPublicByInternalName(String internalName) {
+        return databaseRepository.findAllPublicOrSchemaPublicByInternalNameDesc(internalName);
     }
 
     @Override
@@ -141,7 +146,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Transactional(readOnly = true)
     public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
-        final List<Database> databases = databaseRepository.findAllPublicOrReadAccessDesc(user.getId())
+        final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getId())
                 .stream()
                 .distinct()
                 .toList();

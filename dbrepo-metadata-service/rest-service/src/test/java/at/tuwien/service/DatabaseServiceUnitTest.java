@@ -92,7 +92,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             DataServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findAllPublicOrReadAccessDesc(USER_1_ID))
+        when(databaseRepository.findAllAtLestReadAccessDesc(USER_1_ID))
                 .thenReturn(List.of(DATABASE_1));
         doNothing()
                 .when(dataServiceGateway)

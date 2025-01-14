@@ -276,7 +276,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void list_anonymous_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
-        when(databaseService.findAllPublic())
+        when(databaseService.findAllPublicOrSchemaPublic())
                 .thenReturn(List.of(DATABASE_1));
 
         /* test */
@@ -291,7 +291,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertTrue(DATABASE_3_PUBLIC);
 
         /* mock */
-        when(databaseService.findAllPublicOrReadAccess(any(UUID.class)))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(any(UUID.class)))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -306,7 +306,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertTrue(DATABASE_3_PUBLIC);
 
         /* mock */
-        when(databaseService.findAllPublicOrReadAccess(USER_1_ID))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccess(USER_1_ID))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -318,7 +318,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void list_hasRoleFilter_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
-        when(databaseService.findAllPublicOrReadAccessByInternalName(USER_1_ID, DATABASE_3_INTERNALNAME))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, DATABASE_3_INTERNALNAME))
                 .thenReturn(List.of(DATABASE_3));
 
         /* test */
@@ -330,7 +330,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     public void list_hasRoleFilterNoResult_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
-        when(databaseService.findAllPublicOrReadAccessByInternalName(USER_1_ID, "i_do_not_exist"))
+        when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, "i_do_not_exist"))
                 .thenReturn(List.of());
 
         /* test */

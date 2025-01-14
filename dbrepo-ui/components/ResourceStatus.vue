@@ -38,14 +38,12 @@ export default {
       if (!this.resource) {
         return null
       }
-      if (!this.resource.is_public) {
-        if (!this.resource.is_schema_public) {
-          return 'draft'
-        }
-        return 'private'
-      }
-      if (!this.resource.is_schema_public) {
-        return 'private'
+      if (!this.resource.is_public && !this.resource.is_schema_public) {
+        return 'draft'
+      } else if(!this.resource.is_public && this.resource.is_schema_public) {
+        return 'schema'
+      } else if(this.resource.is_public && !this.resource.is_schema_public) {
+        return 'data'
       }
       return 'public'
     },
@@ -57,10 +55,11 @@ export default {
     },
     color () {
       switch (this.mode) {
-        case 'private':
-          return 'secondary'
-        case 'draft':
+        case 'schema':
+        case 'data':
           return 'warning'
+        case 'draft':
+          return 'error'
         case 'public':
           return 'success'
       }

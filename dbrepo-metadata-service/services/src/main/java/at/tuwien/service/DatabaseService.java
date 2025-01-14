@@ -21,9 +21,9 @@ public interface DatabaseService {
      */
     List<Database> findAll();
 
-    List<Database> findAllPublic();
+    List<Database> findAllPublicOrSchemaPublic();
 
-    List<Database> findAllPublicOrReadAccessByInternalName(UUID userId, String internalName);
+    List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName);
 
     /**
      * Finds all databases stored in the metadata database.
@@ -31,13 +31,21 @@ public interface DatabaseService {
      * @param userId The user id.
      * @return List of databases.
      */
-    List<Database> findAllPublicOrReadAccess(UUID userId);
+    List<Database> findAllAtLestReadAccess(UUID userId);
+
+    /**
+     * Finds all databases stored in the metadata database.
+     *
+     * @param userId The user id.
+     * @return List of databases.
+     */
+    List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId);
 
     /**
      * @param internalName The database internal name.
      * @return The databases if found.
      */
-    List<Database> findAllPublicByInternalName(String internalName);
+    List<Database> findAllPublicOrSchemaPublicByInternalName(String internalName);
 
     /**
      * Find a database by id, only used in the authentication service

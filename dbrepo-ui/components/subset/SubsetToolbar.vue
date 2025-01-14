@@ -158,7 +158,7 @@ export default {
       if (!this.user || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || (this.subset.creator.id === this.user.id && this.hasReadAccess)
+      return this.database.owner.id === this.user.id || (this.subset.owner.id === this.user.id && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

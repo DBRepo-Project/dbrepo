@@ -26,8 +26,6 @@
             :to="link(item)"
             :href="link(item)">
             <template v-slot:append>
-              <ResourceStatus
-                :resource="item" />
               <v-tooltip
                 v-if="hasPublishedIdentifier(item)"
                 :text="$t('pages.identifier.pid.title')"

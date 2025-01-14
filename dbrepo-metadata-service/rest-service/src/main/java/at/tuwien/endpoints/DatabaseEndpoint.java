@@ -82,18 +82,18 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         if (principal != null) {
             if (internalName != null) {
                 log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name {}", getId(principal), internalName);
-                databases = databaseService.findAllPublicOrReadAccessByInternalName(getId(principal), internalName);
+                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
             } else {
-                log.debug("filter request to contain only public databases or where user with id {} has at least read access", getId(principal));
-                databases = databaseService.findAllPublicOrReadAccess(getId(principal));
+                log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
+                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
             }
         } else {
             if (internalName != null) {
                 log.debug("filter request to contain only public databases that match internal name {}", internalName);
-                databases = databaseService.findAllPublicByInternalName(internalName);
+                databases = databaseService.findAllPublicOrSchemaPublicByInternalName(internalName);
             } else {
                 log.debug("filter request to contain only public databases");
-                databases = databaseService.findAllPublic();
+                databases = databaseService.findAllPublicOrSchemaPublic();
             }
         }
         final HttpHeaders headers = new HttpHeaders();
@@ -520,11 +520,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             /* reduce metadata */
             database.setTables(database.getTables()
                     .stream()
-                    .filter(t -> t.getIsPublic() || optional.isPresent())
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
                     .toList());
             database.setViews(database.getViews()
                     .stream()
-                    .filter(v -> v.getIsPublic() || optional.isPresent())
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
                     .toList());
             if (!isSystem(principal) && !database.getOwner().getId().equals(getId(principal))) {
                 log.trace("authenticated user {} is not owner: remove access list", principal.getName());
@@ -538,11 +538,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             /* reduce metadata */
             database.setTables(database.getTables()
                     .stream()
-                    .filter(Table::getIsPublic)
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
                     .toList());
             database.setViews(database.getViews()
                     .stream()
-                    .filter(View::getIsPublic)
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic())
                     .toList());
             database.setAccesses(List.of());
         }

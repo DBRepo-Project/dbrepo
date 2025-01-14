@@ -42,9 +42,9 @@ req = Database(id=1,
                                              ord=0,
                                              internal_name="id",
                                              type=ColumnType.BIGINT,
-                                             is_public=True,
                                              is_null_allowed=False,
-                                             size=20, d=0,
+                                             size=20,
+                                             d=0,
                                              concept=ConceptBrief(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
                                              unit=UnitBrief(id=1,
                                                             uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
@@ -84,7 +84,6 @@ class OpenSearchClientTest(unittest.TestCase):
                                                 name="ID",
                                                 internal_name="id",
                                                 type=ColumnType.BIGINT,
-                                                is_public=True,
                                                 is_null_allowed=False)])]
             database = OpenSearchClient().update_database(database_id=req.id, data=req)
             self.assertEqual(1, database.id)
@@ -118,7 +117,6 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(ColumnType.BIGINT, database.tables[0].columns[0].type)
             self.assertEqual(1, database.tables[0].columns[0].database_id)
             self.assertEqual(1, database.tables[0].columns[0].table_id)
-            self.assertEqual(True, database.tables[0].columns[0].is_public)
             self.assertEqual(False, database.tables[0].columns[0].is_null_allowed)
 
     def test_update_database_create_succeeds(self):

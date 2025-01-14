@@ -391,7 +391,7 @@ public class UserEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify user password: not current user");
         }
         authenticationService.updatePassword(user, data);
-        for (Database database : databaseService.findAllPublicOrReadAccess(userId)) {
+        for (Database database : databaseService.findAllAtLestReadAccess(userId)) {
             databaseService.updatePassword(database, user);
         }
         userService.updatePassword(user, data);

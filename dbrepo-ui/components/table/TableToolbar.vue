@@ -149,7 +149,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canViewSchema () {
       if (!this.table) {
@@ -161,7 +161,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canImportCsv () {
       if (!this.roles || !this.table || !this.user) {

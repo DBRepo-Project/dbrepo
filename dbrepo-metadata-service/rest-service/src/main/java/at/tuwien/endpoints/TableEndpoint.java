@@ -98,7 +98,7 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-tables");
         return ResponseEntity.ok(database.getTables()
                 .stream()
-                .filter(Table::getIsPublic)
+                .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
                 .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
     }
@@ -484,20 +484,15 @@ public class TableEndpoint extends AbstractEndpoint {
         boolean isOwner = false;
         if (principal != null) {
             isOwner = table.getOwner().getId().equals(getId(principal));
-            if (table.getIsSchemaPublic()) {
+            if (!table.getIsSchemaPublic()) {
                 try {
                     accessService.find(table.getDatabase(), userService.findById(getId(principal)));
                 } catch (UserNotFoundException | AccessNotFoundException e) {
                     if (!isOwner && !isSystem(principal)) {
-                        log.error("Failed to find table with id {}: private and not authorized", table);
-                        throw new NotAllowedException("Failed to find table with id " + tableId + ": private and not authorized");
+                        log.error("Failed to find table with id {}: private and no access permission", table);
+                        throw new NotAllowedException("Failed to find table with id " + tableId + ": private and no access permission");
                     }
                 }
-            }
-        } else {
-            if (!table.getIsSchemaPublic()) {
-                log.error("Failed to find table with id {}: private and not authorized", table);
-                throw new NotAllowedException("Failed to find table with id " + tableId + ": private and not authorized");
             }
         }
         if (!table.getIsSchemaPublic() && !isOwner && !isSystem(principal)) {

@@ -1,17 +1,16 @@
 """
 The opensearch_client.py is used by the different API endpoints in routes.py to handle requests  to the opensearch db
 """
-import os
-from json import dumps, load
 import logging
+import os
+from collections.abc import MutableMapping
+from json import dumps, load
 
 from dbrepo.api.dto import Database
-from collections.abc import MutableMapping
+from opensearchpy import OpenSearch, NotFoundError
 
-from opensearchpy import OpenSearch, TransportError, RequestError, NotFoundError
-
-from omlib.measure import om
 from omlib.constants import OM_IDS
+from omlib.measure import om
 from omlib.omconstants import OM
 from omlib.unit import Unit
 
@@ -54,7 +53,7 @@ class OpenSearchClient:
         @throws: opensearchpy.exceptions.NotFoundError If the database was not found in the Search Database.
         """
         response: dict = self._instance().get(index="database", id=database_id)
-        return Database.parse_obj(response["_source"])
+        return Database.model_validate(response["_source"])
 
     def update_database(self, database_id: int, data: Database) -> Database:
         """
@@ -69,7 +68,7 @@ class OpenSearchClient:
         logging.debug(f"updating database with id: {database_id} in search database")
         self._instance().index(index="database", id=database_id, body=dumps(data.model_dump()))
         response: dict = self._instance().get(index="database", id=database_id)
-        database = Database.parse_obj(response["_source"])
+        database = Database.model_validate(response["_source"])
         logging.info(f"Updated database with id {database_id} in index 'database'")
         return database
 
