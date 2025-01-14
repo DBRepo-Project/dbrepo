@@ -252,6 +252,7 @@
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
+import JumboBox from '@/components/JumboBox.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 import { errorCodeKey } from '@/utils'
@@ -259,7 +260,8 @@ import { errorCodeKey } from '@/utils'
 export default {
   components: {
     DatabaseToolbar,
-    EditAccess
+    EditAccess,
+    JumboBox
   },
   setup () {
     const config = useRuntimeConfig()

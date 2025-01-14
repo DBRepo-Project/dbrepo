@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canCreateTable">
+  <div
+    v-if="canCreateTable">
     <v-toolbar
       flat>
       <v-btn
@@ -182,17 +183,30 @@
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
+  <JumboBox
+    v-if="error"
+    :title="$t(errorCodeKey(error).title, { resource: 'table' })"
+    :subtitle="$t(errorCodeKey(error).subtitle)"
+    :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
-import { notEmpty } from '@/utils'
+import JumboBox from '@/components/JumboBox.vue'
+import { notEmpty, errorCodeKey } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
-    TableSchema
+    TableSchema,
+    JumboBox
   },
   data () {
     return {
@@ -306,6 +320,7 @@ export default {
   },
   methods: {
     notEmpty,
+    errorCodeKey,
     submit () {
       this.$refs.form.validate()
     },

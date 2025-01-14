@@ -243,7 +243,7 @@ export default {
   watch: {
     '$route.params': {
       handler (newObj, oldObj) {
-        if (!newObj.database_id) {
+        if (!newObj.database_id || import.meta.server) {
           return
         }
         /* load database and optional access */

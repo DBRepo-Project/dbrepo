@@ -17,22 +17,31 @@
     :text="$t(errorCodeKey(error).text, { resource: 'view' })" />
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import JumboBox from '@/components/JumboBox.vue'
 import ViewList from '@/components/view/ViewList.vue'
 import { useCacheStore } from '@/stores/cache'
+import { errorCodeKey } from '@/utils'
 
 export default {
   name: 'Views',
   components: {
     ViewList,
-    DatabaseToolbar
+    DatabaseToolbar,
+    JumboBox
   },
   setup () {
     const config = useRuntimeConfig()
     const userStore = useUserStore()
     const { database_id } = useRoute().params
-    const { error } = useFetch(`${config.public.api.server}/api/database/${database_id}`, {
+    const { error } = useFetch(`${this.config.public.api.server}/api/database/${database_id}`, {
       immediate: true,
       method: 'HEAD',
       timeout: 90_000,

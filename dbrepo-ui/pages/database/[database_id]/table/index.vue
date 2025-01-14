@@ -17,6 +17,12 @@
     :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import TableList from '@/components/table/TableList.vue'
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
@@ -30,10 +36,9 @@ export default {
     DatabaseToolbar
   },
   setup () {
-    const config = useRuntimeConfig()
     const userStore = useUserStore()
     const { database_id } = useRoute().params
-    const { error } = useFetch(`${config.public.api.server}/api/database/${database_id}`, {
+    const { error } = useFetch(`${this.config.public.api.server}/api/database/${database_id}`, {
       immediate: true,
       method: 'HEAD',
       timeout: 90_000,

@@ -169,6 +169,12 @@
   <pre v-if="error">{{ error }}</pre>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
@@ -188,15 +194,15 @@ export default {
     JumboBox
   },
   setup () {
-    const config = useRuntimeConfig()
     const userStore = useUserStore()
     const { database_id } = useRoute().params
-    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}`, {
+    const { error, data } = useFetch(`${this.config.public.api.server}/api/database/${database_id}`, {
       immediate: true,
+      method: 'GET',
       timeout: 90_000,
       headers: {
         Accept: 'application/json',
-        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
+        Authorization: userStore.getToken ? `Bearer ${this.userStore.getToken}` : null
       }
     })
     if (data.value) {

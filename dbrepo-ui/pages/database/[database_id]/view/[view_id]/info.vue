@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewView">
     <ViewToolbar />
     <v-window
       v-model="tab">
@@ -56,14 +57,26 @@
     </v-window>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
+  <JumboBox
+    v-if="error"
+    :title="$t(errorCodeKey(error).title, { resource: 'view' })"
+    :subtitle="$t(errorCodeKey(error).subtitle)"
+    :text="$t(errorCodeKey(error).text, { resource: 'view' })" />
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { formatTimestampUTCLabel } from '@/utils'
+import JumboBox from '@/components/JumboBox.vue'
+import { formatTimestampUTCLabel, errorCodeKey } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
@@ -72,14 +85,15 @@ export default {
     Select,
     Summary,
     ViewToolbar,
-    UserBadge
+    UserBadge,
+    JumboBox
   },
   setup () {
-    const config = useRuntimeConfig()
     const userStore = useUserStore()
     const { database_id, view_id } = useRoute().params
-    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}/view/${view_id}`, {
+    const { error, data } = useFetch(`${this.config.public.api.server}/api/database/${database_id}/view/${view_id}`, {
       immediate: true,
+      method: 'GET',
       timeout: 90_000,
       headers: {
         Accept: 'application/json',
@@ -144,6 +158,12 @@ export default {
     view () {
       return this.cacheStore.getView
     },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     identifiers () {
       if (!this.view) {
         return []
@@ -186,9 +206,22 @@ export default {
       }
       const userService = useUserService()
       return userService.userToFullName(this.view.creator)
+    },
+    canViewView () {
+      if (!this.view) {
+        return false
+      }
+      if (this.view.is_public) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     }
   },
   methods: {
+    errorCodeKey,
     formatUTC (timestamp) {
       return formatTimestampUTCLabel(timestamp)
     }

@@ -123,8 +123,15 @@
     :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
+import JumboBox from '@/components/JumboBox.vue'
 import Select from '@/components/identifier/Select.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
@@ -137,14 +144,15 @@ export default {
     Summary,
     Select,
     TableToolbar,
-    UserBadge
+    UserBadge,
+    JumboBox
   },
   setup () {
-    const config = useRuntimeConfig()
     const userStore = useUserStore()
     const { database_id, table_id } = useRoute().params
-    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}/table/${table_id}`, {
+    const { error, data } = useFetch(`${this.config.public.api.server}/api/database/${database_id}/table/${table_id}`, {
       immediate: true,
+      method: 'GET',
       timeout: 90_000,
       headers: {
         Accept: 'application/json',

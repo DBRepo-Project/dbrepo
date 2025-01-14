@@ -30,17 +30,17 @@ dependencies:
   - name: mariadb-galera
     alias: datadb
     version: 13.2.7
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: datadb.enabled
   - name: mariadb-galera
     alias: metadatadb
     version: 13.2.7
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: metadatadb.enabled
   - name: rabbitmq
     alias: brokerservice
     version: 14.0.0
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: brokerservice.enabled
   - name: seaweedfs
     alias: storageservice
@@ -50,15 +50,15 @@ dependencies:
   - name: grafana
     alias: dashboardservice
     version: 11.4.2
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: dashboardservice.enabled
   - name: prometheus
     alias: metricdb
     version: 1.3.22
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: metricdb.enabled
   - name: nginx
     alias: gatewayservice
     version: 18.3.1
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: gatewayservice.enabled
