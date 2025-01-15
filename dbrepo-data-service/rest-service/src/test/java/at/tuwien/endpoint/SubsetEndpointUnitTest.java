@@ -92,7 +92,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void list_publicDataPrivateSchemaNoRole_fails() throws QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, SQLException, MetadataServiceException {
 
@@ -102,7 +102,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_4_PRINCIPAL);
         });
     }
 
@@ -132,7 +132,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void list_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
 
@@ -142,7 +142,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_4_PRINCIPAL);
         });
     }
 
@@ -318,12 +318,14 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
-    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
+    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException, SQLException,
+            RemoteUnavailableException, MetadataServiceException, UserNotFoundException, QueryNotFoundException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(QUERY_5_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
