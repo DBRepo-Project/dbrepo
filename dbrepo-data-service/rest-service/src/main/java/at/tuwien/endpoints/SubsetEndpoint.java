@@ -9,7 +9,6 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
@@ -56,13 +55,11 @@ public class SubsetEndpoint extends AbstractEndpoint {
     private final StorageService storageService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
-    private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
     public SubsetEndpoint(SchemaService schemaService, SubsetService subsetService, MetadataMapper metadataMapper,
                           MetricsService metricsService, StorageService storageService,
-                          CredentialService credentialService, EndpointValidator endpointValidator,
-                          MetadataServiceGateway metadataServiceGateway) {
+                          CredentialService credentialService, EndpointValidator endpointValidator) {
         this.schemaService = schemaService;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
@@ -70,7 +67,6 @@ public class SubsetEndpoint extends AbstractEndpoint {
         this.storageService = storageService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
-        this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @GetMapping

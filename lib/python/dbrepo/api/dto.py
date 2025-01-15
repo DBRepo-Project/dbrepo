@@ -888,6 +888,7 @@ class Column(BaseModel):
     table_id: int
     ord: int
     internal_name: str
+    is_null_allowed: bool
     type: ColumnType
     alias: Optional[str] = None
     description: Optional[str] = None

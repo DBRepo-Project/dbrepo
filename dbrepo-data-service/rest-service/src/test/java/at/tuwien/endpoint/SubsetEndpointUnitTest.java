@@ -93,8 +93,24 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
-    public void list_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, NotAllowedException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, SQLException, MetadataServiceException {
+    public void list_publicDataPrivateSchemaNoRole_fails() throws QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException, SQLException, MetadataServiceException {
+
+        /* mock */
+        when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
+                .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"list-queries"})
+    public void list_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, NotAllowedException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, SQLException,
+            MetadataServiceException {
 
         /* mock */
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
@@ -117,8 +133,23 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
-    public void list_publicDataAndPrivateSchemaUnavailable_fails() throws SQLException, QueryNotFoundException, DatabaseNotFoundException,
+    public void list_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
+
+        /* mock */
+        when(credentialService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+
+        /* test */
+        assertThrows(DatabaseUnavailableException.class, () -> {
+            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"list-queries"})
+    public void list_publicDataAndPrivateSchemaUnavailable_fails() throws SQLException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
@@ -166,11 +197,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
-    public void findById_publicDataPrivateSchema_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
-            DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
-            FormatNotAvailableException, TableNotFoundException, MetadataServiceException, SQLException,
-            ViewMalformedException, NotAllowedException {
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"find-query"})
+    public void findById_publicDataPrivateSchema_succeeds() throws DatabaseNotFoundException, SQLException,
+            RemoteUnavailableException, UserNotFoundException, DatabaseUnavailableException, NotAllowedException,
+            StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
+            FormatNotAvailableException, TableNotFoundException, MetadataServiceException,
+            ViewMalformedException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
@@ -270,7 +302,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_notFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException, MetadataServiceException {
+    public void findById_notFound_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
+            MetadataServiceException {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
@@ -285,6 +318,21 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
+    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException {
+
+        /* mock */
+        when(credentialService.getDatabase(DATABASE_3_ID))
+                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(DATABASE_3_ID, QUERY_5_ID, "application/json", null, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"find-query"})
     public void findById_publicDataAndPrivateSchemaUnavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, SQLException, UserNotFoundException, QueryNotFoundException {
 

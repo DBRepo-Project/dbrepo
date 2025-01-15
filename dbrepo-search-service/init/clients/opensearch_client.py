@@ -123,7 +123,7 @@ class OpenSearchClient:
             "unit": "tables.columns.unit.*",
             "identifier": "identifiers.*",
             "view": "views.*",
-            "user": "creator.*",
+            "user": "owner.*",
         }
         if field_type not in fields.keys():
             raise NotFoundError(f"Failed to find field type: {field_type}")
@@ -323,7 +323,7 @@ def attr_name_to_attr_friendly_name(key: str) -> str:
     :param key: The attribute key
     :return: The human-readable representation of the attribute key
     """
-    with open('friendly_names_overrides.json') as json_data:
+    with open('./friendly_names_overrides.json') as json_data:
         d = load(json_data)
         for json_key in d.keys():
             if json_key == key:
