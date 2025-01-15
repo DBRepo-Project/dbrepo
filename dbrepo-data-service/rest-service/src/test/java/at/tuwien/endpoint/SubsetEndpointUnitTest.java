@@ -141,7 +141,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
 
         /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_4_PRINCIPAL);
         });
     }
@@ -317,19 +317,17 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
-    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException, SQLException,
-            RemoteUnavailableException, MetadataServiceException, UserNotFoundException, QueryNotFoundException {
+    @WithMockUser(username = USER_4_USERNAME)
+    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-                .thenReturn(QUERY_5_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, QUERY_5_ID, "application/json", null, USER_3_PRINCIPAL);
+            generic_findById(DATABASE_3_ID, QUERY_5_ID, "application/json", null, USER_4_PRINCIPAL);
         });
     }
 
