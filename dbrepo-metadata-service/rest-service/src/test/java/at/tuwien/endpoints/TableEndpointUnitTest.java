@@ -1004,13 +1004,13 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-foreign-table"})
+    @WithMockUser(username = USER_5_USERNAME, authorities = {"delete-foreign-table"})
     public void delete_foreign_succeeds() throws NotAllowedException, DataServiceConnectionException,
             TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, DataServiceException {
 
         /* test */
-        generic_delete(USER_2_PRINCIPAL, TABLE_1);
+        generic_delete(USER_5_PRINCIPAL, TABLE_1);
     }
 
     @Test

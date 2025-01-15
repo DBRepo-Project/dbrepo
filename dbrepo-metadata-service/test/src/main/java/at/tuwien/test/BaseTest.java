@@ -997,7 +997,7 @@ public abstract class BaseTest {
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .password(USER_5_PASSWORD)
-            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
 
     public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
