@@ -724,7 +724,7 @@ public abstract class BaseTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
-            .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
+            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
     public final static at.tuwien.api.keycloak.UserDto USER_2_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
@@ -823,7 +823,7 @@ public abstract class BaseTest {
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
-            .authorities(AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES)
+            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
     public final static at.tuwien.api.keycloak.UserDto USER_3_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
