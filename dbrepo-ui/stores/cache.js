@@ -23,25 +23,25 @@ export const useCacheStore = defineStore('cache', {
     getUploadProgress: (state) => state.uploadProgress,
   },
   actions: {
-    setDatabase (database) {
+    setDatabase(database) {
       this.database = database
     },
-    setTable (table) {
+    setTable(table) {
       this.table = table
     },
-    setView (view) {
+    setView(view) {
       this.view = view
     },
-    setSubset (subset) {
+    setSubset(subset) {
       this.subset = subset
     },
-    setOntologies (ontologies) {
+    setOntologies(ontologies) {
       this.ontologies = ontologies
     },
-    setUploadProgress (uploadProgress) {
+    setUploadProgress(uploadProgress) {
       this.uploadProgress = uploadProgress
     },
-    reloadMessages () {
+    reloadMessages() {
       const messageService = useMessageService()
       messageService.findAll('active')
         .then(messages => this.messages = messages)
@@ -49,7 +49,7 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload messages', error)
         })
     },
-    reloadOntologies () {
+    reloadOntologies() {
       const ontologyService = useOntologyService()
       ontologyService.findAll()
         .then(ontologies => this.ontologies = ontologies)
@@ -57,7 +57,7 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload ontologies', error)
         })
     },
-    reloadDatabase () {
+    reloadDatabase() {
       const databaseService = useDatabaseService()
       databaseService.findOne(this.database.id)
         .then(database => this.database = database)
@@ -65,7 +65,7 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload database', error)
         })
     },
-    reloadTable () {
+    reloadTable() {
       const tableService = useTableService()
       tableService.findOne(this.table.database_id, this.table.id)
         .then(table => this.table = table)
@@ -73,7 +73,7 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload table', error)
         })
     },
-    reloadView () {
+    reloadView() {
       const viewService = useViewService()
       viewService.findOne(this.table.database_id, this.view.id)
         .then(view => this.view = view)
@@ -82,19 +82,24 @@ export const useCacheStore = defineStore('cache', {
         })
     },
     setRouteDatabase (databaseId) {
-      if (!databaseId) {
-        this.database = null
-        return
-      }
-      const databaseService = useDatabaseService()
-      databaseService.findOne(databaseId)
-        .then(database => this.database = database)
-        .catch((error) => {
+      return new Promise((resolve, reject) => {
+        if (!databaseId) {
           this.database = null
-          console.error('Failed to set route database', error)
-        })
+          reject()
+        }
+        const databaseService = useDatabaseService()
+        databaseService.findOne(databaseId, true)
+          .then((database) => {
+            this.database = database
+            resolve(database)
+          })
+          .catch((error) => {
+            this.database = null
+            reject(error)
+          })
+      })
     },
-    setRouteTable (databaseId, tableId) {
+    setRouteTable(databaseId, tableId) {
       if (!databaseId || !tableId) {
         this.table = null
         console.error('Cannot set route table: missing database id', databaseId, 'or table id', tableId)
@@ -103,11 +108,8 @@ export const useCacheStore = defineStore('cache', {
       const tableService = useTableService()
       tableService.findOne(databaseId, tableId)
         .then(table => this.table = table)
-        .catch((error) => {
-          console.error('Failed to set route table', error)
-        })
     },
-    setRouteView (databaseId, viewId) {
+    setRouteView(databaseId, viewId) {
       if (!databaseId || !viewId) {
         this.view = null
         console.error('Cannot set route view: database view id', databaseId, 'or view id', viewId)
@@ -116,11 +118,8 @@ export const useCacheStore = defineStore('cache', {
       const viewService = useViewService()
       viewService.findOne(databaseId, viewId)
         .then(view => this.view = view)
-        .catch((error) => {
-          console.error('Failed to set route view', error)
-        })
     },
-    setRouteSubset (databaseId, subsetId) {
+    setRouteSubset(databaseId, subsetId) {
       if (!databaseId || !subsetId) {
         this.subset = null
         console.error('Cannot set route subset: missing database id', databaseId, 'or subset id', subsetId)
@@ -129,9 +128,6 @@ export const useCacheStore = defineStore('cache', {
       const subsetService = useQueryService()
       subsetService.findOne(databaseId, subsetId)
         .then(subset => this.subset = subset)
-        .catch((error) => {
-          console.error('Failed to set route subset', error)
-        })
     }
   },
 })

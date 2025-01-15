@@ -102,28 +102,6 @@ export default {
     SubsetToolbar,
     UserBadge
   },
-  setup () {
-    const config = useRuntimeConfig()
-    const userStore = useUserStore()
-    const { database_id, subset_id } = useRoute().params
-    const { error, data } = useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`, {
-      immediate: true,
-      timeout: 90_000,
-      headers: {
-        Accept: 'application/json',
-        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
-      }
-    })
-    if (data.value) {
-      const identifierService = useIdentifierService()
-      useServerHead(identifierService.subsetToServerHead(data.value))
-      useServerSeoMeta(identifierService.subsetToServerSeoMeta(data.value))
-    }
-    return {
-      subset: data,
-      error
-    }
-  },
   data () {
     return {
       items: [
@@ -169,6 +147,9 @@ export default {
     },
     access () {
       return this.userStore.getAccess
+    },
+    subset () {
+      return this.cacheStore.getSubset
     },
     user () {
       return this.userStore.getUser

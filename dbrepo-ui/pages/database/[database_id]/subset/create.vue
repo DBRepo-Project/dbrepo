@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canCreateSubset">
+  <div
+    v-if="canCreateSubset">
     <Builder />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>

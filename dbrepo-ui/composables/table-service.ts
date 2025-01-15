@@ -29,7 +29,7 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to find table')
+          console.error('Failed to find table', error)
           reject(axiosErrorToApiError(error))
         })
     })

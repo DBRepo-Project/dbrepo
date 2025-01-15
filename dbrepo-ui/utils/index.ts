@@ -1,7 +1,7 @@
-import {format} from 'date-fns'
 import moment from 'moment'
-import type {AxiosError} from 'axios'
-import type {H3Error} from "h3";
+import {AxiosError, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios'
+import { format } from 'date-fns'
+import { getStatusText } from 'http-status-codes'
 
 
 export function notEmpty(str: string) {
@@ -25,24 +25,36 @@ export function notFile(files: [File[]]) {
   return files.length === 1
 }
 
-export function errorCodeKey(error: H3Error): any {
-  switch (error.statusCode) {
+export function makeError(status: number, code: string | null, message: string | null ): AxiosError {
+  const config: InternalAxiosRequestConfig = {}
+  const response: AxiosResponse = {
+    data: {},
+    status,
+    statusText: getStatusText(status).toUpperCase(),
+    config,
+    headers: {}
+  }
+  return new AxiosError(message, code, undefined, null, response)
+}
+
+export function errorCodeKey(error: AxiosError): any {
+  switch (error?.response?.status) {
     case 404:
       return {
         title: 'error.missing.title',
-        subtitle: 'ERR_NOT_FOUND',
+        subtitle: 'ERR_' + error?.response?.data?.status,
         text: 'error.missing.text'
       }
     case 403:
       return {
         title: 'error.permission.title',
-        subtitle: 'ERR_NOT_AUTHORIZED',
+        subtitle: 'ERR_' + error?.response?.data?.status,
         text: 'error.permission.text'
       }
     default:
       return {
         title: 'error.gone.title',
-        subtitle: 'ERR_GONE',
+        subtitle: 'ERR_' + error?.response?.data?.status,
         text: 'error.gone.text'
       }
   }

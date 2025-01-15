@@ -10,46 +10,18 @@
       :items="items"
       class="pa-0 mt-2" />
   </div>
-  <JumboBox
-    v-if="error"
-    :title="$t(errorCodeKey(error).title, { resource: 'table' })"
-    :subtitle="$t(errorCodeKey(error).subtitle)"
-    :text="$t(errorCodeKey(error).text, { resource: 'table' })" />
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const runtimeConfig = useRuntimeConfig()
-const config = ref(runtimeConfig)
-</script>
 <script>
 import TableList from '@/components/table/TableList.vue'
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import { useCacheStore } from '@/stores/cache'
-import { errorCodeKey } from '@/utils'
 
 export default {
   name: 'Tables',
   components: {
     TableList,
     DatabaseToolbar
-  },
-  setup () {
-    const userStore = useUserStore()
-    const { database_id } = useRoute().params
-    const { error } = useFetch(`${this.config.public.api.server}/api/database/${database_id}`, {
-      immediate: true,
-      method: 'HEAD',
-      timeout: 90_000,
-      headers: {
-        Accept: 'application/json',
-        Authorization: userStore.getToken ? `Bearer ${userStore.getToken}` : null
-      }
-    })
-    return {
-      error
-    }
   },
   data () {
     return {
@@ -82,9 +54,6 @@ export default {
       }
       return this.database
     }
-  },
-  methods: {
-    errorCodeKey
   }
 }
 </script>

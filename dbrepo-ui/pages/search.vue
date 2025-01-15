@@ -52,6 +52,8 @@
           <div
             v-if="tags(result).length > 0"
             class="mt-2 db-tags">
+            <ResourceStatus
+              :resource="result" />
             <v-chip
               v-for="(tag, i) in tags(result)"
               :key="i"
@@ -196,12 +198,6 @@ export default {
       }
       return this.type === 'identifier'
     },
-    isPublic (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isIdentifier(item)) {
-        return item.is_public
-      }
-      return null
-    },
     title (item) {
       if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
         return item.name
@@ -260,10 +256,6 @@ export default {
     },
     tags (item) {
       const tags = []
-      if (this.isPublic(item) === true || this.isPublic(item) === false) {
-        const text = this.isPublic(item) ? this.$t('toolbars.database.public') : this.$t('toolbars.database.private')
-        tags.push({ color: this.isPublic(item) ? 'success' : null, text })
-      }
       if (this.isDatabase(item)) {
       } else if (this.isTable(item)) {
       } else if (this.isColumn(item)) {

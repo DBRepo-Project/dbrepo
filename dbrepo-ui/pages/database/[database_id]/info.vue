@@ -161,27 +161,14 @@
       :items="items"
       class="pa-0 mt-2" />
   </div>
-  <JumboBox
-    v-if="error"
-    :title="$t(errorCodeKey(error).title, { resource: 'database' })"
-    :subtitle="$t(errorCodeKey(error).subtitle)"
-    :text="$t(errorCodeKey(error).text, { resource: 'database' })" />
-  <pre v-if="error">{{ error }}</pre>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const runtimeConfig = useRuntimeConfig()
-const config = ref(runtimeConfig)
-</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import JumboBox from '@/components/JumboBox.vue'
-import { sizeToHumanLabel, errorCodeKey } from '@/utils'
+import { sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
@@ -190,32 +177,11 @@ export default {
     DatabaseToolbar,
     Summary,
     Select,
-    UserBadge,
-    JumboBox
-  },
-  setup () {
-    const userStore = useUserStore()
-    const { database_id } = useRoute().params
-    const { error, data } = useFetch(`${this.config.public.api.server}/api/database/${database_id}`, {
-      immediate: true,
-      method: 'GET',
-      timeout: 90_000,
-      headers: {
-        Accept: 'application/json',
-        Authorization: userStore.getToken ? `Bearer ${this.userStore.getToken}` : null
-      }
-    })
-    if (data.value) {
-      const identifierService = useIdentifierService()
-      useServerHead(identifierService.databaseToServerHead(data.value))
-      useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
-    }
-    return {
-      error
-    }
+    UserBadge
   },
   data () {
     return {
+      error: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -375,9 +341,6 @@ export default {
       }
       return this.database
     }
-  },
-  methods: {
-    errorCodeKey
   }
 }
 </script>
