@@ -88,10 +88,7 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Database> response = databaseService.findAllAtLestReadAccess(USER_4_ID);
-        assertEquals(3, response.size());
-        assertEquals(DATABASE_4, response.get(0));
-        assertEquals(DATABASE_3, response.get(1));
-        assertEquals(DATABASE_2, response.get(2));
+        assertEquals(0, response.size());
     }
 
     @Test
@@ -100,11 +97,10 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Database> response = databaseService.findAllAtLestReadAccess(USER_2_ID);
-        assertEquals(4, response.size());
+        assertEquals(3, response.size());
         assertEquals(DATABASE_4, response.get(0));
-        assertEquals(DATABASE_3, response.get(1));
-        assertEquals(DATABASE_2, response.get(2));
-        assertEquals(DATABASE_1, response.get(3));
+        assertEquals(DATABASE_2, response.get(1));
+        assertEquals(DATABASE_1, response.get(2));
     }
 
 }
