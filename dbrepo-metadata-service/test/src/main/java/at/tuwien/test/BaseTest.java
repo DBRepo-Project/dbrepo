@@ -190,8 +190,8 @@ public abstract class BaseTest {
             "modify-identifier-metadata", "update-foreign-identifier", "create-foreign-identifier"};
 
     public final static String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
-            "execute-query", "view-table-history", "list-database-views", "list-queries", "view-database-view-data",
-            "export-query-data", "find-query", "create-database-view", "delete-database-view", "delete-table-data",
+            "execute-query", "view-table-history", "list-database-views", "view-database-view-data",
+            "export-query-data", "create-database-view", "delete-database-view", "delete-table-data",
             "export-table-data", "persist-query", "re-execute-query", "insert-table-data", "find-database-view"};
 
     public final static String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};

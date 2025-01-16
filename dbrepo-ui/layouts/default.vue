@@ -269,13 +269,13 @@ export default {
       if (!this.user) {
         return null
       }
-      if (this.table && !this.table.is_public && !this.table.is_schema_public && !this.table.owner.id !== this.user.id) {
+      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.user.id) {
         return makeError(403, null, null)
       }
-      if (this.view && !this.view.is_public && !this.view.is_schema_public && !this.view.owner.id !== this.user.id) {
+      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.user.id) {
         return makeError(403, null, null)
       }
-      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && !this.subset.owner.id !== this.user.id) {
+      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.user.id) {
         return makeError(403, null, null)
       }
       return null

@@ -72,7 +72,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping
     @Observed(name = "dbrepo_subset_list")
     @Operation(summary = "Find subsets",
-            description = "Finds subsets in the query store. When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database and have the role `list-queries`. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
+            description = "Finds subsets in the query store. When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -104,7 +104,6 @@ public class SubsetEndpoint extends AbstractEndpoint {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
-        endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-queries");
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -119,7 +118,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping("/{subsetId}")
     @Observed(name = "dbrepo_subset_find")
     @Operation(summary = "Find subset",
-            description = "Finds a subset in the data database.  When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database and have the role `find-query`.  Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
+            description = "Finds a subset in the data database.  When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database.  Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -167,7 +166,6 @@ public class SubsetEndpoint extends AbstractEndpoint {
                 subsetId, accept, timestamp);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
-        endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "find-query");
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);

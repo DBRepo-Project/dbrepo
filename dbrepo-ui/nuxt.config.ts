@@ -75,8 +75,8 @@ export default defineNuxtConfig({
         }
       },
       api: {
-        client: 'http://localhost',
-        server: 'http://gateway-service',
+        client: 'https://s155.datalab.tuwien.ac.at',
+        server: 'https://s155.datalab.tuwien.ac.at',
       },
       upload: {
         client: 'http://localhost/api/upload/files',

@@ -28,7 +28,9 @@ export function notFile(files: [File[]]) {
 export function makeError(status: number, code: string | null, message: string | null ): AxiosError {
   const config: InternalAxiosRequestConfig = {}
   const response: AxiosResponse = {
-    data: {},
+    data: {
+      status: getStatusText(status).toUpperCase()
+    },
     status,
     statusText: getStatusText(status).toUpperCase(),
     config,

@@ -916,7 +916,6 @@ class ViewColumn(BaseModel):
     database_id: int
     internal_name: str
     type: ColumnType
-    is_public: bool
     is_null_allowed: bool
     alias: Optional[str] = None
     size: Optional[int] = None
