@@ -1,13 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.repository.DatabaseRepository;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +32,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     private DataServiceGateway dataServiceGateway;
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -61,7 +59,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(VIEW_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -116,7 +114,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -164,8 +162,8 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(SearchServiceException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -184,8 +182,8 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -204,8 +202,8 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {

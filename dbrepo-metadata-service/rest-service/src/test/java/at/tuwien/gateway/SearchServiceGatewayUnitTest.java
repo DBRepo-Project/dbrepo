@@ -35,7 +35,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
     private SearchServiceGateway searchServiceGateway;
 
     @Test
-    public void update_succeeds() throws DatabaseNotFoundException, SearchServiceException,
+    public void save_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         final ResponseEntity<DatabaseDto> mock = ResponseEntity.accepted()
                 .build();
@@ -45,11 +45,11 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        searchServiceGateway.update(DATABASE_1);
+        searchServiceGateway.save(DATABASE_1);
     }
 
     @Test
-    public void update_badRequest_fails() {
+    public void save_badRequest_fails() {
         final ResponseEntity<DatabaseDto> mock = ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .build();
 
@@ -59,12 +59,12 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            searchServiceGateway.update(DATABASE_1);
+            searchServiceGateway.save(DATABASE_1);
         });
     }
 
     @Test
-    public void update_unexpectedResponse_fails() {
+    public void save_unexpectedResponse_fails() {
         final ResponseEntity<DatabaseDto> mock = ResponseEntity.status(HttpStatus.OK)
                 .build();
 
@@ -74,12 +74,12 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
-            searchServiceGateway.update(DATABASE_1);
+            searchServiceGateway.save(DATABASE_1);
         });
     }
 
     @Test
-    public void update_unavailable_fails() {
+    public void save_unavailable_fails() {
 
         /* mock */
         doThrow(HttpServerErrorException.ServiceUnavailable.class)
@@ -88,12 +88,12 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
-            searchServiceGateway.update(DATABASE_1);
+            searchServiceGateway.save(DATABASE_1);
         });
     }
 
     @Test
-    public void update_notFound_fails() {
+    public void save_notFound_fails() {
 
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
@@ -102,7 +102,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            searchServiceGateway.update(DATABASE_1);
+            searchServiceGateway.save(DATABASE_1);
         });
     }
 

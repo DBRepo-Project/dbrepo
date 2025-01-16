@@ -20,10 +20,10 @@ import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.SearchService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,18 +39,18 @@ import java.util.UUID;
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
+    private final SearchService searchService;
     private final MetadataMapper metadataMapper;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
-    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public DatabaseServiceImpl(MetadataMapper metadataMapper, DatabaseRepository databaseRepository,
-                               DataServiceGateway dataServiceGateway, SearchServiceGateway searchServiceGateway) {
+    public DatabaseServiceImpl(SearchService searchService, MetadataMapper metadataMapper,
+                               DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway) {
+        this.searchService = searchService;
         this.metadataMapper = metadataMapper;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
-        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                         .toList());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Created database with id {}", database.getId());
         return database;
     }
@@ -171,7 +171,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .forEach(table -> table.setIsSchemaPublic(data.getIsSchemaPublic()));
         database = databaseRepository.save(database);
         /* update in open search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated database visibility of database with id {}", database.getId());
         return database;
     }
@@ -187,7 +187,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         database.setContactPerson(user.getId());
         database = databaseRepository.save(database);
         /* save in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated database owner of database with id {}", database);
         return database;
     }
@@ -200,7 +200,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         database.setImage(image);
         database = databaseRepository.save(database);
         /* save in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated database owner of database with id {} & search database", database.getId());
         return database;
     }
@@ -317,7 +317,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* update in metadata database */
         database = databaseRepository.save(database);
         /* save in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated table metadata of database with id {} & search database", database.getId());
         return database;
     }
@@ -344,7 +344,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* update in metadata database */
         database = databaseRepository.save(database);
         /* save in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated view metadata of database with id {} & search database", database.getId());
         return database;
     }

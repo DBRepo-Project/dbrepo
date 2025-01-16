@@ -165,27 +165,6 @@ class OpenSearchClientTest(unittest.TestCase):
             # test
             OpenSearchClient().delete_database(database_id=req.id)
 
-    def test_get_database_succeeds(self):
-        with app.app_context():
-            # mock
-            OpenSearchClient().update_database(database_id=req.id, data=req)
-
-            # test
-            database = OpenSearchClient().get_database(database_id=req.id)
-            self.assertEqual(req.id, database.id)
-
-    def test_get_database_fails(self):
-        with app.app_context():
-
-            # mock
-            OpenSearchClient().update_database(database_id=req.id, data=req)
-
-            # test
-            try:
-                OpenSearchClient().get_database(database_id=req.id)
-            except opensearchpy.exceptions.NotFoundError:
-                pass
-
     def test_get_fields_for_index_database_succeeds(self):
         with app.app_context():
             # mock

@@ -8,9 +8,9 @@ import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.service.SearchService;
 import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import lombok.extern.log4j.Log4j2;
@@ -27,18 +27,18 @@ import java.util.Optional;
 @Service
 public class ViewServiceImpl implements ViewService {
 
+    private final SearchService searchService;
     private final MetadataMapper metadataMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
-    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
     public ViewServiceImpl(MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
-                           DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
+                           DatabaseRepository databaseRepository, SearchService searchService) {
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
-        this.searchServiceGateway = searchServiceGateway;
+        this.searchService = searchService;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ViewServiceImpl implements ViewService {
                 .remove(view);
         final Database database = databaseRepository.save(view.getDatabase());
         /* update in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Deleted view with id {}", view.getId());
     }
 
@@ -129,7 +129,7 @@ public class ViewServiceImpl implements ViewService {
             throw new MalformedException("Failed to find created view");
         }
         /* update in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Created view with id {}", optional.get().getId());
         return optional.get();
     }
@@ -151,7 +151,7 @@ public class ViewServiceImpl implements ViewService {
         tmpView.setIsSchemaPublic(data.getIsSchemaPublic());
         database = databaseRepository.save(database);
         /* update in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated view with id {}", tmpView.getId());
         return optional.get();
     }

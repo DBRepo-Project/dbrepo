@@ -13,7 +13,6 @@ import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -45,7 +44,7 @@ import static org.mockito.Mockito.when;
 public class TableServicePersistenceTest extends AbstractUnitTest {
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @MockBean
     private UserService userService;
@@ -111,7 +110,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, request);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */

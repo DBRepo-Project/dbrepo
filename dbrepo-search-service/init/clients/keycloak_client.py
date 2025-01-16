@@ -1,14 +1,15 @@
 import logging
 from dataclasses import dataclass
-import requests
-from flask import current_app
 from typing import List
 
+import requests
+from flask import current_app
 from jwt import jwk_from_pem, JWT
 
 
 @dataclass(init=True, eq=True)
 class User:
+    sub: str
     username: str
     roles: List[str]
 
@@ -33,5 +34,11 @@ class KeycloakClient:
     def verify_jwt(self, access_token: str) -> User:
         public_key = jwk_from_pem(str(current_app.config["JWT_PUBKEY"]).encode('utf-8'))
         payload = JWT().decode(message=access_token, key=public_key, do_time_check=True)
-        logging.debug(f"JWT token client_id={payload.get('client_id')} and realm_access={payload.get('realm_access')}")
         return User(username=payload.get('client_id'), roles=payload.get('realm_access')["roles"])
+
+    def userId(self, request) -> str | None:
+        # get the auth token
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            return self.verify_jwt(auth_header.split(" ")[1]).sub
+        return None

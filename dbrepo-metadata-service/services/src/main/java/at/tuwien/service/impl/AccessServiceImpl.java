@@ -6,11 +6,11 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.SearchService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,21 +23,21 @@ import java.util.Optional;
 @Service
 public class AccessServiceImpl implements AccessService {
 
+    private final SearchService searchService;
     private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
     private final DatabaseRepository databaseRepository;
     private final DataServiceGateway dataServiceGateway;
-    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public AccessServiceImpl(MetadataMapper metadataMapper, DatabaseService databaseService,
-                             DatabaseRepository databaseRepository, DataServiceGateway dataServiceGateway,
-                             SearchServiceGateway searchServiceGateway) {
+    public AccessServiceImpl(SearchService searchService, MetadataMapper metadataMapper,
+                             DatabaseService databaseService, DatabaseRepository databaseRepository,
+                             DataServiceGateway dataServiceGateway) {
+        this.searchService = searchService;
         this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
         this.databaseRepository = databaseRepository;
         this.dataServiceGateway = dataServiceGateway;
-        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class AccessServiceImpl implements AccessService {
                 .add(access);
         database = databaseRepository.save(database);
         /* create in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Created access to database with id {}", database.getId());
         return access;
     }
@@ -104,7 +104,7 @@ public class AccessServiceImpl implements AccessService {
                 .setType(metadataMapper.accessTypeDtoToAccessType(access));
         database = databaseRepository.save(database);
         /* update in search service */
-        searchServiceGateway.update(database);
+        searchService.save(database);
         log.info("Updated access to database with id {}", database.getId());
     }
 
@@ -120,7 +120,7 @@ public class AccessServiceImpl implements AccessService {
                 .remove(find(database, user));
         databaseRepository.save(database);
         /* update in search service */
-        searchServiceGateway.update(databaseService.findById(database.getId()));
+        searchService.save(databaseService.findById(database.getId()));
         log.info("Deleted access to database with id {}", database.getId());
     }
 

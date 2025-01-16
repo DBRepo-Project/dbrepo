@@ -6,7 +6,7 @@ import at.tuwien.exception.*;
 
 public interface SearchServiceGateway {
 
-    DatabaseDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException;
+    DatabaseDto save(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException;
 
     void delete(Long databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException;
 }

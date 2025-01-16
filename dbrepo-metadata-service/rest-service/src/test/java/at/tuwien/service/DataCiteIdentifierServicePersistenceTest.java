@@ -1,20 +1,19 @@
 package at.tuwien.service;
 
+import at.tuwien.api.datacite.DataCiteBody;
+import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierStatusType;
 import at.tuwien.entities.identifier.NameIdentifierSchemeType;
+import at.tuwien.exception.*;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.datacite.DataCiteBody;
-import at.tuwien.api.datacite.doi.DataCiteDoi;
-import at.tuwien.entities.database.Database;
-import at.tuwien.exception.*;
-import at.tuwien.gateway.SearchServiceGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +47,7 @@ import static org.mockito.Mockito.when;
 public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @MockBean
     @Qualifier("dataCiteRestTemplate")
@@ -140,7 +139,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference)))
                 .thenReturn(mock);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -155,7 +154,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference));
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -172,7 +171,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
         doThrow(RestClientException.class)
                 .when(restTemplate)
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(dataCiteBodyParameterizedTypeReference));
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -331,7 +330,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
             IdentifierNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */

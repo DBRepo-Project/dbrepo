@@ -5,8 +5,6 @@ from json import dumps
 from typing import List, Any
 
 import requests
-from clients.keycloak_client import User, KeycloakClient
-from clients.opensearch_client import OpenSearchClient
 from dbrepo.api.dto import Database, ApiError
 from flasgger import LazyJSONEncoder, Swagger, swag_from
 from flask import Flask, request
@@ -16,6 +14,9 @@ from jwt.exceptions import JWTDecodeError
 from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
+
+from clients.keycloak_client import User, KeycloakClient
+from clients.opensearch_client import OpenSearchClient
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -332,13 +333,13 @@ def get_fuzzy_search():
     :return:
     """
     search_term: str = request.args.get('q')
+    logging.debug(f'endpoint get fuzzy search, q={search_term}')
     if search_term is None or len(search_term) == 0:
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
-    results = OpenSearchClient().fuzzy_search(search_term)
-    if "hits" in results and "hits" in results["hits"]:
-        results = [hit["_source"] for hit in results["hits"]["hits"]]
+    results = OpenSearchClient().fuzzy_search(search_term,
+                                              KeycloakClient().userId(request.headers.get('Authorization')))
     return dict({"results": results}), 200
 
 
@@ -354,7 +355,8 @@ def post_general_search(field_type):
         return ApiError(status='UNSUPPORTED_MEDIA_TYPE', message='Content type needs to be application/json',
                         code='search.general.media').model_dump(), 415
     req_body = request.json
-    logging.info(f'Searching in index database for type: {field_type}')
+    logging.debug(f'endpoint get general search, field_type={field_type}')
+    logging.debug(f'=====> {request}')
     t1 = request.args.get("t1")
     if not str(t1).isdigit():
         t1 = None
@@ -362,9 +364,11 @@ def post_general_search(field_type):
     if not str(t2).isdigit():
         t2 = None
     if t1 is not None and t2 is not None and "unit.uri" in req_body and "concept.uri" in req_body:
-        response = OpenSearchClient().unit_independent_search(t1, t2, req_body)
+        response = OpenSearchClient().unit_independent_search(t1, t2, req_body, KeycloakClient().userId(
+            request.headers.get('Authorization')))
     else:
-        response = OpenSearchClient().general_search(field_type, req_body)
+        response = OpenSearchClient().general_search(field_type, req_body,
+                                                     KeycloakClient().userId(request.headers.get('Authorization')))
     # filter by type
     if field_type == 'table':
         tmp = []

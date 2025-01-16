@@ -2,10 +2,8 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -56,7 +54,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
     private DataServiceGateway dataServiceGateway;
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @BeforeEach
     public void beforeEach() {
@@ -88,7 +86,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
         doNothing()
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */

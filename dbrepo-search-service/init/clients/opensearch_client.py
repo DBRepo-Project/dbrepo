@@ -43,18 +43,6 @@ class OpenSearchClient:
                                        http_auth=(self.username, self.password))
         return self.instance
 
-    def get_database(self, database_id: int) -> Database:
-        """
-        Gets a database by given id.
-
-        @param database_id: The database id.
-
-        @returns: The database, if successful.
-        @throws: opensearchpy.exceptions.NotFoundError If the database was not found in the Search Database.
-        """
-        response: dict = self._instance().get(index="database", id=database_id)
-        return Database.model_validate(response["_source"])
-
     def update_database(self, database_id: int, data: Database) -> Database:
         """
         Updates the database data with given id.
@@ -142,7 +130,7 @@ class OpenSearchClient:
                 fields_list.append(entry)
         return fields_list
 
-    def fuzzy_search(self, search_term=None):
+    def fuzzy_search(self, search_term: str = None, userId: str | None = None) -> [Database]:
         logging.info(f"Performing fuzzy search")
         fuzzy_body = {
             "query": {
@@ -159,10 +147,15 @@ class OpenSearchClient:
             index="database",
             body=fuzzy_body
         )
-        logging.info(f"Found {len(response['hits']['hits'])} result(s)")
-        return response
+        results: [Database] = []
+        if "hits" in results and "hits" in response["hits"]:
+            results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
+        results = [database for database in results if database.is_public or database.is_schema_public or (
+                userId is not None and database.owner.id == userId)]
+        return results
 
-    def general_search(self, field_type: str = None, field_value_pairs: dict = None):
+    def general_search(self, field_type: str = None, field_value_pairs: dict = None, userId: str | None = None) -> [
+        Database]:
         """
         Main method for searching stuff in the opensearch db
 
@@ -203,10 +196,15 @@ class OpenSearchClient:
             index="database",
             body=dumps(body)
         )
-        results = [hit["_source"] for hit in response["hits"]["hits"]]
+        results: [Database] = []
+        if "hits" in results and "hits" in response["hits"]:
+            results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
+        results = [database for database in results if database.is_public or database.is_schema_public or (
+                userId is not None and database.owner.id == userId)]
         return results
 
-    def unit_independent_search(self, t1: float, t2: float, field_value_pairs):
+    def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, userId: str | None = None) -> [
+        Database]:
         """
         Main method for searching stuff in the opensearch db
 
@@ -287,16 +285,12 @@ class OpenSearchClient:
         body = ''
         for search in searches:
             body += '%s \n' % dumps(search)
-        responses = self._instance().msearch(
+        response = self._instance().msearch(
             body=dumps(body)
         )
-        response = {
-            "hits": {
-                "hits": flatten([hits["hits"]["hits"] for hits in responses["responses"]])
-            },
-            "took": responses["took"]
-        }
-        return response
+        results = flatten([hits["hits"]["hits"] for hits in response["responses"]])
+        return [database for database in results if
+                database.is_public or database.is_schema_public or (userId is not None and database.owner.id == userId)]
 
 
 def key_to_attr_name(key: str) -> str:

@@ -15,7 +15,6 @@ import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -45,7 +44,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     private DatabaseRepository databaseRepository;
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @MockBean
     private UserService userService;
@@ -134,7 +133,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_STATISTIC_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -152,8 +151,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -172,8 +171,8 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -223,7 +222,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(CONCEPT_1);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -255,7 +254,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(CONCEPT_1_ENTITY_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -278,7 +277,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -315,7 +314,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -368,7 +367,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -391,7 +390,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -412,7 +411,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         doThrow(DataServiceException.class)
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -510,7 +509,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -526,7 +525,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */

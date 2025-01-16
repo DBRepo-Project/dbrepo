@@ -8,7 +8,6 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.*;
 public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
-    private SearchServiceGateway searchServiceGateway;
+    private SearchService searchService;
 
     @MockBean
     private DataServiceGateway dataServiceGateway;
@@ -109,7 +108,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -126,8 +125,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -144,8 +143,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -163,7 +162,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of());
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -182,8 +181,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -202,8 +201,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(any(Database.class));
+                .when(searchService)
+                .save(any(Database.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -221,7 +220,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO, VIEW_4_DTO)); /* <<< */
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -239,7 +238,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)); /* <<< */
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -257,7 +256,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of());
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -275,7 +274,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -293,7 +292,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO, TABLE_5_DTO));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */
@@ -411,8 +410,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(SearchServiceException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -426,8 +425,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -441,8 +440,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -468,8 +467,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(SearchServiceException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -483,8 +482,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(DatabaseNotFoundException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -498,8 +497,8 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(SearchServiceConnectionException.class)
-                .when(searchServiceGateway)
-                .update(DATABASE_1);
+                .when(searchService)
+                .save(DATABASE_1);
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -516,7 +515,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        when(searchServiceGateway.update(any(Database.class)))
+        when(searchService.save(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);

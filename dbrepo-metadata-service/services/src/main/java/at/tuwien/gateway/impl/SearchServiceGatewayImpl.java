@@ -35,7 +35,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     }
 
     @Override
-    public DatabaseDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
+    public DatabaseDto save(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<DatabaseDto> response;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
