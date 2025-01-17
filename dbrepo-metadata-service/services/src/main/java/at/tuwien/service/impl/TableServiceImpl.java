@@ -15,6 +15,7 @@ import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.*;
@@ -37,26 +38,26 @@ public class TableServiceImpl implements TableService {
     private final UnitService unitService;
     private final RabbitConfig rabbitConfig;
     private final EntityService entityService;
-    private final SearchService searchService;
     private final ConceptService conceptService;
     private final MetadataMapper metadataMapper;
     private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
+    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
     public TableServiceImpl(UserService userService, UnitService unitService, RabbitConfig rabbitConfig,
-                            EntityService entityService, SearchService searchService, ConceptService conceptService,
-                            MetadataMapper metadataMapper, DataServiceGateway dataServiceGateway,
-                            DatabaseRepository databaseRepository) {
+                            EntityService entityService, ConceptService conceptService, MetadataMapper metadataMapper,
+                            DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
+                            SearchServiceGateway searchServiceGateway) {
         this.userService = userService;
         this.unitService = unitService;
         this.rabbitConfig = rabbitConfig;
         this.entityService = entityService;
-        this.searchService = searchService;
         this.conceptService = conceptService;
         this.metadataMapper = metadataMapper;
         this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
+        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
@@ -172,7 +173,7 @@ public class TableServiceImpl implements TableService {
             throw new TableNotFoundException("Failed to find created table");
         }
         /* update in search service */
-        searchService.save(entity);
+        searchServiceGateway.update(entity);
         log.info("Created table with id {}", optional.get().getId());
         return optional.get();
     }
@@ -190,7 +191,7 @@ public class TableServiceImpl implements TableService {
                 .remove(table);
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in search service */
-        searchService.save(database);
+        searchServiceGateway.update(database);
         log.info("Deleted table with id {}", table.getId());
     }
 
@@ -217,7 +218,7 @@ public class TableServiceImpl implements TableService {
         tableEntity.setDescription(data.getDescription());
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in search service */
-        searchService.save(database);
+        searchServiceGateway.update(database);
         log.info("Updated table with id {}", table.getId());
         return tableEntity;
     }
@@ -257,7 +258,7 @@ public class TableServiceImpl implements TableService {
                 .set(table.getColumns().indexOf(column), column);
         final Database database = databaseRepository.save(table.getDatabase());
         /* update in open search service */
-        searchService.save(database);
+        searchServiceGateway.update(database);
         log.info("Updated table column semantics");
         return column;
     }
@@ -309,7 +310,7 @@ public class TableServiceImpl implements TableService {
                 .set(database.getTables().indexOf(table), table);
         databaseRepository.save(database);
         /* update in open search service */
-        searchService.save(database);
+        searchServiceGateway.update(database);
         log.info("Updated statistics for the table and {} column(s)", table.getColumns().size());
         log.trace("updated statistics: {}", table);
     }

@@ -7,16 +7,17 @@ from typing import List, Any
 import requests
 from dbrepo.api.dto import Database, ApiError
 from flasgger import LazyJSONEncoder, Swagger, swag_from
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_cors import CORS
 from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth, MultiAuth
 from jwt.exceptions import JWTDecodeError
 from opensearchpy import NotFoundError
 from prometheus_flask_exporter import PrometheusMetrics
 from pydantic import ValidationError
+from pydantic.deprecated.json import pydantic_encoder
 
 from clients.keycloak_client import User, KeycloakClient
-from clients.opensearch_client import OpenSearchClient
+from clients.opensearch_client import OpenSearchClient, flatten
 
 logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
 logging.basicConfig(level=logging.DEBUG)
@@ -124,18 +125,6 @@ template = {
                     }
                 }
             },
-            "SearchResultDto": {
-                "required": ["results"],
-                "type": "object",
-                "properties": {
-                    "results": {
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    }
-                }
-            },
             "SearchRequestDto": {
                 "required": ["search_term", "field_value_pairs"],
                 "type": "object",
@@ -209,13 +198,13 @@ app.json_encoder = LazyJSONEncoder
 
 
 @token_auth.verify_token
-def verify_token(token: str):
+def verify_token(token: str) -> bool | User:
     if token is None or token == "":
         return False
     try:
         client = KeycloakClient()
         return client.verify_jwt(access_token=token)
-    except JWTDecodeError as error:
+    except JWTDecodeError:
         return False
 
 
@@ -260,10 +249,10 @@ def general_filter(index, results):
         "table": ["id", "name", "description"],
         "identifier": ["id", "type", "creator"],
         "user": ["id", "username"],
-        "database": ["id", "name", "is_public", "details"],
+        "database": ["id", "name", "is_public", "is_schema_public", "details"],
         "concept": ["uri", "name"],
         "unit": [],
-        "view": ["id", "name", "creator", " created"],
+        "view": ["id", "name", "creator"],
     }
     if index not in important_keys.keys():
         raise KeyError(f"Failed to find index {index} in: {important_keys.keys()}")
@@ -290,7 +279,7 @@ def get_index(index: str):
     :param index: desired index
     :return: list of the results
     """
-    logging.info(f'Searching for index: {index}')
+    logging.debug(f'endpoint get search type: {index}')
     results = OpenSearchClient().query_index_by_term_opensearch("*", "contains")
     try:
         results = general_filter(index, results)
@@ -299,7 +288,7 @@ def get_index(index: str):
         max_pages = math.ceil(len(results) / results_per_page)
         page = min(request.args.get("page", 1, type=int), max_pages)
         results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-        return dict({"results": results}), 200
+        return Response(dumps(results, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
     except KeyError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find get index: {index}',
                         code='search.index.missing').model_dump(), 404
@@ -314,11 +303,11 @@ def get_fields(field_type: str):
     :param field_type: The search type
     :return:
     """
-    logging.info(f'Searching in index database for type: {field_type}')
+    logging.debug(f'endpoint get search type fields: {field_type}')
     try:
         fields = OpenSearchClient().get_fields_for_index(field_type)
         logging.debug(f'get fields for field_type {field_type} resulted in {len(fields)} field(s)')
-        return fields, 200
+        return Response(dumps(fields, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
     except NotFoundError:
         return ApiError(status='NOT_FOUND', message=f'Failed to find fields for search type {field_type}',
                         code='search.type.missing').model_dump(), 404
@@ -332,15 +321,19 @@ def get_fuzzy_search():
     Main endpoint for fuzzy searching.
     :return:
     """
-    search_term: str = request.args.get('q')
+    search_term: str | None = request.args.get('q')
     logging.debug(f'endpoint get fuzzy search, q={search_term}')
     if search_term is None or len(search_term) == 0:
         return ApiError(status='BAD_REQUEST', message='Provide a search term with ?q=term',
                         code='search.fuzzy.invalid').model_dump(), 400
     logging.debug(f"search request query: {search_term}")
-    results = OpenSearchClient().fuzzy_search(search_term,
-                                              KeycloakClient().userId(request.headers.get('Authorization')))
-    return dict({"results": results}), 200
+    user_id, error, status = KeycloakClient().userId(request.headers.get('Authorization'))
+    if error is not None and status is not None:
+        return error, status
+    results: [Database] = OpenSearchClient().fuzzy_search(search_term=search_term,
+                                                          user_id=user_id,
+                                                          user_token=request.headers.get('Authorization'))
+    return Response(dumps(results, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
 
 
 @app.route("/api/search/<string:field_type>", methods=["POST"], endpoint="search_post_general_search")
@@ -354,30 +347,32 @@ def post_general_search(field_type):
     if request.content_type != "application/json":
         return ApiError(status='UNSUPPORTED_MEDIA_TYPE', message='Content type needs to be application/json',
                         code='search.general.media').model_dump(), 415
-    req_body = request.json
-    logging.debug(f'endpoint get general search, field_type={field_type}')
-    logging.debug(f'=====> {request}')
+    value_pairs = request.json
+    logging.debug(f'endpoint get general search, field_type={field_type}, value_pairs={value_pairs}')
     t1 = request.args.get("t1")
     if not str(t1).isdigit():
         t1 = None
     t2 = request.args.get("t2")
     if not str(t2).isdigit():
         t2 = None
-    if t1 is not None and t2 is not None and "unit.uri" in req_body and "concept.uri" in req_body:
-        response = OpenSearchClient().unit_independent_search(t1, t2, req_body, KeycloakClient().userId(
-            request.headers.get('Authorization')))
+    user_id, error, status = KeycloakClient().userId(request.headers.get('Authorization'))
+    if error is not None and status is not None:
+        return error, status
+    if t1 is not None and t2 is not None and "unit.uri" in value_pairs and "concept.uri" in value_pairs:
+        response: [Database] = OpenSearchClient().unit_independent_search(t1, t2, value_pairs, user_id)
     else:
-        response = OpenSearchClient().general_search(field_type, req_body,
-                                                     KeycloakClient().userId(request.headers.get('Authorization')))
+        response: [Database] = OpenSearchClient().general_search(field_type=field_type,
+                                                                 field_value_pairs=value_pairs,
+                                                                 user_id=user_id,
+                                                                 user_token=request.headers.get('Authorization'))
     # filter by type
+    tables = [table for table in flatten([database.tables for database in response]) if
+              table.is_public or table.is_schema_public or (user_id is not None and table.owner.id == user_id)]
+    views = [view for view in flatten([database.views for database in response]) if
+             view.is_public or view.is_schema_public or (user_id is not None and view.owner.id == user_id)]
     if field_type == 'table':
-        tmp = []
-        for database in response:
-            if database["tables"] is not None:
-                for table in database["tables"]:
-                    table["is_public"] = database["is_public"]
-                    tmp.append(table)
-        response = tmp
+        logging.debug(f'filtered to {len(tables)} tables')
+        response = tables
     if field_type == 'identifier':
         tmp = []
         for database in response:
@@ -397,12 +392,7 @@ def post_general_search(field_type):
                 tmp.append(view['identifier'])
         response = tmp
     elif field_type == 'column':
-        response = [x for xs in response for x in xs["tables"]]
-        for table in response:
-            for column in table["columns"]:
-                column["table_id"] = table["id"]
-                column["database_id"] = table["database_id"]
-        response = [x for xs in response for x in xs["columns"]]
+        response = flatten([table.columns for table in tables])
     elif field_type == 'concept':
         tmp = []
         tables = [x for xs in response for x in xs["tables"]]
@@ -418,15 +408,15 @@ def post_general_search(field_type):
                 tmp.append(column["unit"])
         response = tmp
     elif field_type == 'view':
-        response = [x for xs in response for x in xs["views"]]
-    return dict({'results': response, 'type': field_type}), 200
+        response = views
+    return Response(dumps(response, default=pydantic_encoder)), 200, {'Content-Type': 'application/json'}
 
 
 @app.route("/api/search/database/<int:database_id>", methods=["PUT"], endpoint="search_put_database")
 @metrics.gauge(name='dbrepo_search_update_database',
                description='Time needed to update a database in the search database')
 @auth.login_required(role=['update-search-index'])
-def update_database(database_id: int) -> Database | ApiError:
+def update_database(database_id: int):
     logging.debug(f"updating database with id: {database_id}")
     try:
         payload: Database = Database.model_validate(request.json)
@@ -435,7 +425,7 @@ def update_database(database_id: int) -> Database | ApiError:
         return ApiError(status='BAD_REQUEST', message=f'Malformed payload: {e}',
                         code='search.general.missing').model_dump(), 400
     database = OpenSearchClient().update_database(database_id, payload)
-    logging.info(f"Updated database with id : {database_id}")
+    logging.info(f"Updated database with id: {database_id}")
     return database.model_dump(), 202
 
 
@@ -446,7 +436,7 @@ def update_database(database_id: int) -> Database | ApiError:
 def delete_database(database_id: int):
     try:
         OpenSearchClient().delete_database(database_id)
-        return dumps({}), 202
+        return Response(dumps({})), 202
     except NotFoundError:
         return ApiError(status='NOT_FOUND', message='Failed to find database',
                         code='search.database.missing').model_dump(), 404

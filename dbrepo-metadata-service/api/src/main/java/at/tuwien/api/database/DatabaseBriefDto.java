@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -53,6 +54,6 @@ public class DatabaseBriefDto {
 
     @NotNull
     @JsonProperty("owner_id")
-    private UserBriefDto ownerId;
+    private UUID ownerId;
 
 }

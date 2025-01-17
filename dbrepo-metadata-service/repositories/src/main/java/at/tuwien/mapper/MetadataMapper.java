@@ -907,6 +907,9 @@ public interface MetadataMapper {
         return database;
     }
 
+    @Mappings({
+            @Mapping(target = "ownerId", source = "owner.id")
+    })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);

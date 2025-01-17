@@ -7,7 +7,9 @@ from collections.abc import MutableMapping
 from json import dumps, load
 
 from dbrepo.api.dto import Database
+from dbrepo.api.exceptions import ForbiddenError, NotExistsError
 from opensearchpy import OpenSearch, NotFoundError
+from requests import head
 
 from omlib.constants import OM_IDS
 from omlib.measure import om
@@ -20,16 +22,22 @@ class OpenSearchClient:
     The client to communicate with the OpenSearch database.
     """
     host: str = None
-    port: int = None
-    username: str = None
-    password: str = None
     instance: OpenSearch = None
+    metadata_endpoint: str = None
+    password: str = None
+    port: int = None
+    system_username: str = None
+    system_password: str = None
+    username: str = None
 
     def __init__(self, host: str = None, port: int = None, username: str = None, password: str = None):
         self.host = os.getenv('OPENSEARCH_HOST', host)
-        self.port = int(os.getenv('OPENSEARCH_PORT', port))
-        self.username = os.getenv('OPENSEARCH_USERNAME', username)
+        self.metadata_endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://metadata-service:8080')
         self.password = os.getenv('OPENSEARCH_PASSWORD', password)
+        self.port = int(os.getenv('OPENSEARCH_PORT', port))
+        self.system_username = os.getenv('SYSTEM_USERNAME', 'admin')
+        self.system_password = os.getenv('SYSTEM_PASSWORD', 'admin')
+        self.username = os.getenv('OPENSEARCH_USERNAME', username)
 
     def _instance(self) -> OpenSearch:
         """
@@ -56,9 +64,7 @@ class OpenSearchClient:
         logging.debug(f"updating database with id: {database_id} in search database")
         self._instance().index(index="database", id=database_id, body=dumps(data.model_dump()))
         response: dict = self._instance().get(index="database", id=database_id)
-        database = Database.model_validate(response["_source"])
-        logging.info(f"Updated database with id {database_id} in index 'database'")
-        return database
+        return Database.model_validate(response["_source"])
 
     def delete_database(self, database_id: int) -> None:
         """
@@ -130,32 +136,50 @@ class OpenSearchClient:
                 fields_list.append(entry)
         return fields_list
 
-    def fuzzy_search(self, search_term: str = None, userId: str | None = None) -> [Database]:
-        logging.info(f"Performing fuzzy search")
-        fuzzy_body = {
-            "query": {
-                "multi_match": {
-                    "query": search_term,
-                    "fuzziness": "AUTO",
-                    "fuzzy_transpositions": True,
-                    "minimum_should_match": 3
-                }
-            }
-        }
-        logging.debug(f'search body: {fuzzy_body}')
+    def fuzzy_search(self, search_term: str, user_id: str | None = None, user_token: str | None = None) -> [Database]:
         response = self._instance().search(
             index="database",
-            body=fuzzy_body
+            body={
+                "query": {
+                    "multi_match": {
+                        "query": search_term,
+                        "fuzziness": "AUTO",
+                        "prefix_length": 2
+                    }
+                }
+            }
         )
         results: [Database] = []
-        if "hits" in results and "hits" in response["hits"]:
+        if "hits" in response and "hits" in response["hits"]:
             results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
-        results = [database for database in results if database.is_public or database.is_schema_public or (
-                userId is not None and database.owner.id == userId)]
-        return results
+        logging.debug(f'found {len(results)} results')
+        return self.filter_results(results, user_id, user_token)
 
-    def general_search(self, field_type: str = None, field_value_pairs: dict = None, userId: str | None = None) -> [
+    def filter_results(self, results: [Database], user_id: str | None = None, user_token: str | None = None) -> [
         Database]:
+        filtered: [Database] = []
+        for database in results:
+            if database.is_public or database.is_schema_public:
+                logging.debug(f'database with id {database.id} is public or has public schema')
+                filtered.append(database)
+            elif user_id is not None and user_token is not None:
+                try:
+                    url = f'{self.metadata_endpoint}/api/database/{database.id}/access/{user_id}'
+                    logging.debug(f'requesting access from url: {url}')
+                    response = head(url=url, auth=(self.system_username, self.system_password))
+                    if response.status_code == 200:
+                        logging.debug(f'database with id {database.id} is draft and access was found')
+                        filtered.append(database)
+                    else:
+                        logging.warning(
+                            f'database with id {database.id} is not accessible: code {response.status_code}')
+                except (ForbiddenError, NotExistsError) as e:
+                    logging.warning(f'database with id {database.id} is draft but no access was found')
+        logging.debug(f'filtered {len(filtered)} results')
+        return filtered
+
+    def general_search(self, field_type: str = None, field_value_pairs: dict = None, user_id: str | None = None,
+                       user_token: str | None = None) -> [Database]:
         """
         Main method for searching stuff in the opensearch db
 
@@ -197,11 +221,10 @@ class OpenSearchClient:
             body=dumps(body)
         )
         results: [Database] = []
-        if "hits" in results and "hits" in response["hits"]:
+        if "hits" in response and "hits" in response["hits"]:
             results = [Database.model_validate(hit["_source"]) for hit in response["hits"]["hits"]]
-        results = [database for database in results if database.is_public or database.is_schema_public or (
-                userId is not None and database.owner.id == userId)]
-        return results
+        logging.debug(f'found {len(results)} results')
+        return self.filter_results(results, user_id, user_token)
 
     def unit_independent_search(self, t1: float, t2: float, field_value_pairs: dict, userId: str | None = None) -> [
         Database]:

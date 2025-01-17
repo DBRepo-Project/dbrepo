@@ -303,12 +303,14 @@ services:
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
       AUTH_SERVICE_ENDPOINT: ${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}
       COLLECTION: ${COLLECTION:-['database','table','column','identifier','unit','concept','user','view']}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -sSL localhost:8080/health | grep 'UP' || exit 1
       interval: 10s
@@ -402,11 +404,14 @@ services:
       context: ./dbrepo-search-service/init
       network: host
     environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-search-db}
       OPENSEARCH_PORT: ${OPENSEARCH_PORT:-9200}
       OPENSEARCH_USERNAME: ${SEARCH_DB_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${SEARCH_DB_PASSWORD:-admin}
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     depends_on:
       dbrepo-search-db:
         condition: service_healthy

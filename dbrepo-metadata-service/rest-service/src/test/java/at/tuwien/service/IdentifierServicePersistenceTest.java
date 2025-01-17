@@ -12,8 +12,10 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
     private DataServiceGateway dataServiceGateway;
 
     @MockBean
-    private SearchService searchService;
+    private SearchServiceGateway searchServiceGateway;
 
     @MockBean
     @Qualifier("restTemplate")
@@ -173,7 +175,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
         /* mock */
         when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
                 .thenReturn(QUERY_2_DTO);
-        when(searchService.save(any(Database.class)))
+        when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_2_DTO);
 
         /* test */
@@ -283,7 +285,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
             SearchServiceConnectionException {
 
         /* mock */
-        when(searchService.save(any(Database.class)))
+        when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_1_DTO);
 
         /* test */

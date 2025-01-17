@@ -16,10 +16,10 @@ import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.SearchService;
 import at.tuwien.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -42,24 +42,24 @@ import java.util.stream.Stream;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final ViewService viewService;
-    private final SearchService searchService;
     private final MetadataConfig metadataConfig;
     private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
     private final DataServiceGateway dataServiceGateway;
     private final IdentifierRepository identifierRepository;
+    private final SearchServiceGateway searchServiceGateway;
 
 
-    public IdentifierServiceImpl(ViewService viewService, SearchService searchService, TemplateEngine templateEngine,
-                                 MetadataMapper metadataMapper, MetadataConfig metadataConfig,
-                                 DataServiceGateway dataServiceGateway, IdentifierRepository identifierRepository) {
+    public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine, MetadataMapper metadataMapper,
+                                 MetadataConfig metadataConfig, DataServiceGateway dataServiceGateway,
+                                 IdentifierRepository identifierRepository, SearchServiceGateway searchServiceGateway) {
         this.viewService = viewService;
-        this.searchService = searchService;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
         this.dataServiceGateway = dataServiceGateway;
         this.identifierRepository = identifierRepository;
+        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
@@ -153,7 +153,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.setStatus(IdentifierStatusType.PUBLISHED);
         identifier = identifierRepository.save(identifier);
         /* update in search service */
-        searchService.save(identifier.getDatabase());
+        searchServiceGateway.update(identifier.getDatabase());
         log.info("Published identifier with id {}", identifier.getId());
         return identifier;
     }
@@ -314,7 +314,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.getDatabase()
                 .getIdentifiers()
                 .add(out);
-        searchService.save(identifier.getDatabase());
+        searchServiceGateway.update(identifier.getDatabase());
         return out;
     }
 
@@ -378,7 +378,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.getDatabase()
                 .getIdentifiers()
                 .remove(identifier);
-        searchService.save(identifier.getDatabase());
+        searchServiceGateway.update(identifier.getDatabase());
         log.info("Deleted identifier with id {}", identifier.getId());
     }
 

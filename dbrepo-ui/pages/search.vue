@@ -27,7 +27,8 @@
       v-if="isDatabaseSearch"
       :loading="loading"
       :databases="results" />
-    <div>
+    <div
+      v-else>
       <v-card
         v-for="(result, idx) in results"
         :key="idx"
@@ -38,10 +39,13 @@
         <v-divider class="mx-4" />
         <v-card-title
           class="text-primary text-decoration-underline">
-          <a v-if="link(result)" :href="link(result)">
+          <a
+            v-if="link(result)"
+            :href="link(result)">
             {{ title(result) }}
           </a>
-          <span v-else>
+          <span
+            v-else>
             {{ title(result) }}
           </span>
         </v-card-title>
@@ -66,23 +70,15 @@
         </v-card-text>
       </v-card>
     </div>
-    <v-dialog
-      v-model="createDbDialog"
-      persistent
-      max-width="640">
-      <DatabaseCreate @close="closed" />
-    </v-dialog>
   </div>
 </template>
 
 <script>
-import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
-    DatabaseCreate,
     AdvancedSearch
   },
   data () {
@@ -90,7 +86,6 @@ export default {
       results: [],
       type: 'database',
       loading: false,
-      createDbDialog: null,
       userStore: useUserStore()
     }
   },
@@ -136,10 +131,13 @@ export default {
       if (!queryKeys || queryKeys.length !== 1 || !queryKeys.includes('q')) {
         return
       }
+      if (!this.q) {
+        return
+      }
       this.loading = true
       const searchService = useSearchService()
       searchService.fuzzy_search(this.q)
-        .then(({results}) => {
+        .then((results) => {
           this.results = results
           this.loading = false
         })
@@ -294,19 +292,8 @@ export default {
       }
       return tags
     },
-    closed (event) {
-      this.dialog = false
-      if (event.success) {
-        this.$router.push(`/database/${event.database_id}/info`)
-      }
-    },
-    onSearchResult ({results, type}) {
+    onSearchResult (results) {
       this.results = results
-      if (!type) {
-        return
-      }
-      console.debug('search for type', type, ':', results)
-      this.type = type
     },
     capitalizeFirstLetter(string) {
       if (!string) {

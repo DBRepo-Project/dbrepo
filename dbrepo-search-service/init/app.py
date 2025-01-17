@@ -1,12 +1,11 @@
 import json
-import os
 import logging
+import os
+from logging.config import dictConfig
 from typing import List
 
 import opensearchpy.exceptions
 from dbrepo.RestClient import RestClient
-from logging.config import dictConfig
-
 from dbrepo.api.dto import Database
 from opensearchpy import OpenSearch
 
@@ -46,6 +45,8 @@ class App:
     search_username: str = None
     search_password: str = None
     search_instance: OpenSearch = None
+    system_username: str = None
+    system_password: str = None
 
     def __init__(self):
         self.metadata_service_endpoint = os.getenv("METADATA_SERVICE_ENDPOINT", "http://metadata-service:8080")
@@ -53,6 +54,8 @@ class App:
         self.search_port = int(os.getenv("OPENSEARCH_PORT", "9200"))
         self.search_username = os.getenv("OPENSEARCH_USERNAME", "admin")
         self.search_password = os.getenv("OPENSEARCH_PASSWORD", "admin")
+        self.system_username = os.getenv("SYSTEM_USERNAME", "admin")
+        self.system_password = os.getenv("SYSTEM_PASSWORD", "admin")
 
     def _instance(self) -> OpenSearch:
         """
@@ -84,7 +87,8 @@ class App:
 
     def fetch_databases(self) -> List[Database]:
         logging.debug(f"fetching database from endpoint: {self.metadata_service_endpoint}")
-        client = RestClient(endpoint=self.metadata_service_endpoint)
+        client = RestClient(endpoint=self.metadata_service_endpoint, username=self.system_username,
+                            password=self.system_password)
         databases = []
         for index, database in enumerate(client.get_databases()):
             logging.debug(f"fetching database {index}/{len(databases)} details for database id: {database.id}")
@@ -93,16 +97,17 @@ class App:
         return databases
 
     def save_databases(self, databases: List[Database]):
-        logging.debug(f"save {len(databases)} database(s)")
+        index = f'database'
+        logging.debug(f"save {len(databases)} database(s) in index: {index}")
         for doc in databases:
             doc: Database = doc
             try:
-                self._instance().delete(index="database", id=doc.id)
-                logging.debug(f"deleted database with id {doc.id}")
+                self._instance().delete(index=index, id=doc.id)
+                logging.debug(f"truncated database with id {doc.id} in index: {index}")
             except opensearchpy.NotFoundError:
-                logging.warning(f"Database with id {doc.id} does not exist, skip.")
-            self._instance().create(index="database", id=doc.id, body=doc.model_dump())
-            logging.debug(f"created database with id {doc.id}")
+                pass
+            self._instance().create(index=index, id=doc.id, body=doc.model_dump())
+            logging.info(f"Saved database with id {doc.id} in index: {index}")
 
 
 if __name__ == "__main__":

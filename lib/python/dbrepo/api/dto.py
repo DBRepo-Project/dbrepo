@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Annotated
 
-from pydantic import BaseModel, PlainSerializer, Field
+from pydantic import BaseModel, PlainSerializer
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -987,9 +987,10 @@ class DatabaseBrief(BaseModel):
     internal_name: str
     description: Optional[str] = None
     is_public: bool
+    is_schema_public: bool
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     contact: UserBrief
-    owner: UserBrief
+    owner_id: str
 
 
 class Unique(BaseModel):
