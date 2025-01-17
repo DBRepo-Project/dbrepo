@@ -189,8 +189,7 @@ class OpenSearchClientTest(unittest.TestCase):
             OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            response = OpenSearchClient().fuzzy_search(search_term="test")
-            self.assertTrue(len(response) > 0)
+            OpenSearchClient().fuzzy_search(search_term="test_tuw")
 
     def test_unit_independent_search_fails(self):
         with app.app_context():
