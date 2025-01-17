@@ -3,9 +3,11 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.*;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.exception.*;
+import at.tuwien.exception.FilterBadRequestException;
+import at.tuwien.exception.MalformedException;
+import at.tuwien.exception.OntologyNotFoundException;
+import at.tuwien.exception.UriMalformedException;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.mapper.SparqlMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import io.micrometer.observation.annotation.Observed;
@@ -32,7 +34,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/ontology")
-public class OntologyEndpoint {
+public class OntologyEndpoint extends AbstractEndpoint {
 
     private final EntityService entityService;
     private final MetadataMapper metadataMapper;
@@ -59,11 +61,10 @@ public class OntologyEndpoint {
     })
     public ResponseEntity<List<OntologyBriefDto>> findAll() {
         log.debug("endpoint find all ontologies");
-        final List<OntologyBriefDto> dtos = ontologyService.findAll()
+        return ResponseEntity.ok(ontologyService.findAll()
                 .stream()
                 .map(metadataMapper::ontologyToOntologyBriefDto)
-                .toList();
-        return ResponseEntity.ok(dtos);
+                .toList());
     }
 
     @GetMapping("/{ontologyId}")
@@ -85,8 +86,7 @@ public class OntologyEndpoint {
     public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("ontologyId") Long ontologyId)
             throws OntologyNotFoundException {
         log.debug("endpoint find all ontologies, ontologyId={}", ontologyId);
-        final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.find(ontologyId));
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(metadataMapper.ontologyToOntologyDto(ontologyService.find(ontologyId)));
     }
 
     @PostMapping
@@ -104,10 +104,9 @@ public class OntologyEndpoint {
     })
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
                                               @NotNull Principal principal) {
-        log.debug("endpoint create ontology, data={}", data);
-        final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
+        log.debug("endpoint create ontology, data={}, principal.name={}", data, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.ontologyToOntologyDto(ontologyService.create(data, principal)));
     }
 
     @PutMapping("/{ontologyId}")
@@ -131,11 +130,10 @@ public class OntologyEndpoint {
     public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("ontologyId") Long ontologyId,
                                               @NotNull @Valid @RequestBody OntologyModifyDto data)
             throws OntologyNotFoundException {
-        log.debug("endpoint update ontology, data={}", data);
-        final Ontology ontology = ontologyService.find(ontologyId);
-        final OntologyDto dto = metadataMapper.ontologyToOntologyDto(ontologyService.update(ontology, data));
+        log.debug("endpoint update ontology, ontologyId={}, data={}", ontologyId, data);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(metadataMapper.ontologyToOntologyDto(
+                        ontologyService.update(ontologyService.find(ontologyId), data)));
     }
 
     @DeleteMapping("/{ontologyId}")
@@ -158,8 +156,7 @@ public class OntologyEndpoint {
     public ResponseEntity<Void> delete(@NotNull @PathVariable("ontologyId") Long ontologyId)
             throws OntologyNotFoundException {
         log.debug("endpoint delete ontology, ontologyId={}", ontologyId);
-        final Ontology ontology = ontologyService.find(ontologyId);
-        ontologyService.delete(ontology);
+        ontologyService.delete(ontologyService.find(ontologyId));
         return ResponseEntity.accepted()
                 .build();
     }
@@ -217,15 +214,12 @@ public class OntologyEndpoint {
             throw new OntologyNotFoundException("Failed to find SPARQL endpoint for ontology with id " + ontology.getId());
         }
         /* get */
-        final List<EntityDto> dtos;
         if (uri != null) {
-            dtos = entityService.findByUri(uri);
             return ResponseEntity.ok()
-                    .body(dtos);
+                    .body(entityService.findByUri(uri));
         }
-        dtos = entityService.findByLabel(ontology, label);
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(entityService.findByLabel(ontology, label));
     }
 
 }

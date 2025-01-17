@@ -100,7 +100,7 @@
           class="mr-2"
           color="secondary"
           variant="flat"
-          prepend-icon="mdi-login"
+          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-login' : null"
           to="/login">
           {{ $t('navigation.login') }}
         </v-btn>
@@ -108,7 +108,7 @@
           v-if="!user"
           color="primary"
           variant="flat"
-          prepend-icon="mdi-account-plus"
+          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-account-plus' : null"
           to="/signup">
           {{ $t('navigation.signup') }}
         </v-btn>
@@ -150,32 +150,47 @@
     <v-main>
       <v-container>
         <slot />
+        <JumboBox
+          v-if="error"
+          :title="$t(errorCodeKey(error).title, { resource })"
+          :subtitle="$t(errorCodeKey(error).subtitle)"
+          :text="$t(errorCodeKey(error).text, { resource })" />
       </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-const config = useRuntimeConfig()
+import { ref } from 'vue'
+
+const runtimeConfig = useRuntimeConfig()
+const config = ref(runtimeConfig)
 useServerHead({
-  title: config.public.title,
+  title: runtimeConfig.public.title,
   meta: [
-    {'ref': 'icon', type: 'image/x-icon', href: config.public.icon},
-    {'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests'}
+    { 'ref': 'icon', type: 'image/x-icon', href: runtimeConfig.public.icon },
+    { 'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests' }
   ]
 })
 </script>
 <script>
+import JumboBox from '@/components/JumboBox.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
+import { errorCodeKey, makeError } from '@/utils'
 
 export default {
+  components: {
+    JumboBox
+  },
   data () {
     return {
       drawer: false,
       model: null,
       query: null,
       loading: true,
+      databaseError: null,
+      accessError: null,
       searchResults: [],
       databases: [],
       loadingUser: true,
@@ -199,11 +214,35 @@ export default {
     messages () {
       return this.cacheStore.getMessages
     },
+    access () {
+      return this.userStore.getAccess
+    },
     table () {
       return this.cacheStore.getTable
     },
+    view () {
+      return this.cacheStore.getView
+    },
+    subset () {
+      return this.cacheStore.getSubset
+    },
     database () {
       return this.cacheStore.getDatabase
+    },
+    resource () {
+      if (!this.$route.params.database_id) {
+        return null
+      }
+      if (this.$route.params.table_id) {
+        return 'table'
+      }
+      if (this.$route.params.view_id) {
+        return 'view'
+      }
+      if (this.$route.params.subset_id) {
+        return 'subset'
+      }
+      return 'database'
     },
     roles () {
       return this.userStore.getRoles
@@ -219,6 +258,27 @@ export default {
     },
     commitShort () {
       return this.$config.public.commit.substr(0, 8)
+    },
+    error () {
+      if (this.databaseError) {
+        return this.databaseError
+      }
+      if (this.accessError) {
+        return this.accessError
+      }
+      if (!this.user) {
+        return null
+      }
+      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.user.id) {
+        return makeError(403, null, null)
+      }
+      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.user.id) {
+        return makeError(403, null, null)
+      }
+      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.user.id) {
+        return makeError(403, null, null)
+      }
+      return null
     },
     canListOntologies () {
       if (!this.roles) {
@@ -244,18 +304,42 @@ export default {
     '$route.params': {
       handler (newObj, oldObj) {
         if (!newObj.database_id) {
+          this.databaseError = null
+          this.accessError = null
+          this.cacheStore.setTable(null)
+          this.cacheStore.setView(null)
+          this.cacheStore.setSubset(null)
+          return
+        }
+        if (import.meta.server) {
           return
         }
         /* load database and optional access */
         this.cacheStore.setRouteDatabase(newObj.database_id)
+          .catch((error) => {
+            this.databaseError = error
+          })
         if (this.user) {
           this.userStore.setRouteAccess(newObj.database_id)
         }
-        if (!newObj.table_id) {
-          return
-        }
         /* load table */
-        this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
+        if (newObj.table_id) {
+          this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
+        } else {
+          this.cacheStore.setTable(null)
+        }
+        /* load view */
+        if (newObj.view_id) {
+          this.cacheStore.setRouteView(newObj.database_id, newObj.view_id)
+        } else {
+          this.cacheStore.setView(null)
+        }
+        /* load subset */
+        if (newObj.subset_id) {
+          this.cacheStore.setRouteSubset(newObj.database_id, newObj.subset_id)
+        } else {
+          this.cacheStore.setSubset(null)
+        }
       },
       deep: true,
       immediate: true
@@ -273,6 +357,7 @@ export default {
     this.cacheStore.reloadMessages()
   },
   methods: {
+    errorCodeKey,
     login () {
       const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })

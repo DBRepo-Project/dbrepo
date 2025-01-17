@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 public class PrivilegedTableDto extends PrivilegedObjectDto {
 
     @NotNull
@@ -32,7 +32,6 @@ public class PrivilegedTableDto extends PrivilegedObjectDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @EqualsAndHashCode.Include
     private Long tdbid;
 
     @NotBlank
@@ -42,7 +41,6 @@ public class PrivilegedTableDto extends PrivilegedObjectDto {
     @NotBlank
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
-    @EqualsAndHashCode.Include
     private String internalName;
 
     @Schema

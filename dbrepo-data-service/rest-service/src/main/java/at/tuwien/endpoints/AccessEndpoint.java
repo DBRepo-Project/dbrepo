@@ -29,7 +29,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/access")
-public class AccessEndpoint {
+public class AccessEndpoint extends AbstractEndpoint {
 
     private final AccessService accessService;
     private final CredentialService credentialService;
@@ -139,7 +139,7 @@ public class AccessEndpoint {
                 access.getType());
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
         final PrivilegedUserDto user = credentialService.getUser(userId);
-        if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
+        if (database.getAccesses().stream().noneMatch(a -> a.getHuserid().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
         }

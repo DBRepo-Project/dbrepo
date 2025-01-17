@@ -12,6 +12,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
@@ -35,6 +36,5 @@ public class TableStatisticDto {
     private Long avgRowLength;
 
     @NotNull
-    @ToString.Exclude
     private Map<String, ColumnStatisticDto> columns;
 }

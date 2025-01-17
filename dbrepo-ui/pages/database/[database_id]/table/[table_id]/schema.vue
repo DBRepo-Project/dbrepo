@@ -160,7 +160,7 @@ export default {
       ],
       headers: [
         { value: 'internal_name', title: this.$t('pages.table.subpages.schema.internal-name.title') },
-        { value: 'column_type', title: this.$t('pages.table.subpages.schema.column-type.title') },
+        { value: 'type', title: this.$t('pages.table.subpages.schema.column-type.title') },
         { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
@@ -195,6 +195,9 @@ export default {
       return this.userStore.getRoles
     },
     canViewSchema () {
+      if (this.error) {
+        return false
+      }
       if (!this.table) {
         return false
       }
@@ -204,7 +207,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
@@ -236,9 +239,9 @@ export default {
   },
   methods: {
     extra (column) {
-      if (column.column_type === 'float') {
+      if (column.type === 'float') {
         return `precision=${column.size}`
-      } else if (['decimal', 'double'].includes(column.column_type)) {
+      } else if (['decimal', 'double'].includes(column.type)) {
         let extra = ''
         if (column.size !== null) {
           extra += `size=${column.size}`
@@ -250,11 +253,11 @@ export default {
           extra += `d=${column.d}`
         }
         return extra
-      } else if (column.column_type === 'enum') {
+      } else if (column.type === 'enum') {
         return `(${column.enums.join(', ')})`
-      } else if (column.column_type === 'set') {
+      } else if (column.type === 'set') {
         return `(${column.sets.join(', ')})`
-      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.column_type)) {
+      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.type)) {
         return column.size !== null ? `size=${column.size}` : ''
       }
       return null

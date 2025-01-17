@@ -9,14 +9,14 @@
       <v-spacer />
       <v-btn
         v-if="canAddTuple"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-plus' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-plus' : null"
         variant="flat"
         :text="$t('toolbars.table.data.add')"
         class="ml-2"
         @click="addTuple" />
       <v-btn
         v-if="canEditTuple"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-pencil' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-pencil' : null"
         color="warning"
         variant="flat"
         :text="$t('toolbars.table.data.edit')"
@@ -24,7 +24,7 @@
         @click="editTuple" />
       <v-btn
         v-if="canDeleteTuple"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-delete' : null"
         color="error"
         variant="flat"
         :text="$t('toolbars.table.data.delete')"
@@ -32,14 +32,14 @@
         :loading="loadingDelete"
         @click="deleteItems" />
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
         :text="$t('toolbars.table.data.download')"
         class="ml-2"
         @click.stop="download" />
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
         class="ml-2"
@@ -47,7 +47,7 @@
         :loading="loadingData"
         @click="reload" />
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-update' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-update' : null"
         variant="flat"
         :text="$t('toolbars.table.data.version')"
         class="ml-2 mr-2"
@@ -61,13 +61,16 @@
         {{ $t('error.table.connection') }}
       </v-card-text>
     </v-card>
-    <v-card tile>
+    <v-card
+      tile>
       <QueryResults
         id="query-results"
         ref="queryResults"
+        class="mt-0 mb-0"
         type="table"
+        :select="canSelectTuples"
         :timestamp="versionISO || lastReload.toISOString()"
-        class="mt-0 mb-0" />
+        @selection="updateSelect" />
     </v-card>
     <v-dialog
       v-model="pickVersionDialog"
@@ -144,7 +147,6 @@ export default {
       version: null,
       lastReload: new Date(),
       tab: null,
-      error: false,
       tuple: null,
       options: {
         page: 1,
@@ -193,9 +195,6 @@ export default {
     user () {
       return this.userStore.getUser
     },
-    tables () {
-      return this.cacheStore.getTable
-    },
     access () {
       return this.userStore.getAccess
     },
@@ -238,8 +237,16 @@ export default {
       }
       return this.access.type === 'write_all'
     },
+    primaryKeyColumns () {
+      if (!this.table) {
+        return []
+      }
+      return this.table.constraints.primary_key.map(pk => pk.column)
+    },
     canViewTableData () {
-      /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
+      if (this.error) {
+        return false
+      }
       if (!this.table) {
         return false
       }
@@ -252,6 +259,13 @@ export default {
       return this.hasReadAccess
     },
     canAddTuple () {
+      if (!this.roles) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
+    },
+    canSelectTuples () {
       if (!this.roles) {
         return false
       }
@@ -299,8 +313,7 @@ export default {
       for (const select of this.selection) {
         /* remove in container */
         const constraints = {}
-        this.columns
-          .filter(c => c.is_primary_key)
+        this.primaryKeyColumns
           .forEach((c) => {
             constraints[c.internal_name] = select[c.internal_name]
           })
@@ -313,9 +326,12 @@ export default {
         }
         const tupleService = useTupleService()
         wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
-          .catch(({message}) => {
+          .catch(({code, message}) => {
             const toast = useToastInstance()
-            toast.error(message)
+            if (typeof code !== 'string') {
+              return
+            }
+            toast.error(this.$t(code))
           }))
       }
       Promise.all(wait)
@@ -324,6 +340,7 @@ export default {
           toast.success(`Deleted ${this.selection.length} row(s)`)
           this.$emit('modified', { success: true, action: 'delete' })
           this.selection = []
+          this.$refs.queryResults.resetSelection()
           this.reload()
         })
       this.loadingDelete = false
@@ -345,6 +362,9 @@ export default {
           .catch(({code}) => {
             this.downloadLoading = false
             const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
             toast.error(this.$t(code))
           })
           .finally(() => {
@@ -364,6 +384,9 @@ export default {
           .catch(({code}) => {
             this.downloadLoading = false
             const toast = useToastInstance()
+            if (typeof code !== 'string') {
+              return
+            }
             toast.error(this.$t(code))
           })
           .finally(() => {
@@ -390,11 +413,14 @@ export default {
     },
     reload () {
       this.lastReload = new Date()
+      if (!this.canViewTableData) {
+        return
+      }
       this.$refs.queryResults.reExecute(Number(this.$route.params.table_id))
       this.$refs.queryResults.reExecuteCount(Number(this.$route.params.table_id))
     },
     isFileField (column) {
-      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
+      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.type)
     },
     close ({ success }) {
       console.debug('closed edit/create tuple dialog')
@@ -403,7 +429,11 @@ export default {
       if (success) {
         this.reload()
         this.selection = []
+        this.$refs.queryResults.resetSelection()
       }
+    },
+    updateSelect (selection) {
+      this.selection = selection
     }
   }
 }

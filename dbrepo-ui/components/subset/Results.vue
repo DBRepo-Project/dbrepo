@@ -2,12 +2,15 @@
   <div>
     <v-data-table-server
       flat
+      v-model="selection"
       :headers="headers"
       :loading="loading || loadingCount || loadingExecute"
       :options="options"
       :items="result.rows"
       :items-length="total"
       :footer-props="footerProps"
+      :show-select="select"
+      return-object
       :items-per-page-options="footerProps.itemsPerPageOptions"
       @update:options="updateOptions" />
   </div>
@@ -24,6 +27,10 @@ export default {
       type: Boolean,
       default: () => false
     },
+    select: {
+      type: Boolean,
+      default: () => false
+    },
     timestamp: {
       type: String,
       default: () => new Date().toISOString()
@@ -35,6 +42,7 @@ export default {
       loadingExecute: false,
       resultId: null,
       id: null,
+      selection: null,
       result: {
         headers: [],
         rows: []
@@ -64,6 +72,11 @@ export default {
         this.reExecute(this.id)
       },
       deep: true
+    },
+    selection: {
+      handler () {
+        this.$emit('selection', this.selection)
+      }
     }
   },
   methods: {
@@ -224,6 +237,9 @@ export default {
       this.options.page = page
       this.options.itemsPerPage = itemsPerPage
       this.reExecute(this.id)
+    },
+    resetSelection () {
+      this.selection = []
     }
   }
 }

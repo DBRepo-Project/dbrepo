@@ -88,24 +88,11 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void findByInternalName_notFound_fails() {
-
-        /* mock */
-        when(databaseRepository.findByInternalName(DATABASE_1_INTERNALNAME))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    @Test
     public void updatePassword_succeeds() throws DataServiceException, DatabaseNotFoundException,
             DataServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findReadAccess(USER_1_ID))
+        when(databaseRepository.findAllAtLestReadAccessDesc(USER_1_ID))
                 .thenReturn(List.of(DATABASE_1));
         doNothing()
                 .when(dataServiceGateway)
@@ -535,7 +522,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1);
+        final Database response = databaseService.create(CONTAINER_1, DATABASE_1_CREATE, USER_1, List.of(USER_LOCAL));
         assertTrue(response.getInternalName().startsWith(DATABASE_1_INTERNALNAME));
         assertNotNull(response.getContainer());
         assertNotNull(response.getTables());

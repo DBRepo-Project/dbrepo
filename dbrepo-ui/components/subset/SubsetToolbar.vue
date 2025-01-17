@@ -3,7 +3,6 @@
     <v-toolbar
       flat>
       <v-btn
-        class="mr-2"
         variant="plain"
         size="small"
         icon="mdi-arrow-left"
@@ -17,7 +16,7 @@
         :loading="loadingSave"
         color="secondary"
         variant="flat"
-        class="mb-1 ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-star' : null"
         :text="$t('toolbars.subset.save.permanent')"
         @click.stop="save" />
@@ -26,15 +25,15 @@
         :loading="loadingSave"
         color="warning"
         variant="flat"
-        class="mb-1 ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-star-off' : null"
         :text="$t('toolbars.subset.unsave.permanent')"
         @click.stop="forget" />
       <v-btn
         v-if="canGetPid"
-        class="mb-1 ml-2"
         color="primary"
         variant="flat"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         :disabled="!executionUTC"
         :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/persist`">
@@ -73,7 +72,6 @@ export default {
       loading: false,
       loadingSave: false,
       downloadLoading: false,
-      subset: null,
       userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
@@ -97,11 +95,14 @@ export default {
     roles () {
       return this.userStore.getRoles
     },
+    subset () {
+      return this.cacheStore.getSubset
+    },
     identifiers () {
-      if (!this.database || !this.database.subsets || this.database.subsets.length === 0) {
+      if (!this.subset) {
         return []
       }
-      return this.database.subsets.filter(s => s.query_id === Number(this.$route.params.subset_id))
+      return this.subset.identifiers
     },
     canViewData () {
       if (!this.database) {
@@ -157,7 +158,7 @@ export default {
       if (!this.user || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || (this.subset.creator.id === this.user.id && this.hasReadAccess)
+      return this.database.owner.id === this.user.id || (this.subset.owner.id === this.user.id && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {
@@ -169,12 +170,6 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
-    }
-  },
-  mounted () {
-    /* load subset metadata */
-    if (!this.subset) {
-      this.loadSubset()
     }
   },
   methods: {
@@ -205,20 +200,6 @@ export default {
         })
         .finally(() => {
           this.loadingSave = false
-        })
-    },
-    loadSubset () {
-      this.loading = true
-      const queryService = useQueryService()
-      queryService.findOne(this.$route.params.database_id, this.$route.params.subset_id)
-        .then((subset) => {
-          this.subset = subset
-        })
-        .catch(() => {
-          this.loading = false
-        })
-        .finally(() => {
-          this.loading = false
         })
     }
   }

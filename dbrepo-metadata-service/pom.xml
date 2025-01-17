@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 
     <description>Service that manages the metadata</description>
 
@@ -60,6 +60,8 @@
         <aws-s3.version>2.25.23</aws-s3.version>
         <jackson.version>2.15.2</jackson.version>
         <minio.version>8.5.7</minio.version>
+        <sonar.coverage.jacoco.xmlReportPaths>./report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>

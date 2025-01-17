@@ -17,7 +17,7 @@
           <v-row dense>
             <v-col>
               <v-text-field
-                v-model="payload.name"
+                v-model="name"
                 name="database"
                 :variant="inputVariant"
                 :label="$t('pages.database.subpages.create.name.label')"
@@ -55,33 +55,12 @@
           </v-row>
           <v-row>
             <v-col>
-              <v-select
-                v-model="mode"
-                name="mode"
-                :label="$t('pages.database.subpages.create.visibility.label')"
-                :hint="$t('pages.database.subpages.create.visibility.hint')"
-                persistent-hint
-                :variant="inputVariant"
-                :items="visibilityOptions"
-                item-title="name"
-                item-value="value"
-                :rules="[v => !!v || $t('validation.required')]"
-                return-object
-                required>
-                <template
-                  v-slot:append-inner>
-                  <v-tooltip
-                    location="bottom">
-                    <template
-                      v-slot:activator="{ props }">
-                      <v-icon
-                        v-bind="props"
-                        icon="mdi-help-circle-outline" />
-                    </template>
-                    {{ mode.hint }}
-                  </v-tooltip>
-                </template>
-              </v-select>
+              <v-checkbox
+                v-model="draft"
+                name="draft"
+                :label="$t('pages.database.subpages.create.draft.label')"
+                :hint="$t('pages.database.subpages.create.draft.hint')"
+                persistent-hint />
             </v-col>
           </v-row>
         </v-card-text>
@@ -117,6 +96,8 @@ export default {
       loading: false,
       loadingContainers: false,
       engine: null,
+      draft: true,
+      name: null,
       engines: [],
       visibilityOptions: [
         {
@@ -129,13 +110,7 @@ export default {
           hint: this.$t('pages.database.subpages.create.visibility.private.hint'),
           value: false
         }
-      ],
-      mode: true,
-      payload: {
-        name: null,
-        is_public: true,
-        is_schema_public: true,
-      }
+      ]
     }
   },
   computed: {
@@ -179,16 +154,16 @@ export default {
         .catch(({code}) => {
           this.loadingContainers = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
     },
     create () {
       this.loading = true
-      this.payload.container_id = this.engine.id
-      this.payload.is_public = this.mode.value
-      this.payload.is_schema_public = this.mode.value
       const databaseService = useDatabaseService()
-      databaseService.create(this.payload)
+      databaseService.create({ name: this.name, container_id: this.engine.id, is_public: !this.draft, is_schema_public: !this.draft })
         .then(async (database) => {
           await this.$router.push(`/database/${database.id}/info`)
           this.loading = false

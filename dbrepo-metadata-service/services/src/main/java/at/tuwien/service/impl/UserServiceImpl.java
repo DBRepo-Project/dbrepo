@@ -1,9 +1,13 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.EmailExistsException;
+import at.tuwien.exception.UserExistsException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -20,10 +24,12 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final KeycloakConfig keycloakConfig;
     private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(KeycloakConfig keycloakConfig, UserRepository userRepository) {
+        this.keycloakConfig = keycloakConfig;
         this.userRepository = userRepository;
     }
 
@@ -36,18 +42,23 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with username {}", username);
-            throw new UserNotFoundException("Failed to find user with username " + username);
+            log.error("Failed to find user with username: {}", username);
+            throw new UserNotFoundException("Failed to find user with username: " + username);
         }
         return optional.get();
+    }
+
+    @Override
+    public List<User> findAllInternalUsers() {
+        return userRepository.findAllInternal();
     }
 
     @Override
     public User findById(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with id {}", id);
-            throw new UserNotFoundException("Failed to find user with id " + id);
+            log.error("Failed to find user with id: {}", id);
+            throw new UserNotFoundException("Failed to find user with id: " + id);
         }
         return optional.get();
     }
@@ -62,10 +73,11 @@ public class UserServiceImpl implements UserService {
                 .theme("light")
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .language("en")
+                .isInternal(false)
                 .build();
         /* create at metadata database */
         final User user = userRepository.save(entity);
-        log.info("Created user with id {}", user.getId());
+        log.info("Created user with id: {}", user.getId());
         return user;
     }
 
@@ -79,7 +91,7 @@ public class UserServiceImpl implements UserService {
         user.setLanguage(data.getLanguage());
         /* create at metadata database */
         user = userRepository.save(user);
-        log.info("Modified user with id {}", user.getId());
+        log.info("Modified user with id: {}", user.getId());
         return user;
     }
 
@@ -88,7 +100,7 @@ public class UserServiceImpl implements UserService {
         user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
         /* update at metadata database */
         userRepository.save(user);
-        log.info("Updated password of user with id {}", user.getId());
+        log.info("Updated password of user with id: {}", user.getId());
     }
 
     @Override

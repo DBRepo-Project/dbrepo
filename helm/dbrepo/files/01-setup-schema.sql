@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
     email            character varying(255) NOT NULL,
     orcid            character varying(255),
     affiliation      character varying(255),
+    is_internal      BOOLEAN                NOT NULL DEFAULT FALSE,
     mariadb_password character varying(255) NOT NULL,
     theme            character varying(255) NOT NULL default ('light'),
     language         character varying(3)   NOT NULL default ('en'),
@@ -95,7 +96,6 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     PRIMARY KEY (id),
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -135,7 +135,6 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     PRIMARY KEY (ID),
     UNIQUE (tDBID, internal_name),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 

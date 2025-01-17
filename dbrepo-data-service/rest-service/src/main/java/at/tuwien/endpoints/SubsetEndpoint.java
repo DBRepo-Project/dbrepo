@@ -11,7 +11,6 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,7 +72,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping
     @Observed(name = "dbrepo_subset_list")
     @Operation(summary = "Find subsets",
-            description = "Finds subsets in the query store. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
+            description = "Finds subsets in the query store. When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database. The result can be optionally filtered by setting `persisted`. When set to *true*, only persisted queries are returned, otherwise only non-persisted queries are returned.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -98,11 +97,13 @@ public class SubsetEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @RequestParam(name = "persisted", required = false) Boolean filterPersisted)
+                                               @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
+                                               Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final List<QueryDto> queries;
         try {
             queries = subsetService.findAll(database, filterPersisted);
@@ -117,7 +118,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
     @GetMapping("/{subsetId}")
     @Observed(name = "dbrepo_subset_find")
     @Operation(summary = "Find subset",
-            description = "Finds a subset in the data database. Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
+            description = "Finds a subset in the data database.  When the database schema is marked as hidden, the user needs to be authorized, have at least read-access to the database.  Requests with HTTP header `Accept=application/json` return the metadata, requests with HTTP header `Accept=text/csv` return the data as downloadable file.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -154,15 +155,17 @@ public class SubsetEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("subsetId") Long subsetId,
-                                      @NotNull HttpServletRequest httpServletRequest,
-                                      @RequestParam(required = false) Instant timestamp)
+                                      @NotNull @RequestHeader("Accept") String accept,
+                                      @RequestParam(required = false) Instant timestamp,
+                                      Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException, QueryMalformedException {
-        String accept = httpServletRequest.getHeader("Accept");
+            MetadataServiceException, TableNotFoundException, ViewMalformedException, QueryMalformedException,
+            NotAllowedException {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final QueryDto subset;
         try {
             subset = subsetService.findById(database, subsetId);
@@ -175,7 +178,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        if (accept == null) {
+        if (accept == null || accept.isEmpty() || accept.isBlank()) {
             accept = MediaType.APPLICATION_JSON_VALUE;
             log.debug("accept header not set: default to {}", accept);
         }
@@ -200,13 +203,13 @@ public class SubsetEndpoint extends AbstractEndpoint {
                     throw new DatabaseUnavailableException("Failed to find data: " + e.getMessage(), e);
                 }
         }
-        throw new FormatNotAvailableException("Must provide either application/json or text/csv headers");
+        throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
     }
 
     @PostMapping
     @Observed(name = "dbrepo_subset_create")
     @Operation(summary = "Create subset",
-            description = "Creates a subset in the query store of the data database. Requires role `execute-query` for private databases.",
+            description = "Creates a subset in the query store of the data database. Can also be used without authentication if (and only if) the database is marked as public (i.e. when `is_public` = `is_schema_public` is set to `true`). Otherwise at least read access is required.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -264,7 +267,12 @@ public class SubsetEndpoint extends AbstractEndpoint {
         endpointValidator.validateDataParams(page, size);
         endpointValidator.validateForbiddenStatements(data.getStatement());
         /* parameters */
-        final UUID userId = principal != null ? UserUtil.getId(principal) : null;
+        final UUID userId;
+        if (principal != null) {
+            userId = getId(principal);
+        } else {
+            userId = null;
+        }
         if (page == null) {
             page = 0L;
             log.debug("page not set: default to {}", page);
@@ -279,6 +287,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
         }
         /* create */
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
             final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
             return getData(databaseId, subsetId, principal, request, page, size);
@@ -342,8 +351,9 @@ public class SubsetEndpoint extends AbstractEndpoint {
                 log.error("Failed to re-execute query: no authentication found");
                 throw new NotAllowedException("Failed to re-execute query: no authentication found");
             }
-            credentialService.getAccess(databaseId, UserUtil.getId(principal));
+            credentialService.getAccess(databaseId, getId(principal));
         }
+        log.trace("visibility for database: is_public={}, is_schema_public={}", database.getIsPublic(), database.getIsSchemaPublic());
         /* parameters */
         if (page == null) {
             page = 0L;
@@ -426,7 +436,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
         final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        credentialService.getAccess(databaseId, UserUtil.getId(principal));
+        credentialService.getAccess(databaseId, getId(principal));
         try {
             subsetService.persist(database, queryId, data.getPersist());
             final QueryDto dto = subsetService.findById(database, queryId);

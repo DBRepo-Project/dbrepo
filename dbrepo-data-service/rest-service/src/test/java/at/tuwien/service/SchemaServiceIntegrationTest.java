@@ -358,7 +358,6 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals("not_in_metadata_db2", response.getInternalName());
         assertEquals("not_in_metadata_db2", response.getName());
         assertEquals(DATABASE_1_ID, response.getVdbid());
-        assertEquals(DATABASE_1_ID, response.getDatabase().getId());
         assertEquals(DATABASE_1_OWNER, response.getOwner().getId());
         assertFalse(response.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
@@ -383,20 +382,18 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(DATABASE_1_ID, column3.getDatabaseId());
     }
 
-    protected static void assertViewColumn(ViewColumnDto column, Long id, Long databaseId, String name,
-                                           String internalName, ColumnTypeDto type, Long size, Long d,
-                                           Boolean nullAllowed, String description) {
-        log.trace("assert column: {}", internalName);
+    protected static void assertViewColumn(ViewColumnDto column, ViewColumnDto other) {
         assertNotNull(column);
-        assertEquals(id, column.getId());
-        assertEquals(databaseId, column.getDatabaseId());
-        assertEquals(name, column.getName());
-        assertEquals(internalName, column.getInternalName());
-        assertEquals(type, column.getColumnType());
-        assertEquals(size, column.getSize());
-        assertEquals(d, column.getD());
-        assertEquals(nullAllowed, column.getIsNullAllowed());
-        assertEquals(description, column.getDescription());
+        assertNotNull(other);
+        assertEquals(column.getId(), other.getId());
+        assertEquals(column.getDatabaseId(), other.getDatabaseId());
+        assertEquals(column.getName(), other.getName());
+        assertEquals(column.getInternalName(), other.getInternalName());
+        assertEquals(column.getColumnType(), other.getColumnType());
+        assertEquals(column.getSize(), other.getSize());
+        assertEquals(column.getD(), other.getD());
+        assertEquals(column.getIsNullAllowed(), other.getIsNullAllowed());
+        assertEquals(column.getDescription(), other.getDescription());
     }
 
     protected static void assertColumn(ColumnDto column, Long id, Long tableId, Long databaseId, String name,
@@ -407,8 +404,6 @@ public class SchemaServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(id, column.getId());
         assertEquals(tableId, column.getTableId());
         assertEquals(databaseId, column.getDatabaseId());
-        assertNotNull(column.getTable());
-        assertEquals(tableId, column.getTable().getId());
         assertEquals(name, column.getName());
         assertEquals(internalName, column.getInternalName());
         assertEquals(type, column.getColumnType());

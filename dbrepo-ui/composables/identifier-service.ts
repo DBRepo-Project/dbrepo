@@ -328,6 +328,9 @@ export const useIdentifierService = (): any => {
   }
 
   function databaseToServerHead(database: DatabaseDto) {
+    if (!database) {
+      return
+    }
     const config = useRuntimeConfig()
     /* Google Rich Results */
     const json: any = {

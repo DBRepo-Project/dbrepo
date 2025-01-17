@@ -1,14 +1,17 @@
-package at.tuwien.utils;
+package at.tuwien.endpoints;
 
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.service.UserService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 
 import java.security.Principal;
 import java.util.UUID;
 
-public class UserUtil {
+public abstract class AbstractEndpoint {
 
-    public static boolean hasRole(Principal principal, String role) {
+    public boolean hasRole(Principal principal, String role) {
         if (principal == null || role == null) {
             return false;
         }
@@ -18,7 +21,7 @@ public class UserUtil {
                 .anyMatch(a -> a.getAuthority().equals(role));
     }
 
-    public static boolean isSystem(Principal principal) {
+    public boolean isSystem(Principal principal) {
         if (principal == null) {
             return false;
         }
@@ -28,16 +31,18 @@ public class UserUtil {
                 .anyMatch(a -> a.getAuthority().equals("system"));
     }
 
-    public static UUID getId(Principal principal) {
+    public UUID getId(Principal principal) {
         if (principal == null) {
             return null;
         }
         final Authentication authentication = (Authentication) principal;
-        final UserDetailsDto user = (UserDetailsDto) authentication.getPrincipal();
-        if (user.getId() == null) {
-            return null;
+        if (authentication.getPrincipal() instanceof UserDetailsDto user) {
+            if (user.getId() == null) {
+                throw new IllegalArgumentException("Principal has no id");
+            }
+            return UUID.fromString(user.getId());
         }
-        return UUID.fromString(user.getId());
+        throw new IllegalArgumentException("Unknown principal instance: " + authentication.getPrincipal().getClass());
     }
 
 }

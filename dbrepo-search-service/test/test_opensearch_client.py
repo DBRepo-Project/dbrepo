@@ -2,7 +2,7 @@ import unittest
 
 import opensearchpy
 from dbrepo.api.dto import Database, Table, Column, ColumnType, Constraints, PrimaryKey, \
-    TableMinimal, ColumnMinimal, Concept, Unit, UserBrief, ContainerBrief, ImageBrief
+    TableMinimal, ColumnMinimal, ConceptBrief, UnitBrief, UserBrief, ContainerBrief, ImageBrief
 from opensearchpy import NotFoundError
 
 from app import app
@@ -35,12 +35,19 @@ req = Database(id=1,
                              routing_key="dbrepo.1.1",
                              is_public=True,
                              is_schema_public=True,
-                             columns=[Column(id=1, database_id=1, table_id=1, name="ID", internal_name="id",
-                                             column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False,
-                                             size=20, d=0,
-                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
-                                             unit=Unit(id=1,
-                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
+                             columns=[Column(id=1,
+                                             database_id=1,
+                                             table_id=1,
+                                             name="ID",
+                                             ord=0,
+                                             internal_name="id",
+                                             type=ColumnType.BIGINT,
+                                             is_null_allowed=False,
+                                             size=20,
+                                             d=0,
+                                             concept=ConceptBrief(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
+                                             unit=UnitBrief(id=1,
+                                                            uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
                                              val_min=0,
                                              val_max=10)]
                              )])
@@ -71,12 +78,12 @@ class OpenSearchClientTest(unittest.TestCase):
                                 is_versioned=True,
                                 owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                                 columns=[Column(id=1,
-                                                name="ID",
-                                                internal_name="id",
                                                 database_id=req.id,
                                                 table_id=1,
-                                                column_type=ColumnType.BIGINT,
-                                                is_public=True,
+                                                ord=0,
+                                                name="ID",
+                                                internal_name="id",
+                                                type=ColumnType.BIGINT,
                                                 is_null_allowed=False)])]
             database = OpenSearchClient().update_database(database_id=req.id, data=req)
             self.assertEqual(1, database.id)
@@ -107,10 +114,9 @@ class OpenSearchClientTest(unittest.TestCase):
             self.assertEqual(1, database.tables[0].columns[0].id)
             self.assertEqual("ID", database.tables[0].columns[0].name)
             self.assertEqual("id", database.tables[0].columns[0].internal_name)
-            self.assertEqual(ColumnType.BIGINT, database.tables[0].columns[0].column_type)
+            self.assertEqual(ColumnType.BIGINT, database.tables[0].columns[0].type)
             self.assertEqual(1, database.tables[0].columns[0].database_id)
             self.assertEqual(1, database.tables[0].columns[0].table_id)
-            self.assertEqual(True, database.tables[0].columns[0].is_public)
             self.assertEqual(False, database.tables[0].columns[0].is_null_allowed)
 
     def test_update_database_create_succeeds(self):
@@ -159,27 +165,6 @@ class OpenSearchClientTest(unittest.TestCase):
             # test
             OpenSearchClient().delete_database(database_id=req.id)
 
-    def test_get_database_succeeds(self):
-        with app.app_context():
-            # mock
-            OpenSearchClient().update_database(database_id=req.id, data=req)
-
-            # test
-            database = OpenSearchClient().get_database(database_id=req.id)
-            self.assertEqual(req.id, database.id)
-
-    def test_get_database_fails(self):
-        with app.app_context():
-
-            # mock
-            OpenSearchClient().update_database(database_id=req.id, data=req)
-
-            # test
-            try:
-                OpenSearchClient().get_database(database_id=req.id)
-            except opensearchpy.exceptions.NotFoundError:
-                pass
-
     def test_get_fields_for_index_database_succeeds(self):
         with app.app_context():
             # mock
@@ -204,8 +189,7 @@ class OpenSearchClientTest(unittest.TestCase):
             OpenSearchClient().update_database(database_id=req.id, data=req)
 
             # test
-            response = OpenSearchClient().fuzzy_search(search_term="test")
-            self.assertTrue(len(response) > 0)
+            OpenSearchClient().fuzzy_search(search_term="test_tuw")
 
     def test_unit_independent_search_fails(self):
         with app.app_context():

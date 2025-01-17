@@ -1,6 +1,10 @@
 <template>
-  <div v-if="canPersistQuery">
-    <Persist type="subset" :database="database" :query="query" />
+  <div
+    v-if="canPersistQuery">
+    <Persist
+      type="subset"
+      :database="database"
+      :query="query" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>

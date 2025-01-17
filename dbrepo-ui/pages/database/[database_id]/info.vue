@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSchema">
     <DatabaseToolbar />
     <v-window
       v-model="tab">
@@ -58,24 +59,11 @@
                 </div>
               </v-list-item>
               <v-list-item
-                :title="$t('pages.database.visibility.title')"
-                density="compact">
-                {{ databaseVisibility }}
-              </v-list-item>
-              <v-list-item
+                v-if="databaseSize"
                 :title="$t('pages.database.size.title')"
                 density="compact">
                 <div>
                   {{ databaseSize }}
-                </div>
-              </v-list-item>
-              <v-list-item
-                :title="$t('pages.database.owner.title')"
-                density="compact">
-                <div>
-                  <UserBadge
-                    :user="database.owner"
-                    :other-user="user" />
                 </div>
               </v-list-item>
               <v-list-item
@@ -101,11 +89,13 @@
                 </div>
               </v-list-item>
               <v-list-item
-                v-if="access"
-                :title="$t('pages.database.connection.title')"
+                :title="$t('pages.database.owner.title')"
                 density="compact">
-                <pre
-                  class="pb-1">{{ jdbcString }}</pre>
+                <div>
+                  <UserBadge
+                    :user="database.owner"
+                    :other-user="user" />
+                </div>
               </v-list-item>
               <v-list-item
                 v-if="database.contact"
@@ -173,22 +163,12 @@
   </div>
 </template>
 
-<script setup>
-const config = useRuntimeConfig()
-const { database_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}`)
-if (data.value) {
-  const identifierService = useIdentifierService()
-  useServerHead(identifierService.databaseToServerHead(data.value))
-  useServerSeoMeta(identifierService.databaseToServerSeoMeta(data.value))
-}
-</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
+import { sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 
@@ -201,6 +181,7 @@ export default {
   },
   data () {
     return {
+      error: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -245,6 +226,9 @@ export default {
     user () {
       return this.userStore.getUser
     },
+    database () {
+      return this.cacheStore.getDatabase
+    },
     roles () {
       return this.userStore.getRoles
     },
@@ -261,7 +245,7 @@ export default {
       if (!this.user) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
     },
     identifier () {
       if (this.pid) {
@@ -274,9 +258,6 @@ export default {
     },
     access () {
       return this.userStore.getAccess
-    },
-    database () {
-      return this.cacheStore.getDatabase
     },
     pid () {
       return this.$route.query.pid
@@ -337,13 +318,6 @@ export default {
           return { text: null, class: null }
       }
     },
-    jdbcString () {
-      if (!this.database || !this.user) {
-        return
-      }
-      const flags = this.database.container.ui_additional_flags ? this.database.container.ui_additional_flags : ''
-      return `jdbc:${this.database.container.image.jdbc_method}://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (${this.$t('pages.database.connection.username')}=${this.user.username}, ${this.$t('pages.database.connection.password')}=yourpassword)`
-    },
     databaseExtraInfo () {
       return this.$config.public.database.extra
     },
@@ -355,23 +329,17 @@ export default {
       this.database.tables.forEach((t) => { sum += t.data_length })
       return sizeToHumanLabel(sum)
     },
-    databaseVisibility () {
-      if (!this.database) {
-        return null
-      }
-      if (this.database.is_public && this.database.is_schema_public) {
-        return this.$t('pages.database.visibility.open')
-      }
-      if (!this.database.is_public && !this.database.is_schema_public) {
-        return this.$t('pages.database.visibility.closed')
-      }
-      return this.database.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
-    },
     previewImage () {
       if (!this.database) {
         return null
       }
       return this.database.preview_image
+    },
+    canViewSchema () {
+      if (this.error) {
+        return false
+      }
+      return this.database
     }
   }
 }

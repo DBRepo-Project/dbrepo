@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.repository.ContainerRepository;
@@ -64,11 +65,42 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void findByInternalName_succeeds() throws DatabaseNotFoundException {
+    public void findAllPublicOrSchemaPublicByInternalName_succeeds() {
 
         /* test */
-        final Database response = databaseService.findByInternalName(DATABASE_1_INTERNALNAME);
-        assertEquals(DATABASE_1, response);
+        final List<Database> response = databaseService.findAllPublicOrSchemaPublicByInternalName(DATABASE_3_INTERNALNAME);
+        assertEquals(1, response.size());
+        assertEquals(DATABASE_3, response.get(0));
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllPublicOrSchemaPublicByInternalName_privateEmpty_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllPublicOrSchemaPublicByInternalName(DATABASE_1_INTERNALNAME);
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllAtLestReadAccess_privateNoAccessEmpty_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllAtLestReadAccess(USER_4_ID);
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void findAllAtLestReadAccess_privateAccess_succeeds() {
+
+        /* test */
+        final List<Database> response = databaseService.findAllAtLestReadAccess(USER_2_ID);
+        assertEquals(3, response.size());
+        assertEquals(DATABASE_4, response.get(0));
+        assertEquals(DATABASE_2, response.get(1));
+        assertEquals(DATABASE_1, response.get(2));
     }
 
 }

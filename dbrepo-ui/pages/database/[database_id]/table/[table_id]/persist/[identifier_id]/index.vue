@@ -1,14 +1,15 @@
 <template>
-  <div v-if="canCreateIdentifier || canUpdateIdentifier">
+  <div
+    v-if="canCreateIdentifier || canUpdateIdentifier">
     <Persist type="table" :database="database" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import Persist from '~/components/identifier/Persist.vue'
-import { useUserStore } from '~/stores/user.js'
-import { useCacheStore } from '~/stores/cache.js'
+import Persist from '@/components/identifier/Persist.vue'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {

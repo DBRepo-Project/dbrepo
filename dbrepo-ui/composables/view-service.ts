@@ -24,7 +24,7 @@ export const useViewService = (): any => {
     return new Promise<ViewDto>((resolve, reject) => {
       axios.get<ViewDto>(`/api/database/${databaseId}/view/${viewId}`)
         .then((response) => {
-          console.info('Deleted view with id', viewId, 'in database with id', databaseId)
+          console.info('Found view with id', viewId, 'in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {

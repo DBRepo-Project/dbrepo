@@ -9,11 +9,11 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Data
 @Entity
 @Builder
+@EqualsAndHashCode
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode
 @Table(name = "mdb_image_operators")
 public class Operator {
 

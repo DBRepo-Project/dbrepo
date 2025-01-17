@@ -1,6 +1,7 @@
-import { format } from 'date-fns'
 import moment from 'moment'
-import type {AxiosError} from 'axios'
+import {AxiosError, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios'
+import { format } from 'date-fns'
+import { getStatusText } from 'http-status-codes'
 
 
 export function notEmpty(str: string) {
@@ -10,11 +11,55 @@ export function notEmpty(str: string) {
   return str.trim().length > 0
 }
 
+export function max(str: string, len: number) {
+  if (str === null) {
+    return false
+  }
+  return str.trim().length <= len
+}
+
 export function notFile(files: [File[]]) {
   if (!files) {
     return false
   }
   return files.length === 1
+}
+
+export function makeError(status: number, code: string | null, message: string | null ): AxiosError {
+  const config: InternalAxiosRequestConfig = {}
+  const response: AxiosResponse = {
+    data: {
+      status: getStatusText(status).toUpperCase()
+    },
+    status,
+    statusText: getStatusText(status).toUpperCase(),
+    config,
+    headers: {}
+  }
+  return new AxiosError(message, code, undefined, null, response)
+}
+
+export function errorCodeKey(error: AxiosError): any {
+  switch (error?.response?.status) {
+    case 404:
+      return {
+        title: 'error.missing.title',
+        subtitle: 'ERR_' + error?.response?.data?.status,
+        text: 'error.missing.text'
+      }
+    case 403:
+      return {
+        title: 'error.permission.title',
+        subtitle: 'ERR_' + error?.response?.data?.status,
+        text: 'error.permission.text'
+      }
+    default:
+      return {
+        title: 'error.gone.title',
+        subtitle: 'ERR_' + error?.response?.data?.status,
+        text: 'error.gone.text'
+      }
+  }
 }
 
 export function castNumberOptional(str: string): string | number {
@@ -1048,6 +1093,14 @@ export function isActiveMessage(message: any) {
 }
 
 export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
+  if (!error || !('data' in error.response)) {
+    const errorObj: ApiErrorDto = {
+      status: 'NOT_SET',
+      code: 'error.axios.connection',
+      message: ''
+    }
+    return errorObj
+  }
   if (error.code === 'ECONNABORTED') {
     /* timeout */
     const errorObj: ApiErrorDto = {
@@ -1057,15 +1110,7 @@ export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
     }
     return errorObj
   }
-  if ('data' in error.response) {
-    const errorObj: ApiErrorDto = (error.response.data as ApiErrorDto)
-    return errorObj
-  }
-  const errorObj: ApiErrorDto = {
-    status: error.code ? error.code : 'NOT_SET',
-    code: 'error.axios.connection',
-    message: error.message
-  }
+  const errorObj: ApiErrorDto = (error.response.data as ApiErrorDto)
   return errorObj
 }
 

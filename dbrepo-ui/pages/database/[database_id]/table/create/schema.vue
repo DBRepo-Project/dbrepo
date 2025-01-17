@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canCreateTable">
+  <div
+    v-if="canCreateTable">
     <v-toolbar
       flat>
       <v-btn
@@ -79,6 +80,41 @@
                       :variant="inputVariant"
                       :hint="$t('pages.table.subpages.import.description.hint')"
                       :label="$t('pages.table.subpages.import.description.label')" />
+                  </v-col>
+                </v-row>
+                <v-row
+                  dense>
+                  <v-col
+                    md="4">
+                    <v-select
+                      v-model="tableCreate.is_public"
+                      name="public"
+                      :label="$t('pages.database.resource.data.label')"
+                      :hint="$t('pages.database.resource.data.hint', { resource: 'table' })"
+                      persistent-hint
+                      :variant="inputVariant"
+                      :items="dataOptions"
+                      item-title="title"
+                      item-value="value"
+                      :rules="[v => v !== null || $t('validation.required')]"
+                      required>
+                    </v-select>
+                  </v-col>
+                  <v-col
+                    md="4">
+                    <v-select
+                      v-model="tableCreate.is_schema_public"
+                      name="schema-public"
+                      :label="$t('pages.database.resource.schema.label')"
+                      :hint="$t('pages.database.resource.schema.hint', { resource: 'table', schema: 'columns' })"
+                      persistent-hint
+                      :variant="inputVariant"
+                      :items="schemaOptions"
+                      item-title="title"
+                      item-value="value"
+                      :rules="[v => v !== null || $t('validation.required')]"
+                      required>
+                    </v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -171,10 +207,20 @@ export default {
       step: 1,
       table: null,
       error: false,
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
+      ],
       tableCreate: {
         name: null,
         description: null,
         columns: [],
+        is_public: true,
+        is_schema_public: true,
         constraints: {
           uniques: [],
           foreign_keys: [],
@@ -253,6 +299,11 @@ export default {
     }
   },
   mounted () {
+    if (!this.database) {
+      return
+    }
+    this.tableCreate.is_public = this.database.is_public
+    this.tableCreate.is_schema_public = this.database.is_schema_public
   },
   methods: {
     notEmpty,
@@ -273,6 +324,9 @@ export default {
         .catch(({code, message}) => {
           this.loading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(`${code}: ${message}`))
         })
         .finally(() => {

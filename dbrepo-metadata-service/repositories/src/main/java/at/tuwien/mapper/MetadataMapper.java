@@ -236,8 +236,6 @@ public interface MetadataMapper {
     })
     DataCiteDoiRelatedIdentifier relatedIdentifierToDoiRelatedIdentifier(RelatedIdentifier relatedIdentifier);
 
-    Date instantToDate(Instant data);
-
     @Mappings({
             @Mapping(target = "givenNames", source = "person.name.givenNames.value"),
             @Mapping(target = "familyName", source = "person.name.familyName.value"),
@@ -523,11 +521,17 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default TableDto customTableToTableDto(Table data) {
-        return customTableToTableDto(data, true, true, true);
+    default DatabaseAccess userToWriteAllAccess(Database database, User user) {
+        return DatabaseAccess.builder()
+                .type(AccessType.WRITE_ALL)
+                .hdbid(database.getId())
+                .database(database)
+                .huserid(user.getId())
+                .user(user)
+                .build();
     }
 
-    default TableDto customTableToTableDto(Table data, Boolean broker, Boolean statistic, Boolean schema) {
+    default TableDto customTableToTableDto(Table data) {
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -548,18 +552,14 @@ public interface MetadataMapper {
                     .map(this::identifierToIdentifierDto)
                     .toList()));
         }
-        if (broker) {
-            table.setQueueName(data.getQueueName());
-            table.setQueueType("quorum");
-            table.setRoutingKey("dbrepo." + data.getTdbid() + "." + data.getId());
-        }
-        if (statistic) {
-            table.setAvgRowLength(data.getAvgRowLength());
-            table.setMaxDataLength(data.getMaxDataLength());
-            table.setDataLength(data.getDataLength());
-            table.setNumRows(data.getNumRows());
-        }
-        if (schema) {
+        table.setQueueName(data.getQueueName());
+        table.setQueueType("quorum");
+        table.setRoutingKey("dbrepo." + data.getTdbid() + "." + data.getId());
+        table.setAvgRowLength(data.getAvgRowLength());
+        table.setMaxDataLength(data.getMaxDataLength());
+        table.setDataLength(data.getDataLength());
+        table.setNumRows(data.getNumRows());
+        if (table.getConstraints() != null) {
             table.getConstraints()
                     .getPrimaryKey()
                     .forEach(pk -> {
@@ -594,12 +594,12 @@ public interface MetadataMapper {
             if (data.getConstraints().getChecks() == null || data.getConstraints().getChecks().isEmpty()) {
                 table.getConstraints().setChecks(new LinkedHashSet<>());
             }
-            if (data.getColumns() != null) {
-                table.setColumns(new LinkedList<>(data.getColumns()
-                        .stream()
-                        .map(this::tableColumnToColumnDto)
-                        .toList()));
-            }
+        }
+        if (data.getColumns() != null) {
+            table.setColumns(new LinkedList<>(data.getColumns()
+                    .stream()
+                    .map(this::tableColumnToColumnDto)
+                    .toList()));
         }
         return table;
     }
@@ -719,10 +719,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "tableId", source = "table.id"),
             @Mapping(target = "databaseId", source = "table.database.id"),
-            @Mapping(target = "isPublic", source = "table.isSchemaPublic"),
-            @Mapping(target = "description", source = "description"),
-            @Mapping(target = "table", ignore = true),
-            @Mapping(target = "views", ignore = true)
+            @Mapping(target = "description", source = "description")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 
@@ -784,6 +781,7 @@ public interface MetadataMapper {
             @Mapping(target = "attributes.orcid", source = "orcid"),
             @Mapping(target = "attributes.affiliation", source = "affiliation"),
             @Mapping(target = "attributes.theme", source = "theme"),
+            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
@@ -824,14 +822,10 @@ public interface MetadataMapper {
                 .trim();
     }
 
-    @Mappings({
-            @Mapping(target = "database.views", ignore = true)
-    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({
             @Mapping(target = "databaseId", source = "view.vdbid"),
-            @Mapping(target = "isPublic", source = "view.isPublic")
     })
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 
@@ -858,18 +852,7 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    default Boolean onlyIsPublicOrOwner(Boolean isPublic, User caller, User owner, User databaseOwner) {
-        if (isPublic) {
-            return true;
-        }
-        /* private schema */
-        if (caller == null) {
-            return false;
-        }
-        return owner.equals(caller) || databaseOwner.equals(caller);
-    }
-
-    default DatabaseDto customDatabaseToDatabaseDto(Database data, User caller) {
+    default DatabaseDto customDatabaseToDatabaseDto(Database data) {
         if (data == null) {
             return null;
         }
@@ -899,20 +882,19 @@ public interface MetadataMapper {
         if (data.getTables() != null) {
             database.setTables(new LinkedList<>(data.getTables()
                     .stream()
-                    .filter(t -> onlyIsPublicOrOwner(t.getIsSchemaPublic() || t.getIsPublic(), caller, t.getOwner(), t.getDatabase().getOwner()))
                     .map(this::tableToTableBriefDto)
                     .toList()));
         }
         if (data.getViews() != null) {
             database.setViews(new LinkedList<>(data.getViews()
                     .stream()
-                    .filter(v -> onlyIsPublicOrOwner(v.getIsSchemaPublic() || v.getIsPublic(), caller, v.getOwner(), v.getDatabase().getOwner()))
                     .map(this::viewToViewBriefDto)
                     .toList()));
         }
         if (data.getAccesses() != null) {
             database.setAccesses(new LinkedList<>(data.getAccesses()
                     .stream()
+                    .filter(a -> !a.getUser().getIsInternal())
                     .map(this::databaseAccessToDatabaseAccessDto)
                     .toList()));
         }
@@ -925,6 +907,9 @@ public interface MetadataMapper {
         return database;
     }
 
+    @Mappings({
+            @Mapping(target = "ownerId", source = "owner.id")
+    })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);

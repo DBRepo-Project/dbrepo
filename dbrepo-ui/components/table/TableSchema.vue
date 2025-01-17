@@ -281,6 +281,9 @@ export default {
         .catch(({code}) => {
           this.loadingColumnTypes = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
     },

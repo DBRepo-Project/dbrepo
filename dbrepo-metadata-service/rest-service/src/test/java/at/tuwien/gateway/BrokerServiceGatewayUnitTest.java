@@ -113,7 +113,7 @@ public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Test
     public void grantVirtualHostPermission_invalidResponseCode2_fails() {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
+        final ResponseEntity<Void> mock = ResponseEntity.accepted()
                 .build();
 
         /* mock */

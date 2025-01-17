@@ -8,7 +8,7 @@
       <v-spacer />
       <v-btn
         v-if="canCreateDatabase"
-        class="mr-4"
+        class="mr-2"
         prepend-icon="mdi-plus"
         color="secondary"
         variant="flat"
@@ -27,7 +27,8 @@
       v-if="isDatabaseSearch"
       :loading="loading"
       :databases="results" />
-    <div>
+    <div
+      v-else>
       <v-card
         v-for="(result, idx) in results"
         :key="idx"
@@ -38,10 +39,13 @@
         <v-divider class="mx-4" />
         <v-card-title
           class="text-primary text-decoration-underline">
-          <a v-if="link(result)" :href="link(result)">
+          <a
+            v-if="link(result)"
+            :href="link(result)">
             {{ title(result) }}
           </a>
-          <span v-else>
+          <span
+            v-else>
             {{ title(result) }}
           </span>
         </v-card-title>
@@ -52,6 +56,8 @@
           <div
             v-if="tags(result).length > 0"
             class="mt-2 db-tags">
+            <ResourceStatus
+              :resource="result" />
             <v-chip
               v-for="(tag, i) in tags(result)"
               :key="i"
@@ -64,23 +70,15 @@
         </v-card-text>
       </v-card>
     </div>
-    <v-dialog
-      v-model="createDbDialog"
-      persistent
-      max-width="640">
-      <DatabaseCreate @close="closed" />
-    </v-dialog>
   </div>
 </template>
 
 <script>
-import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
-    DatabaseCreate,
     AdvancedSearch
   },
   data () {
@@ -88,7 +86,6 @@ export default {
       results: [],
       type: 'database',
       loading: false,
-      createDbDialog: null,
       userStore: useUserStore()
     }
   },
@@ -134,10 +131,13 @@ export default {
       if (!queryKeys || queryKeys.length !== 1 || !queryKeys.includes('q')) {
         return
       }
+      if (!this.q) {
+        return
+      }
       this.loading = true
       const searchService = useSearchService()
       searchService.fuzzy_search(this.q)
-        .then(({results}) => {
+        .then((results) => {
           this.results = results
           this.loading = false
         })
@@ -196,12 +196,6 @@ export default {
       }
       return this.type === 'identifier'
     },
-    isPublic (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isIdentifier(item)) {
-        return item.is_public
-      }
-      return null
-    },
     title (item) {
       if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
         return item.name
@@ -215,7 +209,7 @@ export default {
         }
         return title
       } else if (this.isUser(item)) {
-        return item.creator.qualified_name
+        return item.owner.qualified_name
       }
       return null
     },
@@ -230,7 +224,7 @@ export default {
         }
         return description
       } else if (this.isColumn(item)) {
-        let text = item.column_type
+        let text = item.type
         if (item.size) {
           text += `(${item.size}${item.d ? ',' + item.d : ''})`
         }
@@ -260,10 +254,6 @@ export default {
     },
     tags (item) {
       const tags = []
-      if (this.isPublic(item) === true || this.isPublic(item) === false) {
-        const text = this.isPublic(item) ? this.$t('toolbars.database.public') : this.$t('toolbars.database.private')
-        tags.push({ color: this.isPublic(item) ? 'success' : null, text })
-      }
       if (this.isDatabase(item)) {
       } else if (this.isTable(item)) {
       } else if (this.isColumn(item)) {
@@ -296,25 +286,14 @@ export default {
       } else if (this.isUnit(item)) {
       } else if (this.isConcept(item)) {
       } else if (this.isUser(item)) {
-        if (item.creator.attributes.orcid) {
+        if (item.owner.attributes.orcid) {
           tags.push({ text: 'ORCID', color: 'success' })
         }
       }
       return tags
     },
-    closed (event) {
-      this.dialog = false
-      if (event.success) {
-        this.$router.push(`/database/${event.database_id}/info`)
-      }
-    },
-    onSearchResult ({results, type}) {
+    onSearchResult (results) {
       this.results = results
-      if (!type) {
-        return
-      }
-      console.debug('search for type', type, ':', results)
-      this.type = type
     },
     capitalizeFirstLetter(string) {
       if (!string) {

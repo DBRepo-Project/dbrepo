@@ -9,76 +9,49 @@
       <v-toolbar-title
         v-if="table">
         <v-skeleton-loader
-          v-if="!table && $vuetify.display.lgAndUp"
+          v-if="!table && $vuetify.display.mdAndUp"
           type="subtitle"
           width="200" />
         <span
-          v-if="table && $vuetify.display.lgAndUp">
+          class="mr-2"
+          v-if="table && $vuetify.display.mdAndUp">
           {{ table.name }}
         </span>
-        <v-chip
-          v-if="table && table.is_public"
-          size="small"
-          class="ml-2"
-          color="success"
-          :text="$t('toolbars.database.public')"
-          variant="outlined" />
-        <v-chip
-          v-if="table && !table.is_public"
-          size="small"
-          class="ml-2"
-          :color="colorVariant"
-          variant="outlined"
-          :text="$t('toolbars.database.private')"
-          flat />
+        <ResourceStatus
+          :size="$vuetify.display.mdAndUp ? 'small' : 'default'"
+          :resource="table" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canImportCsv"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
+        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.mdAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
       <v-btn
         v-if="canExecuteQuery"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/subset/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canCreateView"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-view-carousel' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        :text="($vuetify.display.mdAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
-        v-if="canUpdateTable"
-        class="mr-2"
-        variant="flat"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-edit' : null"
-        color="warning"
-        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.update-table.xl') + ' ' : '') + $t('toolbars.database.update-table.permanent')"
-        @click="updateTableDialog = true" />
-      <v-btn
-        v-if="canDropTable"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
-        color="error"
-        variant="flat"
-        :text="($vuetify.display.lgAndUp ? 'Drop ' : '') + 'Table'"
-        class="mr-2"
-        @click="dropTableDialog = true" />
-      <v-btn
         v-if="canGetPid"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
-        :text="($vuetify.display.lgAndUp ? 'Get ' : '') + 'PID'"
+        :text="($vuetify.display.mdAndUp ? 'Get ' : '') + 'PID'"
         class="mr-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`" />
       <template v-slot:extension>
@@ -94,37 +67,24 @@
             v-if="canViewSchema"
             :text="$t('navigation.schema')"
             :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`" />
+          <v-tab
+            v-if="canUpdateTable"
+            :text="$t('navigation.settings')"
+            :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/settings`" />
         </v-tabs>
       </template>
     </v-toolbar>
-    <v-dialog
-      v-model="dropTableDialog"
-      max-width="640">
-      <DropTable
-        @close="closeDelete" />
-    </v-dialog>
-    <v-dialog
-      v-model="updateTableDialog"
-      max-width="640">
-      <UpdateTable
-        :table="table"
-        @close="closeUpdate" />
-    </v-dialog>
   </div>
 </template>
 
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
-import DropTable from '@/components/dialogs/DropTable.vue'
-import UpdateTable from '@/components/dialogs/UpdateTable.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
-    EditTuple,
-    DropTable,
-    UpdateTable
+    EditTuple
   },
   data () {
     return {
@@ -133,7 +93,6 @@ export default {
       error: false,
       edit: false,
       dropTableDialog: false,
-      updateTableDialog: false,
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -173,16 +132,6 @@ export default {
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.roles.includes('execute-query')
     },
-    canDropTable () {
-      if (!this.roles || !this.table || !this.user) {
-        return false
-      }
-      if (this.roles.includes('delete-foreign-table')) {
-        return true
-      }
-      const tableService = useTableService()
-      return tableService.isOwner(this.table, this.user) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
-    },
     canCreateView () {
       if (!this.roles || !this.table || !this.user) {
         return false
@@ -200,7 +149,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canViewSchema () {
       if (!this.table) {
@@ -212,7 +161,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     canImportCsv () {
       if (!this.roles || !this.table || !this.user) {
@@ -229,27 +178,6 @@ export default {
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
-    },
-    isContrastTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
-    },
-    isDarkTheme () {
-      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
-    },
-    colorVariant () {
-      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
-    },
-  },
-  methods: {
-    closeDelete ({success}) {
-      this.dropTableDialog = false
-      if (success) {
-        this.cacheStore.reloadDatabase()
-        this.$router.push(`/database/${this.$route.params.database_id}/table`)
-      }
-    },
-    closeUpdate () {
-      this.updateTableDialog = false
     }
   }
 }

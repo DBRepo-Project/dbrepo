@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 
     <description>Service that manages the data</description>
 
@@ -60,6 +60,8 @@
         <!-- see https://github.com/apache/spark/blob/cde8e4a82e20a363861f451ebd5138efb3194ab8/pom.xml -->
         <hadoop.version>3.4.0</hadoop.version>
         <jakarta-servlet.version>5.0.0</jakarta-servlet.version>
+        <sonar.coverage.jacoco.xmlReportPaths>./report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>

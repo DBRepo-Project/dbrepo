@@ -5,7 +5,7 @@ import requests_mock
 from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import UserAttributes, User, View, ViewColumn, ColumnType, UserBrief
+from dbrepo.api.dto import View, ViewColumn, ColumnType, UserBrief
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -31,8 +31,15 @@ class ViewUnitTest(unittest.TestCase):
                         owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                         is_public=True,
                         is_schema_public=True,
-                        columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
-                                            column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
+                        columns=[ViewColumn(id=1,
+                                            ord=0,
+                                            name="id",
+                                            internal_name="id",
+                                            database_id=1,
+                                            auto_generated=False,
+                                            type=ColumnType.BIGINT,
+                                            is_public=True,
+                                            is_null_allowed=False)],
                         identifiers=[])]
             # mock
             mock.get('/api/database/1/view', json=[exp[0].model_dump()])
@@ -62,8 +69,15 @@ class ViewUnitTest(unittest.TestCase):
                        owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                        is_public=True,
                        is_schema_public=True,
-                       columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
-                                           column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
+                       columns=[ViewColumn(id=1,
+                                           ord=0,
+                                           name="id",
+                                           internal_name="id",
+                                           database_id=1,
+                                           auto_generated=False,
+                                           type=ColumnType.BIGINT,
+                                           is_public=True,
+                                           is_null_allowed=False)],
                        identifiers=[])
             # mock
             mock.get('/api/database/1/view/3', json=exp.model_dump())
@@ -103,8 +117,15 @@ class ViewUnitTest(unittest.TestCase):
                        owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                        is_public=True,
                        is_schema_public=True,
-                       columns=[ViewColumn(id=1, name="id", internal_name="id", database_id=1, auto_generated=False,
-                                           column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False)],
+                       columns=[ViewColumn(id=1,
+                                           ord=0,
+                                           name="id",
+                                           internal_name="id",
+                                           database_id=1,
+                                           auto_generated=False,
+                                           type=ColumnType.BIGINT,
+                                           is_public=True,
+                                           is_null_allowed=False)],
                        identifiers=[])
             # mock
             mock.post('/api/database/1/view', json=exp.model_dump(), status_code=201)

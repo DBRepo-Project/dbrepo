@@ -14,7 +14,10 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -22,7 +25,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/unit")
-public class UnitEndpoint {
+public class UnitEndpoint extends AbstractEndpoint {
 
     private final UnitService unitService;
     private final MetadataMapper metadataMapper;
@@ -47,12 +50,11 @@ public class UnitEndpoint {
     })
     public ResponseEntity<List<UnitDto>> findAll() {
         log.debug("endpoint list units");
-        final List<UnitDto> dtos = unitService.findAll()
-                .stream()
-                .map(metadataMapper::tableColumnUnitToUnitDto)
-                .toList();
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(unitService.findAll()
+                        .stream()
+                        .map(metadataMapper::tableColumnUnitToUnitDto)
+                        .toList());
     }
 
 }

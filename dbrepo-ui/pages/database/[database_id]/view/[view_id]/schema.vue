@@ -63,7 +63,6 @@ export default {
   data () {
     return {
       loading: false,
-      view: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -89,7 +88,7 @@ export default {
       ],
       headers: [
         { value: 'internal_name', title: this.$t('pages.table.subpages.schema.internal-name.title') },
-        { value: 'column_type', title: this.$t('pages.table.subpages.schema.column-type.title') },
+        { value: 'type', title: this.$t('pages.table.subpages.schema.column-type.title') },
         { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
         { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
         { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
@@ -100,15 +99,15 @@ export default {
       cacheStore: useCacheStore()
     }
   },
-  mounted () {
-    this.fetchView()
-  },
   computed: {
     user () {
       return this.userStore.getUser
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    view () {
+      return this.cacheStore.getView
     },
     access () {
       return this.userStore.getAccess
@@ -119,23 +118,17 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
-    },
     canViewSchema () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_schema_public) {
+      if (this.view.is_schema_public) {
         return true
       }
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.cachedView.owned_by === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     },
     roles () {
       return this.userStore.getRoles
@@ -151,9 +144,9 @@ export default {
   },
   methods: {
     extra (column) {
-      if (column.column_type === 'float') {
+      if (column.type === 'float') {
         return `precision=${column.size}`
-      } else if (['decimal', 'double'].includes(column.column_type)) {
+      } else if (['decimal', 'double'].includes(column.type)) {
         let extra = ''
         if (column.size !== null) {
           extra += `size=${column.size}`
@@ -165,11 +158,11 @@ export default {
           extra += `d=${column.d}`
         }
         return extra
-      } else if (column.column_type === 'enum') {
+      } else if (column.type === 'enum') {
         return `(${column.enums.join(', ')})`
-      } else if (column.column_type === 'set') {
+      } else if (column.type === 'set') {
         return `(${column.sets.join(', ')})`
-      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.column_type)) {
+      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.type)) {
         return column.size !== null ? `size=${column.size}` : ''
       }
       return null
@@ -179,23 +172,6 @@ export default {
     },
     hasConcept (item) {
       return item.concept && 'uri' in item.concept
-    },
-    fetchView () {
-      this.loading = true
-      const viewService = useViewService()
-      viewService.findOne(this.$route.params.database_id, this.$route.params.view_id)
-        .then((view) => {
-          this.view = view
-          this.loading = false
-        })
-        .catch(({code}) => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.loading = false
-        })
     }
   }
 }

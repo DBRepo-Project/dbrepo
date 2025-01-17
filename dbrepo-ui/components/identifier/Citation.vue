@@ -68,9 +68,12 @@ export default {
           this.loading = false
         })
         .catch(({code, message}) => {
-          const toast = useToastInstance()
-          toast.error(this.$t(`${code}: ${message}`))
           this.loading = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(`${code}: ${message}`))
         })
     }
   }
