@@ -83,7 +83,7 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function findOne(id: number): Promise<DatabaseDto | null> {
+  async function findOne(id: number, rawError: boolean = false): Promise<DatabaseDto | null> {
     const axios = useAxiosInstance();
     console.debug('find database with id', id);
     return new Promise((resolve, reject) => {
@@ -94,6 +94,9 @@ export const useDatabaseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find database', error);
+          if (rawError) {
+            reject(error)
+          }
           reject(axiosErrorToApiError(error));
         });
     });

@@ -13,7 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @ToString
 public class TableColumnEntityDto {
 
@@ -33,7 +33,6 @@ public class TableColumnEntityDto {
     private Long columnId;
 
     @NotBlank
-    @EqualsAndHashCode.Include
     @Schema(example = "https://www.wikidata.org/entity/Q1686799")
     private String uri;
 

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
     email            character varying(255) NOT NULL,
     orcid            character varying(255),
     affiliation      character varying(255),
+    is_internal      BOOLEAN                NOT NULL DEFAULT FALSE,
     mariadb_password character varying(255) NOT NULL,
     theme            character varying(255) NOT NULL default ('light'),
     language         character varying(3)   NOT NULL default ('en'),

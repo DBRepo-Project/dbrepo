@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Annotated
 
-from pydantic import BaseModel, PlainSerializer, Field
+from pydantic import BaseModel, PlainSerializer
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -117,7 +117,7 @@ class ColumnBrief(BaseModel):
     database_id: int
     table_id: int
     internal_name: str
-    column_type: ColumnType
+    type: ColumnType
 
 
 class TableBrief(BaseModel):
@@ -656,7 +656,7 @@ class ViewBrief(BaseModel):
     owned_by: str
 
 
-class Concept(BaseModel):
+class ConceptBrief(BaseModel):
     id: int
     uri: str
     name: Optional[str] = None
@@ -691,7 +691,7 @@ class TableStatistics(BaseModel):
     columns: dict[str, ColumnStatistic]
 
 
-class Unit(BaseModel):
+class UnitBrief(BaseModel):
     id: int
     uri: str
     name: Optional[str] = None
@@ -886,18 +886,18 @@ class Column(BaseModel):
     name: str
     database_id: int
     table_id: int
+    ord: int
     internal_name: str
-    column_type: ColumnType
-    is_public: bool
     is_null_allowed: bool
+    type: ColumnType
     alias: Optional[str] = None
     description: Optional[str] = None
     size: Optional[int] = None
     d: Optional[int] = None
     mean: Optional[float] = None
     median: Optional[float] = None
-    concept: Optional[Concept] = None
-    unit: Optional[Unit] = None
+    concept: Optional[ConceptBrief] = None
+    unit: Optional[UnitBrief] = None
     enums: Optional[List[str]] = field(default_factory=list)
     sets: Optional[List[str]] = field(default_factory=list)
     index_length: Optional[int] = None
@@ -915,16 +915,15 @@ class ViewColumn(BaseModel):
     name: str
     database_id: int
     internal_name: str
-    column_type: ColumnType
-    is_public: bool
+    type: ColumnType
     is_null_allowed: bool
     alias: Optional[str] = None
     size: Optional[int] = None
     d: Optional[int] = None
     mean: Optional[float] = None
     median: Optional[float] = None
-    concept: Optional[Concept] = None
-    unit: Optional[Unit] = None
+    concept: Optional[ConceptBrief] = None
+    unit: Optional[UnitBrief] = None
     index_length: Optional[int] = None
     length: Optional[int] = None
 
@@ -988,9 +987,10 @@ class DatabaseBrief(BaseModel):
     internal_name: str
     description: Optional[str] = None
     is_public: bool
+    is_schema_public: bool
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     contact: UserBrief
-    owner: UserBrief
+    owner_id: str
 
 
 class Unique(BaseModel):

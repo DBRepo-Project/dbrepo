@@ -20,8 +20,6 @@ if (process.env.NODE_ENV === 'development') {
 /**
  * https://nuxt.com/docs/guide/concepts/rendering#hybrid-rendering
  */
-const routeRules = {}
-
 export default defineNuxtConfig({
   app: {
     head: {
@@ -104,8 +102,6 @@ export default defineNuxtConfig({
       links: {}
     }
   },
-
-  routeRules,
 
   devServer: {
     port: 3001

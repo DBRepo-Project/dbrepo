@@ -14,29 +14,29 @@
               md="6">
               <v-select
                 v-model="modify.is_public"
-                :items="visibilities"
+                :items="dataOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
                 :rules="[
                   v => v !== null || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.data.label')"
-                :hint="$t('pages.database.subpages.create.data.hint')" />
+                :label="$t('pages.database.resource.data.label')"
+                :hint="$t('pages.database.resource.data.hint', { resource: 'view' })" />
             </v-col>
             <v-col
               md="6">
               <v-select
                 v-model="modify.is_schema_public"
-                :items="visibilities"
+                :items="schemaOptions"
                 persistent-hint
                 :variant="inputVariant"
                 required
                 :rules="[
                   v => v !== null || $t('validation.required')
                 ]"
-                :label="$t('pages.database.subpages.create.schema.label')"
-                :hint="$t('pages.database.subpages.create.schema.hint')" />
+                :label="$t('pages.database.resource.schema.label')"
+                :hint="$t('pages.database.resource.schema.hint', { resource: 'view', schema: 'columns' })" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
@@ -82,9 +82,13 @@ export default {
       loadingUsers: false,
       users: [],
       error: false,
-      visibilities: [
-        { title: this.$t('toolbars.database.public'), value: true },
-        { title: this.$t('toolbars.database.private'), value: false },
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       modify: {
         is_public: this.view.is_public,
@@ -122,25 +126,6 @@ export default {
     cancel () {
       this.$emit('close', { success: false })
     },
-    updateVisibility () {
-      this.loading = true
-      const viewService = useViewService()
-      viewService.update(this.$route.params.database_id, this.$route.params.view_id, this.modify)
-        .then(() => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.success(this.$t('success.view.modified'))
-          this.$emit('close', { success: true })
-        })
-        .catch(({code, message}) => {
-          this.loading = false
-          const toast = useToastInstance()
-          toast.error(message)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    }
   }
 }
 </script>

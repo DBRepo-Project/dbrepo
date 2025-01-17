@@ -33,7 +33,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -87,14 +90,13 @@ public interface DataMapper {
      * @param database  The database.
      * @param resultSet The inspected schema.
      * @return The database containing the updated view/table.
-     * @throws SQLException
+     * @throws SQLException If the result set does not contain the requested parameter.
      */
     default ViewDto schemaResultSetToView(DatabaseDto database, ResultSet resultSet) throws SQLException {
         return ViewDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
                 .vdbid(database.getId())
-                .database(database)
                 .isInitialView(false)
                 .isPublic(database.getIsPublic())
                 .query(resultSet.getString(9))
@@ -124,7 +126,7 @@ public interface DataMapper {
         return statistic;
     }
 
-    default TableDto resultSetToTable(ResultSet resultSet, TableDto table, QueryConfig queryConfig) throws SQLException {
+    default TableDto resultSetToTable(ResultSet resultSet, TableDto table) throws SQLException {
         final ColumnDto column = ColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
                 .isNullAllowed(resultSet.getString(3).equals("YES"))
@@ -132,7 +134,6 @@ public interface DataMapper {
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
-                .table(table)
                 .tableId(table.getId())
                 .databaseId(table.getTdbid())
                 .description(resultSet.getString(11))
@@ -181,7 +182,7 @@ public interface DataMapper {
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
-                .databaseId(view.getDatabase().getId())
+                .databaseId(view.getVdbid())
                 .build();
         /* fix boolean and set size for others */
         if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
@@ -193,7 +194,7 @@ public interface DataMapper {
         }
         view.getColumns()
                 .add(column);
-        log.trace("parsed view {}.{} column: {}", view.getDatabase().getInternalName(), view.getInternalName(), column.getInternalName());
+        log.trace("parsed view column: {}.{}", view.getInternalName(), column.getInternalName());
         return view;
     }
 
@@ -320,7 +321,7 @@ public interface DataMapper {
         if (!resultSet.next()) {
             throw new TableNotFoundException("Failed to find table in the information schema");
         }
-        final TableDto table = TableDto.builder()
+        return TableDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
                 .isVersioned(resultSet.getString(2).equals("SYSTEM VERSIONED"))
@@ -343,7 +344,6 @@ public interface DataMapper {
                         .build())
                 .isPublic(database.getIsPublic())
                 .build();
-        return table;
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, ColumnTypeDto columnType, int idx, Object value) throws SQLException {

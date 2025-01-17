@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized

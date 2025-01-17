@@ -90,13 +90,14 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     @Override
     public Dataset<Row> getData(PrivilegedDatabaseDto database, QueryDto subset, Long page, Long size)
             throws ViewMalformedException, SQLException, QueryMalformedException, TableNotFoundException {
-        if (!viewService.existsByName(database, metadataMapper.queryDtoToViewName(subset))) {
-            log.warn("Missing internal view {} for subset with id {}: create it from subset query", metadataMapper.queryDtoToViewName(subset), subset.getId());
+        final String viewName = metadataMapper.queryDtoToViewName(subset);
+        if (!viewService.existsByName(database, viewName)) {
+            log.warn("Missing internal view {} for subset with id {}: create it from subset query", viewName, subset.getId());
             viewService.create(database, subset);
         } else {
-            log.debug("internal view {} for subset with id {} exists", metadataMapper.queryDtoToViewName(subset), subset.getId());
+            log.debug("internal view {}.{} for subset with id {} exists", database.getInternalName(), viewName, subset.getId());
         }
-        return tableService.getData(database, metadataMapper.queryDtoToViewName(subset), subset.getExecution(), page, size, null, null);
+        return tableService.getData(database, viewName, subset.getExecution(), page, size, null, null);
     }
 
     @Override

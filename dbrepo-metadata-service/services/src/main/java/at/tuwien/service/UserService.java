@@ -1,9 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.EmailExistsException;
+import at.tuwien.exception.UserExistsException;
+import at.tuwien.exception.UserNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +28,8 @@ public interface UserService {
      * @throws UserNotFoundException The user with this username was not found in the metadata database.
      */
     User findByUsername(String username) throws UserNotFoundException;
+
+    List<User> findAllInternalUsers();
 
     /**
      * Finds a specific user in the metadata database by given id.

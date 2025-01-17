@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canInsertTableData">
+  <div
+    v-if="canInsertTableData">
     <v-toolbar flat>
       <v-btn
         class="mr-2"
@@ -10,214 +11,219 @@
       <v-toolbar-title
         :text="$t('pages.table.subpages.import.title')"/>
     </v-toolbar>
-    <v-card
-      variant="flat"
-      rounded="0">
-      <v-card-text>
-        <v-row>
-          <v-col
-            md="8">
-            <v-alert
-              border="start"
-              color="info">
-              {{ $t('pages.table.subpages.import.dataset.text') }}
-              <NuxtLink
-                :href="`/database/${$route.params.database_id}/table/create/schema`">
-                {{ $t('pages.table.subpages.import.schema.text') }}
-              </NuxtLink>
-            </v-alert>
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-text>
-        <v-stepper
-          vertical
-          variant="flat">
-          <v-stepper-header>
-            <v-stepper-item
-              :title="$t('pages.table.subpages.import.metadata.title')"
-              :complete="validStep1"
-              :value="1"/>
-          </v-stepper-header>
-          <v-stepper-window
-            direction="vertical">
-            <v-form
-              ref="form"
-              v-model="validStep1"
-              :disabled="step > 4"
-              @submit.prevent="submit">
+    <v-form
+      ref="form"
+      v-model="valid"
+      @submit.prevent="submit">
+      <v-card
+        variant="flat"
+        rounded="0">
+        <v-card-text>
+          <v-row>
+            <v-col
+              md="8">
+              <v-alert
+                border="start"
+                color="info">
+                {{ $t('pages.table.subpages.import.dataset.text') }}
+                <NuxtLink
+                  :href="`/database/${$route.params.database_id}/table/create/schema`">
+                  {{ $t('pages.table.subpages.import.schema.text') }}
+                </NuxtLink>
+              </v-alert>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-stepper
+            vertical
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :title="$t('pages.table.subpages.import.metadata.title')"
+                :complete="validStep1"
+                :value="1"/>
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-form
+                ref="form"
+                v-model="validStep1"
+                :disabled="step > 4"
+                @submit.prevent="submit">
+                <v-container>
+                  <v-row
+                    dense>
+                    <v-col md="4">
+                      <v-text-field
+                        v-model="tableCreate.name"
+                        :rules="[
+                          v => notEmpty(v) || $t('validation.required'),
+                          v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
+                        ]"
+                        required
+                        clearable
+                        :error-messages="!validTableName ? [$t('validation.table.exists')] : []"
+                        persistent-hint
+                        :variant="inputVariant"
+                        :hint="$t('pages.table.subpages.import.name.hint')"
+                        :label="$t('pages.table.subpages.import.name.label')"/>
+                    </v-col>
+                    <v-col md="4">
+                      <v-text-field
+                        v-model="generatedTableName"
+                        :rules="[
+                          v => notEmpty(v) || $t('validation.required'),
+                          v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
+                        ]"
+                        disabled
+                        clearable
+                        counter="64"
+                        persistent-counter
+                        persistent-hint
+                        :variant="inputVariant"
+                        :hint="$t('pages.table.subpages.import.generated.hint')"
+                        :label="$t('pages.table.subpages.import.generated.label')"/>
+                    </v-col>
+                  </v-row>
+                  <v-row
+                    dense>
+                    <v-col md="8">
+                      <v-textarea
+                        v-model="tableCreate.description"
+                        rows="2"
+                        :rules="[
+                          v => (!!v || v.length <= 180) || ($t('validation.max-length') + 180),
+                        ]"
+                        clearable
+                        counter="180"
+                        persistent-counter
+                        persistent-hint
+                        :variant="inputVariant"
+                        :hint="$t('pages.table.subpages.import.description.hint')"
+                        :label="$t('pages.table.subpages.import.description.label')"/>
+                    </v-col>
+                  </v-row>
+                  <v-row
+                    dense>
+                    <v-col
+                      md="4">
+                      <v-select
+                        v-model="tableCreate.is_public"
+                        name="public"
+                        :label="$t('pages.database.resource.data.label')"
+                        :hint="$t('pages.database.resource.data.hint', { resource: 'table' })"
+                        persistent-hint
+                        :variant="inputVariant"
+                        :items="dataOptions"
+                        item-title="title"
+                        item-value="value"
+                        :rules="[v => v !== null || $t('validation.required')]"
+                        required>
+                      </v-select>
+                    </v-col>
+                    <v-col
+                      md="4">
+                      <v-select
+                        v-model="tableCreate.is_schema_public"
+                        name="schema-public"
+                        :label="$t('pages.database.resource.schema.label')"
+                        :hint="$t('pages.database.resource.schema.hint', { resource: 'table', schema: 'columns' })"
+                        persistent-hint
+                        :variant="inputVariant"
+                        :items="schemaOptions"
+                        item-title="title"
+                        item-value="value"
+                        :rules="[v => v !== null || $t('validation.required')]"
+                        required>
+                      </v-select>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-form>
+            </v-stepper-window>
+            <TableImport
+              :create="true"
+              :disabled="!validStep1 || step > 4"
+              :table="table"
+              @analyse="onAnalyse"/>
+            <v-stepper-header>
+              <v-stepper-item
+                :title="$t('pages.table.subpages.import.preview.title')"
+                :complete="validStep4"
+                :value="4"/>
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container
+                v-if="step >= 4">
+                <TableSchema
+                  ref="schema"
+                  :back="false"
+                  :disabled="step > 4"
+                  :loading="loading"
+                  :submit-text="$t('navigation.continue')"
+                  :columns="tableCreate.columns"
+                  @close="createEmptyTableAndImport"/>
+              </v-container>
+            </v-stepper-window>
+            <v-stepper-header>
+              <v-stepper-item
+                :title="$t('pages.table.subpages.import.summary.title')"
+                :value="5"/>
+            </v-stepper-header>
+            <v-stepper-window
+              v-if="step >= 5"
+              direction="vertical">
               <v-container>
-                <v-row
-                  dense>
-                  <v-col md="4">
-                    <v-text-field
-                      v-model="tableCreate.name"
-                      :rules="[
-                        v => notEmpty(v) || $t('validation.required'),
-                        v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
-                      ]"
-                      required
-                      clearable
-                      :error-messages="!validTableName ? [$t('validation.table.exists')] : []"
-                      persistent-hint
-                      :variant="inputVariant"
-                      :hint="$t('pages.table.subpages.import.name.hint')"
-                      :label="$t('pages.table.subpages.import.name.label')"/>
-                  </v-col>
-                  <v-col md="4">
-                    <v-text-field
-                      v-model="generatedTableName"
-                      :rules="[
-                        v => notEmpty(v) || $t('validation.required'),
-                        v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
-                      ]"
-                      disabled
-                      clearable
-                      counter="64"
-                      persistent-counter
-                      persistent-hint
-                      :variant="inputVariant"
-                      :hint="$t('pages.table.subpages.import.generated.hint')"
-                      :label="$t('pages.table.subpages.import.generated.label')"/>
+                <v-row dense>
+                  <v-col
+                    md="8">
+                    <v-alert
+                      border="start"
+                      color="success">
+                      {{ $t('pages.table.subpages.create.summary.text') }}
+                      <strong>
+                        {{ table.internal_name }}
+                      </strong>
+                    </v-alert>
                   </v-col>
                 </v-row>
-                <v-row
-                  dense>
-                  <v-col md="8">
-                    <v-textarea
-                      v-model="tableCreate.description"
-                      rows="2"
-                      :rules="[
-                        v => (!!v || v.length <= 180) || ($t('validation.max-length') + 180),
-                      ]"
-                      clearable
-                      counter="180"
-                      persistent-counter
-                      persistent-hint
-                      :variant="inputVariant"
-                      :hint="$t('pages.table.subpages.import.description.hint')"
-                      :label="$t('pages.table.subpages.import.description.label')"/>
-                  </v-col>
-                </v-row>
-                <v-row
-                  dense>
-                  <v-col
-                    md="4">
-                    <v-select
-                      v-model="tableCreate.is_public"
-                      name="public"
-                      :label="$t('pages.database.subpages.create.data.label')"
-                      :hint="$t('pages.database.subpages.create.data.hint')"
-                      persistent-hint
-                      :variant="inputVariant"
-                      :items="visibilityOptions"
-                      item-title="name"
-                      item-value="value"
-                      :rules="[v => v !== null || $t('validation.required')]"
-                      required>
-                    </v-select>
-                  </v-col>
-                  <v-col
-                    md="4">
-                    <v-select
-                      v-model="tableCreate.is_schema_public"
-                      name="schema-public"
-                      :label="$t('pages.database.subpages.create.schema.label')"
-                      :hint="$t('pages.database.subpages.create.schema.hint')"
-                      persistent-hint
-                      :variant="inputVariant"
-                      :items="visibilityOptions"
-                      item-title="name"
-                      item-value="value"
-                      :rules="[v => v !== null || $t('validation.required')]"
-                      required>
-                    </v-select>
+                <v-row>
+                  <v-col>
+                    <v-btn
+                      class="mb-1 mr-2"
+                      color="tertiary"
+                      size="small"
+                      variant="flat"
+                      :loading="loadingImport"
+                      :text="$t('navigation.import')"
+                      @click="onImport"/>
+                    <v-btn
+                      class="mb-1"
+                      color="secondary"
+                      size="small"
+                      variant="flat"
+                      :loading="loadingContinue"
+                      :text="$t('navigation.view')"
+                      @click="onContinue"/>
                   </v-col>
                 </v-row>
               </v-container>
-            </v-form>
-          </v-stepper-window>
-          <TableImport
-            :create="true"
-            :disabled="!validStep1 || step > 4"
-            :table="table"
-            @analyse="onAnalyse"/>
-          <v-stepper-header>
-            <v-stepper-item
-              :title="$t('pages.table.subpages.import.preview.title')"
-              :complete="validStep4"
-              :value="4"/>
-          </v-stepper-header>
-          <v-stepper-window
-            direction="vertical">
-            <v-container
-              v-if="step >= 4">
-              <TableSchema
-                ref="schema"
-                :back="false"
-                :disabled="step > 4"
-                :loading="loading"
-                :submit-text="$t('navigation.continue')"
-                :columns="tableCreate.columns"
-                @close="createEmptyTableAndImport"/>
-            </v-container>
-          </v-stepper-window>
-          <v-stepper-header>
-            <v-stepper-item
-              :title="$t('pages.table.subpages.import.summary.title')"
-              :value="5"/>
-          </v-stepper-header>
-          <v-stepper-window
-            v-if="step >= 5"
-            direction="vertical">
-            <v-container>
-              <v-row dense>
-                <v-col
-                  md="8">
-                  <v-alert
-                    border="start"
-                    color="success">
-                    {{ $t('pages.table.subpages.create.summary.text') }}
-                    <strong>
-                      {{ table.internal_name }}
-                    </strong>
-                  </v-alert>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col>
-                  <v-btn
-                    class="mb-1 mr-2"
-                    color="tertiary"
-                    size="small"
-                    variant="flat"
-                    :loading="loadingImport"
-                    :text="$t('navigation.import')"
-                    @click="onImport"/>
-                  <v-btn
-                    class="mb-1"
-                    color="secondary"
-                    size="small"
-                    variant="flat"
-                    :loading="loadingContinue"
-                    :text="$t('navigation.view')"
-                    @click="onContinue"/>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-stepper-window>
-        </v-stepper>
-      </v-card-text>
-    </v-card>
+            </v-stepper-window>
+          </v-stepper>
+        </v-card-text>
+      </v-card>
+    </v-form>
     <v-breadcrumbs :items="items" class="pa-0 mt-2"/>
   </div>
 </template>
 
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
-import {notEmpty} from '@/utils'
-import {useUserStore} from '@/stores/user'
-import {useCacheStore} from '@/stores/cache'
+import { notEmpty } from '@/utils'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -226,6 +232,7 @@ export default {
   data() {
     return {
       step: 1,
+      valid: false,
       validStep1: false,
       validStep2: false,
       validStep3: false,
@@ -235,15 +242,13 @@ export default {
       loadingImport: false,
       fileModel: null,
       rowCount: null,
-      visibilityOptions: [
-        {
-          name: this.$t('toolbars.database.public'),
-          value: true
-        },
-        {
-          name: this.$t('toolbars.database.private'),
-          value: false
-        }
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       file: {
         filename: null,
@@ -376,7 +381,7 @@ export default {
         .then((table) => {
           this.table = table
           const toast = useToastInstance()
-          toast.success(this.$t('success.table.created'))
+          toast.success(this.$t('success.table.created', { table: table.internal_name }))
           this.step = 5
         })
         .catch(({code, message}) => {

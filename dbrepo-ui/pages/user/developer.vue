@@ -91,8 +91,8 @@
 import UserToolbar from '@/components/user/UserToolbar.vue'
 import EditMaintenanceMessage from '@/components/dialogs/EditMaintenanceMessage.vue'
 import { formatTimestampUTCLabel, isActiveMessage, timestampsToHumanDifference } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

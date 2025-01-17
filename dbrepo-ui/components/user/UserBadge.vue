@@ -5,12 +5,15 @@
       class="mr-1"
       :orcid="orcid" />
     <span v-if="isSelf">
-      <v-badge
-        inline
-        content="you"
-        color="code">
-        {{ creatorName }}
-      </v-badge>
+      {{ creatorName }}
+      <v-chip
+        size="x-small"
+        inline>
+        {{ $t('navigation.you') }}
+        <v-icon
+          icon="mdi-account-outline"
+          end />
+      </v-chip>
     </span>
     <span
       v-else>

@@ -3,7 +3,7 @@ import time
 import unittest
 
 import jwt
-from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, Concept, Unit, \
+from dbrepo.api.dto import Database, Table, Constraints, Column, ColumnType, ConceptBrief, UnitBrief, \
     UserBrief, ContainerBrief, ImageBrief
 
 from app import app
@@ -32,12 +32,21 @@ req = Database(id=1,
                              routing_key="dbrepo.1.1",
                              is_public=True,
                              is_schema_public=True,
-                             columns=[Column(id=1, database_id=1, table_id=1, name="ID", internal_name="id",
-                                             column_type=ColumnType.BIGINT, is_public=True, is_null_allowed=False,
-                                             size=20, d=0,
-                                             concept=Concept(id=1, uri="http://www.wikidata.org/entity/Q2221906"),
-                                             unit=Unit(id=1,
-                                                       uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
+                             columns=[Column(id=1,
+                                             database_id=1,
+                                             table_id=1,
+                                             ord=0,
+                                             name="ID",
+                                             internal_name="id",
+                                             type=ColumnType.BIGINT,
+                                             is_public=True,
+                                             is_null_allowed=False,
+                                             size=20,
+                                             d=0,
+                                             concept=ConceptBrief(id=1,
+                                                                  uri="http://www.wikidata.org/entity/Q2221906"),
+                                             unit=UnitBrief(id=1,
+                                                            uri="http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius"),
                                              val_min=0,
                                              val_max=10)]
                              )])

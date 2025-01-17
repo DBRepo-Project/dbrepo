@@ -37,7 +37,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void update_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
-        final ResponseEntity<DatabaseDto> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
+        final ResponseEntity<DatabaseDto> mock = ResponseEntity.accepted()
                 .build();
 
         /* mock */
@@ -109,7 +109,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void delete_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
+        final ResponseEntity<Void> mock = ResponseEntity.accepted()
                 .build();
 
         /* mock */

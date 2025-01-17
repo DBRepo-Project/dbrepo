@@ -1,21 +1,17 @@
 package at.tuwien.api.database.table.columns.concepts;
 
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 
-import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized

@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canView">
     <DatabaseToolbar
       ref="toolbar" />
     <v-window
@@ -132,56 +133,35 @@
           :title="$t('pages.database.subpages.settings.visibility.title')"
           :subtitle="$t('pages.database.subpages.settings.visibility.subtitle')">
           <v-card-text>
-            <v-row>
-              <v-col md="8">
+            <v-row
+              dense>
+              <v-col
+                md="4">
                 <v-select
                   v-model="modifyVisibility.is_public"
-                  :items="visibility"
-                  :variant="inputVariant"
-                  :label="$t('pages.database.subpages.settings.visibility.data.label')"
-                  :hint="$t('pages.database.subpages.settings.visibility.data.hint')"
+                  :items="dataOptions"
                   persistent-hint
-                  name="visibility">
-                  <template
-                    v-slot:append>
-                    <v-tooltip
-                      location="bottom">
-                      <template
-                        v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          icon="mdi-help-circle-outline" />
-                      </template>
-                      {{ $t('pages.database.subpages.settings.visibility.data.help') }}
-                    </v-tooltip>
-                  </template>
-                </v-select>
+                  :variant="inputVariant"
+                  required
+                  :rules="[
+                    v => v !== null || $t('validation.required')
+                  ]"
+                  :label="$t('pages.database.resource.data.label')"
+                  :hint="$t('pages.database.resource.data.hint', { resource: 'database' })" />
               </v-col>
-            </v-row>
-            <v-row>
-              <v-col md="8">
+              <v-col
+                md="4">
                 <v-select
                   v-model="modifyVisibility.is_schema_public"
-                  :items="visibility"
-                  :variant="inputVariant"
-                  :label="$t('pages.database.subpages.settings.visibility.schema.label')"
-                  :hint="$t('pages.database.subpages.settings.visibility.schema.hint')"
+                  :items="schemaOptions"
                   persistent-hint
-                  name="schema-visibility">
-                  <template
-                    v-slot:append>
-                    <v-tooltip
-                      location="bottom">
-                      <template
-                        v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          icon="mdi-help-circle-outline" />
-                      </template>
-                      {{ $t('pages.database.subpages.settings.visibility.schema.help') }}
-                    </v-tooltip>
-                  </template>
-                </v-select>
+                  :variant="inputVariant"
+                  required
+                  :rules="[
+                    v => v !== null || $t('validation.required')
+                  ]"
+                  :label="$t('pages.database.resource.schema.label')"
+                  :hint="$t('pages.database.resource.schema.hint', { resource: 'database', schema: 'tables, views, subsets' })" />
               </v-col>
             </v-row>
             <v-row>
@@ -267,8 +247,8 @@
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -302,15 +282,13 @@ export default {
       modifyImage: {
         key: null
       },
-      visibility: [
-        {
-          title: this.$t('toolbars.database.public'),
-          value: true
-        },
-        {
-          title: this.$t('toolbars.database.private'),
-          value: false
-        }
+      dataOptions: [
+        { title: this.$t('pages.database.resource.data.enabled'), value: true },
+        { title: this.$t('pages.database.resource.data.disabled'), value: false },
+      ],
+      schemaOptions: [
+        { title: this.$t('pages.database.resource.schema.enabled'), value: true },
+        { title: this.$t('pages.database.resource.schema.disabled'), value: false },
       ],
       headers: [
         {
@@ -428,6 +406,12 @@ export default {
       }
       return this.roles.includes('modify-database-image')
     },
+    canView () {
+      if (this.error) {
+        return false
+      }
+      return this.database
+    },
     previewImage () {
       if (this.file) {
         return URL.createObjectURL(this.file)
@@ -541,10 +525,13 @@ export default {
           this.modifyImage.key = null
           this.loadingImage = false
         })
-        .catch(() => {
-          const toast = useToastInstance()
-          toast.error('Failed to modify image')
+        .catch(({code}) => {
           this.loadingImage = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(this.$t(code))
         })
         .finally(() => {
           this.loadingImage = false

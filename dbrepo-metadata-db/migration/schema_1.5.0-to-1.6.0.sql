@@ -16,11 +16,15 @@ ALTER TABLE `mdb_tables`
 ALTER TABLE `mdb_tables`
     ADD COLUMN `is_schema_public` BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE `mdb_tables`
+    ADD COLUMN `is_public` BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE `mdb_tables`
     DROP FOREIGN KEY `mdb_tables_ibfk_2`;
 ALTER TABLE `mdb_tables`
     DROP COLUMN `created_by`;
-UPDATE `mdb_tables`
-SET `is_schema_public` = `is_public`;
+UPDATE `mdb_tables` t
+SET `is_schema_public` = (SELECT d.is_public FROM mdb_databases d where d.id = t.tDBID);
+UPDATE `mdb_tables` t
+SET `is_schema_public` = (SELECT d.is_public FROM mdb_databases d where d.id = t.tDBID);
 ALTER TABLE `mdb_tables`
     ADD SYSTEM VERSIONING;
 

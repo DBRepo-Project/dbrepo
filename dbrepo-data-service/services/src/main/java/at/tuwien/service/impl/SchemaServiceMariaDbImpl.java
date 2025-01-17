@@ -5,7 +5,6 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.mapper.DataMapper;
@@ -28,15 +27,12 @@ import java.util.LinkedList;
 public class SchemaServiceMariaDbImpl extends HibernateConnector implements SchemaService {
 
     private final DataMapper dataMapper;
-    private final QueryConfig queryConfig;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public SchemaServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
-                                    MetadataMapper metadataMapper) {
+    public SchemaServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
-        this.queryConfig = queryConfig;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
     }
@@ -65,7 +61,7 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
             final ResultSet resultSet2 = statement2.executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             while (resultSet2.next()) {
-                table = dataMapper.resultSetToTable(resultSet2, table, queryConfig);
+                table = dataMapper.resultSetToTable(resultSet2, table);
             }
             /* obtain check constraints metadata */
             start = System.currentTimeMillis();
@@ -97,10 +93,8 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                     final TableDto tmpTable = table;
                     uk.getColumns()
                             .forEach(column -> {
-                                column.setTable(tmpTable);
                                 column.setTableId(tmpTable.getId());
                                 column.setDatabaseId(database.getId());
-                                column.setIsPublic(database.getIsPublic());
                             });
                 }
             }
@@ -109,7 +103,6 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
             final TableDto tmpTable = table;
             tmpTable.getColumns()
                     .forEach(column -> {
-                        column.setTable(tmpTable);
                         column.setTableId(tmpTable.getId());
                         column.setDatabaseId(database.getId());
                     });
@@ -139,7 +132,6 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                 throw new ViewNotFoundException("Failed to find view in the information schema");
             }
             ViewDto view = dataMapper.schemaResultSetToView(database, resultSet1);
-            view.setDatabase(database);
             view.setVdbid(database.getId());
             view.setOwner(database.getOwner());
             /* obtain view columns */
@@ -154,7 +146,7 @@ public class SchemaServiceMariaDbImpl extends HibernateConnector implements Sche
                     .columns(new LinkedList<>())
                     .build();
             while (resultSet2.next()) {
-                tmp = dataMapper.resultSetToTable(resultSet2, tmp, queryConfig);
+                tmp = dataMapper.resultSetToTable(resultSet2, tmp);
             }
             view.setColumns(tmp.getColumns()
                     .stream()

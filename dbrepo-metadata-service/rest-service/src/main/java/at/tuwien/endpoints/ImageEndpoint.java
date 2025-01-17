@@ -37,7 +37,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @ControllerAdvice
 @RequestMapping(path = "/api/image")
-public class ImageEndpoint {
+public class ImageEndpoint extends AbstractEndpoint {
 
     private final MetadataMapper metadataMapper;
     private final ImageServiceImpl imageService;
@@ -97,11 +97,9 @@ public class ImageEndpoint {
                                            @NotNull Principal principal) throws ImageAlreadyExistsException,
             ImageInvalidException {
         log.debug("endpoint create image, data={}, principal.name={}", data, principal.getName());
-        final ContainerImage image = imageService.create(data, principal);
-        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
-        log.trace("create image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.containerImageToImageDto(
+                        imageService.create(data, principal)));
     }
 
     @GetMapping("/{imageId}")
@@ -122,12 +120,9 @@ public class ImageEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
-        log.debug("endpoint find image, id={}", imageId);
-        final ContainerImage image = imageService.find(imageId);
-        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
-        log.trace("find image resulted in image {}", dto);
+        log.debug("endpoint find image, imageId={}", imageId);
         return ResponseEntity.ok()
-                .body(dto);
+                .body(metadataMapper.containerImageToImageDto(imageService.find(imageId)));
     }
 
     @PutMapping("/{imageId}")
@@ -152,13 +147,10 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> update(@NotNull @PathVariable("imageId") Long imageId,
                                            @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
-        log.debug("endpoint update image, id={}, changeDto={}", imageId, changeDto);
-        ContainerImage image = imageService.find(imageId);
-        image = imageService.update(image, changeDto);
-        final ImageDto dto = metadataMapper.containerImageToImageDto(image);
-        log.trace("update image resulted in image {}", dto);
+        log.debug("endpoint update image, imageId={}, changeDto={}", imageId, changeDto);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(metadataMapper.containerImageToImageDto(
+                        imageService.update(imageService.find(imageId), changeDto)));
     }
 
     @DeleteMapping("/{imageId}")
@@ -179,9 +171,8 @@ public class ImageEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
-        log.debug("endpoint delete image, id={}", imageId);
-        final ContainerImage image = imageService.find(imageId);
-        imageService.delete(image);
+        log.debug("endpoint delete image, imageId={}", imageId);
+        imageService.delete(imageService.find(imageId));
         return ResponseEntity.accepted()
                 .build();
     }

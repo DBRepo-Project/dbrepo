@@ -1,14 +1,18 @@
 <template>
-  <div v-if="canPersistView">
-    <Persist type="view" :database="database" :view="view" />
+  <div
+    v-if="canPersistView">
+    <Persist
+      type="view"
+      :database="database"
+      :view="view" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import Persist from '~/components/identifier/Persist.vue'
-import { useUserStore } from '~/stores/user.js'
-import { useCacheStore } from '~/stores/cache.js'
+import Persist from '@/components/identifier/Persist.vue'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -71,5 +75,3 @@ export default {
   }
 }
 </script>
-<style>
-</style>

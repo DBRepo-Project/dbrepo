@@ -1,10 +1,11 @@
 <template>
-  <div>
+  <div
+    v-if="canViewView">
     <ViewToolbar />
     <v-window
       v-model="tab">
       <v-window-item
-        v-if="cachedView">
+        v-if="view">
         <v-card variant="flat">
           <Summary
             v-if="hasIdentifier"
@@ -23,15 +24,15 @@
           variant="flat">
           <v-card-text>
             <v-list
-              v-if="cachedView"
+              v-if="view"
               dense>
               <v-list-item
                 :title="$t('pages.view.name.title')">
-                {{ cachedView.internal_name }}
+                {{ view.internal_name }}
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.query.title')">
-                <pre>{{ cachedView.query }}</pre>
+                <pre>{{ view.query }}</pre>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.owner.title')">
@@ -45,34 +46,9 @@
                   width="200" />
               </v-list-item>
               <v-list-item
-                v-if="cachedView.created"
+                v-if="view.created"
                 :title="$t('pages.view.creation.title')">
-                {{ formatUTC(cachedView.created) }}
-              </v-list-item>
-              <v-list-item
-                :title="$t('pages.view.visibility.title')">
-                {{ viewVisibility }}
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-        <v-divider />
-        <v-card
-          :title="$t('pages.database.title')"
-          variant="flat">
-          <v-card-text>
-            <v-list dense>
-              <v-list-item
-                :title="$t('pages.database.visibility.title')">
-                {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
-              </v-list-item>
-              <v-list-item
-                :title="$t('pages.database.name.title')">
-                <NuxtLink
-                  class="text-primary"
-                  :to="`/database/${database.id}`">
-                  {{ database.internal_name }}
-                </NuxtLink>
+                {{ formatUTC(view.created) }}
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -83,24 +59,14 @@
   </div>
 </template>
 
-<script setup>
-const config = useRuntimeConfig()
-const { database_id, view_id } = useRoute().params
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/view/${view_id}`)
-if (data.value) {
-  const identifierService = useIdentifierService()
-  useServerHead(identifierService.viewToServerHead(data.value))
-  useServerSeoMeta(identifierService.viewToServerSeoMeta(data.value))
-}
-</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -113,7 +79,6 @@ export default {
     return {
       tab: 0,
       loadingView: false,
-      view: null,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -152,14 +117,17 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
-    },
     access () {
       return this.userStore.getAccess
+    },
+    view () {
+      return this.cacheStore.getView
+    },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     identifiers () {
       if (!this.view) {
@@ -174,7 +142,7 @@ export default {
       if (!this.user) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
     },
     identifier () {
       if (this.pid) {
@@ -204,42 +172,22 @@ export default {
       const userService = useUserService()
       return userService.userToFullName(this.view.creator)
     },
-    viewVisibility () {
-      if (!this.cachedView) {
-        return null
+    canViewView () {
+      if (!this.view) {
+        return false
       }
-      if (this.cachedView.is_public && this.cachedView.is_schema_public) {
-        return this.$t('pages.database.visibility.open')
+      if (this.view.is_public) {
+        return true
       }
-      if (!this.cachedView.is_public && !this.cachedView.is_schema_public) {
-        return this.$t('pages.database.visibility.closed')
+      if (!this.user) {
+        return false
       }
-      return this.cachedView.is_public ? this.$t('pages.database.visibility.data') : this.$t('pages.database.visibility.schema')
+      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
     }
-  },
-  mounted () {
-    this.fetchView()
   },
   methods: {
     formatUTC (timestamp) {
       return formatTimestampUTCLabel(timestamp)
-    },
-    fetchView () {
-      this.loadingView = true
-      const viewService = useViewService()
-      viewService.findOne(this.$route.params.database_id, this.$route.params.view_id)
-        .then((view) => {
-          this.view = view
-          this.loadingView = false
-        })
-        .catch(({code}) => {
-          this.loadingView = false
-          const toast = useToastInstance()
-          toast.error(this.$t(code))
-        })
-        .finally(() => {
-          this.loadingView = false
-        })
     }
   }
 }

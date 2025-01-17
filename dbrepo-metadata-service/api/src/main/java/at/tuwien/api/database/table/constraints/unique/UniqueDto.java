@@ -27,10 +27,8 @@ public class UniqueDto {
     private String name;
 
     @NotNull
-    @ToString.Exclude
     private TableBriefDto table;
 
     @NotNull
-    @ToString.Exclude
     private List<ColumnDto> columns;
 }

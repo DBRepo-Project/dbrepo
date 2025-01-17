@@ -1,14 +1,15 @@
 <template>
-  <div v-if="canCreateSubset">
+  <div
+    v-if="canCreateSubset">
     <Builder />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 import Builder from '@/components/subset/Builder.vue'
-import {useCacheStore} from "~/stores/cache.js";
+import {useCacheStore} from '@/stores/cache.js'
 
 export default {
   components: {

@@ -22,7 +22,7 @@
       :title="$t('pages.subset.title')">
       <v-card-text>
         <v-list
-          v-if="loadingSubset && !subset"
+          v-if="!subset"
           lines="two"
           dense>
           <v-skeleton-loader
@@ -37,7 +37,14 @@
             v-if="database"
             :title="$t('pages.subset.visibility.title')"
             density="compact">
-            {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
+            <ResourceStatus
+              v-if="!identifier"
+              :inline="true"
+              :resource="database" />
+            <ResourceStatus
+              v-else
+              :inline="true"
+              :resource="identifier" />
           </v-list-item>
           <v-list-item
             v-if="subset.creator"
@@ -64,7 +71,8 @@
           <v-list-item
             :title="`${$t('pages.subset.result.title')} ${$t('pages.subset.hash.title')}`"
             density="compact">
-            <pre>{{ $t('pages.subset.hash.prefix') }}:{{ result_hash }}</pre>
+            <pre v-if="subset.result_hash">{{ $t('pages.subset.hash.prefix') }}:{{ subset.result_hash }}</pre>
+            <span v-else>(none)</span>
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.rows.title')"
@@ -74,57 +82,18 @@
         </v-list>
       </v-card-text>
     </v-card>
-    <v-divider />
-    <v-card
-      :title="$t('pages.database.title')"
-      variant="flat"
-      rounded="0">
-      <v-card-text>
-        <v-list
-          v-if="database"
-          dense>
-          <v-list-item
-            :title="$t('pages.database.visibility.title')">
-            {{ database.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
-          </v-list-item>
-          <v-list-item
-            :title="$t('pages.database.name.title')">
-            <NuxtLink
-              class="text-primary"
-              :to="`/database/${database.id}`">
-              {{ database.internal_name }}
-            </NuxtLink>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
-<script setup>
-const config = useRuntimeConfig()
-const { database_id, subset_id } = useRoute().params
-const requestConfig = { timeout: 90_000, headers: { Accept: 'application/json', 'Content-Type': 'application/json' } }
-const userStore = useUserStore()
-if (userStore.getToken) {
-  requestConfig.headers.Authorization = `Bearer ${userStore.getToken}`
-}
-const { data } = await useFetch(`${config.public.api.server}/api/database/${database_id}/subset/${subset_id}`, requestConfig)
-if (data.value) {
-  const identifierService = useIdentifierService()
-  useServerHead(identifierService.subsetToServerHead(data.value))
-  useServerSeoMeta(identifierService.subsetToServerSeoMeta(data.value))
-}
-</script>
 <script>
 import Summary from '@/components/identifier/Summary.vue'
 import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -162,11 +131,9 @@ export default {
       persistQueryDialog: false,
       loadingDatabase: false,
       loadingIdentifier: false,
-      loadingSubset: true,
       downloadLoading: false,
       error: false,
       promises: [],
-      subset: null,
       userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
@@ -180,6 +147,9 @@ export default {
     },
     access () {
       return this.userStore.getAccess
+    },
+    subset () {
+      return this.cacheStore.getSubset
     },
     user () {
       return this.userStore.getUser
@@ -212,12 +182,6 @@ export default {
       }
       return enTitle[0].title
     },
-    result_hash () {
-      if (!this.subset.result_hash) {
-        return '(none)'
-      }
-      return this.subset.result_hash
-    },
     publisher () {
       if (this.database.publisher === null) {
         return 'NA'
@@ -229,25 +193,6 @@ export default {
         return null
       }
       return formatTimestampUTCLabel(this.subset.created)
-    }
-  },
-  mounted () {
-    this.loadSubset()
-  },
-  methods: {
-    loadSubset () {
-      this.loadingSubset = true
-      const queryService = useQueryService()
-      queryService.findOne(this.$route.params.database_id, this.$route.params.subset_id)
-        .then((subset) => {
-          this.subset = subset
-        })
-        .catch(() => {
-          this.loadingSubset = false
-        })
-        .finally(() => {
-          this.loadingSubset = false
-        })
     }
   }
 }

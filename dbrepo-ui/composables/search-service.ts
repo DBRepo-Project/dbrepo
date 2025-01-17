@@ -18,11 +18,11 @@ export const useSearchService = (): any => {
     })
   }
 
-  async function fuzzy_search(term: string): Promise<SearchResultDto> {
+  async function fuzzy_search(term: string): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance()
     console.debug('fuzzy search for term', term)
-    return new Promise<SearchResultDto>((resolve, reject) => {
-      axios.get<SearchResultDto>(`/api/search?q=${term}`)
+    return new Promise<DatabaseDto[]>((resolve, reject) => {
+      axios.get<DatabaseDto[]>(`/api/search?q=${term}`)
         .then((response) => {
           console.info('Searched for term', term)
           resolve(response.data)

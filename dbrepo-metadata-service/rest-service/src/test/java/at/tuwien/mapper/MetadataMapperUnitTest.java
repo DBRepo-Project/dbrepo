@@ -1,15 +1,15 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.entities.container.Container;
-import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -74,49 +73,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void identifierCreateDtoToIdentifier_succeeds() {
-
-        /* test */
-        final Identifier response = metadataMapper.identifierCreateDtoToIdentifier(IDENTIFIER_1_CREATE_DTO);
-        assertNotNull(response.getTitles());
-        final List<IdentifierTitle> titles = response.getTitles();
-        assertEquals(2, titles.size());
-        final IdentifierTitle title0 = titles.get(0);
-        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
-        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
-        final IdentifierTitle title1 = titles.get(1);
-        assertEquals(IDENTIFIER_1_TITLE_2_TITLE, title1.getTitle());
-        assertEquals(IDENTIFIER_1_TITLE_2_LANG, title1.getLanguage());
-        assertEquals(IDENTIFIER_1_TITLE_2_TYPE, title1.getTitleType());
-        assertNotNull(response.getDescriptions());
-        assertEquals(1, response.getDescriptions().size());
-        final List<IdentifierDescription> descriptions = response.getDescriptions();
-        final IdentifierDescription description0 = descriptions.get(0);
-        assertNull(description0.getId());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG, description0.getLanguage());
-        assertEquals(IDENTIFIER_1_DESCRIPTION_1_TYPE, description0.getDescriptionType());
-        assertNotNull(response.getCreators());
-        assertEquals(1, response.getCreators().size());
-        final Creator creator0 = response.getCreators().get(0);
-        assertNotNull(creator0);
-        assertNull(creator0.getId());
-        assertEquals(IDENTIFIER_1_CREATOR_1_FIRSTNAME, creator0.getFirstname());
-        assertEquals(IDENTIFIER_1_CREATOR_1_LASTNAME, creator0.getLastname());
-        assertEquals(IDENTIFIER_1_CREATOR_1_NAME, creator0.getCreatorName());
-        assertEquals(IDENTIFIER_1_CREATOR_1_ORCID, creator0.getNameIdentifier());
-        assertEquals(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE, creator0.getNameIdentifierScheme());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION, creator0.getAffiliation());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER, creator0.getAffiliationIdentifier());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME, creator0.getAffiliationIdentifierScheme());
-        assertEquals(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI, creator0.getAffiliationIdentifierSchemeUri());
-        assertNotNull(response.getFunders());
-        assertEquals(1, response.getFunders().size());
-        assertNull(response.getRelatedIdentifiers()); /* mapstruct strategy for empty values is to set null */
-    }
-
-    @Test
     public void identifierCreateDtoToIdentifier_withDoi_succeeds() {
 
         /* test */
@@ -140,73 +96,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertEquals(IDENTIFIER_2_QUERY_ID, response.getQueryId());
         assertNull(response.getDoi());
         assertEquals(IDENTIFIER_2_TYPE, response.getType());
-    }
-
-    @Test
-    public void identifierCreateDtoToIdentifier_view_succeeds() {
-
-        /* test */
-        final Identifier response = metadataMapper.identifierCreateDtoToIdentifier(IDENTIFIER_3_CREATE_DTO);
-        assertNull(response.getDatabase());
-        assertNull(response.getQueryId());
-        assertNull(response.getTableId());
-        assertEquals(IDENTIFIER_3_VIEW_ID, response.getViewId());
-        assertNull(response.getDoi());
-        assertEquals(IDENTIFIER_3_TYPE, response.getType());
-    }
-
-    @Test
-    public void customDatabaseToDatabaseDto_succeeds() {
-
-        /* test */
-        final DatabaseDto response = metadataMapper.customDatabaseToDatabaseDto(DATABASE_1, USER_1);
-        assertEquals(DATABASE_1_ID, response.getId());
-        assertNotNull(response.getContact());
-        assertEquals(USER_1_ID, response.getContact().getId());
-        assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
-        assertEquals(DATABASE_1_SCHEMA_PUBLIC, response.getIsSchemaPublic());
-        /* identifiers formatted */
-        assertEquals(4, response.getIdentifiers().size());
-        final IdentifierBriefDto identifier1 = response.getIdentifiers().get(0);
-        assertEquals(DATABASE_1_ID, identifier1.getDatabaseId());
-        final IdentifierBriefDto identifier2 = response.getIdentifiers().get(1);
-        assertEquals(DATABASE_1_ID, identifier2.getDatabaseId());
-        final IdentifierBriefDto identifier3 = response.getIdentifiers().get(2);
-        assertEquals(DATABASE_1_ID, identifier3.getDatabaseId());
-        final IdentifierBriefDto identifier4 = response.getIdentifiers().get(3);
-        assertEquals(DATABASE_1_ID, identifier4.getDatabaseId());
-        /* Table 1 formatted */
-        final TableBriefDto table0 = response.getTables().get(0);
-        assertEquals(TABLE_1_ID, table0.getId());
-        assertEquals(TABLE_1_NAME, table0.getName());
-        assertEquals(TABLE_1_INTERNAL_NAME, table0.getInternalName());
-        assertEquals(TABLE_1_DESCRIPTION, table0.getDescription());
-        assertEquals(DATABASE_1_ID, table0.getDatabaseId());
-        assertEquals(TABLE_1_SCHEMA_PUBLIC, table0.getIsSchemaPublic());
-        /* Table 2 formatted */
-        final TableBriefDto table1 = response.getTables().get(1);
-        assertEquals(TABLE_2_ID, table1.getId());
-        assertEquals(TABLE_2_NAME, table1.getName());
-        assertEquals(TABLE_2_INTERNALNAME, table1.getInternalName());
-        assertEquals(TABLE_2_DESCRIPTION, table1.getDescription());
-        assertEquals(DATABASE_1_ID, table1.getDatabaseId());
-        assertEquals(TABLE_2_SCHEMA_PUBLIC, table1.getIsSchemaPublic());
-        /* Table 3 formatted */
-        final TableBriefDto table2 = response.getTables().get(2);
-        assertEquals(TABLE_3_ID, table2.getId());
-        assertEquals(TABLE_3_NAME, table2.getName());
-        assertEquals(TABLE_3_INTERNALNAME, table2.getInternalName());
-        assertEquals(TABLE_3_DESCRIPTION, table2.getDescription());
-        assertEquals(DATABASE_1_ID, table2.getDatabaseId());
-        assertEquals(TABLE_3_SCHEMA_PUBLIC, table2.getIsSchemaPublic());
-        /* Table 4 formatted */
-        final TableBriefDto table3 = response.getTables().get(3);
-        assertEquals(TABLE_4_ID, table3.getId());
-        assertEquals(TABLE_4_NAME, table3.getName());
-        assertEquals(TABLE_4_INTERNALNAME, table3.getInternalName());
-        assertEquals(TABLE_4_DESCRIPTION, table3.getDescription());
-        assertEquals(DATABASE_1_ID, table3.getDatabaseId());
-        assertEquals(TABLE_4_SCHEMA_PUBLIC, table3.getIsSchemaPublic());
     }
 
     public static Stream<Arguments> nameToInternalName_parameters() {
@@ -235,23 +124,6 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void userEquals_identity_succeeds() {
-
-        /* test */
-        assertEquals(USER_1_DTO, USER_1_DTO);
-    }
-
-    @Test
-    public void userEquals_similar_succeeds() {
-        final UserDto tmp = UserDto.builder()
-                .id(USER_1_ID)
-                .build();
-
-        /* test */
-        assertEquals(USER_1_DTO, tmp);
-    }
-
-    @Test
     public void userToUserBriefDto_succeeds() {
 
         /* test */
@@ -264,32 +136,92 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
     public void userToUserDto_succeeds() {
 
         /* test */
-        final UserDto response = metadataMapper.userToUserDto(USER_1);
-        assertEquals(USER_1_NAME, response.getName());
-        assertEquals(USER_1_NAME + " — @" + USER_1_USERNAME, response.getQualifiedName());
+        assertEquals(USER_1_DTO, metadataMapper.userToUserDto(USER_1));
+        assertEquals(USER_2_DTO, metadataMapper.userToUserDto(USER_2));
+        assertEquals(USER_3_DTO, metadataMapper.userToUserDto(USER_3));
+        assertEquals(USER_4_DTO, metadataMapper.userToUserDto(USER_4));
+        assertEquals(USER_5_DTO, metadataMapper.userToUserDto(USER_5));
+    }
+
+    @Test
+    public void identifierToIdentifierDto_succeeds() {
+
+        /* test */
+        assertEquals(IDENTIFIER_1_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_1));
+        assertEquals(IDENTIFIER_2_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_2));
+        assertEquals(IDENTIFIER_3_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_3));
+        assertEquals(IDENTIFIER_4_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_4));
+        assertEquals(IDENTIFIER_5_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_5));
+        assertEquals(IDENTIFIER_6_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_6));
+        assertEquals(IDENTIFIER_7_DTO, metadataMapper.identifierToIdentifierDto(IDENTIFIER_7));
     }
 
     @Test
     public void viewToViewDto_succeeds() {
 
         /* test */
-        final ViewDto response = metadataMapper.viewToViewDto(VIEW_1);
-        assertEquals(VIEW_1_ID, response.getId());
-        assertEquals(VIEW_1_DATABASE_ID, response.getVdbid());
-        assertEquals(VIEW_1_NAME, response.getName());
-        assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
-        assertNotNull(response.getDatabase());
-        assertEquals(VIEW_1_DATABASE_ID, response.getDatabase().getId());
-        assertEquals(VIEW_1_QUERY, response.getQuery());
-        assertEquals(VIEW_1_QUERY_HASH, response.getQueryHash());
-        assertNotNull(response.getIdentifiers());
-        assertEquals(1, response.getIdentifiers().size());
-        final IdentifierDto identifier0 = response.getIdentifiers().get(0);
-        assertEquals(IDENTIFIER_3_ID, identifier0.getId());
-        assertEquals(VIEW_1_DATABASE_ID, identifier0.getDatabaseId());
-        assertEquals(VIEW_1_ID, identifier0.getViewId());
-        assertEquals(VIEW_1_QUERY, identifier0.getQuery());
-        assertEquals(VIEW_1_QUERY_HASH, identifier0.getQueryHash());
+        assertEquals(VIEW_1_DTO, metadataMapper.viewToViewDto(VIEW_1));
+        assertEquals(VIEW_2_DTO, metadataMapper.viewToViewDto(VIEW_2));
+        assertEquals(VIEW_3_DTO, metadataMapper.viewToViewDto(VIEW_3));
+        assertEquals(VIEW_4_DTO, metadataMapper.viewToViewDto(VIEW_4));
+        assertEquals(VIEW_5_DTO, metadataMapper.viewToViewDto(VIEW_5));
+    }
+
+    @Test
+    public void tableToTableBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(TABLE_1_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_1));
+        assertEquals(TABLE_2_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_2));
+        assertEquals(TABLE_3_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_3));
+        assertEquals(TABLE_4_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_4));
+        assertEquals(TABLE_5_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_5));
+        assertEquals(TABLE_6_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_6));
+        assertEquals(TABLE_7_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_7));
+        assertEquals(TABLE_8_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_8));
+        assertEquals(TABLE_9_BRIEF_DTO, metadataMapper.tableToTableBriefDto(TABLE_9));
+    }
+
+    @Test
+    public void containerToContainerBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(CONTAINER_1_BRIEF_DTO, metadataMapper.containerToContainerBriefDto(CONTAINER_1));
+    }
+
+    @Test
+    public void bannerMessageToBannerMessageDto_succeeds() {
+
+        /* test */
+        assertEquals(BANNER_MESSAGE_1_DTO, metadataMapper.bannerMessageToBannerMessageDto(BANNER_MESSAGE_1));
+    }
+
+    @Test
+    public void containerImageToImageBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(IMAGE_1_BRIEF_DTO, metadataMapper.containerImageToImageBriefDto(IMAGE_1));
+    }
+
+    @Test
+    public void containerImageToImageDto_succeeds() {
+
+        /* test */
+        assertEquals(IMAGE_1_DTO, metadataMapper.containerImageToImageDto(IMAGE_1));
+    }
+
+    @Test
+    public void ontologyToOntologyBriefDto_succeeds() {
+
+        /* test */
+        assertEquals(ONTOLOGY_1_BRIEF_DTO, metadataMapper.ontologyToOntologyBriefDto(ONTOLOGY_1));
+    }
+
+    @Test
+    public void ontologyToOntologyDto_succeeds() {
+
+        /* test */
+        assertEquals(ONTOLOGY_1_DTO, metadataMapper.ontologyToOntologyDto(ONTOLOGY_1));
     }
 
 }

@@ -33,6 +33,7 @@ public class DatabaseAccess {
     private UUID huserid;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({

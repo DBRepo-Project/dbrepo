@@ -26,21 +26,6 @@
             :to="link(item)"
             :href="link(item)">
             <template v-slot:append>
-              <v-chip
-                v-if="database.is_public"
-                size="small"
-                class="ml-2"
-                color="success"
-                :text="$t('toolbars.database.public')"
-                variant="outlined" />
-              <v-chip
-                v-if="!database.is_public"
-                size="small"
-                class="ml-2"
-                :color="colorVariant"
-                variant="outlined"
-                :text="$t('toolbars.database.private')"
-                flat />
               <v-tooltip
                 v-if="hasPublishedIdentifier(item)"
                 :text="$t('pages.identifier.pid.title')"
@@ -61,8 +46,8 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   data () {
@@ -101,7 +86,11 @@ export default {
       queryService.findAll(this.$route.params.database_id, true)
         .then((subsets) => {
           this.loadingSubsets = false
-          this.subsets = subsets
+          this.subsets = subsets.map(subset => {
+            subset.is_public = this.database.is_public
+            subset.is_schema_public = this.database.is_schema_public
+            return subset
+          })
         })
         .catch(({code}) => {
           this.loadingSubsets = false

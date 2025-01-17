@@ -7,6 +7,7 @@ import org.springframework.core.io.InputStreamResource;
 @Setter
 @ToString
 @Builder
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExportResourceDto {

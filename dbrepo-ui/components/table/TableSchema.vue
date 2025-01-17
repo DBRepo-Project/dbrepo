@@ -196,7 +196,7 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
@@ -281,6 +281,9 @@ export default {
         .catch(({code}) => {
           this.loadingColumnTypes = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
     },

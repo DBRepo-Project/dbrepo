@@ -1,15 +1,21 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSchema">
     <DatabaseToolbar />
-    <v-window v-model="tab">
+    <v-window
+      v-model="tab">
       <TableList />
     </v-window>
-    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
+    <v-breadcrumbs
+      :items="items"
+      class="pa-0 mt-2" />
   </div>
 </template>
+
 <script>
 import TableList from '@/components/table/TableList.vue'
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   name: 'Tables',
@@ -19,7 +25,7 @@ export default {
   },
   data () {
     return {
-      db: null,
+      tab: 0,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -34,12 +40,19 @@ export default {
           to: `/database/${this.$route.params.database_id}/table`,
           disabled: true
         }
-      ]
+      ],
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    tab () {
-      return 1
+    database () {
+      return this.cacheStore.getDatabase
+    },
+    canViewSchema () {
+      if (this.error) {
+        return false
+      }
+      return this.database
     }
   }
 }

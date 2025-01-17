@@ -264,7 +264,7 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
@@ -434,10 +434,12 @@ export default {
           this.loadingImport = false
         })
         .catch(({code, message}) => {
-          const toast = useToastInstance()
-          console.error(code, message)
-          toast.error(`${this.$t(code)}: ${message}`)
           this.loadingImport = false
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(`${this.$t(code)}: ${message}`)
         })
         .finally(() => {
           this.loadingImport = false

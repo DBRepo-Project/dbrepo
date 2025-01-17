@@ -36,12 +36,17 @@ public class GatewayConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate internalRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(metadataEndpoint));
         restTemplate.getInterceptors()
                 .add(new InternalRequestInterceptor(this, keycloakGateway));
         return restTemplate;
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
 }

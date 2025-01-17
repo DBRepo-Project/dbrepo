@@ -8,7 +8,9 @@ import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.database.*;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
@@ -57,19 +59,28 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public List<Database> findAllAccess(UUID userId) {
-        return databaseRepository.findReadAccess(userId);
+    public List<Database> findAllPublicOrSchemaPublic() {
+        return databaseRepository.findAllPublicOrSchemaPublicDesc();
     }
 
     @Override
-    public Database findByInternalName(String internalName) throws DatabaseNotFoundException {
-        log.trace("find database by internal name: {}", internalName);
-        final Optional<Database> database = databaseRepository.findByInternalName(internalName);
-        if (database.isEmpty()) {
-            log.error("Failed to find database with internal name {} in metadata database", internalName);
-            throw new DatabaseNotFoundException("Failed to find database in metadata database");
-        }
-        return database.get();
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc(userId, internalName);
+    }
+
+    @Override
+    public List<Database> findAllAtLestReadAccess(UUID userId) {
+        return databaseRepository.findAllAtLestReadAccessDesc(userId);
+    }
+
+    @Override
+    public List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId) {
+        return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessDesc(userId);
+    }
+
+    @Override
+    public List<Database> findAllPublicOrSchemaPublicByInternalName(String internalName) {
+        return databaseRepository.findAllPublicOrSchemaPublicByInternalNameDesc(internalName);
     }
 
     @Override
@@ -85,9 +96,9 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(Container container, DatabaseCreateDto data, User user) throws UserNotFoundException,
-            ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
-            SearchServiceException, SearchServiceConnectionException {
+    public Database create(Container container, DatabaseCreateDto data, User user, List<User> internalUsers)
+            throws UserNotFoundException, ContainerNotFoundException, DataServiceException, SearchServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceConnectionException {
         final Database entity = Database.builder()
                 .isPublic(data.getIsPublic())
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -119,13 +130,11 @@ public class DatabaseServiceImpl implements DatabaseService {
         /* create in metadata database */
         final Database entity1 = databaseRepository.save(entity);
         entity1.getAccesses()
-                .add(DatabaseAccess.builder()
-                        .type(AccessType.WRITE_ALL)
-                        .hdbid(entity1.getId())
-                        .database(entity1)
-                        .huserid(user.getId())
-                        .user(user)
-                        .build());
+                .add(metadataMapper.userToWriteAllAccess(entity1, user));
+        entity1.getAccesses()
+                .addAll(internalUsers.stream()
+                        .map(internalUser -> metadataMapper.userToWriteAllAccess(entity1, internalUser))
+                        .toList());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);
@@ -137,7 +146,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     @Transactional(readOnly = true)
     public void updatePassword(Database database, User user) throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException {
-        final List<Database> databases = databaseRepository.findReadAccess(user.getId())
+        final List<Database> databases = databaseRepository.findAllAtLestReadAccessDesc(user.getId())
                 .stream()
                 .distinct()
                 .toList();

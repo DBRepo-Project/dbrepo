@@ -202,7 +202,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            databaseEndpoint.list(null);
+            databaseEndpoint.list(null, null);
         } catch (Exception e) {
             /* ignore */
         }

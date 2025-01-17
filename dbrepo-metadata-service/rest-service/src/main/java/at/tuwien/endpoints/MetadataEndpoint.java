@@ -29,7 +29,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/oai")
-public class MetadataEndpoint {
+public class MetadataEndpoint extends AbstractEndpoint {
 
     private final MetadataService metadataService;
 

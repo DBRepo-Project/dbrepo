@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSchema">
     <DatabaseToolbar />
     <SubsetList />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -8,6 +9,7 @@
 
 <script>
 import SubsetList from '@/components/subset/SubsetList.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -29,7 +31,19 @@ export default {
           to: `/database/${this.$route.params.database_id}/subset`,
           disabled: true
         }
-      ]
+      ],
+      cacheStore: useCacheStore()
+    }
+  },
+  computed: {
+    database () {
+      return this.cacheStore.getDatabase
+    },
+    canViewSchema () {
+      if (this.error) {
+        return false
+      }
+      return this.database
     }
   }
 }

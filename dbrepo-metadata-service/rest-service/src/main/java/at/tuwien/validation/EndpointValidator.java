@@ -5,6 +5,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.endpoints.AbstractEndpoint;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -13,7 +14,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.UserService;
-import at.tuwien.utils.UserUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @Log4j2
 @Component
-public class EndpointValidator {
+public class EndpointValidator extends AbstractEndpoint {
 
     public static final List<ColumnTypeDto> NEED_NOTHING = List.of(ColumnTypeDto.BOOL, ColumnTypeDto.SERIAL);
     public static final List<ColumnTypeDto> NEED_SIZE = List.of(ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY);
@@ -43,7 +43,7 @@ public class EndpointValidator {
         this.accessService = accessService;
     }
 
-    public void validateOnlyPrivateAccess(Database database, Principal principal, boolean writeAccessOnly)
+    public void validateOnlyPrivateDataAccess(Database database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", database.getId());
@@ -52,9 +52,23 @@ public class EndpointValidator {
         validateOnlyAccess(database, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateAccess(Database database, Principal principal) throws NotAllowedException,
+    public void validateOnlyPrivateSchemaAccess(Database database, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
+        if (database.getIsSchemaPublic()) {
+            log.trace("database schema with id {} is public: no access needed", database.getId());
+            return;
+        }
+        validateOnlyAccess(database, principal, writeAccessOnly);
+    }
+
+    public void validateOnlyPrivateDataAccess(Database database, Principal principal) throws NotAllowedException,
             UserNotFoundException, AccessNotFoundException {
-        validateOnlyPrivateAccess(database, principal, false);
+        validateOnlyPrivateDataAccess(database, principal, false);
+    }
+
+    public void validateOnlyPrivateSchemaAccess(Database database, Principal principal) throws NotAllowedException,
+            UserNotFoundException, AccessNotFoundException {
+        validateOnlyPrivateSchemaAccess(database, principal, false);
     }
 
     public void validateOnlyAccess(Database database, Principal principal, boolean writeAccessOnly)
@@ -62,8 +76,10 @@ public class EndpointValidator {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
         }
-        final User user = userService.findByUsername(principal.getName());
-        final DatabaseAccess access = accessService.find(database, user);
+        if (isSystem(principal)) {
+            return;
+        }
+        final DatabaseAccess access = accessService.find(database, userService.findById(getId(principal)));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -167,7 +183,7 @@ public class EndpointValidator {
     }
 
     public boolean validateOnlyMineOrWriteAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
-        if (UserUtil.hasRole(principal, role)) {
+        if (hasRole(principal, role)) {
             log.debug("validation passed: role {} present", role);
             return true;
         }
@@ -222,7 +238,7 @@ public class EndpointValidator {
         throw new NotAllowedException("Access not allowed: insufficient access (neither owner nor write-all access)");
     }
 
-    public void validateOnlyPrivateHasRole(Database database, Principal principal, String role)
+    public void validateOnlyPrivateDataHasRole(Database database, Principal principal, String role)
             throws NotAllowedException {
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", database.getId());
@@ -234,7 +250,26 @@ public class EndpointValidator {
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
         log.trace("principal: {}", principal.getName());
-        if (!UserUtil.hasRole(principal, role)) {
+        if (!hasRole(principal, role)) {
+            log.error("Access not allowed: role {} missing", role);
+            throw new NotAllowedException("Access not allowed: role " + role + " missing");
+        }
+        log.trace("principal has role '{}': access granted", role);
+    }
+
+    public void validateOnlyPrivateSchemaHasRole(Database database, Principal principal, String role)
+            throws NotAllowedException {
+        if (database.getIsSchemaPublic()) {
+            log.trace("database with id {} has public schema: no access needed", database.getId());
+            return;
+        }
+        log.trace("database with id {} has private schema", database.getId());
+        if (principal == null) {
+            log.error("Access not allowed: no authorization provided");
+            throw new NotAllowedException("Access not allowed: no authorization provided");
+        }
+        log.trace("principal: {}", principal.getName());
+        if (!hasRole(principal, role)) {
             log.error("Access not allowed: role {} missing", role);
             throw new NotAllowedException("Access not allowed: role " + role + " missing");
         }

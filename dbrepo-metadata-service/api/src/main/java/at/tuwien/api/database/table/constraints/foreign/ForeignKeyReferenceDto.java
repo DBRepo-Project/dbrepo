@@ -22,11 +22,9 @@ public class ForeignKeyReferenceDto {
     private ForeignKeyBriefDto foreignKey;
 
     @NotNull
-    @ToString.Exclude
     private ColumnBriefDto column;
 
     @NotNull
-    @ToString.Exclude
     @JsonProperty("referenced_column")
     private ColumnBriefDto referencedColumn;
 }

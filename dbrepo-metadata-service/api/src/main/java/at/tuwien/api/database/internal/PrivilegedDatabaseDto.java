@@ -64,7 +64,6 @@ public class PrivilegedDatabaseDto extends PrivilegedObjectDto {
     @Schema(example = "true")
     private Boolean isSchemaPublic;
 
-    @ToString.Exclude
     @NotNull
     private PrivilegedContainerDto container;
 
@@ -74,11 +73,9 @@ public class PrivilegedDatabaseDto extends PrivilegedObjectDto {
 
     private List<IdentifierDto> subsets;
 
-    @ToString.Exclude
     @NotNull
     private UserBriefDto contact;
 
-    @ToString.Exclude
     @NotNull
     private UserBriefDto owner;
 

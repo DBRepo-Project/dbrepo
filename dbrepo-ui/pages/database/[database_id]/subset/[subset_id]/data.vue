@@ -33,7 +33,9 @@
         :loading="loadingSubset"
         @click="loadSubset" />
     </v-toolbar>
-    <v-card tile>
+    <v-card
+      v-if="subset"
+      tile>
       <QueryResults
         id="query-results"
         ref="queryResults"
@@ -50,7 +52,7 @@
 import QueryResults from '@/components/subset/Results.vue'
 import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -84,15 +86,15 @@ export default {
           disabled: true
         }
       ],
-      subset: {
-        id: this.$route.params.subset_id
-      },
       cacheStore: useCacheStore()
     }
   },
   computed: {
     database () {
       return this.cacheStore.getDatabase
+    },
+    subset () {
+      return this.cacheStore.getSubset
     },
     executionUTC () {
       if (!this.subset) {
@@ -113,11 +115,11 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      return this.subset.creator.username === this.username
+      return this.subset.owner.username === this.username
     },
   },
   mounted () {
-    this.loadSubset()
+    this.loadResult()
   },
   methods: {
     loadSubset () {
@@ -136,8 +138,10 @@ export default {
         })
     },
     loadResult () {
-      this.$refs.queryResults.reExecute(this.subset.id)
-      this.$refs.queryResults.reExecuteCount(this.subset.id)
+      if (this.subset) {
+        this.$refs.queryResults.reExecute(this.subset.id)
+        this.$refs.queryResults.reExecuteCount(this.subset.id)
+      }
     },
     download () {
       this.downloadLoading = true
@@ -155,6 +159,9 @@ export default {
         .catch(({code}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {
@@ -164,5 +171,3 @@ export default {
   }
 }
 </script>
-<style>
-</style>

@@ -14,21 +14,8 @@
           :class="clazz(view)"
           :to="`/database/${$route.params.database_id}/view/${view.id}/info`">
           <template v-slot:append>
-            <v-chip
-              v-if="view && view.is_public"
-              size="small"
-              class="ml-2"
-              color="success"
-              :text="$t('toolbars.database.public')"
-              variant="outlined" />
-            <v-chip
-              v-if="view && !view.is_public"
-              size="small"
-              class="ml-2"
-              :color="colorVariant"
-              variant="outlined"
-              :text="$t('toolbars.database.private')"
-              flat />
+            <ResourceStatus
+              :resource="view" />
             <v-tooltip
               v-if="hasPublishedIdentifier(view)"
               :text="$t('pages.identifier.pid.title')"
@@ -47,8 +34,8 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   data () {

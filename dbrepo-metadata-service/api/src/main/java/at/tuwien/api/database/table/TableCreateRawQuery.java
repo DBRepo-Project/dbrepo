@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized

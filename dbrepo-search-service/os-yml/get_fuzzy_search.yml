@@ -19,6 +19,9 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/SearchResultDto'
+          type: array
+          properties:
+            id:
+              type: string
   415:
     description: Wrong accept type

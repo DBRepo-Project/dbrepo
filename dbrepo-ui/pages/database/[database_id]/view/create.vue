@@ -1,5 +1,6 @@
 <template>
-  <div v-if="canCreateView">
+  <div
+    v-if="canCreateView">
     <Builder mode="view" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -7,6 +8,7 @@
 
 <script>
 import Builder from '@/components/subset/Builder.vue'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

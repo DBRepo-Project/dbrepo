@@ -51,7 +51,7 @@ public class AccessServiceImpl implements AccessService {
     public DatabaseAccess find(Database database, User user) throws AccessNotFoundException {
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getUser().getUsername().equals(user.getUsername()))
+                .filter(a -> a.getHuserid().equals(user.getId()))
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find database access for database with id: {}", database.getId());
@@ -94,7 +94,7 @@ public class AccessServiceImpl implements AccessService {
         /* update in metadata database */
         final Optional<DatabaseAccess> optional = database.getAccesses()
                 .stream()
-                .filter(a -> a.getUser().getId().equals(user.getId()))
+                .filter(a -> a.getHuserid().equals(user.getId()))
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to update access for user with id: {}", user.getId());
@@ -116,7 +116,8 @@ public class AccessServiceImpl implements AccessService {
         /* delete in data database */
         dataServiceGateway.deleteAccess(database.getId(), user.getId());
         /* delete in metadata database */
-        database.getAccesses().remove(find(database, user));
+        database.getAccesses()
+                .remove(find(database, user));
         databaseRepository.save(database);
         /* update in search service */
         searchServiceGateway.update(databaseService.findById(database.getId()));

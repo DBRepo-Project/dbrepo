@@ -9,15 +9,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserDto {
 
     @NotNull
-    @EqualsAndHashCode.Include
     private UUID id;
 
     @NotNull

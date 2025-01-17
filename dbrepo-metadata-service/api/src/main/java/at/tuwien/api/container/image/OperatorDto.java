@@ -10,11 +10,14 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
 public class OperatorDto {
+
+    private Long id;
 
     @NotBlank
     @JsonProperty("display_name")

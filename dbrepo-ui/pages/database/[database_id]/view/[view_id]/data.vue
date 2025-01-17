@@ -2,20 +2,20 @@
   <div
     v-if="canReadData">
     <ViewToolbar
-      v-if="cachedView" />
+      v-if="view" />
     <v-toolbar
       color="secondary"
       :title="$t('toolbars.database.current')"
       flat>
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
         :text="$t('toolbars.table.data.download')"
         class="mr-2"
         @click.stop="download" />
       <v-btn
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
         class="mr-2"
@@ -37,6 +37,7 @@
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -80,11 +81,8 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    cachedView () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    view () {
+      return this.cacheStore.getView
     },
     access () {
       return this.userStore.getAccess
@@ -96,10 +94,10 @@ export default {
       return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
     },
     canReadData () {
-      if (!this.cachedView) {
+      if (!this.view) {
         return false
       }
-      if (this.cachedView.is_public) {
+      if (this.view.is_public) {
         return true
       }
       if (!this.user) {
@@ -135,6 +133,9 @@ export default {
         .catch(({code}) => {
           this.downloadLoading = false
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {

@@ -1,6 +1,9 @@
 <template>
-  <div v-if="canCreateIdentifier || canUpdateIdentifier">
-    <Persist type="database" :database="database" />
+  <div
+    v-if="canCreateIdentifier || canUpdateIdentifier">
+    <Persist
+      type="database"
+      :database="database" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>

@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -131,7 +130,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            subsetEndpoint.list(DATABASE_1_ID, null);
+            subsetEndpoint.list(DATABASE_1_ID, null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -151,7 +150,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, new MockHttpServletRequest(), null);
+            subsetEndpoint.findById(DATABASE_1_ID, QUERY_1_ID, "application/json", null, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -176,17 +175,17 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.insertRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.insertRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDto.builder().build(), USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.updateRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleUpdateDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.updateRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleUpdateDto.builder().build(), USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         } catch (Exception e) {
             /* ignore */
         }
         try {
-            tableEndpoint.deleteRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDeleteDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.deleteRawTuple(DATABASE_1_ID, TABLE_1_ID, TupleDeleteDto.builder().build(), USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         } catch (Exception e) {
             /* ignore */
         }
@@ -201,7 +200,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportDto.builder().build(), USER_1_PRINCIPAL);
+            tableEndpoint.importDataset(DATABASE_1_ID, TABLE_1_ID, ImportDto.builder().build(), USER_1_PRINCIPAL, TOKEN_ACCESS_TOKEN);
         } catch (Exception e) {
             /* ignore */
         }

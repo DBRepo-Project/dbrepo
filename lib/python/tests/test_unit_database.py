@@ -24,10 +24,11 @@ class DatabaseUnitTest(unittest.TestCase):
             DatabaseBrief(
                 id=1,
                 name='test',
-                owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                owner_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 internal_name='test_abcd',
-                is_public=True)
+                is_public=True,
+                is_schema_public=True)
         ]
         with requests_mock.Mocker() as mock:
             # mock

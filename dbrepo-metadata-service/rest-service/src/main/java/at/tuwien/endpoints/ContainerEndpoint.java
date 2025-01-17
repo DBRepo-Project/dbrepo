@@ -10,7 +10,6 @@ import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.ContainerService;
-import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @ControllerAdvice
 @RequestMapping(path = "/api/container")
-public class ContainerEndpoint {
+public class ContainerEndpoint extends AbstractEndpoint {
 
     private final MetadataMapper metadataMapper;
     private final ContainerService containerService;
@@ -65,13 +64,11 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<List<ContainerBriefDto>> findAll(@RequestParam(required = false) Integer limit) {
         log.debug("endpoint find all containers, limit={}", limit);
-        final List<ContainerBriefDto> dtos = containerService.getAll(limit)
-                .stream()
-                .map(metadataMapper::containerToContainerBriefDto)
-                .collect(Collectors.toList());
-        log.debug("find all containers resulted in {} container(s)", dtos.size());
         return ResponseEntity.ok()
-                .body(dtos);
+                .body(containerService.getAll(limit)
+                        .stream()
+                        .map(metadataMapper::containerToContainerBriefDto)
+                        .collect(Collectors.toList()));
     }
 
     @PostMapping
@@ -111,11 +108,8 @@ public class ContainerEndpoint {
     public ResponseEntity<ContainerDto> create(@Valid @RequestBody ContainerCreateDto data)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
         log.debug("endpoint create container, data={}", data);
-        final Container container = containerService.create(data);
-        final ContainerDto dto = metadataMapper.containerToContainerDto(container);
-        log.trace("create container resulted in container {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(dto);
+                .body(metadataMapper.containerToContainerDto(containerService.create(data)));
     }
 
     @GetMapping("/{containerId}")
@@ -140,10 +134,8 @@ public class ContainerEndpoint {
             throws ContainerNotFoundException {
         log.debug("endpoint find container, containerId={}", containerId);
         final Container container = containerService.find(containerId);
-        final ContainerDto dto = metadataMapper.containerToContainerDto(container);
-        log.trace("find container resulted in container {}", dto);
         final HttpHeaders headers = new HttpHeaders();
-        if (UserUtil.isSystem(principal)) {
+        if (isSystem(principal)) {
             log.trace("attach privileged credential information");
             headers.set("X-Username", container.getPrivilegedUsername());
             headers.set("X-Password", container.getPrivilegedPassword());
@@ -151,7 +143,7 @@ public class ContainerEndpoint {
         }
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(dto);
+                .body(metadataMapper.containerToContainerDto(container));
     }
 
     @DeleteMapping("/{containerId}")
@@ -175,10 +167,10 @@ public class ContainerEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") Long containerId) throws ContainerNotFoundException {
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") Long containerId)
+            throws ContainerNotFoundException {
         log.debug("endpoint delete container, containerId={}", containerId);
-        final Container container = containerService.find(containerId);
-        containerService.remove(container);
+        containerService.remove(containerService.find(containerId));
         return ResponseEntity.accepted()
                 .build();
     }

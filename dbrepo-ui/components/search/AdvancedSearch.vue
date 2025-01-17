@@ -75,14 +75,14 @@
                 :variant="inputVariant"
                 :label="field.attr_friendly_name" />
               <v-text-field
-                v-if="(field.type === 'keyword' && field.attr_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
+                v-if="(field.type === 'keyword' && field.attr_name !== 'type') || field.type === 'text' || field.type === 'date'"
                 v-model="advancedSearchData[field.attr_name]"
                 type="text"
                 :variant="inputVariant"
                 :label="field.attr_friendly_name"
                 clearable />
               <v-select
-                v-if="field.type === 'keyword' && field.attr_name === 'column_type'"
+                v-if="field.type === 'keyword' && field.attr_name === 'type'"
                 v-model="advancedSearchData[field.attr_name]"
                 :items="columnTypes"
                 item-value="value"
@@ -384,8 +384,8 @@ export default {
       this.loading = true
       const searchService = useSearchService()
       searchService.general_search(this.searchType, this.advancedSearchData)
-        .then(({results, type}) => {
-          this.$emit('search-result', {results, type})
+        .then((results) => {
+          this.$emit('search-result', results)
         })
         .finally(() => {
           this.loading = false
@@ -443,7 +443,7 @@ export default {
         return
       }
       this.resetAdvancedSearchFields()
-      this.$emit('search-result', { results: [], type: this.searchType })
+      this.$emit('search-result', [])
       const searchService = useSearchService()
       this.loadingFields = true
       searchService.fields(this.searchType)

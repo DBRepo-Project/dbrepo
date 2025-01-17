@@ -7,7 +7,7 @@
       <v-spacer />
       <v-btn
         v-if="canCreateDatabase"
-        class="mr-4"
+        class="mr-2"
         prepend-icon="mdi-plus"
         variant="flat"
         :text="$t('toolbars.database.create.text')"
@@ -30,7 +30,7 @@
 <script>
 import DatabaseList from '@/components/database/DatabaseList.vue'
 import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

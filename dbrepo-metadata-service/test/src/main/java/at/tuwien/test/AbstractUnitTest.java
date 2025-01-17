@@ -11,6 +11,7 @@ import java.util.List;
 public abstract class AbstractUnitTest extends BaseTest {
 
     public void genesis() {
+        IMAGE_1_DTO.setOperators(IMAGE_1_OPERATORS_DTO);
         CONTAINER_1_PRIVILEGED_DTO.setImage(IMAGE_1_DTO);
         IMAGE_1.setOperators(new LinkedList<>(IMAGE_1_OPERATORS));
         CONTAINER_1.setDatabases(new LinkedList<>(List.of(DATABASE_1, DATABASE_2, DATABASE_3)));
@@ -31,7 +32,8 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1_COLUMNS.get(0).setConcept(null);
         DATABASE_1.setOwner(USER_1);
         DATABASE_1.setSubsets(new LinkedList<>());
-        DATABASE_1.setIsPublic(false);
+        DATABASE_1.setIsPublic(DATABASE_1_PUBLIC);
+        DATABASE_1.setIsSchemaPublic(DATABASE_1_SCHEMA_PUBLIC);
         DATABASE_1_USER_1_READ_ACCESS.setType(AccessType.READ);
         DATABASE_1.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_1_PRIVILEGED_DTO.setAccesses(new LinkedList<>(List.of(DATABASE_1_USER_1_READ_ACCESS_DTO, DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO, DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO)));
@@ -41,7 +43,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
         TABLE_1_PRIVILEGED_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
         TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
-        VIEW_1_DTO.setDatabase(DATABASE_1_DTO);
+        VIEW_1_DTO.setIdentifiers(VIEW_1_DTO_IDENTIFIERS);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
         IDENTIFIER_1.setDatabase(DATABASE_1);
         IDENTIFIER_2.setDatabase(DATABASE_1);
@@ -49,6 +51,7 @@ public abstract class AbstractUnitTest extends BaseTest {
         IDENTIFIER_4.setDatabase(DATABASE_1);
         DATABASE_1.setTables(new LinkedList<>(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4)));
         DATABASE_1.setViews(new LinkedList<>(List.of(VIEW_1, VIEW_2, VIEW_3)));
+        DATABASE_1_PRIVILEGED_DTO.setContainer(CONTAINER_1_PRIVILEGED_DTO);
         DATABASE_1_PRIVILEGED_DTO.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)));
         DATABASE_1_PRIVILEGED_DTO.setTables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)));
         DATABASE_1_PRIVILEGED_DTO.setViews(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)));
@@ -138,6 +141,11 @@ public abstract class AbstractUnitTest extends BaseTest {
         VIEW_5_DTO.setColumns(VIEW_5_COLUMNS_DTO);
         IDENTIFIER_6.setDatabase(DATABASE_3);
         /* DATABASE 4 */
+        TABLE_9.setDatabase(DATABASE_4);
+        TABLE_9.setColumns(TABLE_9_COLUMNS);
+        TABLE_9.setConstraints(TABLE_9_CONSTRAINTS);
+        TABLE_9_DTO.setColumns(TABLE_9_COLUMNS_DTO);
+        TABLE_9_DTO.setConstraints(TABLE_9_CONSTRAINTS_DTO);
         DATABASE_4.setSubsets(new LinkedList<>());
         DATABASE_4.setAccesses(new LinkedList<>(List.of(DATABASE_4_USER_1_READ_ACCESS, DATABASE_4_USER_2_WRITE_OWN_ACCESS, DATABASE_4_USER_3_WRITE_ALL_ACCESS)));
         DATABASE_4.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_7)));

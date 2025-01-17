@@ -78,7 +78,7 @@
 
 <script>
 import { notEmpty } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   data () {

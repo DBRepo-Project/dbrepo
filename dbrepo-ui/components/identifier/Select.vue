@@ -44,8 +44,8 @@
 <script>
 import Banner from '@/components/identifier/Banner.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -86,7 +86,7 @@ export default {
       if (!this.user) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()

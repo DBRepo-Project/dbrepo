@@ -31,7 +31,6 @@ public class PrivilegedViewDto extends PrivilegedObjectDto {
     private Long vdbid;
 
     @NotNull
-    @ToString.Exclude
     private PrivilegedDatabaseDto database;
 
     @NotBlank

@@ -21,20 +21,31 @@ public interface DatabaseService {
      */
     List<Database> findAll();
 
+    List<Database> findAllPublicOrSchemaPublic();
+
+    List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName);
+
     /**
      * Finds all databases stored in the metadata database.
      *
      * @param userId The user id.
      * @return List of databases.
      */
-    List<Database> findAllAccess(UUID userId);
+    List<Database> findAllAtLestReadAccess(UUID userId);
+
+    /**
+     * Finds all databases stored in the metadata database.
+     *
+     * @param userId The user id.
+     * @return List of databases.
+     */
+    List<Database> findAllPublicOrSchemaPublicOrReadAccess(UUID userId);
 
     /**
      * @param internalName The database internal name.
-     * @return The database if found.
-     * @throws DatabaseNotFoundException The database was not found.
+     * @return The databases if found.
      */
-    Database findByInternalName(String internalName) throws DatabaseNotFoundException;
+    List<Database> findAllPublicOrSchemaPublicByInternalName(String internalName);
 
     /**
      * Find a database by id, only used in the authentication service
@@ -51,12 +62,13 @@ public interface DatabaseService {
      * @param container The container.
      * @param createDto The metadata.
      * @param user      The user.
+     * @param internalUsers      The list of internal users.
      * @return The database, if successful.
      * @throws UserNotFoundException          If the container/user was not found in the metadata database.
      * @throws DataServiceException           If the data service returned non-successfully.
      * @throws DataServiceConnectionException If failing to connect to the data service/search service.
      */
-    Database create(Container container, DatabaseCreateDto createDto, User user) throws UserNotFoundException,
+    Database create(Container container, DatabaseCreateDto createDto, User user, List<User> internalUsers) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException;
 

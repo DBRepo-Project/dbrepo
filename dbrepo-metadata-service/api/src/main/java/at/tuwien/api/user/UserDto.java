@@ -2,9 +2,8 @@ package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.UUID;
@@ -12,15 +11,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserDto {
 
     @NotNull
-    @EqualsAndHashCode.Include
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;
 

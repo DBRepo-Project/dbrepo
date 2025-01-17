@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
@@ -172,11 +172,14 @@ export default {
       accessService.remove(this.$route.params.database_id, this.localUserId)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('success.access.revoked'))
+          toast.success(this.$t('success.access.revoked', { access: this.modify.type }))
           this.$emit('close-dialog', { success: true })
         })
         .catch(({code, message}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(message)
         })
         .finally(() => {
@@ -185,14 +188,17 @@ export default {
     },
     modifyAccess () {
       const accessService = useAccessService()
-      accessService.modify(this.$route.params.database_id, this.localUserId, this.modify)
+      accessService.update(this.$route.params.database_id, this.localUserId, this.modify)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('success.access.modified'))
+          toast.success(this.$t('success.access.modified', { access: this.modify.type }))
           this.$emit('close-dialog', { success: true })
         })
         .catch(({code, message}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(message)
         })
         .finally(() => {
@@ -204,11 +210,14 @@ export default {
       accessService.create(this.$route.params.database_id, this.localUserId, this.modify)
         .then(() => {
           const toast = useToastInstance()
-          toast.success(this.$t('success.access.created'))
+          toast.success(this.$t('success.access.created', { access: this.modify.type }))
           this.$emit('close-dialog', { success: true })
         })
         .catch(({code, message}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(message)
         })
         .finally(() => {
@@ -220,10 +229,13 @@ export default {
       const userService = useUserService()
       userService.findAll()
         .then((users) => {
-          this.users = users.filter(u => u.username !== this.database.creator.username)
+          this.users = users.filter(u => u.id !== this.database.owner.id)
         })
         .catch(({code}) => {
           const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
           toast.error(this.$t(code))
         })
         .finally(() => {

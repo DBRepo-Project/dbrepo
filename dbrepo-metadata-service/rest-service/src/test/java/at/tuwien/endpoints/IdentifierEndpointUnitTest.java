@@ -1089,7 +1089,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
             throws UserNotFoundException {
 
         /* mock */
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
         /* test */
@@ -1163,7 +1163,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(accessService.find(DATABASE_1, USER_1))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
@@ -1185,7 +1185,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
@@ -1209,7 +1209,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(userService.findByUsername(USER_2_USERNAME))
+        when(userService.findById(USER_2_ID))
                 .thenReturn(USER_2);
         doThrow(AccessNotFoundException.class)
                 .when(accessService)
@@ -1270,7 +1270,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         }
         when(identifierService.find(identifier.getId()))
                 .thenReturn(identifier);
-        when(userService.findByUsername(principal.getName()))
+        when(userService.findById(user.getId()))
                 .thenReturn(user);
         when(databaseService.findById(databaseId))
                 .thenReturn(database);

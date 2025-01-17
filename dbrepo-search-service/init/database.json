@@ -244,7 +244,7 @@
       "created": {
         "type": "date"
       },
-      "creator": {
+      "owner": {
         "properties": {
           "id": {
             "type": "text",
@@ -310,7 +310,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -359,9 +359,9 @@
               }
             }
           },
-          "creators": {
+          "owners": {
             "properties": {
-              "creator_name": {
+              "owner_name": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -572,37 +572,6 @@
           }
         }
       },
-      "owner": {
-        "properties": {
-          "id": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "qualified_name": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "username": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          }
-        }
-      },
       "tables": {
         "properties": {
           "columns": {
@@ -610,7 +579,7 @@
               "auto_generated": {
                 "type": "boolean"
               },
-              "column_type": {
+              "type": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -641,6 +610,9 @@
                 "type": "boolean"
               },
               "is_public": {
+                "type": "boolean"
+              },
+              "is_schema_public": {
                 "type": "boolean"
               },
               "mean": {
@@ -733,7 +705,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -830,55 +802,6 @@
           "num_rows": {
             "type": "long"
           },
-          "owner": {
-            "properties": {
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "qualified_name": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "name": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "orcid": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "username": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          },
           "queue_name": {
             "type": "text",
             "fields": {
@@ -906,7 +829,7 @@
               "auto_generated": {
                 "type": "boolean"
               },
-              "column_type": {
+              "type": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -936,6 +859,9 @@
               "is_public": {
                 "type": "boolean"
               },
+              "is_schema_public": {
+                "type": "boolean"
+              },
               "name": {
                 "type": "text",
                 "fields": {
@@ -950,7 +876,7 @@
           "created": {
             "type": "date"
           },
-          "creator": {
+          "owner": {
             "properties": {
               "id": {
                 "type": "text",
@@ -1010,7 +936,7 @@
               "created": {
                 "type": "date"
               },
-              "creator": {
+              "owner": {
                 "properties": {
                   "id": {
                     "type": "text",
@@ -1059,9 +985,9 @@
                   }
                 }
               },
-              "creators": {
+              "owners": {
                 "properties": {
-                  "creator_name": {
+                  "owner_name": {
                     "type": "text",
                     "fields": {
                       "keyword": {

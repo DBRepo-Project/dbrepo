@@ -28,11 +28,9 @@ public class ForeignKeyDto {
     private List<ForeignKeyReferenceDto> references;
 
     @NotNull
-    @ToString.Exclude
     private TableBriefDto table;
 
     @NotNull
-    @ToString.Exclude
     @JsonProperty("referenced_table")
     private TableBriefDto referencedTable;
 
