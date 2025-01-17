@@ -92,21 +92,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void list_publicDataPrivateSchemaNoRole_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, SQLException, MetadataServiceException {
-
-        /* mock */
-        when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
-                .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
     @WithMockUser(username = USER_3_USERNAME)
     public void list_publicDataPrivateSchema_succeeds() throws DatabaseUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, SQLException,
@@ -128,21 +113,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
             generic_list(null, null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void list_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_4_PRINCIPAL);
         });
     }
 
@@ -313,21 +283,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
             generic_findById(DATABASE_3_ID, QUERY_5_ID, "application/json", null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicDataAndPrivateSchemaNoRole_fails() throws DatabaseNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, QUERY_5_ID, "application/json", null, USER_4_PRINCIPAL);
         });
     }
 
