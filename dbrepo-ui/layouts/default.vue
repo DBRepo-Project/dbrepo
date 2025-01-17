@@ -175,8 +175,8 @@ useServerHead({
 </script>
 <script>
 import JumboBox from '@/components/JumboBox.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
 
 export default {

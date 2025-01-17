@@ -57,10 +57,10 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
-import CreateOntology from "@/components/dialogs/CreateOntology.vue"
-import ViewVisibility from "@/components/dialogs/ViewVisibility.vue"
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
+import CreateOntology from '@/components/dialogs/CreateOntology.vue'
+import ViewVisibility from '@/components/dialogs/ViewVisibility.vue'
 
 export default {
   components: {

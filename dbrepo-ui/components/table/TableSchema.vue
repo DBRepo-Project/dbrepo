@@ -196,7 +196,7 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {

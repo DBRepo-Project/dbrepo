@@ -79,8 +79,8 @@
 
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
-import { useCacheStore } from '@/stores/cache'
-import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache.js'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

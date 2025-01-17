@@ -829,8 +829,8 @@
 
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
-import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache.js'
+import { useUserStore } from '@/stores/user.js'
 import { MerkleJson } from 'merkle-json'
 
 export default {

@@ -37,7 +37,7 @@
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

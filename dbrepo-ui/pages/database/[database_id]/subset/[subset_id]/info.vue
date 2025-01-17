@@ -92,8 +92,8 @@ import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

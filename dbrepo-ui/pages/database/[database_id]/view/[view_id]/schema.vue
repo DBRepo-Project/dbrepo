@@ -53,8 +53,8 @@
 
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

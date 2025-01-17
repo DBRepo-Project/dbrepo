@@ -15,7 +15,7 @@
 <script>
 import TableList from '@/components/table/TableList.vue'
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   name: 'Tables',

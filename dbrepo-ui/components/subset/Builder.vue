@@ -307,8 +307,8 @@
 import TimeDrift from '@/components/TimeDrift.vue'
 import Raw from '@/components/subset/Raw.vue'
 import Results from '@/components/subset/Results.vue'
-import { useCacheStore } from '@/stores/cache'
-import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache.js'
+import { useUserStore } from '@/stores/user.js'
 import { format } from 'sql-formatter'
 
 export default {

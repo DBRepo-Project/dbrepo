@@ -9,7 +9,7 @@
 
 <script>
 import SubsetList from '@/components/subset/SubsetList.vue'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

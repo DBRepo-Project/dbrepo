@@ -142,7 +142,7 @@ import Banner from '@/components/identifier/Banner.vue'
 import Persist from '@/components/identifier/Persist.vue'
 import Creators from '@/components/identifier/Creators.vue'
 import { formatLanguage } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

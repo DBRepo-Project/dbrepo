@@ -7,9 +7,9 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 import Builder from '@/components/subset/Builder.vue'
-import {useCacheStore} from "~/stores/cache.js";
+import {useCacheStore} from '@/stores/cache.js'
 
 export default {
   components: {

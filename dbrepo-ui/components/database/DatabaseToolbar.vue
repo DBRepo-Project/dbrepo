@@ -82,8 +82,8 @@
 </template>
 
 <script>
-import { useCacheStore } from '@/stores/cache'
-import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache.js'
+import { useUserStore } from '@/stores/user.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {

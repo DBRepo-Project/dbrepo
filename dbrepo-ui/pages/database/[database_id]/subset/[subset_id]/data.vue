@@ -52,7 +52,7 @@
 import QueryResults from '@/components/subset/Results.vue'
 import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

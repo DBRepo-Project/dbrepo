@@ -84,7 +84,7 @@
 
 <script>
 import { timestampToTimeZonedTimestamp, formatTimestampUTC } from '@/utils'
-import { useCacheStore } from '@/stores/cache'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   props: {
