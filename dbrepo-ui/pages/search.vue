@@ -5,16 +5,6 @@
       <v-toolbar-title>
         {{ header }}
       </v-toolbar-title>
-      <v-spacer />
-      <v-btn
-        v-if="canCreateDatabase"
-        class="mr-2"
-        prepend-icon="mdi-plus"
-        color="secondary"
-        variant="flat"
-        @click.stop="createDbDialog = true">
-        {{ $t('toolbars.database.create.text') }}
-      </v-btn>
     </v-toolbar>
     <v-card
       rounded="0"
@@ -75,7 +65,7 @@
 
 <script>
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

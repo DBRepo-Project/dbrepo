@@ -30,7 +30,7 @@
 <script>
 import DatabaseList from '@/components/database/DatabaseList.vue'
 import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {

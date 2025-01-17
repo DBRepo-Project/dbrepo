@@ -188,8 +188,8 @@
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

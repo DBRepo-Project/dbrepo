@@ -11,8 +11,8 @@
 
 <script>
 import Persist from '@/components/identifier/Persist.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

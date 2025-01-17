@@ -33,8 +33,8 @@
 <script>
 import OntologiesList from '@/components/OntologiesList.vue'
 import CreateOntology from '@/components/dialogs/CreateOntology.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {

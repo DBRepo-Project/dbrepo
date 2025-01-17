@@ -30,8 +30,8 @@
 
 <script>
 import TableImport from '@/components/table/TableImport.vue'
-import { useUserStore } from '@/stores/user'
-import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
