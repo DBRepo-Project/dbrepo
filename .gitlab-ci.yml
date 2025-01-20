@@ -101,12 +101,9 @@ lint-helm-readme:
     - apk --no-cache add alpine-sdk bash git
     - cp ./helm/dbrepo/README.md ./CI_README.md
     - git clone https://github.com/bitnami/readme-generator-for-helm
-    - cd ./readme-generator-for-helm
-    - npm install
-    - npm install -g pkg
-    - pkg . -o readme-generator
+    - (cd ./readme-generator-for-helm && npm install && npm install -g pkg && pkg . -o /usr/local/sbin/readme-generator)
   script:
-    - ./readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
+    - readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
     - diff ./CI_README.md ./helm/dbrepo/README.md
   artifacts:
     when: always

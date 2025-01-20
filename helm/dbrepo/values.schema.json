@@ -154,6 +154,14 @@
                                 },
                                 "type": "object"
                             },
+                            "emptyDir": {
+                                "properties": {
+                                    "sizeLimit": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
                             }
