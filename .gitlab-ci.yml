@@ -89,7 +89,7 @@ lint-helm-chart:
     - diff ./values.schema.json ./helm/dbrepo/values.schema.json
 
 lint-helm-readme:
-  image: docker.io/${NODE_VERSION}-alpine${ALPINE_VERSION}
+  image: docker.io/node:${NODE_VERSION}-alpine${ALPINE_VERSION}
   stage: lint
   before_script:
     - apk --no-cache add alpine-sdk bash git
