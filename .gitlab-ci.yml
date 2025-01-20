@@ -76,7 +76,7 @@ lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk --no-cache add helm
+    - apk --no-cache add helm git
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
