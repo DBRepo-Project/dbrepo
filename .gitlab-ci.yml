@@ -101,7 +101,7 @@ lint-helm-readme:
     - npm install -g pkg
     - pkg . -o readme-generator
   script:
-    - ./readme-generator --readme ./CI_README.md --values ./helm/dbrepo/values.yaml
+    - ./readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
     - diff ./CI_README.md ./helm/dbrepo/README.md
 
 lint-metadata-schema:

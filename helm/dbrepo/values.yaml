@@ -107,6 +107,7 @@ authservice:
     id: dbrepo-client
     ## @param authservice.client.secret The client secret for the microservices.
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  ## @skip authservice.initdbScripts
   initdbScripts:
     import-realms.sh: |
       #!/bin/bash
@@ -114,11 +115,11 @@ authservice:
       kc.sh import --file /opt/keycloak/data/import/dbrepo-realm.json
   setupJob:
     image:
-      ## @skip authservice.init.image.name
+      ## @skip authservice.setupJob.image.name
       name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.1
-    ## @param authservice.init.resourcesPreset The container resource preset
+    ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
-    ## @param authservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources: { }
     ##   requests:
     ##     cpu: 250m
