@@ -50,6 +50,7 @@ lint-docker-compose:
     - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
     - 'ls -la .scripts'
   script:
+    - "bash .scripts/check-compose.sh"
     - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
     - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
@@ -75,12 +76,22 @@ lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk add helm
+    - apk --no-cache add helm
+    - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
     - helm dependency update ./helm/dbrepo
+    - ./.scripts/check-helm.sh
   script:
     - helm lint ./helm/dbrepo
+    - diff ./values.schema.json ./helm/dbrepo/values.schema.json
+    - diff ./README.md ./helm/dbrepo/README.md
+
+lint-metadata-schema:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: lint
+  script:
+    - diff dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
