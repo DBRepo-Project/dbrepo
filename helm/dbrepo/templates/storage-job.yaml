@@ -6,6 +6,7 @@ metadata:
   name: storage-service-setup-job
   namespace: {{ include "common.names.namespace" . | quote }}
 spec:
+  backoffLimit: {{ .Values.storageservice.init.backoffLimit | default "10" }}
   template:
     metadata:
       name: storage-service-setup-job

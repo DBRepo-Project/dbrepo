@@ -1,7 +1,10 @@
 FROM python:3.11-alpine
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
-RUN apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev
+RUN apk add --no-cache alpine-sdk \
+    gcc \
+    python3-dev \
+    mariadb-connector-c-dev
 
 WORKDIR /home/alpine
 

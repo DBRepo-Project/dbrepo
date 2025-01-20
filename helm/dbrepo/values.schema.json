@@ -129,9 +129,6 @@
                 "extraEnvVarsCM": {
                     "type": "string"
                 },
-                "extraStartupArgs": {
-                    "type": "string"
-                },
                 "extraVolumeMounts": {
                     "items": {
                         "properties": {
@@ -157,6 +154,14 @@
                                 },
                                 "type": "object"
                             },
+                            "emptyDir": {
+                                "properties": {
+                                    "sizeLimit": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
                             }
@@ -176,21 +181,9 @@
                     },
                     "type": "object"
                 },
-                "init": {
+                "initdbScripts": {
                     "properties": {
-                        "image": {
-                            "properties": {
-                                "name": {
-                                    "type": "string"
-                                }
-                            },
-                            "type": "object"
-                        },
-                        "resources": {
-                            "properties": {},
-                            "type": "object"
-                        },
-                        "resourcesPreset": {
+                        "import-realms.sh": {
                             "type": "string"
                         }
                     },
@@ -236,6 +229,26 @@
                 },
                 "resourcesPreset": {
                     "type": "string"
+                },
+                "setupJob": {
+                    "properties": {
+                        "image": {
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "resources": {
+                            "properties": {},
+                            "type": "object"
+                        },
+                        "resourcesPreset": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
                 },
                 "tls": {
                     "properties": {
@@ -507,6 +520,14 @@
                         },
                         "extraEnvVarsSecret": {
                             "type": "string"
+                        },
+                        "updateStrategy": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
                         }
                     },
                     "type": "object"
