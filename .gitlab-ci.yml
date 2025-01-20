@@ -6,6 +6,7 @@ variables:
   ALPINE_VERSION: "3.21"
   PYTHON_VERSION: "3.11"
   JAVA_VERSION: "17"
+  NODE_VERSION: "18"
   SONARQUBE_VERSION: "10.0"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.6"
@@ -76,24 +77,31 @@ lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk --no-cache add helm git bash nodejs npm
+    - apk --no-cache add helm git bash
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
     - helm dependency update ./helm/dbrepo
-    - git clone https://github.com/bitnami/readme-generator-for-helm
-    - cd ./readme-generator-for-helm
-    - npm install
-    - npm install -g pkg
-    - pkg . -o readme-generator
-    - cp ./helm/dbrepo/README.md ./CI_HELM_README.md
   script:
     - bash .scripts/check-helm.sh
     - helm lint ./helm/dbrepo
     - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
     - diff ./values.schema.json ./helm/dbrepo/values.schema.json
-    - ./readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
-    - diff ./CI_HELM_README.md ./helm/dbrepo/README.md
+
+lint-helm-readme:
+  image: docker.io/${NODE_VERSION}-alpine${ALPINE_VERSION}
+  stage: lint
+  before_script:
+    - apk --no-cache add alpine-sdk bash git
+    - git clone https://github.com/bitnami/readme-generator-for-helm
+    - cd ./readme-generator-for-helm
+    - npm install
+    - npm install -g pkg
+    - pkg . -o readme-generator
+    - cp ./helm/dbrepo/README.md ./CI_README.md
+  script:
+    - ./readme-generator --readme ./CI_README.md --values ./helm/dbrepo/values.yaml
+    - diff ./CI_README.md ./helm/dbrepo/README.md
 
 lint-metadata-schema:
   image: docker.io/alpine:${ALPINE_VERSION}
