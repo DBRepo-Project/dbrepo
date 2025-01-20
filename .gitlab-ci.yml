@@ -88,6 +88,11 @@ lint-helm-chart:
     - helm lint ./helm/dbrepo
     - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
     - diff ./CI_values.schema.json ./helm/dbrepo/values.schema.json
+  artifacts:
+    when: always
+    paths:
+      - ./helm/dbrepo/values.schema.json
+    expire_in: 1 days
 
 lint-helm-readme:
   image: docker.io/node:${NODE_VERSION}-alpine${ALPINE_VERSION}
@@ -103,6 +108,11 @@ lint-helm-readme:
   script:
     - ./readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
     - diff ./CI_README.md ./helm/dbrepo/README.md
+  artifacts:
+    when: always
+    paths:
+      - ./helm/dbrepo/README.md
+    expire_in: 1 days
 
 lint-metadata-schema:
   image: docker.io/alpine:${ALPINE_VERSION}
