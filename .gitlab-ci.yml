@@ -81,7 +81,7 @@ lint-helm-chart:
     - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
     - helm dependency update ./helm/dbrepo
-    - ./.scripts/check-helm.sh
+    - bash .scripts/check-helm.sh
   script:
     - helm lint ./helm/dbrepo
     - diff ./values.schema.json ./helm/dbrepo/values.schema.json
