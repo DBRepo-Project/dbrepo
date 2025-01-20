@@ -6,6 +6,7 @@ metadata:
   name: auth-service-setup-job
   namespace: {{ include "common.names.namespace" . | quote }}
 spec:
+  backoffLimit: {{ .Values.authservice.setupJob.backoffLimit | default "10" }}
   template:
     metadata:
       name: auth-service-setup-job
@@ -13,8 +14,8 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: init
-          image: {{ .Values.authservice.init.image.name }}
-          imagePullPolicy: {{ .Values.authservice.init.image.pullPolicy | default "IfNotPresent" }}
+          image: {{ .Values.authservice.setupJob.image.name }}
+          imagePullPolicy: {{ .Values.authservice.setupJob.image.pullPolicy | default "IfNotPresent" }}
           env:
             - name: POD_IP
               valueFrom:
@@ -31,9 +32,9 @@ spec:
           envFrom:
             - secretRef:
                 name: auth-service-secret
-          {{- if .Values.authservice.init.resources }}
-          resources: {{- toYaml .Values.authservice.init.resources | nindent 12 }}
-          {{- else if ne .Values.authservice.init.resourcesPreset "none" }}
-          resources: {{- include "common.resources.preset" (dict "type" .Values.authservice.init.resourcesPreset) | nindent 12 }}
+          {{- if .Values.authservice.setupJob.resources }}
+          resources: {{- toYaml .Values.authservice.setupJob.resources | nindent 12 }}
+          {{- else if ne .Values.authservice.setupJob.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.authservice.setupJob.resourcesPreset) | nindent 12 }}
           {{- end }}
 {{- end }}
