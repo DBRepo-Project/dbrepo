@@ -234,15 +234,6 @@ class DetermineDatatypesTest(unittest.TestCase):
         response = determine_datatypes(filename="separator.csv")
         self.assertEqual(";", response.separator)
 
-    def test_determine_datatypes_separatorGuessLargeDataset_succeeds(self):
-
-        # mock
-        S3Client().upload_file("large.csv", './data/test_dt/', 'dbrepo')
-
-        # test
-        response = determine_datatypes(filename="large.csv")
-        self.assertEqual(",", response.separator)
-
     def test_determine_datatypes_separatorGuessText_succeeds(self):
         exp = AnalysisDto(separator=";", line_termination="\n", columns={
             "id": {

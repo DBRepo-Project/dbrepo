@@ -2,6 +2,22 @@
 author: Martin Weise
 ---
 
+## v1.6.1 (2025-01-21)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.1)
+
+### What's Changed
+
+#### Changes
+
+* Added privacy feature for hidden databases (and optionally tables, views, subsets) that hides them completely from
+  e.g. the search in [#482](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/482).
+
+#### Fixes
+
+* Added init container that adds the admin user to the Metadata Database 
+  in [#480](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/480).
+
 ## v1.6.0 (2025-01-07)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.0)

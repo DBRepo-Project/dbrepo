@@ -80,7 +80,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: bitnami/keycloak:26.0.0-debian-12-r1
+    image: bitnami/keycloak:24.0.5-debian-12-r8
     volumes:
       - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
@@ -90,13 +90,12 @@ services:
     environment:
       KEYCLOAK_ENABLE_HTTPS: "false"
       KEYCLOAK_ENABLE_STATISTICS: "true"
-      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
       KEYCLOAK_DATABASE_HOST: "auth-db"
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: curl --head -fsS http://localhost:9000/health/ready
+      test: curl -fsS http://localhost:8080/realms/master
       interval: 10s
       timeout: 5s
       retries: 12
