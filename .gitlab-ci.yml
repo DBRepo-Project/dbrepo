@@ -76,16 +76,24 @@ lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   before_script:
-    - apk --no-cache add helm git bash
+    - apk --no-cache add helm git bash nodejs
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
     - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
     - helm dependency update ./helm/dbrepo
-    - bash .scripts/check-helm.sh
+    - git clone https://github.com/bitnami/readme-generator-for-helm
+    - cd ./readme-generator-for-helm
+    - npm install
+    - npm install -g pkg
+    - pkg . -o readme-generator
+    - cp ./helm/dbrepo/README.md ./CI_HELM_README.md
   script:
+    - bash .scripts/check-helm.sh
     - helm lint ./helm/dbrepo
+    - helm schema -input ./helm/dbrepo/values.yaml -output ./helm/dbrepo/values.schema.json
     - diff ./values.schema.json ./helm/dbrepo/values.schema.json
-    - diff ./README.md ./helm/dbrepo/README.md
+    - ./readme-generator --readme ./helm/dbrepo/README.md --values ./helm/dbrepo/values.yaml
+    - diff ./CI_HELM_README.md ./helm/dbrepo/README.md
 
 lint-metadata-schema:
   image: docker.io/alpine:${ALPINE_VERSION}
