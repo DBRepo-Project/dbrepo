@@ -7,5 +7,10 @@ name = "pypi"
 requests = "*"
 mariadb = "*"
 
+[dev-packages]
+coverage = "*"
+pytest = "*"
+requests-mock = "*"
+
 [requires]
 python_version = "3.11"
