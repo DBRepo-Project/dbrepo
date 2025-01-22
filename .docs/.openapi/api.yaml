@@ -432,6 +432,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -490,6 +495,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -550,6 +560,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -937,6 +952,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -979,9 +999,11 @@ paths:
         - subset-endpoint
       summary: Find subsets
       description: >-
-        Finds subsets in the query store. The result can be optionally filtered
-        by setting `persisted`. When set to *true*, only persisted queries are
-        returned, otherwise only non-persisted queries are returned.
+        Finds subsets in the query store. When the database schema is marked as
+        hidden, the user needs to be authorized, have at least read-access to
+        the database. The result can be optionally filtered by setting
+        `persisted`. When set to *true*, only persisted queries are returned,
+        otherwise only non-persisted queries are returned.
       operationId: list
       parameters:
         - name: databaseId
@@ -1032,8 +1054,10 @@ paths:
         - subset-endpoint
       summary: Create subset
       description: >-
-        Creates a subset in the query store of the data database. Requires role
-        `execute-query` for private databases.
+        Creates a subset in the query store of the data database. Can also be
+        used without authentication if (and only if) the database is marked as
+        public (i.e. when `is_public` = `is_schema_public` is set to `true`).
+        Otherwise at least read access is required.
       operationId: create
       parameters:
         - name: databaseId
@@ -1313,9 +1337,11 @@ paths:
         - subset-endpoint
       summary: Find subset
       description: >-
-        Finds a subset in the data database. Requests with HTTP header
-        `Accept=application/json` return the metadata, requests with HTTP header
-        `Accept=text/csv` return the data as downloadable file.
+        Finds a subset in the data database.  When the database schema is marked
+        as hidden, the user needs to be authorized, have at least read-access to
+        the database.  Requests with HTTP header `Accept=application/json`
+        return the metadata, requests with HTTP header `Accept=text/csv` return
+        the data as downloadable file.
       operationId: findById
       parameters:
         - name: databaseId
@@ -1330,6 +1356,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
         - name: timestamp
           in: query
           required: false
@@ -1412,7 +1443,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DatabaseDto'
+                  $ref: '#/components/schemas/DatabaseBriefDto'
     post:
       tags:
         - database-endpoint
@@ -1433,7 +1464,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '400':
           description: Database create query is malformed or image is not supported
           content:
@@ -1513,7 +1544,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DatabaseDto'
+                  $ref: '#/components/schemas/DatabaseBriefDto'
   '/api/database/{databaseId}/access/{userId}':
     get:
       tags:
@@ -1568,7 +1599,7 @@ paths:
       description: >-
         Modifies access of a user with given id to database with given id.
         Requires role `update-database-access`.
-      operationId: update_6
+      operationId: update_5
       parameters:
         - name: databaseId
           in: path
@@ -1803,7 +1834,11 @@ paths:
       tags:
         - user-endpoint
       summary: Get user
-      description: Gets user with id from the metadata database. Requires authentication.
+      description: >-
+        Gets own user information from the metadata database. Requires
+        authentication. Foreign user information can only be obtained if
+        additional role `find-foreign-user` is present. Finding information
+        about internal users results in a 404 error.
       operationId: find_2
       parameters:
         - name: userId
@@ -1979,7 +2014,7 @@ paths:
       tags:
         - user-endpoint
       summary: Create token
-      description: Creates a user token via the auth service.
+      description: Creates a user token via the Auth Service.
       operationId: getToken
       requestBody:
         content:
@@ -2544,7 +2579,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '400':
           description: The visibility payload is malformed
           content:
@@ -2783,8 +2818,10 @@ paths:
         - table-endpoint
       summary: Find table
       description: >-
-        Finds a table with id. When the `system` role is present, the endpoint
-        responds with additional connection metadata in the header.
+        Finds a table with id. When a table is hidden (i.e. when `is_public` is
+        `false`), then the user needs to have at least read access and the role
+        `find-table`. When the `system` role is present, the endpoint responds
+        with additional connection metadata in the header.
       operationId: findById_2
       parameters:
         - name: databaseId
@@ -2988,8 +3025,8 @@ paths:
       summary: Update statistics
       description: >-
         Updates basic statistical properties (min, max, mean, median, std.dev)
-        for numerical columns in a table with id. Requires role
-        `update-table-statistic`.
+        for numerical columns in a table with id. This action can only be
+        performed by the table owner. Requires role `update-table-statistic`.
       operationId: updateStatistic
       parameters:
         - name: databaseId
@@ -3009,6 +3046,12 @@ paths:
           description: Updated table statistics successfully
         '400':
           description: Failed to map column statistic to known columns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not the owner
           content:
             application/json:
               schema:
@@ -3044,7 +3087,7 @@ paths:
         with at least *READ* access to the associated database can update the
         column semantics (requires role `modify-table-column-semantics`) or
         foreign table columns if role `modify-foreign-table-column-semantics`.
-      operationId: update_5
+      operationId: updateColumn
       parameters:
         - name: databaseId
           in: path
@@ -3140,7 +3183,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '400':
           description: Owner payload is malformed
           content:
@@ -3197,7 +3240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '403':
           description: Refresh view metadata is not permitted
           content:
@@ -3248,7 +3291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '400':
           description: Failed to parse payload at search service
           content:
@@ -3342,7 +3385,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
         '403':
           description: Modify of image is not permitted
           content:
@@ -3350,7 +3393,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         '404':
-          description: Database or user could not be found
+          description: Database could not be found
           content:
             application/json:
               schema:
@@ -3381,7 +3424,11 @@ paths:
       tags:
         - user-endpoint
       summary: List users
-      description: Lists users known to the metadata database.
+      description: >-
+        Lists users known to the metadata database. Internal users are omitted
+        from the result list. If the optional query parameter `username` is
+        present, the result list can be filtered by matching this exact
+        username.
       operationId: findAll
       parameters:
         - name: username
@@ -3819,7 +3866,10 @@ paths:
       tags:
         - table-endpoint
       summary: List tables
-      description: Lists all tables known to the metadata database.
+      description: >-
+        Lists all tables known to the metadata database. When a database has a
+        hidden schema (i.e. when `is_schema_public` is `false`), then the user
+        needs to have at least read access and the role `list-tables`.
       operationId: list_4
       parameters:
         - name: databaseId
@@ -4186,7 +4236,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatabaseDto'
+                $ref: '#/components/schemas/DatabaseBriefDto'
+        '403':
+          description: Not allowed to view database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         '404':
           description: 'Database, user or exchange could not be found'
           content:
@@ -4214,8 +4270,8 @@ paths:
         - table-endpoint
       summary: Suggest semantics
       description: >-
-        Suggests semantic concepts for a table. Requires role
-        `table-semantic-analyse`.
+        Suggests semantic concepts for a table. This action can only be
+        performed by the table owner. Requires role `table-semantic-analyse`.
       operationId: analyseTable
       parameters:
         - name: databaseId
@@ -4241,6 +4297,12 @@ paths:
                   $ref: '#/components/schemas/EntityDto'
         '400':
           description: Failed to parse statistic in search service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        '403':
+          description: Not the table owner.
           content:
             application/json:
               schema:
@@ -4417,7 +4479,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchResultDto'
+                properties:
+                  id:
+                    type: string
+                type: array
           description: 'OK, contains the elements formatted as an array of JSON arrays'
         '415':
           description: Wrong accept type
@@ -5168,39 +5233,46 @@ components:
           type: object
           additionalProperties:
             type: object
-    ContainerBriefDto:
+    DatabaseBriefDto:
       required:
-        - count
-        - hash
+        - contact
         - id
-        - image
         - internal_name
+        - is_public
+        - is_schema_public
         - name
-        - quota
+        - owner_id
       type: object
       properties:
         id:
           type: integer
           format: int64
-        hash:
-          type: string
-          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
         name:
           type: string
           example: Air Quality
-        image:
-          $ref: '#/components/schemas/ImageBriefDto'
-        quota:
-          type: integer
-          format: int32
-          example: 50
-        count:
-          type: integer
-          format: int32
-          example: 10
+        description:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierBriefDto'
+        contact:
+          $ref: '#/components/schemas/UserBriefDto'
         internal_name:
           type: string
-          example: air-quality
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        owner_id:
+          type: string
+          format: uuid
+        preview_image:
+          type: string
     DatabaseAccessDto:
       required:
         - type
@@ -5215,175 +5287,6 @@ components:
             - read
             - write_own
             - write_all
-    DatabaseDto:
-      required:
-        - contact
-        - container
-        - exchange_name
-        - id
-        - internal_name
-        - is_public
-        - is_schema_public
-        - name
-        - owner
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        description:
-          type: string
-          example: Air Quality
-        tables:
-          type: array
-          items:
-            $ref: '#/components/schemas/TableBriefDto'
-        views:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewBriefDto'
-        container:
-          $ref: '#/components/schemas/ContainerBriefDto'
-        accesses:
-          type: array
-          items:
-            $ref: '#/components/schemas/DatabaseAccessDto'
-        identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierBriefDto'
-        subsets:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierBriefDto'
-        contact:
-          $ref: '#/components/schemas/UserBriefDto'
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        exchange_name:
-          type: string
-          example: dbrepo
-        exchange_type:
-          type: string
-          example: topic
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-        preview_image:
-          type: string
-    ImageBriefDto:
-      required:
-        - default
-        - id
-        - jdbc_method
-        - name
-        - version
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: mariadb
-        version:
-          type: string
-          example: '10.5'
-        jdbc_method:
-          type: string
-          example: mariadb
-        default:
-          type: boolean
-          example: false
-    TableBriefDto:
-      required:
-        - database_id
-        - id
-        - internal_name
-        - is_public
-        - is_schema_public
-        - is_versioned
-        - name
-        - owned_by
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        description:
-          type: string
-          example: Air Quality in Austria
-        database_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: air_quality
-        is_versioned:
-          type: boolean
-          example: true
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-        owned_by:
-          type: string
-          format: uuid
-    ViewBriefDto:
-      required:
-        - database_id
-        - id
-        - internal_name
-        - name
-        - query
-        - query_hash
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        query:
-          type: string
-          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        database_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
-          type: boolean
-          example: true
-        is_schema_public:
-          type: boolean
-          example: true
-        initial_view:
-          type: boolean
-          description: True if it is the default view for the database
-          example: true
-        query_hash:
-          type: string
-          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-        owned_by:
-          type: string
-          format: uuid
     UserUpdateDto:
       required:
         - language
@@ -5430,22 +5333,20 @@ components:
       required:
         - attributes
         - id
-        - username
       type: object
       properties:
         id:
           type: string
           format: uuid
           example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
-        username:
-          type: string
-          description: Only contains lowercase characters
-          example: jcarberry
         name:
           type: string
           example: Josiah Carberry
         attributes:
           $ref: '#/components/schemas/UserAttributesDto'
+        last_retrieved:
+          type: string
+          format: date-time
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -5747,6 +5648,9 @@ components:
         - value
       type: object
       properties:
+        id:
+          type: integer
+          format: int64
         value:
           type: string
           example: XOR
@@ -6883,10 +6787,8 @@ components:
             - Other
     IdentifierDto:
       required:
-        - created_by
         - creators
         - database_id
-        - execution
         - id
         - owner
         - publication_year
@@ -6936,7 +6838,7 @@ components:
           type: string
           example: TU Wien
         owner:
-          $ref: '#/components/schemas/UserDto'
+          $ref: '#/components/schemas/UserBriefDto'
         language:
           type: string
           enum:
@@ -7184,9 +7086,6 @@ components:
           type: integer
           format: int32
           example: 2022
-        created_by:
-          type: string
-          format: uuid
     IdentifierFunderDto:
       required:
         - funder_name
@@ -7318,118 +7217,16 @@ components:
         is_schema_public:
           type: boolean
           example: true
-    ColumnBriefDto:
-      required:
-        - column_type
-        - database_id
-        - id
-        - internal_name
-        - name
-        - table_id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: date
-        alias:
-          type: string
-        database_id:
-          type: integer
-          format: int64
-        table_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: mdb_date
-        column_type:
-          type: string
-          example: date
-          enum:
-            - char
-            - varchar
-            - binary
-            - varbinary
-            - tinyblob
-            - tinytext
-            - text
-            - blob
-            - mediumtext
-            - mediumblob
-            - longtext
-            - longblob
-            - enum
-            - set
-            - serial
-            - bit
-            - tinyint
-            - bool
-            - smallint
-            - mediumint
-            - int
-            - bigint
-            - float
-            - double
-            - decimal
-            - date
-            - datetime
-            - timestamp
-            - time
-            - year
-    ConceptDto:
-      required:
-        - columns
-        - id
-        - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-    UnitDto:
-      required:
-        - columns
-        - id
-        - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
     ViewColumnDto:
       required:
         - auto_generated
-        - column_type
         - database_id
         - id
         - internal_name
         - is_null_allowed
-        - is_public
         - name
-        - ordinal_position
+        - ord
+        - type
       type: object
       properties:
         id:
@@ -7448,10 +7245,6 @@ components:
           type: integer
           format: int64
           example: 0
-        concept:
-          $ref: '#/components/schemas/ConceptDto'
-        unit:
-          $ref: '#/components/schemas/UnitDto'
         description:
           maxLength: 2048
           minLength: 0
@@ -7460,7 +7253,7 @@ components:
         database_id:
           type: integer
           format: int64
-        ordinal_position:
+        ord:
           type: integer
           format: int32
           example: 0
@@ -7478,7 +7271,7 @@ components:
         length:
           type: integer
           format: int64
-        column_type:
+        type:
           type: string
           example: string
           enum:
@@ -7512,16 +7305,12 @@ components:
             - timestamp
             - time
             - year
-        is_public:
-          type: boolean
-          example: true
         is_null_allowed:
           type: boolean
           example: false
     ViewDto:
       required:
         - columns
-        - database
         - database_id
         - id
         - internal_name
@@ -7534,8 +7323,6 @@ components:
         id:
           type: integer
           format: int64
-        database:
-          $ref: '#/components/schemas/DatabaseDto'
         name:
           type: string
           example: Air Quality
@@ -7552,6 +7339,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ViewColumnDto'
+        last_retrieved:
+          type: string
+          format: date-time
         database_id:
           type: integer
           format: int64
@@ -7588,6 +7378,45 @@ components:
         is_schema_public:
           type: boolean
           example: true
+    TableBriefDto:
+      required:
+        - database_id
+        - id
+        - internal_name
+        - is_public
+        - is_schema_public
+        - is_versioned
+        - name
+        - owned_by
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        owned_by:
+          type: string
+          format: uuid
     ColumnSemanticsUpdateDto:
       type: object
       properties:
@@ -7597,27 +7426,28 @@ components:
           type: string
     ColumnDto:
       required:
-        - column_type
         - database_id
         - id
         - internal_name
         - is_null_allowed
-        - is_public
         - name
-        - ordinal_position
+        - ord
         - table_id
+        - type
       type: object
       properties:
         id:
           type: integer
           format: int64
+          example: 1
         name:
           maxLength: 64
           minLength: 0
           type: string
-          example: Date
+          example: Given Name
         alias:
           type: string
+          example: firstname
         size:
           type: integer
           format: int64
@@ -7633,9 +7463,9 @@ components:
           type: number
           example: 51
         concept:
-          $ref: '#/components/schemas/ConceptDto'
+          $ref: '#/components/schemas/ConceptBriefDto'
         unit:
-          $ref: '#/components/schemas/UnitDto'
+          $ref: '#/components/schemas/UnitBriefDto'
         description:
           maxLength: 2048
           minLength: 0
@@ -7652,10 +7482,12 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 2
         table_id:
           type: integer
           format: int64
-        ordinal_position:
+          example: 3
+        ord:
           type: integer
           format: int32
           example: 0
@@ -7663,16 +7495,18 @@ components:
           maxLength: 64
           minLength: 0
           type: string
-          example: mdb_date
+          example: given_name
         index_length:
           type: integer
           format: int64
+          example: 255
         length:
           type: integer
           format: int64
-        column_type:
+          example: 255
+        type:
           type: string
-          example: string
+          example: varchar
           enum:
             - char
             - varchar
@@ -7725,12 +7559,49 @@ components:
         std_dev:
           type: number
           example: 5.32
-        is_public:
-          type: boolean
-          example: true
         is_null_allowed:
           type: boolean
           example: false
+    ConceptBriefDto:
+      required:
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 23
+        uri:
+          type: string
+          example: 'http://www.wikidata.org/entity/Q202444'
+        name:
+          type: string
+          example: given name
+        description:
+          type: string
+          example: >-
+            name typically used to differentiate people from the same family,
+            clan, or other social group who have a common last name
+    UnitBriefDto:
+      required:
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 34
+        uri:
+          type: string
+          example: 'http://www.wikidata.org/entity/Q1422583'
+        name:
+          type: string
+          example: importance
+        description:
+          type: string
+          example: 'subjective magnitude of value, meaning, or purpose'
     DatabaseTransferDto:
       required:
         - id
@@ -8163,6 +8034,47 @@ components:
         is_schema_public:
           type: boolean
           example: true
+    ViewBriefDto:
+      required:
+        - database_id
+        - id
+        - internal_name
+        - name
+        - query
+        - query_hash
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        is_schema_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
+        owned_by:
+          type: string
+          format: uuid
     ColumnCreateDto:
       required:
         - name
@@ -8377,12 +8289,10 @@ components:
     ContainerDto:
       required:
         - count
-        - host
         - id
         - image
         - internal_name
         - name
-        - port
         - quota
       type: object
       properties:
@@ -8392,11 +8302,6 @@ components:
         name:
           type: string
           example: Air Quality
-        host:
-          type: string
-        port:
-          type: integer
-          format: int32
         image:
           $ref: '#/components/schemas/ImageDto'
         quota:
@@ -8407,6 +8312,9 @@ components:
           type: integer
           format: int64
           example: 10
+        last_retrieved:
+          type: string
+          format: date-time
         internal_name:
           type: string
           example: data-db
@@ -8415,6 +8323,87 @@ components:
         ui_port:
           type: integer
           format: int32
+    ColumnBriefDto:
+      required:
+        - column_type
+        - database_id
+        - id
+        - internal_name
+        - name
+        - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        alias:
+          type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+            - char
+            - varchar
+            - binary
+            - varbinary
+            - tinyblob
+            - tinytext
+            - text
+            - blob
+            - mediumtext
+            - mediumblob
+            - longtext
+            - longblob
+            - enum
+            - set
+            - serial
+            - bit
+            - tinyint
+            - bool
+            - smallint
+            - mediumint
+            - int
+            - bigint
+            - float
+            - double
+            - decimal
+            - date
+            - datetime
+            - timestamp
+            - time
+            - year
+    UnitDto:
+      required:
+        - columns
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
     OntologyBriefDto:
       required:
         - id
@@ -8470,14 +8459,14 @@ components:
           type: string
         resumptionToken:
           type: string
-        parametersString:
-          type: string
         fromDate:
           type: string
           format: date-time
         untilDate:
           type: string
           format: date-time
+        parametersString:
+          type: string
     BannerMessageDto:
       required:
         - id
@@ -8511,6 +8500,30 @@ components:
           type: string
           format: date-time
           example: '2021-03-12T15:26:21.000Z'
+    ImageBriefDto:
+      required:
+        - default
+        - id
+        - jdbc_method
+        - name
+        - version
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+          example: '10.5'
+        jdbc_method:
+          type: string
+          example: mariadb
+        default:
+          type: boolean
+          example: false
     LdCreatorDto:
       required:
         - '@type'
@@ -8707,6 +8720,9 @@ components:
             $ref: '#/components/schemas/ColumnDto'
         constraints:
           $ref: '#/components/schemas/ConstraintsDto'
+        last_retrieved:
+          type: string
+          format: date-time
         database_id:
           type: integer
           format: int64
@@ -8798,6 +8814,59 @@ components:
           type: integer
           format: int64
           example: 1
+    ContainerBriefDto:
+      required:
+        - count
+        - hash
+        - id
+        - image
+        - internal_name
+        - name
+        - quota
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        hash:
+          type: string
+          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
+        name:
+          type: string
+          example: Air Quality
+        image:
+          $ref: '#/components/schemas/ImageBriefDto'
+        quota:
+          type: integer
+          format: int32
+          example: 50
+        count:
+          type: integer
+          format: int32
+          example: 10
+        internal_name:
+          type: string
+          example: air-quality
+    ConceptDto:
+      required:
+        - columns
+        - id
+        - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
     IndexDto:
       properties:
         results:
@@ -8854,13 +8923,4 @@ components:
       required:
         - search_term
         - field_value_pairs
-      type: object
-    SearchResultDto:
-      properties:
-        results:
-          items:
-            type: object
-          type: array
-      required:
-        - results
       type: object

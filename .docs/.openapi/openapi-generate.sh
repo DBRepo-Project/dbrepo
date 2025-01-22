@@ -10,10 +10,10 @@ services[9099]=metadata
 function retrieve () {
   if [[ "$2" == analyse ]] || [[ "$2" == search ]]; then
     echo "... retrieve json api from localhost:$1"
-    curl -sSL "http://localhost:$1/api-$2.json" | yq -p=json > "./.docs/.swagger/api-$2.yaml"
+    curl -sSL "http://localhost:$1/api-$2.json" | yq -o=json - > "./.docs/.openapi/api-$2.yaml"
   else
     echo "... retrieve yaml api from localhost:$1"
-    curl -sSL "http://localhost:$1/v3/api-docs.yaml" > "./.docs/.swagger/api-$2.yaml"
+    curl -sSL "http://localhost:$1/v3/api-docs.yaml" > "./.docs/.openapi/api-$2.yaml"
   fi
 }
 

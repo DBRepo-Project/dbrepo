@@ -25,13 +25,16 @@ import java.util.List;
 public class ColumnDto {
 
     @NotNull
+    @Schema(example = "1")
     private Long id;
 
     @NotNull
+    @Schema(example = "2")
     @JsonProperty("database_id")
     private Long databaseId;
 
     @NotNull
+    @Schema(example = "3")
     @JsonProperty("table_id")
     private Long tableId;
 
@@ -42,27 +45,29 @@ public class ColumnDto {
 
     @NotBlank
     @Size(max = 64)
-    @Schema(example = "Date")
+    @Schema(example = "Given Name")
     private String name;
 
     @NotBlank
     @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(example = "mdb_date")
+    @Schema(example = "given_name")
     private String internalName;
 
-    @Schema
+    @Schema(example = "firstname")
     private String alias;
 
     @JsonProperty("index_length")
+    @Schema(example = "255")
     private Long indexLength;
 
     @JsonProperty("length")
+    @Schema(example = "255")
     private Long length;
 
     @NotNull
     @JsonProperty("type")
-    @Schema(example = "string")
+    @Schema(example = "varchar")
     private ColumnTypeDto columnType;
 
     @Schema(example = "255")
