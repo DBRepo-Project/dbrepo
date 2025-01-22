@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.QueueService;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Log4j2
 @Service
-public class QueueServiceRabbitMqImpl extends HibernateConnector implements QueueService {
+public class QueueServiceRabbitMqImpl extends DataConnector<TableDto> implements QueueService {
 
     private final DataMapper dataMapper;
     private final MetadataMapper metadataMapper;
@@ -30,13 +30,13 @@ public class QueueServiceRabbitMqImpl extends HibernateConnector implements Queu
     }
 
     @Override
-    public void insert(PrivilegedTableDto table, Map<String, Object> data) throws SQLException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(table.getDatabase());
+    public void insert(TableDto table, Map<String, Object> data) throws SQLException {
+        final ComboPooledDataSource dataSource = getDataSource(table);
         final Connection connection = dataSource.getConnection();
         try {
             final int[] idx = new int[]{1};
             final PreparedStatement preparedStatement = connection.prepareStatement(
-                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(metadataMapper.privilegedTableDtoToTableDto(table), data));
+                    dataMapper.rabbitMqTupleToInsertOrUpdateQuery(metadataMapper.tableDtoToTableDto(table), data));
             for (Map.Entry<String, Object> entry : data.entrySet()) {
                 final Optional<ColumnDto> optional = table.getColumns().stream().filter(c -> c.getInternalName().equals(entry.getKey())).findFirst();
                 if (optional.isEmpty()) {

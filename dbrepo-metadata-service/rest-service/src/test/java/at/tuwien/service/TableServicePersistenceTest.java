@@ -112,7 +112,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, request);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);

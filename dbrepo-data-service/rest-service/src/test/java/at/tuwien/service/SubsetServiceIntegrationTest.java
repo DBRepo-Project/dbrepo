@@ -21,7 +21,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -45,8 +44,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
     }
 
     @Test
@@ -108,7 +107,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_BRIEF_DTO), true);
-        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_2_ID);
+        final QueryDto response = queryService.findById(DATABASE_1_DTO, QUERY_2_ID);
         assertEquals(2L, response.getId());
         assertTrue(response.getIsPersisted());
     }
@@ -124,28 +123,9 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_BRIEF_DTO), false);
-        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID);
+        final QueryDto response = queryService.findById(DATABASE_1_DTO, QUERY_1_ID);
         assertEquals(1L, response.getId());
         assertFalse(response.getIsPersisted());
-    }
-
-    @Test
-    public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException, InterruptedException {
-
-        /* mock */
-        MariaDbConfig.dropQueryStore(DATABASE_1_PRIVILEGED_DTO);
-
-        /* test */
-        createQueryStore_generic(DATABASE_1_INTERNALNAME);
-    }
-
-    @Test
-    public void createQueryStore_fails() {
-
-        /* test */
-        assertThrows(QueryStoreCreateException.class, () -> {
-            createQueryStore_generic(DATABASE_1_INTERNALNAME);
-        });
     }
 
     protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
@@ -160,10 +140,10 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO));
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
-        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId);
+        final QueryDto response = queryService.findById(DATABASE_1_DTO, queryId);
         assertEquals(QUERY_1_ID, response.getId());
     }
 
@@ -175,13 +155,13 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_5_BRIEF_DTO));
 
         /* test */
-        return queryService.findAll(DATABASE_1_PRIVILEGED_DTO, filterPersisted);
+        return queryService.findAll(DATABASE_1_DTO, filterPersisted);
     }
 
     protected void persist_generic(Long queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
@@ -194,23 +174,11 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
                 .thenReturn(identifiers);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_2_DTO, USER_1_ID);
 
         /* test */
-        queryService.persist(DATABASE_1_PRIVILEGED_DTO, queryId, persist);
-    }
-
-    protected void createQueryStore_generic(String databaseName) throws SQLException, QueryStoreCreateException,
-            InterruptedException {
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
-
-        /* test */
-        queryService.createQueryStore(CONTAINER_1_PRIVILEGED_DTO, databaseName);
-        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
-        assertEquals(0, response.size());
+        queryService.persist(DATABASE_1_DTO, queryId, persist);
     }
 
 }

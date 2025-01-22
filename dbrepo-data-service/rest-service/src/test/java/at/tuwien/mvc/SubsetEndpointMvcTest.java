@@ -41,8 +41,8 @@ public class SubsetEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
@@ -56,8 +56,8 @@ public class SubsetEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
@@ -72,8 +72,8 @@ public class SubsetEndpointMvcTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getDatabaseById(DATABASE_4_ID))
-                .thenReturn(DATABASE_4_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_7_ID))
+                .thenReturn(DATABASE_4_DTO);
+        when(subsetService.findById(DATABASE_4_DTO, QUERY_7_ID))
                 .thenReturn(QUERY_5_DTO);
 
         /* test */

@@ -1,11 +1,11 @@
 package at.tuwien.config;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.user.UserDto;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,13 +22,13 @@ public class CacheConfig {
     private Long credentialCacheTimeout;
 
     @Bean
-    public Cache<UUID, PrivilegedUserDto> userCache() {
-        return new ExpiryCache<UUID, PrivilegedUserDto>().build();
+    public Cache<UUID, UserDto> userCache() {
+        return new ExpiryCache<UUID, UserDto>().build();
     }
 
     @Bean
-    public Cache<Long, PrivilegedViewDto> viewCache() {
-        return new ExpiryCache<Long, PrivilegedViewDto>().build();
+    public Cache<Long, ViewDto> viewCache() {
+        return new ExpiryCache<Long, ViewDto>().build();
     }
 
     @Bean
@@ -37,18 +37,18 @@ public class CacheConfig {
     }
 
     @Bean
-    public Cache<Long, PrivilegedTableDto> tableCache() {
-        return new ExpiryCache<Long, PrivilegedTableDto>().build();
+    public Cache<Long, TableDto> tableCache() {
+        return new ExpiryCache<Long, TableDto>().build();
     }
 
     @Bean
-    public Cache<Long, PrivilegedDatabaseDto> databaseCache() {
-        return new ExpiryCache<Long, PrivilegedDatabaseDto>().build();
+    public Cache<Long, DatabaseDto> databaseCache() {
+        return new ExpiryCache<Long, DatabaseDto>().build();
     }
 
     @Bean
-    public Cache<Long, PrivilegedContainerDto> containerCache() {
-        return new ExpiryCache<Long, PrivilegedContainerDto>().build();
+    public Cache<Long, ContainerDto> containerCache() {
+        return new ExpiryCache<Long, ContainerDto>().build();
     }
 
     class ExpiryCache<K, T> {

@@ -1,7 +1,9 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.CacheableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -9,17 +11,18 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ViewDto {
+public class ViewDto extends CacheableDto {
 
     @NotNull
     private Long id;
@@ -65,5 +68,34 @@ public class ViewDto {
 
     @NotNull
     private List<ViewColumnDto> columns;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String jdbcMethod;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String host;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private Integer port;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String username;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String password;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String database;
 
 }

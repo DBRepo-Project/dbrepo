@@ -1,6 +1,6 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
@@ -8,7 +8,6 @@ import at.tuwien.endpoints.SubsetEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CredentialService;
-import at.tuwien.service.SchemaService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.test.AbstractUnitTest;
@@ -25,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -54,9 +52,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     private SubsetService subsetService;
 
     @MockBean
-    private SchemaService schemaService;
-
-    @MockBean
     private MetadataServiceGateway metadataServiceGateway;
 
     @MockBean
@@ -67,9 +62,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private CredentialService credentialService;
-
-    @MockBean
-    private MockHttpServletRequest mockHttpServletRequest;
 
     @BeforeEach
     public void beforeEach() {
@@ -82,12 +74,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             RemoteUnavailableException, SQLException, MetadataServiceException {
 
         /* mock */
-        when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
+        when(subsetService.findAll(DATABASE_3_DTO, null))
                 .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, null);
+            generic_list(DATABASE_3_ID, DATABASE_3_DTO, null);
         });
     }
 
@@ -98,11 +90,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
-        when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
+        when(subsetService.findAll(DATABASE_3_DTO, null))
                 .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
 
         /* test */
-        final List<QueryDto> response = generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+        final List<QueryDto> response = generic_list(DATABASE_3_ID, DATABASE_3_DTO, USER_3_PRINCIPAL);
         assertEquals(6, response.size());
     }
 
@@ -123,14 +115,14 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_3_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .findAll(DATABASE_3_PRIVILEGED_DTO, null);
+                .findAll(DATABASE_3_DTO, null);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
-            generic_list(DATABASE_3_ID, DATABASE_3_PRIVILEGED_DTO, USER_3_PRINCIPAL);
+            generic_list(DATABASE_3_ID, DATABASE_3_DTO, USER_3_PRINCIPAL);
         });
     }
 
@@ -141,8 +133,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
@@ -158,8 +150,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
@@ -176,8 +168,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
@@ -191,8 +183,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_4_ID))
-                .thenReturn(DATABASE_4_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_7_ID))
+                .thenReturn(DATABASE_4_DTO);
+        when(subsetService.findById(DATABASE_4_DTO, QUERY_7_ID))
                 .thenReturn(QUERY_7_DTO);
 
         /* test */
@@ -211,12 +203,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_5_DTO);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
                 .thenReturn(mock);
 
         /* test */
@@ -233,10 +225,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
                 .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
@@ -256,10 +248,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_4_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
                 .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
@@ -293,10 +285,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_3_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID);
+                .findById(DATABASE_3_DTO, QUERY_5_ID);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -312,14 +304,14 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), eq(null), eq(null));
+                .getData(eq(DATABASE_3_DTO), eq(QUERY_5_DTO), eq(null), eq(null));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -341,13 +333,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.getData(eq(DATABASE_3_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_3_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -387,12 +377,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(eq(DATABASE_3_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(eq(DATABASE_3_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
@@ -413,17 +401,17 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_3_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(null), eq(null));
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+                .getData(eq(DATABASE_3_DTO), any(QueryDto.class), eq(null), eq(null));
+        when(subsetService.findById(eq(DATABASE_3_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
         when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
                 .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .create(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_STATEMENT), any(Instant.class), eq(USER_1_ID));
+                .create(eq(DATABASE_3_DTO), eq(QUERY_5_STATEMENT), any(Instant.class), eq(USER_1_ID));
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -468,13 +456,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.getData(eq(DATABASE_3_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_3_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -496,13 +482,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_4_ID))
-                .thenReturn(DATABASE_4_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), anyLong()))
+                .thenReturn(DATABASE_4_DTO);
+        when(subsetService.findById(eq(DATABASE_4_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(eq(DATABASE_4_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(eq(DATABASE_4_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_4_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -524,13 +508,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_1_PRIVILEGED_DTO), anyLong()))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(eq(DATABASE_1_DTO), anyLong()))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.getData(eq(DATABASE_1_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(eq(DATABASE_1_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_1_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -550,13 +532,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_2_ID))
-                .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_2_PRIVILEGED_DTO), anyLong()))
+                .thenReturn(DATABASE_2_DTO);
+        when(subsetService.findById(eq(DATABASE_2_DTO), anyLong()))
                 .thenReturn(QUERY_2_DTO);
-        when(subsetService.getData(eq(DATABASE_2_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(eq(DATABASE_2_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_2_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_4_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -575,15 +555,13 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
+        when(subsetService.reExecuteCount(DATABASE_3_DTO, QUERY_5_DTO))
                 .thenReturn(QUERY_5_RESULT_NUMBER);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(eq(DATABASE_3_DTO), any(QueryDto.class), eq(0L), eq(10L)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -601,10 +579,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .thenReturn(DATABASE_3_DTO);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
+        when(subsetService.reExecuteCount(DATABASE_3_DTO, QUERY_5_DTO))
                 .thenReturn(QUERY_5_RESULT_NUMBER);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -627,15 +605,13 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
+        when(subsetService.reExecuteCount(DATABASE_1_DTO, QUERY_1_DTO))
                 .thenReturn(QUERY_1_RESULT_NUMBER);
-        when(subsetService.getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L))
+        when(subsetService.getData(DATABASE_1_DTO, QUERY_1_DTO, 0L, 10L))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_1_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -652,7 +628,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -667,7 +643,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_1_ID);
@@ -687,10 +663,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
+        when(subsetService.reExecuteCount(DATABASE_1_DTO, QUERY_1_DTO))
                 .thenReturn(QUERY_1_RESULT_NUMBER);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -711,14 +687,14 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
+                .thenReturn(DATABASE_1_DTO);
+        when(subsetService.findById(DATABASE_1_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         doThrow(SQLException.class)
                 .when(subsetService)
-                .getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L);
+                .getData(DATABASE_1_DTO, QUERY_1_DTO, 0L, 10L);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -739,11 +715,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_3_DTO);
         doNothing()
                 .when(subsetService)
-                .persist(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID, true);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
+                .persist(DATABASE_3_DTO, QUERY_5_ID, true);
+        when(subsetService.findById(DATABASE_3_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
 
         /* test */
@@ -812,12 +788,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_3_DTO);
         when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS_DTO);
         doThrow(SQLException.class)
                 .when(subsetService)
-                .persist(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID, true);
+                .persist(DATABASE_3_DTO, QUERY_5_ID, true);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -825,7 +801,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-    protected List<QueryDto> generic_list(Long databaseId, PrivilegedDatabaseDto database, Principal principal)
+    protected List<QueryDto> generic_list(Long databaseId, DatabaseDto database, Principal principal)
             throws NotAllowedException, DatabaseUnavailableException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
 

@@ -10,7 +10,6 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.database.*;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
@@ -120,7 +119,10 @@ public interface MetadataMapper {
     })
     ContainerBriefDto containerToContainerBriefDto(Container data);
 
-    PrivilegedDatabaseDto databaseToPrivilegedDatabaseDto(Database data);
+    @Mappings({
+            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)")
+    })
+    DatabaseDto databaseToDatabaseDto(Database database);
 
     @Mappings({
             @Mapping(target = "titles", source = "."),
@@ -531,7 +533,7 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default TableDto customTableToTableDto(Table data) {
+    default TableDto tableToTableDto(Table data) {
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -620,7 +622,8 @@ public interface MetadataMapper {
     Unique uniqueDtoToUnique(UniqueDto data);
 
     @Mappings({
-            @Mapping(target = "ownedBy", source = "owner.id")
+            @Mapping(target = "ownedBy", source = "owner.id"),
+            @Mapping(target = "database", ignore = true)
     })
     Table tableDtoToTable(TableDto data);
 
@@ -822,6 +825,9 @@ public interface MetadataMapper {
                 .trim();
     }
 
+    @Mappings({
+            @Mapping(target = "database", ignore = true)
+    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({
@@ -831,6 +837,9 @@ public interface MetadataMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
+    @Mappings({
+            @Mapping(target = "database", ignore = true)
+    })
     View viewDtoToView(ViewDto data);
 
     /* keep */
@@ -852,60 +861,7 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    default DatabaseDto customDatabaseToDatabaseDto(Database data) {
-        if (data == null) {
-            return null;
-        }
-        final DatabaseDto database = DatabaseDto.builder()
-                .id(data.getId())
-                .name(data.getName())
-                .internalName(data.getInternalName())
-                .description(data.getDescription())
-                .exchangeName(data.getExchangeName())
-                .previewImage(data.getImage() != null ? "/api/database/" + data.getId() + "/image" : null)
-                .isPublic(data.getIsPublic())
-                .isSchemaPublic(data.getIsSchemaPublic())
-                .container(containerToContainerBriefDto(data.getContainer()))
-                .owner(userToUserBriefDto(data.getOwner()))
-                .contact(userToUserBriefDto(data.getContact()))
-                .subsets(new LinkedList<>())
-                .accesses(new LinkedList<>())
-                .tables(new LinkedList<>())
-                .identifiers(new LinkedList<>())
-                .build();
-        if (data.getSubsets() != null) {
-            database.setSubsets(new LinkedList<>(data.getSubsets()
-                    .stream()
-                    .map(this::identifierToIdentifierBriefDto)
-                    .toList()));
-        }
-        if (data.getTables() != null) {
-            database.setTables(new LinkedList<>(data.getTables()
-                    .stream()
-                    .map(this::tableToTableBriefDto)
-                    .toList()));
-        }
-        if (data.getViews() != null) {
-            database.setViews(new LinkedList<>(data.getViews()
-                    .stream()
-                    .map(this::viewToViewBriefDto)
-                    .toList()));
-        }
-        if (data.getAccesses() != null) {
-            database.setAccesses(new LinkedList<>(data.getAccesses()
-                    .stream()
-                    .filter(a -> !a.getUser().getIsInternal())
-                    .map(this::databaseAccessToDatabaseAccessDto)
-                    .toList()));
-        }
-        if (data.getIdentifiers() != null) {
-            database.setIdentifiers(new LinkedList<>(data.getIdentifiers()
-                    .stream()
-                    .map(this::identifierToIdentifierBriefDto)
-                    .toList()));
-        }
-        return database;
-    }
+    DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
     @Mappings({
             @Mapping(target = "ownerId", source = "owner.id")

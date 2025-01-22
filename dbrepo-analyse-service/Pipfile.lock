@@ -412,7 +412,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:501b53c7e4b32774809f9685a18288da5b938fc1512e94d8b248f531ee8667fc"
+                "sha256:19c6bbcf9461e20681f0fb342087c618a91123d2d04d4df2f4fd1da80aa77b76"
             ],
             "path": "./lib/dbrepo-1.6.2.tar.gz"
         },
@@ -1612,7 +1612,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "werkzeug": {
@@ -2236,7 +2236,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "wrapt": {

@@ -1,16 +1,12 @@
 package at.tuwien.gateway;
 
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.*;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -75,13 +71,13 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                         .body(TABLE_1_DTO));
 
         /* test */
-        final PrivilegedTableDto response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
-        assertEquals(IMAGE_1_JDBC, response.getDatabase().getContainer().getImage().getJdbcMethod());
-        assertEquals(CONTAINER_1_HOST, response.getDatabase().getContainer().getHost());
-        assertEquals(CONTAINER_1_PORT, response.getDatabase().getContainer().getPort());
-        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getDatabase().getContainer().getUsername());
-        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getDatabase().getContainer().getPassword());
-        assertEquals(DATABASE_1_INTERNALNAME, response.getDatabase().getInternalName());
+        final TableDto response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
+        assertEquals(IMAGE_1_JDBC, response.getJdbcMethod());
+        assertEquals(CONTAINER_1_HOST, response.getHost());
+        assertEquals(CONTAINER_1_PORT, response.getPort());
+        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getUsername());
+        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getPassword());
+        assertEquals(DATABASE_1_INTERNALNAME, response.getDatabase());
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
     }
 
@@ -181,13 +177,13 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Port", "" + CONTAINER_1_PORT);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class)))
+        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
-                        .body(DATABASE_1_PRIVILEGED_DTO));
+                        .body(DATABASE_1_DTO));
 
         /* test */
-        final PrivilegedDatabaseDto response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
+        final DatabaseDto response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
         assertEquals(DATABASE_1_ID, response.getId());
     }
 
@@ -197,7 +193,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpServerErrorException.class)
                 .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class));
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
@@ -211,7 +207,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -223,7 +219,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     public void getDatabaseById_statusCode_fails() {
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class)))
+        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 
@@ -240,7 +236,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
 
         /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class)))
+        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .headers(headers)
                         .build());
@@ -261,7 +257,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                 headers.add(customHeaders.get(j), "");
             }
             /* mock */
-            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(PrivilegedDatabaseDto.class)))
+            when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.OK)
                             .headers(headers)
                             .build());
@@ -285,7 +281,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                         .body(CONTAINER_1_DTO));
 
         /* test */
-        final PrivilegedContainerDto response = metadataServiceGateway.getContainerById(CONTAINER_1_ID);
+        final ContainerDto response = metadataServiceGateway.getContainerById(CONTAINER_1_ID);
         assertEquals(CONTAINER_1_ID, response.getId());
     }
 
@@ -388,7 +384,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
                         .body(VIEW_1_DTO));
 
         /* test */
-        final PrivilegedViewDto response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);
+        final ViewDto response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);
         assertEquals(VIEW_1_ID, response.getId());
     }
 
@@ -478,19 +474,6 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getUserById_succeeds() throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
-                .thenReturn(ResponseEntity.ok()
-                        .body(USER_1_DTO));
-
-        /* test */
-        final UserDto response = metadataServiceGateway.getUserById(USER_1_ID);
-        assertEquals(USER_1_ID, response.getId());
-    }
-
-    @Test
     public void getUserById_unavailable_fails() {
 
         /* mock */
@@ -502,6 +485,26 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         assertThrows(RemoteUnavailableException.class, () -> {
             metadataServiceGateway.getUserById(USER_1_ID);
         });
+    }
+
+    @Test
+    public void getUserById_succeeds() throws RemoteUnavailableException, UserNotFoundException,
+            MetadataServiceException {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
+        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
+
+        /* mock */
+        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
+                .thenReturn(ResponseEntity.ok()
+                        .headers(headers)
+                        .body(USER_1_DTO));
+
+        /* test */
+        final UserDto response = metadataServiceGateway.getUserById(USER_1_ID);
+        assertEquals(USER_1_ID, response.getId());
+        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getUsername());
+        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getPassword());
     }
 
     @Test
@@ -533,83 +536,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getUserById_emptyBody_fails() {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
-                .thenReturn(ResponseEntity.ok()
-                        .build());
-
-        /* test */
-        assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getUserById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void getPrivilegedUserById_succeeds() throws RemoteUnavailableException, UserNotFoundException,
-            MetadataServiceException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
-        headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
-                .thenReturn(ResponseEntity.ok()
-                        .headers(headers)
-                        .body(USER_1_DTO));
-
-        /* test */
-        final PrivilegedUserDto response = metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
-        assertEquals(USER_1_ID, response.getId());
-        assertEquals(CONTAINER_1_PRIVILEGED_USERNAME, response.getUsername());
-        assertEquals(CONTAINER_1_PRIVILEGED_PASSWORD, response.getPassword());
-    }
-
-    @Test
-    public void getPrivilegedUserById_unavailable_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.class)
-                .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class));
-
-        /* test */
-        assertThrows(RemoteUnavailableException.class, () -> {
-            metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void getPrivilegedUserById_notFound_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.NotFound.class)
-                .when(internalRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class));
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void getPrivilegedUserById_statusCode_fails() {
-
-        /* mock */
-        when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(UserDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .build());
-
-        /* test */
-        assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void getPrivilegedUserById_headerMissing_fails() {
+    public void getUserById_headerMissing_fails() {
         final List<String> customHeaders = List.of("X-Username", "X-Password");
 
         for (int i = 0; i < customHeaders.size(); i++) {
@@ -624,13 +551,13 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
             /* test */
             assertThrows(MetadataServiceException.class, () -> {
-                metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
+                metadataServiceGateway.getUserById(USER_1_ID);
             });
         }
     }
 
     @Test
-    public void getPrivilegedUserById_emptyBody_fails() {
+    public void getUserById_emptyBody_fails() {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Username", CONTAINER_1_PRIVILEGED_USERNAME);
         headers.set("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -643,7 +570,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
-            metadataServiceGateway.getPrivilegedUserById(USER_1_ID);
+            metadataServiceGateway.getUserById(USER_1_ID);
         });
     }
 

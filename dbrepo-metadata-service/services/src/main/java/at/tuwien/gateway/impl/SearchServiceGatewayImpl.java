@@ -1,6 +1,6 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
@@ -35,8 +35,8 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     }
 
     @Override
-    public DatabaseDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
-        final ResponseEntity<DatabaseDto> response;
+    public DatabaseBriefDto update(Database database) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
+        final ResponseEntity<DatabaseBriefDto> response;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
@@ -44,7 +44,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
         log.trace("update database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT, new HttpEntity<>(
-                    metadataMapper.databaseToPrivilegedDatabaseDto(database), headers), DatabaseDto.class);
+                    metadataMapper.databaseToDatabaseDto(database), headers), DatabaseBriefDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable |
                  HttpServerErrorException.InternalServerError e) {
             log.error("Failed to update database: {}", e.getMessage());

@@ -89,7 +89,7 @@ public class ViewServicePersistenceTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .deleteView(DATABASE_1_ID, VIEW_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         viewService.delete(VIEW_1);

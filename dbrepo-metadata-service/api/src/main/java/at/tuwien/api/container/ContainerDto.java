@@ -1,7 +1,9 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.CacheableDto;
 import at.tuwien.api.container.image.ImageDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +20,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ContainerDto {
+public class ContainerDto extends CacheableDto {
 
     @NotNull
     private Long id;
@@ -54,5 +56,26 @@ public class ContainerDto {
     @NotNull
     @Schema(example = "10")
     private Long count;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String jdbcMethod;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String username;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String password;
+
+    @ToString.Exclude
+    @JsonIgnore
+    private String database;
 
 }

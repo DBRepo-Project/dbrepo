@@ -1,9 +1,9 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.UpdateDatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.CredentialService;
@@ -29,7 +29,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/access")
-public class AccessEndpoint extends AbstractEndpoint {
+public class AccessEndpoint extends RestEndpoint {
 
     private final AccessService accessService;
     private final CredentialService credentialService;
@@ -80,8 +80,8 @@ public class AccessEndpoint extends AbstractEndpoint {
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        final PrivilegedUserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final UserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to create access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
@@ -137,8 +137,8 @@ public class AccessEndpoint extends AbstractEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        final PrivilegedUserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final UserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getHuserid().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
@@ -208,8 +208,8 @@ public class AccessEndpoint extends AbstractEndpoint {
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
-        final PrivilegedUserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final UserDto user = credentialService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to delete access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to delete access to user with id " + userId + ": no access");

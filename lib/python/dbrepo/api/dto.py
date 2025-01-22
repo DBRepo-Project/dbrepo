@@ -511,6 +511,7 @@ class CreateTableColumn(BaseModel):
     name: str
     type: ColumnType
     null_allowed: bool
+    description: Optional[str] = None
     concept_uri: Optional[str] = None
     unit_uri: Optional[str] = None
     index_length: Optional[int] = None
@@ -620,6 +621,21 @@ class Identifier(BaseModel):
     result_number: Optional[int] = None
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
+
+
+class IdentifierBrief(BaseModel):
+    id: int
+    database_id: int
+    type: IdentifierType
+    created_by: str
+    status: IdentifierStatusType
+    publication_year: int
+    publisher: str
+    titles: List[IdentifierTitle]
+    doi: Optional[str] = None
+    query_id: Optional[int] = None
+    table_id: Optional[int] = None
+    view_id: Optional[int] = None
 
 
 class View(BaseModel):
@@ -961,6 +977,27 @@ class ColumnMinimal(BaseModel):
     database_id: int
 
 
+class DatabaseBrief(BaseModel):
+    id: int
+    name: str
+    owner: UserBrief
+    contact: UserBrief
+    exchange_name: str
+    internal_name: str
+    is_public: bool
+    is_schema_public: bool
+    container: ContainerBrief
+    identifiers: Optional[List[IdentifierBrief]] = field(default_factory=list)
+    subsets: Optional[List[IdentifierBrief]] = field(default_factory=list)
+    preview_image: Optional[str] = None
+    description: Optional[str] = None
+    tables: Optional[List[TableBrief]] = field(default_factory=list)
+    views: Optional[List[ViewBrief]] = field(default_factory=list)
+    image: Optional[str] = None
+    accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
+    exchange_name: Optional[str] = None
+
+
 class Database(BaseModel):
     id: int
     name: str
@@ -973,24 +1010,13 @@ class Database(BaseModel):
     container: ContainerBrief
     identifiers: Optional[List[Identifier]] = field(default_factory=list)
     subsets: Optional[List[Identifier]] = field(default_factory=list)
+    preview_image: Optional[str] = None
     description: Optional[str] = None
     tables: Optional[List[Table]] = field(default_factory=list)
     views: Optional[List[View]] = field(default_factory=list)
     image: Optional[str] = None
     accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
-    exchange_type: Optional[str] = None
-
-
-class DatabaseBrief(BaseModel):
-    id: int
-    name: str
-    internal_name: str
-    description: Optional[str] = None
-    is_public: bool
-    is_schema_public: bool
-    identifiers: Optional[List[Identifier]] = field(default_factory=list)
-    contact: UserBrief
-    owner_id: str
+    exchange_name: Optional[str] = None
 
 
 class Unique(BaseModel):

@@ -370,7 +370,7 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.customTableToTableDto(
+                .body(metadataMapper.tableToTableDto(
                         tableService.createTable(database, data, principal)));
     }
 
@@ -428,7 +428,7 @@ public class TableEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to update table: not owner");
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.customTableToTableDto(
+                .body(metadataMapper.tableToTableDto(
                         tableService.updateTable(table, data)));
     }
 
@@ -513,7 +513,7 @@ public class TableEndpoint extends AbstractEndpoint {
         }
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(metadataMapper.customTableToTableDto(table));
+                .body(metadataMapper.tableToTableDto(table));
     }
 
     @DeleteMapping("/{tableId}")

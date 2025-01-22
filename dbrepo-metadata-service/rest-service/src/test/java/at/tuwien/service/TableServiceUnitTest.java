@@ -135,7 +135,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.updateStatistics(TABLE_8);
@@ -224,7 +224,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
@@ -256,7 +256,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
@@ -279,7 +279,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
@@ -316,7 +316,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
@@ -369,7 +369,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -392,7 +392,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
@@ -413,7 +413,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
@@ -511,7 +511,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_1);
@@ -527,7 +527,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_4);

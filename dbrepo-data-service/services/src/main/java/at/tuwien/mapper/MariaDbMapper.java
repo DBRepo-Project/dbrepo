@@ -1,12 +1,12 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TupleDeleteDto;
 import at.tuwien.api.database.table.TupleDto;
 import at.tuwien.api.database.table.TupleUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.utils.MariaDbUtil;
@@ -519,7 +519,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawDeleteQuery(PrivilegedTableDto table, TupleDeleteDto data) throws TableMalformedException {
+    default String tupleToRawDeleteQuery(TableDto table, TupleDeleteDto data) throws TableMalformedException {
         log.trace("table csv to delete query, table.id={}, data.keys={}", table.getId(), data.getKeys());
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
@@ -540,14 +540,14 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawUpdateQuery(PrivilegedTableDto table, TupleUpdateDto data)
+    default String tupleToRawUpdateQuery(TableDto table, TupleUpdateDto data)
             throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("UPDATE `")
-                .append(table.getDatabase().getInternalName())
+                .append(table.getDatabase())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` SET ");
@@ -579,13 +579,13 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawCreateQuery(PrivilegedTableDto table, TupleDto data) throws TableMalformedException {
+    default String tupleToRawCreateQuery(TableDto table, TupleDto data) throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(table.getDatabase().getInternalName())
+                .append(table.getDatabase())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` (");

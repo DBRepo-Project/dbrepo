@@ -176,7 +176,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
         when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
                 .thenReturn(QUERY_2_DTO);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_2_DTO);
+                .thenReturn(DATABASE_2_BRIEF_DTO);
 
         /* test */
         identifierService.save(DATABASE_2, USER_2, IDENTIFIER_5_SAVE_DTO);
@@ -286,7 +286,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* mock */
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         identifierService.delete(IDENTIFIER_1);

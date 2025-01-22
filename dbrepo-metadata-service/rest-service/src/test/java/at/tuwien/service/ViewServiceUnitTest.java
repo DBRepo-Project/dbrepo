@@ -62,7 +62,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final View response = viewService.create(DATABASE_1, USER_1, request);
@@ -117,7 +117,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         viewService.delete(VIEW_1);

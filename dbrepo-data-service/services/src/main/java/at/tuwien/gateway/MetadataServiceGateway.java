@@ -1,13 +1,12 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.exception.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,12 +19,12 @@ public interface MetadataServiceGateway {
      * Get a container with given id from the metadata service.
      *
      * @param containerId The container id
-     * @return The container with privileged connection information, if successful.
+     * @return The container with  connection information, if successful.
      * @throws ContainerNotFoundException The table was not found in the metadata service.
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
+    ContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException;
 
     /**
@@ -37,7 +36,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedDatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    DatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -50,7 +49,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedTableDto getTableById(Long databaseId, Long id) throws TableNotFoundException, RemoteUnavailableException,
+    TableDto getTableById(Long databaseId, Long id) throws TableNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -63,7 +62,7 @@ public interface MetadataServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException, ViewNotFoundException,
+    ViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException, ViewNotFoundException,
             MetadataServiceException;
 
     /**
@@ -76,18 +75,6 @@ public interface MetadataServiceGateway {
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
     UserDto getUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException, MetadataServiceException;
-
-    /**
-     * Get a user with given user id from the metadata service.
-     *
-     * @param userId The user id.
-     * @return The user, if successful.
-     * @throws RemoteUnavailableException The remote service is not available and invalid data was returned.
-     * @throws UserNotFoundException      The user was not found in the metadata service.
-     * @throws MetadataServiceException   The remote service returned invalid data.
-     */
-    PrivilegedUserDto getPrivilegedUserById(UUID userId) throws RemoteUnavailableException, UserNotFoundException,
-            MetadataServiceException;
 
     /**
      * Get database access for a given user and database id from the metadata service.

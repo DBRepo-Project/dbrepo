@@ -1,22 +1,25 @@
 package at.tuwien.api.user;
 
+import at.tuwien.api.CacheableDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class UserDto {
+public class UserDto extends CacheableDto {
 
     @NotNull
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
@@ -41,7 +44,14 @@ public class UserDto {
     @Schema(example = "Carberry")
     private String lastname;
 
+    @ToString.Exclude
+    @JsonIgnore
+    private String password;
+
     @NotNull
     private UserAttributesDto attributes;
+
+    @JsonProperty("last_retrieved")
+    private Instant lastRetrieved;
 
 }

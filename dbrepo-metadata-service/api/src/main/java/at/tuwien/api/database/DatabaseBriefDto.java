@@ -56,4 +56,7 @@ public class DatabaseBriefDto {
     @JsonProperty("owner_id")
     private UUID ownerId;
 
+    @JsonProperty("preview_image")
+    private String previewImage;
+
 }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractEndpoint {
+public abstract class RestEndpoint {
 
     public boolean hasRole(Principal principal, String role) {
         if (principal == null || role == null) {

@@ -2,28 +2,23 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper(componentModel = "spring", imports = {PrivilegedDatabaseDto.class, PrivilegedContainerDto.class, ImageDto.class})
+@Mapper(componentModel = "spring", imports = {DatabaseDto.class, ContainerDto.class, ImageDto.class})
 public interface MetadataMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MetadataMapper.class);
@@ -32,28 +27,21 @@ public interface MetadataMapper {
         return subset.getQueryHash();
     }
 
-    PrivilegedContainerDto containerDtoToPrivilegedContainerDto(ContainerDto data);
+    ContainerDto containerDtoToContainerDto(ContainerDto data);
 
-    DatabaseDto privilegedDatabaseDtoToDatabaseDto(PrivilegedDatabaseDto data);
-
-    DatabaseBriefDto privilegedDatabaseDtoToDatabaseBriefDto(PrivilegedDatabaseDto data);
-
-    TableDto privilegedTableDtoToTableDto(PrivilegedTableDto data);
+    DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
     ColumnDto viewColumnDtoToColumnDto(ViewColumnDto data);
 
     ViewColumnDto columnDtoToViewColumnDto(ColumnDto data);
 
-    @Mappings({
-            @Mapping(target = "database", expression = "java(PrivilegedDatabaseDto.builder().container(PrivilegedContainerDto.builder().image(new ImageDto()).build()).build())")
-    })
-    PrivilegedTableDto tableDtoToPrivilegedTableDto(TableDto data);
+    TableDto tableDtoToTableDto(TableDto data);
 
-    PrivilegedViewDto viewDtoToPrivilegedViewDto(ViewDto data);
+    ViewDto viewDtoToViewDto(ViewDto data);
 
-    ContainerDto privilegedContainerDtoToContainerDto(PrivilegedContainerDto data);
+    ContainerDto ContainerDtoToContainerDto(ContainerDto data);
 
-    PrivilegedUserDto userDtoToPrivilegedUserDto(UserDto data);
+    UserDto userDtoToUserDto(UserDto data);
 
     UserBriefDto userDtoToUserBriefDto(UserDto data);
 
@@ -63,6 +51,8 @@ public interface MetadataMapper {
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
+
+    TableDto databaseDtoToTableDto(DatabaseDto data);
 
     default String metricToUri(String baseUrl, Long databaseId, Long tableId, Long subsetId, Long viewId) {
         final StringBuilder uri = new StringBuilder(baseUrl)

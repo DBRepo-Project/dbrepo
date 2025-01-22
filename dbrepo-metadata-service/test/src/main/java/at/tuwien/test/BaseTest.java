@@ -11,11 +11,8 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.*;
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableBriefDto;
@@ -29,7 +26,6 @@ import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.*;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
@@ -53,7 +49,6 @@ import at.tuwien.api.semantics.*;
 import at.tuwien.api.user.UserAttributesDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.*;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -553,7 +548,7 @@ public abstract class BaseTest {
                     .build())
             .build();
 
-    public final static PrivilegedUserDto USER_1_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+    public final static UserDto USER_1_PRIVILEGED_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
@@ -741,7 +736,7 @@ public abstract class BaseTest {
             .tags(new String[]{})
             .build();
 
-    public final static PrivilegedUserDto USER_2_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+    public final static UserDto USER_2_PRIVILEGED_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
@@ -843,7 +838,7 @@ public abstract class BaseTest {
             .tags(new String[]{})
             .build();
 
-    public final static PrivilegedUserDto USER_3_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+    public final static UserDto USER_3_PRIVILEGED_DTO = UserDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .password(USER_3_PASSWORD)
@@ -925,7 +920,7 @@ public abstract class BaseTest {
     public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
-    public final static PrivilegedUserDto USER_4_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+    public final static UserDto USER_4_PRIVILEGED_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .password(USER_4_PASSWORD)
@@ -973,7 +968,7 @@ public abstract class BaseTest {
             .attributes(USER_5_ATTRIBUTES_DTO)
             .build();
 
-    public final static PrivilegedUserDto USER_5_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+    public final static UserDto USER_5_PRIVILEGED_DTO = UserDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
@@ -1187,7 +1182,7 @@ public abstract class BaseTest {
             .image(IMAGE_1_BRIEF_DTO)
             .build();
 
-    public final static PrivilegedContainerDto CONTAINER_1_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
+    public final static ContainerDto CONTAINER_1_PRIVILEGED_DTO = ContainerDto.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
@@ -1243,7 +1238,7 @@ public abstract class BaseTest {
             .quota(CONTAINER_2_QUOTA)
             .build();
 
-    public final static PrivilegedContainerDto CONTAINER_2_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
+    public final static ContainerDto CONTAINER_2_PRIVILEGED_DTO = ContainerDto.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
@@ -1385,11 +1380,21 @@ public abstract class BaseTest {
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
             .name(DATABASE_3_NAME)
-            .container(CONTAINER_1_BRIEF_DTO)
             .internalName(DATABASE_3_INTERNALNAME)
+            .owner(USER_3_BRIEF_DTO)
+            .container(CONTAINER_1_DTO)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .tables(new LinkedList<>()) /* TABLE_3, TABLE_3, TABLE_3 */
-            .views(new LinkedList<>())
+            .tables(new LinkedList<>()) /* TABLE_8_DTO */
+            .views(new LinkedList<>()) /* VIEW_5_DTO */
+            .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
+            .build();
+
+    public final static DatabaseBriefDto DATABASE_3_BRIEF_DTO = DatabaseBriefDto.builder()
+            .id(DATABASE_3_ID)
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .ownerId(USER_3_ID)
             .identifiers(new LinkedList<>())
             .build();
 
@@ -1411,6 +1416,17 @@ public abstract class BaseTest {
     public final static UUID DATABASE_4_OWNER = USER_4_ID;
     public final static UUID DATABASE_4_CREATOR = USER_4_ID;
 
+    public final static DatabaseBriefDto DATABASE_4_BRIEF_DTO = DatabaseBriefDto.builder()
+            .id(DATABASE_4_ID)
+            .isPublic(DATABASE_4_PUBLIC)
+            .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .description(DATABASE_4_DESCRIPTION)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .ownerId(USER_4_ID)
+            .identifiers(new LinkedList<>())
+            .build();
+
     public final static DatabaseDto DATABASE_4_DTO = DatabaseDto.builder()
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
@@ -1420,9 +1436,9 @@ public abstract class BaseTest {
             .internalName(DATABASE_4_INTERNALNAME)
             .exchangeName(DATABASE_4_EXCHANGE)
             .owner(USER_4_BRIEF_DTO)
-            .tables(new LinkedList<>())
+            .tables(new LinkedList<>()) /* TABLE_9_DTO */
             .views(new LinkedList<>())
-            .identifiers(new LinkedList<>())
+            .identifiers(new LinkedList<>()) /* IDENTIFIER_7_DTO */
             .build();
 
     public final static TableCreateDto TABLE_0_CREATE_DTO = TableCreateDto.builder()
@@ -1612,10 +1628,9 @@ public abstract class BaseTest {
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
-    public final static PrivilegedTableDto TABLE_1_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+    public final static TableDto TABLE_1_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .isPublic(TABLE_1_SCHEMA_PUBLIC)
@@ -1826,10 +1841,9 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
-    public final static PrivilegedTableDto TABLE_2_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+    public final static TableDto TABLE_2_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .internalName(TABLE_2_INTERNALNAME)
             .isVersioned(TABLE_2_VERSIONED)
             .isPublic(TABLE_2_IS_PUBLIC)
@@ -2036,10 +2050,9 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static PrivilegedTableDto TABLE_5_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+    public final static TableDto TABLE_5_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_5_ID)
             .tdbid(DATABASE_2_ID)
-            .database(null) /* DATABASE_2_PRIVILEGED_DTO */
             .internalName(TABLE_5_INTERNALNAME)
             .isVersioned(TABLE_5_VERSIONED)
             .isPublic(TABLE_5_IS_PUBLIC)
@@ -2407,7 +2420,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static PrivilegedTableDto TABLE_8_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+    public final static TableDto TABLE_8_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_8_ID)
             .tdbid(TABLE_8_DATABASE_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
@@ -2483,7 +2496,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static PrivilegedTableDto TABLE_9_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+    public final static TableDto TABLE_9_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_9_ID)
             .tdbid(TABLE_9_DATABASE_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
@@ -2979,7 +2992,7 @@ public abstract class BaseTest {
             .isPersisted(QUERY_3_PERSISTED)
             .resultNumber(2L)
             .build();
-    
+
     public final static Long QUERY_7_ID = 7L;
     public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
     public final static String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
@@ -5117,10 +5130,9 @@ public abstract class BaseTest {
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
-    public final static PrivilegedViewDto VIEW_1_PRIVILEGED_DTO = PrivilegedViewDto.builder()
+    public final static ViewDto VIEW_1_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .name(VIEW_1_NAME)
             .internalName(VIEW_1_INTERNAL_NAME)
             .vdbid(VIEW_1_DATABASE_ID)
@@ -5279,10 +5291,9 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static PrivilegedViewDto VIEW_2_PRIVILEGED_DTO = PrivilegedViewDto.builder()
+    public final static ViewDto VIEW_2_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .name(VIEW_2_NAME)
             .internalName(VIEW_2_INTERNAL_NAME)
             .vdbid(VIEW_2_DATABASE_ID)
@@ -5380,10 +5391,9 @@ public abstract class BaseTest {
             .owner(USER_1)
             .build();
 
-    public final static PrivilegedViewDto VIEW_3_PRIVILEGED_DTO = PrivilegedViewDto.builder()
+    public final static ViewDto VIEW_3_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
             .vdbid(VIEW_3_DATABASE_ID)
@@ -7518,27 +7528,20 @@ public abstract class BaseTest {
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
             .name(DATABASE_1_NAME)
-            .container(CONTAINER_1_BRIEF_DTO)
-            .internalName(DATABASE_1_INTERNALNAME)
-            .exchangeName(DATABASE_1_EXCHANGE)
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_1_BRIEF_DTO, TABLE_2_BRIEF_DTO, TABLE_3_BRIEF_DTO, TABLE_4_BRIEF_DTO)))
-            .views(new LinkedList<>(List.of(VIEW_1_BRIEF_DTO, VIEW_2_BRIEF_DTO, VIEW_3_BRIEF_DTO)))
-            .build();
-
-    public final static PrivilegedDatabaseDto DATABASE_1_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
-            .id(DATABASE_1_ID)
-            .isPublic(DATABASE_1_PUBLIC)
-            .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
-            .name(DATABASE_1_NAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .container(CONTAINER_1_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)))
             .tables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)))
             .views(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)))
-            .owner(USER_1_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
+            .build();
+
+    public final static DatabaseBriefDto DATABASE_1_BRIEF_DTO = DatabaseBriefDto.builder()
+            .id(DATABASE_1_ID)
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -7672,7 +7675,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static PrivilegedDatabaseDto DATABASE_2_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+    public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
@@ -7687,18 +7690,13 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
+    public final static DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
-            .container(CONTAINER_1_BRIEF_DTO)
             .internalName(DATABASE_2_INTERNALNAME)
-            .exchangeName(DATABASE_2_EXCHANGE)
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_5_BRIEF_DTO, TABLE_6_BRIEF_DTO, TABLE_7_BRIEF_DTO)))
-            .views(new LinkedList<>(List.of(VIEW_4_BRIEF_DTO)))
-            .identifiers(new LinkedList<>())
-            .owner(USER_2_BRIEF_DTO)
+            .ownerId(USER_2_ID)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -7924,21 +7922,6 @@ public abstract class BaseTest {
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static PrivilegedDatabaseDto DATABASE_3_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
-            .id(DATABASE_3_ID)
-            .isPublic(DATABASE_3_PUBLIC)
-            .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
-            .name(DATABASE_3_NAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
-            .internalName(DATABASE_3_INTERNALNAME)
-            .exchangeName(DATABASE_3_EXCHANGE)
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_6_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_8_DTO)))
-            .views(new LinkedList<>(List.of(VIEW_5_DTO)))
-            .owner(USER_3_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
-            .build();
-
     public final static Identifier IDENTIFIER_7 = Identifier.builder()
             .id(IDENTIFIER_7_ID)
             .descriptions(new LinkedList<>())
@@ -7983,21 +7966,6 @@ public abstract class BaseTest {
             .tables(new LinkedList<>())
             .views(new LinkedList<>())
             .identifiers(new LinkedList<>())
-            .build();
-
-    public final static PrivilegedDatabaseDto DATABASE_4_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
-            .id(DATABASE_4_ID)
-            .isPublic(DATABASE_4_PUBLIC)
-            .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
-            .name(DATABASE_4_NAME)
-            .container(CONTAINER_1_PRIVILEGED_DTO)
-            .internalName(DATABASE_4_INTERNALNAME)
-            .exchangeName(DATABASE_4_EXCHANGE)
-            .identifiers(new LinkedList<>(List.of(IDENTIFIER_7_DTO)))
-            .tables(new LinkedList<>(List.of(TABLE_9_DTO)))
-            .views(new LinkedList<>(List.of()))
-            .owner(USER_3_BRIEF_DTO)
-            .lastRetrieved(Instant.now())
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()

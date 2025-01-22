@@ -24,7 +24,7 @@
                     v-model="modify.description"
                     rows="2"
                     :rules="[
-                      v => !max(v, 180) || ($t('validation.max-length') + 180),
+                      v => max(v, 180) || ($t('validation.max-length') + 180),
                     ]"
                     clearable
                     counter="180"

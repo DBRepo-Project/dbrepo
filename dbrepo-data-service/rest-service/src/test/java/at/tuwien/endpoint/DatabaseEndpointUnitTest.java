@@ -2,13 +2,10 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.CredentialService;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.SubsetService;
+import at.tuwien.service.*;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +39,9 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     private SubsetService queryService;
 
     @MockBean
+    private ContainerService containerService;
+
+    @MockBean
     private AccessService accessService;
 
     @MockBean
@@ -63,15 +63,15 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
-        when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(CONTAINER_1_DTO);
+        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_DTO);
         doNothing()
-                .when(queryService)
-                .createQueryStore(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+                .when(containerService)
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(PrivilegedUserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_DTO), any(UserDto.class), any(AccessTypeDto.class));
 
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
@@ -85,15 +85,15 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
-        when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(CONTAINER_1_DTO);
+        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_DTO);
         doNothing()
-                .when(queryService)
-                .createQueryStore(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+                .when(containerService)
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(PrivilegedUserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_DTO), any(UserDto.class), any(AccessTypeDto.class));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -108,10 +108,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getContainer(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+                .thenReturn(CONTAINER_1_DTO);
         doThrow(SQLException.class)
-                .when(databaseService)
-                .create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
+                .when(containerService)
+                .createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -144,11 +144,11 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         doThrow(ContainerNotFoundException.class)
                 .when(credentialService)
                 .getContainer(CONTAINER_1_ID);
-        when(databaseService.create(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
+                .thenReturn(DATABASE_1_DTO);
         doThrow(QueryStoreCreateException.class)
-                .when(queryService)
-                .createQueryStore(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+                .when(containerService)
+                .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -163,7 +163,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
@@ -176,10 +176,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_DTO, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -193,7 +193,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -224,10 +224,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         doThrow(DatabaseMalformedException.class)
                 .when(databaseService)
-                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_DTO, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {

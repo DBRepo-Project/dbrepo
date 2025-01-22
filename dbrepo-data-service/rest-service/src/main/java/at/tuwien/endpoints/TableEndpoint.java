@@ -3,11 +3,9 @@ package at.tuwien.endpoints;
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
@@ -47,24 +45,24 @@ import java.util.Map;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/table")
-public class TableEndpoint extends AbstractEndpoint {
+public class TableEndpoint extends RestEndpoint {
 
     private final TableService tableService;
-    private final SchemaService schemaService;
     private final MetricsService metricsService;
     private final StorageService storageService;
+    private final DatabaseService databaseService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, SchemaService schemaService, MetricsService metricsService,
-                         StorageService storageService, CredentialService credentialService,
+    public TableEndpoint(TableService tableService, MetricsService metricsService, StorageService storageService,
+                         DatabaseService databaseService, CredentialService credentialService,
                          EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
-        this.schemaService = schemaService;
         this.metricsService = metricsService;
         this.storageService = storageService;
+        this.databaseService = databaseService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
         this.metadataServiceGateway = metadataServiceGateway;
@@ -113,11 +111,11 @@ public class TableEndpoint extends AbstractEndpoint {
             throw new TableMalformedException("Table must have a primary key");
         }
         /* create */
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         try {
-            final TableDto table = tableService.createTable(database, data);
+            final TableDto table = databaseService.createTable(database, data);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(schemaService.inspectTable(database, table.getInternalName()));
+                    .body(databaseService.inspectTable(database, table.getInternalName()));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -157,7 +155,7 @@ public class TableEndpoint extends AbstractEndpoint {
             TableMalformedException, DatabaseUnavailableException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint update table, databaseId={}, data.description={}", databaseId, data.getDescription());
         /* create */
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         try {
             tableService.updateTable(table, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -200,7 +198,7 @@ public class TableEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, MetadataServiceException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         try {
             tableService.delete(table);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -253,7 +251,7 @@ public class TableEndpoint extends AbstractEndpoint {
                                                              @NotNull HttpServletRequest request,
                                                              Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            PaginationException, MetadataServiceException, NotAllowedException {
+            PaginationException, MetadataServiceException, NotAllowedException, DatabaseNotFoundException {
         log.debug("endpoint get table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}", databaseId,
                 tableId, timestamp, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -270,7 +268,7 @@ public class TableEndpoint extends AbstractEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         if (!table.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed find table data: authentication required");
@@ -289,8 +287,8 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
-            final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp,
-                    null, null, null, null);
+            final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(table.getTdbid()),
+                    table.getInternalName(), timestamp, null, null, null, null);
             metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -340,7 +338,7 @@ public class TableEndpoint extends AbstractEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, StorageUnavailableException,
             StorageNotFoundException, MetadataServiceException {
         log.debug("endpoint insert raw table data, databaseId={}, tableId={}", databaseId, tableId);
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = credentialService.getAccess(databaseId, getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
         try {
@@ -393,7 +391,7 @@ public class TableEndpoint extends AbstractEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint update raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = credentialService.getAccess(databaseId, getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
         try {
@@ -446,7 +444,7 @@ public class TableEndpoint extends AbstractEndpoint {
             TableMalformedException, QueryMalformedException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint delete raw table data, databaseId={}, tableId={}, data.keys={}", databaseId, tableId,
                 data.getKeys());
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = credentialService.getAccess(databaseId, getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
         try {
@@ -506,7 +504,7 @@ public class TableEndpoint extends AbstractEndpoint {
             log.debug("size not set: default to 100L");
             size = 100L;
         }
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         if (!table.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to find table history: no authentication found");
@@ -565,9 +563,9 @@ public class TableEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint inspect table schemas, databaseId={}", databaseId);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         try {
-            return ResponseEntity.ok(tableService.getSchemas(database));
+            return ResponseEntity.ok(databaseService.exploreTables(database));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -611,14 +609,14 @@ public class TableEndpoint extends AbstractEndpoint {
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, StorageUnavailableException,
-            QueryMalformedException, MetadataServiceException {
+            QueryMalformedException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint export table data, databaseId={}, tableId={}, timestamp={}", databaseId, tableId, timestamp);
         /* parameters */
         if (timestamp == null) {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         if (!table.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to export private table: principal is null");
@@ -626,8 +624,8 @@ public class TableEndpoint extends AbstractEndpoint {
             }
             credentialService.getAccess(databaseId, getId(principal));
         }
-        final Dataset<Row> dataset = tableService.getData(table.getDatabase(), table.getInternalName(), timestamp, null,
-                null, null, null);
+        final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(table.getTdbid()),
+                table.getInternalName(), timestamp, null, null, null, null);
         metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
@@ -677,7 +675,7 @@ public class TableEndpoint extends AbstractEndpoint {
             StorageNotFoundException, MalformedException, StorageUnavailableException, QueryMalformedException,
             DatabaseUnavailableException {
         log.debug("endpoint insert table data, databaseId={}, tableId={}, data.location={}", databaseId, tableId, data.getLocation());
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         final DatabaseAccessDto access = credentialService.getAccess(databaseId, getId(principal));
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(access.getType(), table.getOwner().getId(), getId(principal));
         if (data.getLineTermination() == null) {
@@ -725,11 +723,11 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") Long databaseId,
                                                        @NotNull @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, TableMalformedException {
+            MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final PrivilegedTableDto table = credentialService.getTable(databaseId, tableId);
+        final TableDto table = credentialService.getTable(databaseId, tableId);
         try {
-            return ResponseEntity.ok(tableService.getStatistics(table));
+            return ResponseEntity.ok(tableService.getStatistics(credentialService.getDatabase(table.getTdbid()), table));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

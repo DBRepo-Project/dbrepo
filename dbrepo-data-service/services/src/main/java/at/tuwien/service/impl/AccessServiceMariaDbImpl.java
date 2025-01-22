@@ -1,8 +1,8 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.AccessService;
@@ -17,7 +17,7 @@ import java.sql.SQLException;
 
 @Log4j2
 @Service
-public class AccessServiceMariaDbImpl extends HibernateConnector implements AccessService {
+public class AccessServiceMariaDbImpl extends DataConnector<DatabaseDto> implements AccessService {
 
     @Value("${dbrepo.grant.default.read}")
     private String grantDefaultRead;
@@ -33,9 +33,9 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void create(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access)
+    public void create(DatabaseDto database, UserDto user, AccessTypeDto access)
             throws SQLException, DatabaseMalformedException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* create user if not exists */
@@ -71,9 +71,9 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void update(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access)
+    public void update(DatabaseDto database, UserDto user, AccessTypeDto access)
             throws DatabaseMalformedException, SQLException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* grant access */
@@ -96,9 +96,9 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
     }
 
     @Override
-    public void delete(PrivilegedDatabaseDto database, PrivilegedUserDto user) throws DatabaseMalformedException,
+    public void delete(DatabaseDto database, UserDto user) throws DatabaseMalformedException,
             SQLException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* revoke access */
@@ -109,7 +109,7 @@ public class AccessServiceMariaDbImpl extends HibernateConnector implements Acce
             /* apply access rights */
             start = System.currentTimeMillis();
             connection.prepareStatement(mariaDbMapper.databaseFlushPrivilegesQuery())
-                            .execute();
+                    .execute();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
         } catch (SQLException e) {

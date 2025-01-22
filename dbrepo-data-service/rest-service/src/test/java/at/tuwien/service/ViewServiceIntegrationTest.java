@@ -1,12 +1,8 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.exception.ViewMalformedException;
-import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,9 +16,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @SpringBootTest
@@ -40,47 +33,15 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
     }
 
     @Test
     public void delete_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        viewService.delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_INTERNAL_NAME);
-    }
-
-    @Test
-    public void create_succeeds() throws SQLException, ViewMalformedException {
-
-        /* test */
-        viewService.create(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
-    }
-
-    @Test
-    public void getSchemas_succeeds() throws SQLException, ViewNotFoundException, DatabaseMalformedException {
-
-        /* test */
-        final List<ViewDto> response = viewService.getSchemas(DATABASE_1_PRIVILEGED_DTO);
-        final ViewDto view0 = response.get(0);
-        assertEquals("not_in_metadata_db2", view0.getName());
-        assertEquals("not_in_metadata_db2", view0.getInternalName());
-        assertEquals(DATABASE_1_ID, view0.getVdbid());
-        assertEquals(DATABASE_1_OWNER, view0.getOwner().getId());
-        assertFalse(view0.getIsInitialView());
-        assertEquals(DATABASE_1_PUBLIC, view0.getIsPublic());
-        assertTrue(view0.getQuery().length() >= 69);
-        assertNotNull(view0.getQueryHash());
-        assertEquals(4, view0.getColumns().size());
-        final ViewColumnDto column0a = view0.getColumns().get(0);
-        assertEquals("date", column0a.getInternalName());
-        final ViewColumnDto column1a = view0.getColumns().get(1);
-        assertEquals("location", column1a.getInternalName());
-        final ViewColumnDto column2a = view0.getColumns().get(2);
-        assertEquals("MinTemp", column2a.getInternalName());
-        final ViewColumnDto column3a = view0.getColumns().get(3);
-        assertEquals("Rainfall", column3a.getInternalName());
+        viewService.delete(VIEW_1_DTO);
     }
 
 }

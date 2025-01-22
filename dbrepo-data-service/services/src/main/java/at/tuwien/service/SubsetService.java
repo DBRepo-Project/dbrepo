@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.exception.*;
 import org.apache.spark.sql.Dataset;
@@ -13,17 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SubsetService {
-
-    /**
-     * Creates the query store in the container and database.
-     *
-     * @param container    The container.
-     * @param databaseName The database name.
-     * @throws SQLException              The connection to the database could not be established.
-     * @throws QueryStoreCreateException The query store could not be created.
-     */
-    void createQueryStore(PrivilegedContainerDto container, String databaseName) throws SQLException,
-            QueryStoreCreateException;
 
     /**
      * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
@@ -38,7 +26,7 @@ public interface SubsetService {
      * @throws QueryMalformedException The mapped query produced a database error.
      * @throws TableNotFoundException  The database table is malformed.
      */
-    Dataset<Row> getData(PrivilegedDatabaseDto database, QueryDto subset, Long page, Long size)
+    Dataset<Row> getData(DatabaseDto database, QueryDto subset, Long page, Long size)
             throws ViewMalformedException, SQLException, QueryMalformedException, TableNotFoundException;
 
     /**
@@ -52,7 +40,7 @@ public interface SubsetService {
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
      */
-    Long create(PrivilegedDatabaseDto database, String statement, Instant timestamp, UUID userId)
+    Long create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException;
 
     /**
@@ -64,7 +52,7 @@ public interface SubsetService {
      * @throws TableMalformedException The table is malformed.
      * @throws SQLException            The connection to the database could not be established.
      */
-    Long reExecuteCount(PrivilegedDatabaseDto database, QueryDto query) throws TableMalformedException,
+    Long reExecuteCount(DatabaseDto database, QueryDto query) throws TableMalformedException,
             SQLException, QueryMalformedException;
 
     /**
@@ -75,11 +63,11 @@ public interface SubsetService {
      * @return The list of queries.
      * @throws SQLException               The connection to the database could not be established.
      * @throws QueryNotFoundException     The query was not found for re-execution.
-     * @throws RemoteUnavailableException The privileged database information could not be found in the Metadata Service.
+     * @throws RemoteUnavailableException The  database information could not be found in the Metadata Service.
      * @throws DatabaseNotFoundException  The database was not found in the Metadata Service.
      * @throws MetadataServiceException   The Metadata Service responded unexpected.
      */
-    List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
+    List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
@@ -93,7 +81,7 @@ public interface SubsetService {
      * @throws QueryMalformedException The mapped query produced a database error.
      * @throws TableMalformedException The database table is malformed.
      */
-    Long executeCountNonPersistent(PrivilegedDatabaseDto database, String statement, Instant timestamp)
+    Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
             throws SQLException, QueryMalformedException, TableMalformedException;
 
     /**
@@ -104,12 +92,12 @@ public interface SubsetService {
      * @return The query.
      * @throws QueryNotFoundException     The query store did not return a query.
      * @throws SQLException               The connection to the database could not be established.
-     * @throws RemoteUnavailableException The privileged database information could not be found in the Metadata Service.
+     * @throws RemoteUnavailableException The  database information could not be found in the Metadata Service.
      * @throws UserNotFoundException      The user that created the query was not found in the Metadata Service.
      * @throws DatabaseNotFoundException  The database metadata was not found in the Metadata Service.
      * @throws MetadataServiceException   Communication with the Metadata Service failed.
      */
-    QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
+    QueryDto findById(DatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
@@ -122,7 +110,7 @@ public interface SubsetService {
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
-    Long storeQuery(PrivilegedDatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
+    Long storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
             QueryStoreInsertException;
 
     /**
@@ -134,7 +122,7 @@ public interface SubsetService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      */
-    void persist(PrivilegedDatabaseDto database, Long queryId, Boolean persist) throws SQLException,
+    void persist(DatabaseDto database, Long queryId, Boolean persist) throws SQLException,
             QueryStorePersistException;
 
     /**
@@ -144,5 +132,5 @@ public interface SubsetService {
      * @throws SQLException          The connection to the database could not be established.
      * @throws QueryStoreGCException The query store failed to delete stale queries.
      */
-    void deleteStaleQueries(PrivilegedDatabaseDto database) throws SQLException, QueryStoreGCException;
+    void deleteStaleQueries(DatabaseDto database) throws SQLException, QueryStoreGCException;
 }

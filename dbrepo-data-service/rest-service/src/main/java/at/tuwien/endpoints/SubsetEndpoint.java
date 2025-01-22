@@ -1,9 +1,9 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
@@ -46,25 +46,25 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/subset")
-public class SubsetEndpoint extends AbstractEndpoint {
+public class SubsetEndpoint extends RestEndpoint {
 
-    private final SchemaService schemaService;
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
     private final MetricsService metricsService;
     private final StorageService storageService;
+    private final DatabaseService databaseService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public SubsetEndpoint(SchemaService schemaService, SubsetService subsetService, MetadataMapper metadataMapper,
-                          MetricsService metricsService, StorageService storageService,
+    public SubsetEndpoint(SubsetService subsetService, MetadataMapper metadataMapper, MetricsService metricsService,
+                          StorageService storageService, DatabaseService databaseService,
                           CredentialService credentialService, EndpointValidator endpointValidator) {
-        this.schemaService = schemaService;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
         this.metricsService = metricsService;
         this.storageService = storageService;
+        this.databaseService = databaseService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
     }
@@ -102,7 +102,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final List<QueryDto> queries;
         try {
@@ -164,7 +164,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             NotAllowedException {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final QueryDto subset;
         try {
@@ -286,7 +286,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
             final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
@@ -345,7 +345,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to re-execute query: no authentication found");
@@ -377,7 +377,8 @@ public class SubsetEndpoint extends AbstractEndpoint {
             }
             final Dataset<Row> dataset = subsetService.getData(database, subset, page, size);
             metricsService.countSubsetGetData(databaseId, subsetId);
-            final ViewDto view = schemaService.inspectView(database, metadataMapper.queryDtoToViewName(subset));
+            final String viewName = metadataMapper.queryDtoToViewName(subset);
+            final ViewDto view = databaseService.inspectView(database, viewName);
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
             return ResponseEntity.status(request.getMethod().equals("POST") ? HttpStatus.CREATED : HttpStatus.OK)
@@ -435,7 +436,7 @@ public class SubsetEndpoint extends AbstractEndpoint {
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         credentialService.getAccess(databaseId, getId(principal));
         try {
             subsetService.persist(database, queryId, data.getPersist());

@@ -198,7 +198,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.refreshTableMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -218,7 +218,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
+        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.refreshViewMetadata(DATABASE_1_ID, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -682,7 +682,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1);
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(data, principal);
+        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(data, principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -704,7 +704,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.visibility(databaseId, data, principal);
+        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.visibility(databaseId, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
