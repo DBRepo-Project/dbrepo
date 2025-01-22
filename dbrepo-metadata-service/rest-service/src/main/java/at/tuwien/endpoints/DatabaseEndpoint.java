@@ -551,6 +551,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
             headers.set("X-Host", database.getContainer().getHost());
             headers.set("X-Port", "" + database.getContainer().getPort());
+            headers.set("X-Type", database.getContainer().getImage().getJdbcMethod());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port");
         }
         return ResponseEntity.status(HttpStatus.OK)

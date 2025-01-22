@@ -100,7 +100,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Host", "X-Port");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Host", "X-Port", "X-Type");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  database headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -112,10 +112,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             throw new MetadataServiceException("Failed to find database with id " + id + ": body is empty");
         }
         final DatabaseDto database = response.getBody();
-        database.getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
-        database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
-        database.getContainer().setHost(response.getHeaders().get("X-Host").get(0));
-        database.getContainer().setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
+        database.setJdbcMethod(response.getHeaders().get("X-Type").get(0));
+        database.setUsername(response.getHeaders().get("X-Username").get(0));
+        database.setPassword(response.getHeaders().get("X-Password").get(0));
+        database.setHost(response.getHeaders().get("X-Host").get(0));
+        database.setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
         database.setLastRetrieved(Instant.now());
         return database;
     }
@@ -139,7 +140,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Table");
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Table", "X-Type");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  table headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -181,7 +182,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-View");
+        final List<String> expectedHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-View", "X-Type");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  view headers");
             log.debug("expected headers: {}", expectedHeaders);

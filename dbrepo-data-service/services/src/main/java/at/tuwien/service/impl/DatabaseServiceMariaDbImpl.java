@@ -13,13 +13,10 @@ import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.TableService;
-import at.tuwien.service.ViewService;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -36,19 +33,14 @@ public class DatabaseServiceMariaDbImpl extends DataConnector<DatabaseDto> imple
 
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;
-    private final ViewService viewService;
-    private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, ViewService viewService,
-                                      TableService tableService, MariaDbMapper mariaDbMapper,
-                                      @Qualifier("metadataMapper") MetadataMapper metadataMapper) {
+    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
+                                      MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
         this.queryConfig = queryConfig;
-        this.viewService = viewService;
-        this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
     }

@@ -20,16 +20,16 @@ build-ui: ## Build the UI.
 
 .PHONY: build-lib
 build-lib: ## Build the Python Library.
-	rm -f ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}.tar.gz
-	rm -f ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}.tar.gz
-	rm -f ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}.tar.gz
+	rm -f ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}*
+	rm -f ./dbrepo-search-service/Pipfile.lock ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}*
+	rm -f ./dbrepo-search-service/init/Pipfile.lock ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}*
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
-	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}.tar.gz
+	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
 	(cd ./dbrepo-analyse-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
-	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}.tar.gz
+	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/lib
 	(cd ./dbrepo-search-service && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
-	cp ./lib/python/dist/dbrepo-${APP_VERSION}.tar.gz ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}.tar.gz
+	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-search-service/init/lib
 	(cd ./dbrepo-search-service/init && PIPENV_IGNORE_VIRTUALENVS=1 pipenv lock)
 
 .PHONY: build-helm

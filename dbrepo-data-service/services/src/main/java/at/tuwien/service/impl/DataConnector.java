@@ -12,7 +12,7 @@ public abstract class DataConnector<T extends CacheableDto> {
     public ComboPooledDataSource getDataSource(T entity) {
         final long start = System.currentTimeMillis();
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
-        dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPassword(),
+        dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPort(),
                 entity.getDatabase()));
         dataSource.setUser(entity.getUsername());
         dataSource.setPassword(entity.getPassword());
@@ -27,7 +27,7 @@ public abstract class DataConnector<T extends CacheableDto> {
     public ComboPooledDataSource getDataSource(T entity, String databaseName) {
         final long start = System.currentTimeMillis();
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
-        dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPassword(), databaseName));
+        dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPort(), databaseName));
         dataSource.setUser(entity.getUsername());
         dataSource.setPassword(entity.getPassword());
         dataSource.setInitialPoolSize(5);
@@ -38,24 +38,24 @@ public abstract class DataConnector<T extends CacheableDto> {
         return dataSource;
     }
 
-    public String getSparkUrl(String jdbcMethod, String host, String password, String databaseName) {
-        final StringBuilder sb = new StringBuilder(getJdbcUrl(jdbcMethod, host, password, databaseName))
+    public String getSparkUrl(String jdbcMethod, String host, Integer port, String databaseName) {
+        final StringBuilder sb = new StringBuilder(getJdbcUrl(jdbcMethod, host, port, databaseName))
                 .append("?sessionVariables=sql_mode='ANSI_QUOTES'");
         log.trace("mapped container to spark url: {}", sb.toString());
         return sb.toString();
     }
 
     public String getSparkUrl(T entity) {
-        return getSparkUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPassword(), entity.getDatabase());
+        return getSparkUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPort(), entity.getDatabase());
     }
 
-    public String getJdbcUrl(String jdbcMethod, String host, String password, String databaseName) {
+    public String getJdbcUrl(String jdbcMethod, String host, Integer port, String databaseName) {
         final StringBuilder stringBuilder = new StringBuilder("jdbc:")
                 .append(jdbcMethod)
                 .append("://")
                 .append(host)
                 .append(":")
-                .append(password);
+                .append(port);
         if (databaseName != null) {
             stringBuilder.append("/")
                     .append(databaseName);

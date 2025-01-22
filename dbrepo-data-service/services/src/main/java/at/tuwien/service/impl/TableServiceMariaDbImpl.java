@@ -374,10 +374,10 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
             throws QueryMalformedException, TableNotFoundException {
         try {
             final Properties properties = new Properties();
-            properties.setProperty("user", database.getContainer().getUsername());
-            properties.setProperty("password", database.getContainer().getPassword());
+            properties.setProperty("user", database.getUsername());
+            properties.setProperty("password", database.getPassword());
             return sparkSession.read()
-                    .jdbc(getSparkUrl(database.getJdbcMethod(), database.getHost(), database.getPassword(),
+                    .jdbc(getSparkUrl(database.getJdbcMethod(), database.getHost(), database.getPort(),
                             database.getInternalName()), tableOrView, properties);
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException exception) {
@@ -386,8 +386,8 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
                     throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
                 }
             }
-            log.error("Failed to find get data from query statement: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to find get data from query statement: " + e.getMessage(), e);
+            log.error("Malformed query: {}", e.getMessage());
+            throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
         }
     }
 
