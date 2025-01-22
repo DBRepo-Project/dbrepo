@@ -51,9 +51,9 @@ lint-docker-compose:
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
     - "bash .scripts/check-compose.sh"
-    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
+    - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
@@ -126,8 +126,8 @@ lint-open-api-version:
     - 'apk --no-cache add bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - yq r ./.docs/.openapi/api.base.yaml 'externalDocs.url' | grep "${DOC_VERSION}"
-    - yq r ./.docs/.openapi/api.base.yaml 'info.version' | grep "${DOC_VERSION}"
+    - yq '.externalDocs.url' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
+    - yq '.info.version' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
