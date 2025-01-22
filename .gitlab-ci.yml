@@ -126,8 +126,8 @@ lint-swagger-version:
     - 'apk --no-cache add bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - cat ./.docs/.swagger/api.base.yaml | yq .externalDocs.url | grep "${DOC_VERSION}"
-    - cat ./.docs/.swagger/api.base.yaml | yq .info.version | grep "${APP_VERSION}"
+    - yq r ./.docs/.swagger/api.base.yaml 'externalDocs.url' | grep "${DOC_VERSION}"
+    - yq r ./.docs/.swagger/api.base.yaml 'info.version' | grep "${DOC_VERSION}"
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
