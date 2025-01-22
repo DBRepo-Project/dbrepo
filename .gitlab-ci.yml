@@ -49,7 +49,6 @@ lint-docker-compose:
   before_script:
     - 'apk --no-cache add bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-    - 'ls -la .scripts'
   script:
     - "bash .scripts/check-compose.sh"
     - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
@@ -116,6 +115,19 @@ lint-metadata-schema:
   stage: lint
   script:
     - diff dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
+
+lint-swagger-version:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: lint
+  variables:
+    VERSION: 3.3.0
+    BINARY: yq_linux_amd64
+  before_script:
+    - 'apk --no-cache add bash wget'
+    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+  script:
+    - cat ./.docs/.swagger/api.base.yaml | yq .externalDocs.url | grep "${DOC_VERSION}"
+    - cat ./.docs/.swagger/api.base.yaml | yq .info.version | grep "${APP_VERSION}"
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
