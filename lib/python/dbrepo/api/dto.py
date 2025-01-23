@@ -113,11 +113,11 @@ class ContainerBrief(BaseModel):
 class ColumnBrief(BaseModel):
     id: int
     name: str
-    alias: str
     database_id: int
     table_id: int
     internal_name: str
     type: ColumnType
+    alias: Optional[str] = None
 
 
 class TableBrief(BaseModel):

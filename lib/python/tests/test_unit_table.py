@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, ConceptBrief, UnitBrief, \
-    TableStatistics, ColumnStatistic, PrimaryKey, TableMinimal, ColumnMinimal, TableBrief, UserBrief
+    TableStatistics, ColumnStatistic, PrimaryKey, ColumnBrief, TableBrief, UserBrief
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
     AuthenticationError, ExternalSystemError
 
@@ -29,9 +29,20 @@ class TableUnitTest(unittest.TestCase):
                                             foreign_keys=[],
                                             checks=[],
                                             primary_key=[PrimaryKey(id=1,
-                                                                    table=TableMinimal(id=2, database_id=1),
-                                                                    column=ColumnMinimal(id=1, table_id=2,
-                                                                                         database_id=1))]),
+                                                                    table=TableBrief(id=2, database_id=1,
+                                                                                     name='Other',
+                                                                                     internal_name='other',
+                                                                                     description=None,
+                                                                                     is_versioned=True,
+                                                                                     is_public=True,
+                                                                                     is_schema_public=True,
+                                                                                     owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16'),
+                                                                    column=ColumnBrief(id=1, table_id=2,
+                                                                                       database_id=1,
+                                                                                       name='id',
+                                                                                       alias=None,
+                                                                                       internal_name='id',
+                                                                                       type=ColumnType.BIGINT))]),
                     columns=[Column(id=1,
                                     ord=0,
                                     name="ID",
@@ -159,9 +170,20 @@ class TableUnitTest(unittest.TestCase):
                                                 foreign_keys=[],
                                                 checks=[],
                                                 primary_key=[PrimaryKey(id=1,
-                                                                        table=TableMinimal(id=2, database_id=1),
-                                                                        column=ColumnMinimal(id=1, table_id=2,
-                                                                                             database_id=1))]),
+                                                                        table=TableBrief(id=2, database_id=1,
+                                                                                         name='Other',
+                                                                                         internal_name='other',
+                                                                                         description=None,
+                                                                                         is_versioned=True,
+                                                                                         is_public=True,
+                                                                                         is_schema_public=True,
+                                                                                         owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16'),
+                                                                        column=ColumnBrief(id=1, table_id=2,
+                                                                                           database_id=1,
+                                                                                           name='id',
+                                                                                           alias=None,
+                                                                                           internal_name='id',
+                                                                                           type=ColumnType.BIGINT))]),
                         columns=[Column(id=1,
                                         name="ID",
                                         ord=0,

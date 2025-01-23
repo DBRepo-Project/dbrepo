@@ -2,7 +2,7 @@ package at.tuwien.gateway;
 
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseBriefDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.TableDto;
@@ -252,9 +252,9 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* mock */
-        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
-                        .body(DATABASE_1_BRIEF_DTO));
+                        .body(DATABASE_1_DTO));
 
         /* test */
         dataServiceGateway.createDatabase(DATABASE_1_CREATE_INTERNAL);
@@ -266,7 +266,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpServerErrorException.class)
                 .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseBriefDto.class));
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class));
 
         /* test */
         assertThrows(DataServiceConnectionException.class, () -> {
@@ -280,7 +280,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseBriefDto.class));
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class));
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
@@ -294,7 +294,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(dataServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseBriefDto.class));
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class));
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
@@ -306,7 +306,7 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
     public void createDatabase_responseCode_fails() {
 
         /* mock */
-        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .build());
 

@@ -4,7 +4,7 @@ import requests_mock
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Database, Container, Image, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
+from dbrepo.api.dto import Database, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
     ContainerBrief, ImageBrief
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
@@ -24,7 +24,7 @@ class DatabaseUnitTest(unittest.TestCase):
             DatabaseBrief(
                 id=1,
                 name='test',
-                owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                owner_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 internal_name='test_abcd',
                 is_public=True,

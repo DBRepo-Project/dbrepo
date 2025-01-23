@@ -1,14 +1,12 @@
 import unittest
 
 import requests_mock
-import datetime
 
 from dbrepo.RestClient import RestClient
-
-from dbrepo.api.dto import Identifier, IdentifierType, CreateIdentifierTitle, CreateIdentifierCreator, \
-    IdentifierCreator, IdentifierTitle, IdentifierDescription, CreateIdentifierDescription, Language, \
-    CreateIdentifierFunder, CreateRelatedIdentifier, RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, \
-    RelatedIdentifier, UserBrief, IdentifierStatusType
+from dbrepo.api.dto import Identifier, IdentifierType, CreateIdentifierTitle, Creator, IdentifierTitle, \
+    IdentifierDescription, CreateIdentifierDescription, Language, CreateIdentifierFunder, CreateRelatedIdentifier, \
+    RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, RelatedIdentifier, UserBrief, \
+    IdentifierStatusType, CreateIdentifierCreator
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, AuthenticationError
 
 
@@ -29,7 +27,7 @@ class IdentifierUnitTest(unittest.TestCase):
                              related_identifiers=[
                                  RelatedIdentifier(id=7, value='10.12345/abc', relation=RelatedIdentifierRelation.CITES,
                                                    type=RelatedIdentifierType.DOI)],
-                             creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
+                             creators=[Creator(id=5, creator_name='Carberry, Josiah')],
                              status=IdentifierStatusType.PUBLISHED,
                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
@@ -127,7 +125,7 @@ class IdentifierUnitTest(unittest.TestCase):
                               related_identifiers=[RelatedIdentifier(id=7, value='10.12345/abc',
                                                                      relation=RelatedIdentifierRelation.CITES,
                                                                      type=RelatedIdentifierType.DOI)],
-                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
+                              creators=[Creator(id=5, creator_name='Carberry, Josiah')],
                               status=IdentifierStatusType.PUBLISHED,
                               owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
             # mock
