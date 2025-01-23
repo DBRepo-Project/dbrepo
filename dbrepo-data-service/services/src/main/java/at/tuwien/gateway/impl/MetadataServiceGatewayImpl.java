@@ -115,6 +115,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         database.setJdbcMethod(response.getHeaders().get("X-Type").get(0));
         database.setUsername(response.getHeaders().get("X-Username").get(0));
         database.setPassword(response.getHeaders().get("X-Password").get(0));
+        database.setDatabase(database.getInternalName());
         database.setHost(response.getHeaders().get("X-Host").get(0));
         database.setPort(Integer.parseInt(response.getHeaders().get("X-Port").get(0)));
         database.setLastRetrieved(Instant.now());

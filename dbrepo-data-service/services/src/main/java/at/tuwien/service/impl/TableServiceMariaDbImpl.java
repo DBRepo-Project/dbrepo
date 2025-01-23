@@ -373,12 +373,16 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
                                 Long page, Long size, SortTypeDto sortDirection, String sortColumn)
             throws QueryMalformedException, TableNotFoundException {
         try {
-            final Properties properties = new Properties();
-            properties.setProperty("user", database.getUsername());
-            properties.setProperty("password", database.getPassword());
             return sparkSession.read()
-                    .jdbc(getSparkUrl(database.getJdbcMethod(), database.getHost(), database.getPort(),
-                            database.getInternalName()), tableOrView, properties);
+                    .format("jdbc")
+                    .option("user", database.getUsername())
+                    .option("password", database.getPassword())
+                    .option("url", getSparkUrl(database.getJdbcMethod(), database.getHost(), database.getPort(),
+                            database.getInternalName()))
+                    .option("query", mariaDbMapper.defaultRawSelectQuery(database.getInternalName(), tableOrView,
+                            timestamp, page, size))
+                    .load();
+
         } catch (Exception e) {
             if (e instanceof ExtendedAnalysisException exception) {
                 if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {

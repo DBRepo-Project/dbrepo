@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 public abstract class DataConnector<T extends CacheableDto> {
 
     public ComboPooledDataSource getDataSource(T entity) {
-        final long start = System.currentTimeMillis();
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPort(),
                 entity.getDatabase()));
@@ -25,7 +24,6 @@ public abstract class DataConnector<T extends CacheableDto> {
     }
 
     public ComboPooledDataSource getDataSource(T entity, String databaseName) {
-        final long start = System.currentTimeMillis();
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(getJdbcUrl(entity.getJdbcMethod(), entity.getHost(), entity.getPort(), databaseName));
         dataSource.setUser(entity.getUsername());
@@ -60,6 +58,7 @@ public abstract class DataConnector<T extends CacheableDto> {
             stringBuilder.append("/")
                     .append(databaseName);
         }
+        log.trace("mapped jdbc url: {}", stringBuilder);
         return stringBuilder.toString();
     }
 

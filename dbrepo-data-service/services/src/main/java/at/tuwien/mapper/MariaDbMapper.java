@@ -231,12 +231,6 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tableCreateDtoToSequenceName(at.tuwien.api.database.table.internal.TableCreateDto data) {
-        final String name = "seq_" + nameToInternalName(data.getName()) + "_id";
-        log.trace("mapped table name {} to sequence name {}", data.getName(), name);
-        return name;
-    }
-
     /**
      * Maps the desired data type to a MySQL string with the default MySQL 8 values for each
      *
@@ -731,27 +725,30 @@ public interface MariaDbMapper {
         }
     }
 
-    default String selectRawSelectQuery(String query, Instant timestamp, Long page, Long size) {
-        query = query.toLowerCase(Locale.ROOT)
-                .trim();
-        if (query.matches(";$")) {
-            /* remove last semicolon */
-            query = query.substring(0, query.length() - 1);
-        }
+    default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,
+                                         Long size) {
         /* query check (this is enforced by the db also) */
-        final StringBuilder statement = new StringBuilder("SELECT * FROM (")
-                .append(query)
-                .append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("' as tbl");
+        final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableOrViewName)
+                .append("`");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        statement.append(" as tbl");
         /* pagination */
-        log.trace("pagination size/limit of {}", size);
-        statement.append(" LIMIT ")
-                .append(size);
-        log.trace("pagination page/offset of {}", page);
-        statement.append(" OFFSET ")
-                .append(page * size);
-        statement.append(";");
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            statement.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            statement.append(" OFFSET ")
+                    .append(page * size);
+        }
+        statement.append(") as tbl2");
         log.trace("mapped select query: {}", statement);
         return statement.toString();
     }

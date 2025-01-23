@@ -75,8 +75,8 @@ export default defineNuxtConfig({
         }
       },
       api: {
-        client: 'https://dbrepo1.ec.tuwien.ac.at',
-        server: 'https://dbrepo1.ec.tuwien.ac.at',
+        client: 'http://localhost',
+        server: 'http://gateway-service',
       },
       upload: {
         client: 'http://localhost/api/upload/files',

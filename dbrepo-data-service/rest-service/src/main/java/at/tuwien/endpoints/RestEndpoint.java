@@ -45,6 +45,7 @@ public abstract class RestEndpoint {
         return UUID.fromString(user.getId());
     }
 
+    /* FIXME: Heap may run OOM */
     public List<Map<String, Object>> transform(Dataset<Row> dataset) {
         return dataset.collectAsList()
                 .stream()
