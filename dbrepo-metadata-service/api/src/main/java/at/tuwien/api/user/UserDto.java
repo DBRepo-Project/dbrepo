@@ -25,10 +25,6 @@ public class UserDto extends CacheableDto {
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;
 
-    @NotNull
-    @Schema(example = "jcarberry", description = "Only contains lowercase characters")
-    private String username;
-
     @Schema(example = "Josiah Carberry")
     private String name;
 
@@ -44,14 +40,37 @@ public class UserDto extends CacheableDto {
     @Schema(example = "Carberry")
     private String lastname;
 
+    @NotNull
+    private UserAttributesDto attributes;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
+
+    @ToString.Exclude
+    @Schema(example = "mariadb")
+    private String jdbcMethod;
+
+    @ToString.Exclude
+    @Schema(example = "data-db")
+    private String host;
+
+    @ToString.Exclude
+    @Schema(example = "3306")
+    private Integer port;
+
+    @ToString.Exclude
+    @Schema(example = "username")
+    private String username;
+
     @ToString.Exclude
     @JsonIgnore
     private String password;
 
-    @NotNull
-    private UserAttributesDto attributes;
-
-    @JsonProperty("last_retrieved")
-    private Instant lastRetrieved;
+    @ToString.Exclude
+    @Schema(example = "air_quality")
+    private String database;
 
 }

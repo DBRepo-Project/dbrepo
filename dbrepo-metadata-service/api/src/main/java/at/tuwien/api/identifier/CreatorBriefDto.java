@@ -2,12 +2,10 @@ package at.tuwien.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 
 
 @Getter
@@ -18,17 +16,11 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CreatorDto {
+public class CreatorBriefDto {
 
     @NotNull
     @Schema(example = "11")
     private Long id;
-
-    @Schema(example = "Josiah")
-    private String firstname;
-
-    @Schema(example = "Carberry")
-    private String lastname;
 
     @NotBlank
     @JsonProperty("creator_name")
@@ -47,10 +39,6 @@ public class CreatorDto {
     @Schema(example = "ORCID")
     private NameIdentifierSchemeTypeDto nameIdentifierScheme;
 
-    @JsonProperty("name_identifier_scheme_uri")
-    @Schema(example = "https://orcid.org/")
-    private String nameIdentifierSchemeUri;
-
     @Schema(example = "Brown University")
     private String affiliation;
 
@@ -61,9 +49,5 @@ public class CreatorDto {
     @JsonProperty("affiliation_identifier_scheme")
     @Schema(example = "ROR")
     private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
-
-    @JsonProperty("affiliation_identifier_scheme_uri")
-    @Schema(example = "https://ror.org/")
-    private String affiliationIdentifierSchemeUri;
 
 }

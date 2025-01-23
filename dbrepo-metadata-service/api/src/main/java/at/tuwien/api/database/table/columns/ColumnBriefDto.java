@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -18,31 +19,36 @@ import lombok.extern.jackson.Jacksonized;
 public class ColumnBriefDto {
 
     @NotNull
+    @Schema(example = "1")
     private Long id;
 
-    @JsonProperty("database_id")
     @NotNull
+    @Schema(example = "2")
+    @JsonProperty("database_id")
     private Long databaseId;
 
-    @JsonProperty("table_id")
     @NotNull
+    @Schema(example = "3")
+    @JsonProperty("table_id")
     private Long tableId;
 
     @NotBlank
-    @Schema(example = "date")
+    @Size(max = 64)
+    @Schema(example = "Given Name")
     private String name;
 
     @NotBlank
+    @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(example = "mdb_date")
+    @Schema(example = "given_name")
     private String internalName;
 
-    @Schema
+    @Schema(example = "firstname")
     private String alias;
 
     @NotNull
-    @JsonProperty("column_type")
-    @Schema(example = "date")
+    @JsonProperty("type")
+    @Schema(example = "varchar")
     private ColumnTypeDto columnType;
 
 }

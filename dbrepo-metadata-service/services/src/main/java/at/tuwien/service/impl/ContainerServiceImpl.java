@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.container.ContainerCreateDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ContainerAlreadyExistsException;
@@ -38,7 +38,7 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container create(ContainerCreateDto data) throws ImageNotFoundException,
+    public Container create(CreateContainerDto data) throws ImageNotFoundException,
             ContainerAlreadyExistsException {
         final String containerName = "dbrepo-userdb-" + metadataMapper.nameToInternalName(data.getName());
         /* check */

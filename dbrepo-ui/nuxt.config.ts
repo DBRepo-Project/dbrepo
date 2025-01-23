@@ -3,19 +3,19 @@ import vuetify from 'vite-plugin-vuetify'
 
 const proxy: any = {}
 
-/* proxies the backend calls, >>NOT<< the frontend calls (clicking) */
-if (process.env.NODE_ENV === 'development') {
-  const api = 'http://localhost'
-  proxy['/api'] = api
-  proxy['/pid'] = {
-    target: api + '/api',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/pid': '/pid'
-    }
-  }
-  process.env.NUXT_PUBLIC_API_SERVER = api
-}
+// /* proxies the backend calls, >>NOT<< the frontend calls (clicking) */
+// if (process.env.NODE_ENV === 'development') {
+//   const api = 'http://localhost'
+//   proxy['/api'] = api
+//   proxy['/pid'] = {
+//     target: api + '/api',
+//     changeOrigin: true,
+//     pathRewrite: {
+//       '^/pid': '/pid'
+//     }
+//   }
+//   process.env.NUXT_PUBLIC_API_SERVER = api
+// }
 
 /**
  * https://nuxt.com/docs/guide/concepts/rendering#hybrid-rendering
@@ -75,8 +75,8 @@ export default defineNuxtConfig({
         }
       },
       api: {
-        client: 'http://localhost',
-        server: 'http://gateway-service',
+        client: 'https://dbrepo1.ec.tuwien.ac.at',
+        server: 'https://dbrepo1.ec.tuwien.ac.at',
       },
       upload: {
         client: 'http://localhost/api/upload/files',

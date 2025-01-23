@@ -3,7 +3,7 @@ application:
   version: '@project.version@'
 spring:
   datasource:
-    url: "jdbc:mariadb://${METADATA_HOST:metadata-db}:${METADATA_PORT:3306}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS}"
+    url: "jdbc:mariadb://${METADATA_HOST:localhost}:${METADATA_PORT:3306}/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS:}"
     driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME:root}"
     password: "${METADATA_DB_PASSWORD:dbrepo}"
@@ -18,7 +18,7 @@ spring:
   application:
     name: metadata-service
   rabbitmq:
-    host: "${BROKER_HOST:broker-service}"
+    host: "${BROKER_HOST:localhost}"
     virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
     username: "${BROKER_USERNAME:admin}"
     password: "${BROKER_PASSWORD:admin}"

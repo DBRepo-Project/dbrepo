@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.database.CreateAccessDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.UpdateDatabaseAccessDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
@@ -76,7 +76,7 @@ public class AccessEndpoint extends RestEndpoint {
     })
     public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @PathVariable("userId") UUID userId,
-                                       @Valid @RequestBody UpdateDatabaseAccessDto data)
+                                       @Valid @RequestBody CreateAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
@@ -132,7 +132,7 @@ public class AccessEndpoint extends RestEndpoint {
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @PathVariable("userId") UUID userId,
-                                       @Valid @RequestBody UpdateDatabaseAccessDto access) throws NotAllowedException,
+                                       @Valid @RequestBody CreateAccessDto access) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,

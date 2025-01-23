@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.UpdateDatabaseAccessDto;
+import at.tuwien.api.database.CreateAccessDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -91,7 +91,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseAccessDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     @PathVariable("userId") UUID userId,
-                                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                                    @Valid @RequestBody CreateAccessDto data,
                                                     @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
@@ -153,7 +153,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @PathVariable("userId") UUID userId,
-                                       @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                       @Valid @RequestBody CreateAccessDto data,
                                        @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {

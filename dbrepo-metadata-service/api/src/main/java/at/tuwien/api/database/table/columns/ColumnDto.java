@@ -29,18 +29,18 @@ public class ColumnDto {
     private Long id;
 
     @NotNull
-    @Schema(example = "2")
     @JsonProperty("database_id")
+    @Schema(example = "2")
     private Long databaseId;
 
     @NotNull
-    @Schema(example = "3")
     @JsonProperty("table_id")
+    @Schema(example = "3")
     private Long tableId;
 
     @NotNull
-    @Schema(example = "0")
     @JsonProperty("ord")
+    @Schema(example = "0")
     private Integer ordinalPosition;
 
     @NotBlank
@@ -119,9 +119,11 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
+    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 
+    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> sets;
 

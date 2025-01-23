@@ -14,7 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ContainerCreateDto {
+public class CreateContainerDto {
 
     @NotBlank
     @Schema(example = "Air Quality")
@@ -22,20 +22,22 @@ public class ContainerCreateDto {
 
     @NotNull
     @JsonProperty("image_id")
-    @Schema(description = "Image ID")
+    @Schema(example = "1", description = "Image ID")
     private Long imageId;
 
     @NotBlank
-    @Schema(description = "Hostname of container")
+    @Schema(example = "data-db2", description = "Hostname of container")
     private String host;
 
-    @Schema(description = "Port of container")
+    @Schema(example = "3306", description = "Port of container")
     private Integer port;
 
     @JsonProperty("ui_host")
+    @Schema(example = "example.com")
     private String uiHost;
 
     @JsonProperty("ui_port")
+    @Schema(example = "3306")
     private Integer uiPort;
 
     @NotNull
@@ -44,11 +46,11 @@ public class ContainerCreateDto {
 
     @NotBlank
     @JsonProperty("privileged_username")
-    @Schema(description = "Username of privileged user", example = "root")
+    @Schema(example = "root", description = "Username of privileged user")
     private String privilegedUsername;
 
     @NotBlank
     @JsonProperty("privileged_password")
-    @Schema(description = "Password of privileged user")
+    @Schema(example = "dbrepo", description = "Password of privileged user")
     private String privilegedPassword;
 }

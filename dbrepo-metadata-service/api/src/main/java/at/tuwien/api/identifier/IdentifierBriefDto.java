@@ -20,6 +20,7 @@ import java.util.UUID;
 public class IdentifierBriefDto {
 
     @NotNull
+    @Schema(example = "2")
     private Long id;
 
     @NotNull
@@ -40,7 +41,11 @@ public class IdentifierBriefDto {
     private Long viewId;
 
     @NotNull
+    @Schema(example = "database")
     private IdentifierTypeDto type;
+
+    @NotNull
+    private List<CreatorBriefDto> creators;
 
     @NotNull
     private List<IdentifierTitleDto> titles;
@@ -57,10 +62,13 @@ public class IdentifierBriefDto {
     @Schema(example = "2022")
     private Integer publicationYear;
 
+    @NotNull
+    @Schema(example = "draft")
     private IdentifierStatusTypeDto status;
 
     @NotNull
-    @JsonProperty("created_by")
-    private UUID createdBy;
+    @JsonProperty("owned_by")
+    @Schema(example = "2f45ef7a-7f9b-4667-9156-152c87fe1ca5")
+    private UUID ownedBy;
 
 }

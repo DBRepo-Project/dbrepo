@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -12,9 +13,10 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class UpdateDatabaseAccessDto {
+public class CreateAccessDto {
 
     @NotNull
+    @Schema(example = "read")
     private AccessTypeDto type;
 
 

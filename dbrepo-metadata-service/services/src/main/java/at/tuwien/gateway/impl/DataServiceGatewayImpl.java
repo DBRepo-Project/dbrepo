@@ -48,7 +48,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         log.trace("create access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.POST,
-                    new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
+                    new HttpEntity<>(CreateAccessDto.builder().type(access).build()), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to create access: {}", e.getMessage());
             throw new DataServiceConnectionException("Failed to create access: " + e.getMessage(), e);
@@ -73,7 +73,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
         log.trace("update access at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);
         try {
             response = restTemplate.exchange(path, HttpMethod.PUT,
-                    new HttpEntity<>(UpdateDatabaseAccessDto.builder().type(access).build()), Void.class);
+                    new HttpEntity<>(CreateAccessDto.builder().type(access).build()), Void.class);
         } catch (HttpServerErrorException e) {
             log.error("Failed to update access: {}", e.getMessage());
             throw new DataServiceConnectionException("Failed to update access: " + e.getMessage(), e);

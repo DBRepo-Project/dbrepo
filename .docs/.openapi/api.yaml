@@ -1617,7 +1617,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateDatabaseAccessDto'
+              $ref: '#/components/schemas/CreateAccessDto'
         required: true
       responses:
         '202':
@@ -1684,7 +1684,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateDatabaseAccessDto'
+              $ref: '#/components/schemas/CreateAccessDto'
         required: true
       responses:
         '202':
@@ -4002,7 +4002,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ContainerCreateDto'
+              $ref: '#/components/schemas/CreateContainerDto'
         required: true
       responses:
         '201':
@@ -4806,10 +4806,18 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              key: value
+          example:
+            key: value
         keys:
           type: object
           additionalProperties:
             type: object
+            example:
+              id: 1
+          example:
+            id: 1
     QueryPersistDto:
       required:
         - persist
@@ -4818,13 +4826,58 @@ components:
         persist:
           type: boolean
           example: true
+    CreatorBriefDto:
+      required:
+        - creator_name
+        - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 11
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: 'Carberry, Josiah'
+        name_type:
+          type: string
+          example: Personal
+          enum:
+            - Personal
+            - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+            - ORCID
+            - ROR
+            - ISNI
+            - GRID
+        affiliation_identifier:
+          type: string
+          example: 'https://ror.org/05gq02987'
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+            - ROR
+            - GRID
+            - ISNI
     IdentifierBriefDto:
       required:
-        - created_by
+        - creators
         - database_id
         - id
+        - owned_by
         - publication_year
         - publisher
+        - status
         - titles
         - type
       type: object
@@ -4832,13 +4885,19 @@ components:
         id:
           type: integer
           format: int64
+          example: 2
         type:
           type: string
+          example: database
           enum:
             - database
             - subset
             - table
             - view
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorBriefDto'
         titles:
           type: array
           items:
@@ -4851,6 +4910,7 @@ components:
           example: TU Wien
         status:
           type: string
+          example: draft
           enum:
             - draft
             - published
@@ -4874,9 +4934,10 @@ components:
           type: integer
           format: int32
           example: 2022
-        created_by:
+        owned_by:
           type: string
           format: uuid
+          example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
     IdentifierTitleDto:
       required:
         - id
@@ -4885,6 +4946,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         title:
           type: string
           example: Airquality Demonstrator
@@ -5099,6 +5161,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         owner:
           $ref: '#/components/schemas/UserBriefDto'
         execution:
@@ -5121,6 +5184,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 1
         query_normalized:
           type: string
           example: SELECT `id` FROM `air_quality`
@@ -5175,6 +5239,10 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              key: value
+          example:
+            key: value
     ImportDto:
       required:
         - header
@@ -5190,6 +5258,7 @@ components:
           description: >-
             If true, the first line contains the column names, otherwise it
             contains only data
+          example: true
         separator:
           type: string
           example: ','
@@ -5233,10 +5302,15 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              id: 1
+          example:
+            id: 1
     DatabaseBriefDto:
       required:
         - contact
         - id
+        - identifiers
         - internal_name
         - is_public
         - is_schema_public
@@ -5247,6 +5321,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 3
         name:
           type: string
           example: Air Quality
@@ -5271,6 +5346,7 @@ components:
         owner_id:
           type: string
           format: uuid
+          example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
         preview_image:
           type: string
     DatabaseAccessDto:
@@ -5283,6 +5359,7 @@ components:
           $ref: '#/components/schemas/UserBriefDto'
         type:
           type: string
+          example: read
           enum:
             - read
             - write_own
@@ -5335,6 +5412,22 @@ components:
         - id
       type: object
       properties:
+        jdbcMethod:
+          type: string
+          example: mariadb
+        host:
+          type: string
+          example: data-db
+        port:
+          type: integer
+          format: int32
+          example: 3306
+        username:
+          type: string
+          example: username
+        database:
+          type: string
+          example: air_quality
         id:
           type: string
           format: uuid
@@ -5608,6 +5701,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 1
         registry:
           type: string
           example: docker.io/library
@@ -6531,6 +6625,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 11
         firstname:
           type: string
           example: Josiah
@@ -6584,6 +6679,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 3
         description:
           type: string
           example: 'Air quality reports at Stephansplatz, Vienna'
@@ -6789,13 +6885,18 @@ components:
       required:
         - creators
         - database_id
+        - descriptions
+        - funders
         - id
+        - language
+        - licenses
         - owner
         - publication_year
         - publisher
         - query
         - query_hash
         - query_normalized
+        - status
         - titles
         - type
       type: object
@@ -6803,8 +6904,10 @@ components:
         id:
           type: integer
           format: int64
+          example: 2
         type:
           type: string
+          example: database
           enum:
             - database
             - subset
@@ -7036,6 +7139,7 @@ components:
             $ref: '#/components/schemas/CreatorDto'
         status:
           type: string
+          example: draft
           enum:
             - draft
             - published
@@ -7095,6 +7199,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 2
         funder_name:
           type: string
           example: European Commission
@@ -7130,6 +7235,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 8
         value:
           type: string
           example: 10.70124/dc4zh-9ce78
@@ -7219,7 +7325,6 @@ components:
           example: true
     ViewColumnDto:
       required:
-        - auto_generated
         - database_id
         - id
         - internal_name
@@ -7232,11 +7337,12 @@ components:
         id:
           type: integer
           format: int64
+          example: 12
         name:
           maxLength: 64
           minLength: 0
           type: string
-          example: Date
+          example: Given Name
         size:
           type: integer
           format: int64
@@ -7253,6 +7359,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 1
         ord:
           type: integer
           format: int32
@@ -7261,19 +7368,18 @@ components:
           maxLength: 64
           minLength: 0
           type: string
-          example: mdb_date
-        auto_generated:
-          type: boolean
-          example: false
+          example: given_name
         index_length:
           type: integer
           format: int64
+          example: 255
         length:
           type: integer
           format: int64
+          example: 255
         type:
           type: string
-          example: string
+          example: varchar
           enum:
             - char
             - varchar
@@ -7313,6 +7419,7 @@ components:
         - columns
         - database_id
         - id
+        - identifiers
         - internal_name
         - name
         - owner
@@ -7320,9 +7427,26 @@ components:
         - query_hash
       type: object
       properties:
+        jdbcMethod:
+          type: string
+          example: mariadb
+        host:
+          type: string
+          example: data-db
+        port:
+          type: integer
+          format: int32
+          example: 3306
+        username:
+          type: string
+          example: username
+        database:
+          type: string
+          example: air_quality
         id:
           type: integer
           format: int64
+          example: 4
         name:
           type: string
           example: Air Quality
@@ -7345,6 +7469,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 1
         internal_name:
           type: string
           example: air_quality
@@ -7393,6 +7518,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 3
         name:
           type: string
           example: Air Quality
@@ -7402,6 +7528,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 2
         internal_name:
           type: string
           example: air_quality
@@ -7417,6 +7544,7 @@ components:
         owned_by:
           type: string
           format: uuid
+          example: 78337b80-5699-45db-8111-cec86439ab6b
     ColumnSemanticsUpdateDto:
       type: object
       properties:
@@ -7473,12 +7601,18 @@ components:
           example: Column comment
         enums:
           type: array
+          example:
+            - val1
           items:
             type: string
+            example: '["val1"]'
         sets:
           type: array
+          example:
+            - val1
           items:
             type: string
+            example: '["val1"]'
         database_id:
           type: integer
           format: int64
@@ -7615,13 +7749,14 @@ components:
       properties:
         key:
           type: string
-    UpdateDatabaseAccessDto:
+    CreateAccessDto:
       required:
         - type
       type: object
       properties:
         type:
           type: string
+          example: read
           enum:
             - read
             - write_own
@@ -8047,6 +8182,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         name:
           type: string
           example: Air Quality
@@ -8056,6 +8192,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 1
         internal_name:
           type: string
           example: air_quality
@@ -8075,6 +8212,7 @@ components:
         owned_by:
           type: string
           format: uuid
+          example: ac750fcf-ea02-4fce-85ac-d73857e18b35
     ColumnCreateDto:
       required:
         - name
@@ -8246,7 +8384,7 @@ components:
         is_schema_public:
           type: boolean
           example: true
-    ContainerCreateDto:
+    CreateContainerDto:
       required:
         - host
         - image_id
@@ -8262,10 +8400,12 @@ components:
         host:
           type: string
           description: Hostname of container
+          example: data-db2
         port:
           type: integer
           description: Port of container
           format: int32
+          example: 3306
         quota:
           type: integer
           format: int64
@@ -8274,11 +8414,14 @@ components:
           type: integer
           description: Image ID
           format: int64
+          example: 1
         ui_host:
           type: string
+          example: example.com
         ui_port:
           type: integer
           format: int32
+          example: 3306
         privileged_username:
           type: string
           description: Username of privileged user
@@ -8286,6 +8429,7 @@ components:
         privileged_password:
           type: string
           description: Password of privileged user
+          example: dbrepo
     ContainerDto:
       required:
         - count
@@ -8296,9 +8440,26 @@ components:
         - quota
       type: object
       properties:
+        jdbcMethod:
+          type: string
+          example: mariadb
+        host:
+          type: string
+          example: data-db
+        port:
+          type: integer
+          format: int32
+          example: 3306
+        username:
+          type: string
+          example: username
+        database:
+          type: string
+          example: air_quality
         id:
           type: integer
           format: int64
+          example: 4
         name:
           type: string
           example: Air Quality
@@ -8317,42 +8478,52 @@ components:
           format: date-time
         internal_name:
           type: string
-          example: data-db
+          example: air_quality
         ui_host:
           type: string
+          example: example.com
         ui_port:
           type: integer
           format: int32
+          example: 3306
     ColumnBriefDto:
       required:
-        - column_type
         - database_id
         - id
         - internal_name
         - name
         - table_id
+        - type
       type: object
       properties:
         id:
           type: integer
           format: int64
+          example: 1
         name:
+          maxLength: 64
+          minLength: 0
           type: string
-          example: date
+          example: Given Name
         alias:
           type: string
+          example: firstname
         database_id:
           type: integer
           format: int64
+          example: 2
         table_id:
           type: integer
           format: int64
+          example: 3
         internal_name:
+          maxLength: 64
+          minLength: 0
           type: string
-          example: mdb_date
-        column_type:
+          example: given_name
+        type:
           type: string
-          example: date
+          example: varchar
           enum:
             - char
             - varchar
@@ -8512,6 +8683,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 5
         name:
           type: string
           example: mariadb
@@ -8596,8 +8768,11 @@ components:
         checks:
           uniqueItems: true
           type: array
+          example:
+            - value > 1
           items:
             type: string
+            example: '["value > 1"]'
         foreign_keys:
           type: array
           items:
@@ -8613,6 +8788,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 8
     ForeignKeyDto:
       required:
         - name
@@ -8624,8 +8800,10 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         name:
           type: string
+          example: fk_name
         references:
           type: array
           items:
@@ -8636,6 +8814,7 @@ components:
           $ref: '#/components/schemas/TableBriefDto'
         on_update:
           type: string
+          example: restrict
           enum:
             - restrict
             - cascade
@@ -8644,6 +8823,7 @@ components:
             - set_default
         on_delete:
           type: string
+          example: restrict
           enum:
             - restrict
             - cascade
@@ -8660,6 +8840,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 8
         column:
           $ref: '#/components/schemas/ColumnBriefDto'
         foreign_key:
@@ -8675,6 +8856,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 8
         table:
           $ref: '#/components/schemas/TableBriefDto'
         column:
@@ -8695,14 +8877,32 @@ components:
         - routing_key
       type: object
       properties:
+        jdbcMethod:
+          type: string
+          example: mariadb
+        host:
+          type: string
+          example: data-db
+        port:
+          type: integer
+          format: int32
+          example: 3306
+        username:
+          type: string
+          example: username
+        database:
+          type: string
+          example: air_quality
         id:
           type: integer
           format: int64
+          example: 3
         name:
           type: string
           example: Air Quality
         alias:
           type: string
+          example: a
         identifiers:
           type: array
           items:
@@ -8726,6 +8926,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 2
         internal_name:
           type: string
           example: air_quality
@@ -8777,14 +8978,16 @@ components:
         id:
           type: integer
           format: int64
+          example: 5
         name:
           type: string
+          example: uk_name
         table:
           $ref: '#/components/schemas/TableBriefDto'
         columns:
           type: array
           items:
-            $ref: '#/components/schemas/ColumnDto'
+            $ref: '#/components/schemas/ColumnBriefDto'
     TableColumnEntityDto:
       required:
         - column_id
@@ -8828,6 +9031,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         hash:
           type: string
           example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50

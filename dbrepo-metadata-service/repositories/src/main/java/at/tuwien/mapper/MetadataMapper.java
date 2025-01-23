@@ -2,7 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.ContainerCreateDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.DataTypeDto;
 import at.tuwien.api.container.image.ImageBriefDto;
@@ -12,6 +12,7 @@ import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
@@ -109,7 +110,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping")
     })
-    Container containerCreateRequestDtoToContainer(ContainerCreateDto data);
+    Container containerCreateRequestDtoToContainer(CreateContainerDto data);
 
     ContainerDto containerToContainerDto(Container data);
 
@@ -302,7 +303,8 @@ public interface MetadataMapper {
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id")
+            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "ownedBy", source = "owner.id")
     })
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
@@ -492,7 +494,7 @@ public interface MetadataMapper {
                 .name(data.getName())
                 .columns(data.getColumns()
                         .stream()
-                        .map(this::tableColumnToColumnDto)
+                        .map(this::tableColumnToColumnBriefDto)
                         .toList())
                 .table(tableToTableBriefDto(data.getTable()))
                 .build();
@@ -725,6 +727,12 @@ public interface MetadataMapper {
             @Mapping(target = "description", source = "description")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
+
+    @Mappings({
+            @Mapping(target = "tableId", source = "table.id"),
+            @Mapping(target = "databaseId", source = "table.database.id")
+    })
+    ColumnBriefDto tableColumnToColumnBriefDto(TableColumn data);
 
     @Mappings({
             @Mapping(target = "id", expression = "java(null)"),

@@ -288,7 +288,7 @@ public class TableEndpoint extends RestEndpoint {
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
             final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(table.getTdbid()),
-                    table.getInternalName(), timestamp, null, null, null, null);
+                    table.getInternalName(), timestamp, page, size, null, null);
             metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)

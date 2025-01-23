@@ -59,18 +59,6 @@ paths:
           type: string
           format: date-time
       responses:
-        "400":
-          description: Request pagination is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Not allowed to retrieve view data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Retrieved view data
           headers:
@@ -86,8 +74,8 @@ paths:
             application/json:
               schema:
                 type: string
-        "409":
-          description: View schema could not be mapped
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -98,8 +86,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "409":
+          description: View schema could not be mapped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to retrieve view data
           content:
             application/json:
               schema:
@@ -147,18 +147,6 @@ paths:
           type: string
           format: date-time
       responses:
-        "400":
-          description: Request pagination is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Not allowed to retrieve view data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "200":
           description: Retrieved view data
           headers:
@@ -174,8 +162,8 @@ paths:
             application/json:
               schema:
                 type: string
-        "409":
-          description: View schema could not be mapped
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -186,8 +174,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "409":
+          description: View schema could not be mapped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Request pagination is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Not allowed to retrieve view data
           content:
             application/json:
               schema:
@@ -237,14 +237,14 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Failed to find table in metadata database
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -264,14 +264,14 @@ paths:
             application/json:
               schema:
                 type: string
-        "403":
-          description: Not allowed to get table data
+        "404":
+          description: Failed to find table in metadata database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "403":
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -312,22 +312,8 @@ paths:
               $ref: "#/components/schemas/TupleUpdateDto"
         required: true
       responses:
-        "404":
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "202":
-          description: Updated table data
-        "403":
-          description: Update table data not allowed
           content:
             application/json:
               schema:
@@ -338,6 +324,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
+        "403":
+          description: Update table data not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table in metadata database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "202":
+          description: Updated table data
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -374,6 +374,21 @@ paths:
               $ref: "#/components/schemas/TupleDto"
         required: true
       responses:
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table in metadata database or blob in storage
+            service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "201":
+          description: Created table data
         "503":
           description: Failed to establish connection with the metadata service or
             storage service
@@ -381,23 +396,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Create table data not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "201":
-          description: Created table data
-        "404":
-          description: Failed to find table in metadata database or blob in storage
-            service
           content:
             application/json:
               schema:
@@ -438,28 +438,28 @@ paths:
               $ref: "#/components/schemas/TupleDeleteDto"
         required: true
       responses:
-        "404":
-          description: Failed to find table in metadata database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Delete table data not allowed
+        "503":
+          description: Failed to establish connection with the metadata service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table in metadata database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Deleted table data
-        "503":
-          description: Failed to establish connection with the metadata service
+        "403":
+          description: Delete table data not allowed
           content:
             application/json:
               schema:
@@ -508,14 +508,14 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Failed to find table in metadata database
+        "400":
+          description: Request pagination or table data select query is malformed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Request pagination or table data select query is malformed
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -535,14 +535,14 @@ paths:
             application/json:
               schema:
                 type: string
-        "403":
-          description: Not allowed to get table data
+        "404":
+          description: Failed to find table in metadata database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "403":
+          description: Not allowed to get table data
           content:
             application/json:
               schema:
@@ -586,21 +586,14 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to retrieve subset data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -626,8 +619,15 @@ paths:
             application/json:
               schema:
                 type: string
-        "503":
-          description: Failed to communicate with database
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -670,21 +670,14 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Not allowed to retrieve subset data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -710,8 +703,15 @@ paths:
             application/json:
               schema:
                 type: string
-        "503":
-          description: Failed to communicate with database
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "400":
+          description: Invalid pagination
           content:
             application/json:
               schema:
@@ -746,13 +746,6 @@ paths:
               $ref: "#/components/schemas/QueryPersistDto"
         required: true
       responses:
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "202":
           description: Persisted subset
           content:
@@ -765,8 +758,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Malformed select query
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -777,8 +770,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to communicate with database
+        "400":
+          description: Malformed select query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -823,8 +823,8 @@ paths:
       responses:
         "202":
           description: Imported dataset successfully
-        "403":
-          description: Import table dataset not allowed
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -835,14 +835,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Dataset and/or query are malformed
+        "403":
+          description: Import table dataset not allowed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "400":
+          description: Dataset and/or query are malformed
           content:
             application/json:
               schema:
@@ -874,8 +874,16 @@ paths:
         schema:
           type: boolean
       responses:
-        "403":
-          description: Not allowed to find subsets
+        "200":
+          description: Found subsets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QueryDto"
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
@@ -887,16 +895,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "200":
-          description: Found subsets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/QueryDto"
-        "503":
-          description: Failed to communicate with database
+        "403":
+          description: Not allowed to find subsets
           content:
             application/json:
               schema:
@@ -945,15 +945,8 @@ paths:
               $ref: "#/components/schemas/ExecuteStatementDto"
         required: true
       responses:
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Malformed select query
+        "403":
+          description: Not allowed to find subset
           content:
             application/json:
               schema:
@@ -964,14 +957,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "417":
-          description: Failed to insert query into query store of data database
+        "503":
+          description: Failed to communicate with database
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to communicate with database
+        "400":
+          description: Malformed select query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "417":
+          description: Failed to insert query into query store of data database
           content:
             application/json:
               schema:
@@ -982,8 +981,9 @@ paths:
             application/json:
               schema:
                 type: string
-        "403":
-          description: Not allowed to find subset
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -1020,12 +1020,6 @@ paths:
           type: string
           format: date-time
       responses:
-        "403":
-          description: Export view data not allowed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
         "400":
           description: Request pagination or view data select query is malformed
           content:
@@ -1039,6 +1033,12 @@ paths:
               schema:
                 type: string
                 format: binary
+        "403":
+          description: Export view data not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "404":
           description: Failed to find view in metadata database or export dataset
           content:
@@ -1089,8 +1089,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Find table history not allowed
+        "503":
+          description: Failed to establish connection with the metadata service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "404":
+          description: Failed to find table history in data database
           content:
             application/json:
               schema:
@@ -1103,14 +1109,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TableHistoryDto"
-        "404":
-          description: Failed to find table history in data database
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
+        "403":
+          description: Find table history not allowed
           content:
             application/json:
               schema:
@@ -1147,8 +1147,20 @@ paths:
           type: string
           format: date-time
       responses:
+        "400":
+          description: Request pagination or table data select query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
         "403":
           description: Export table data not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorDto"
+        "503":
+          description: Failed to establish connection with the metadata service
           content:
             application/json:
               schema:
@@ -1166,18 +1178,6 @@ paths:
               schema:
                 type: string
                 format: binary
-        "400":
-          description: Request pagination or table data select query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
-        "503":
-          description: Failed to establish connection with the metadata service
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiErrorDto"
       security:
       - basicAuth: []
       - bearerAuth: []
@@ -1217,22 +1217,14 @@ paths:
           type: string
           format: date-time
       responses:
-        "200":
-          description: Found subset
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QueryDto"
-            text/csv: {}
-        "404":
-          description: Failed to find database in metadata database or query in query
-            store of the data database
+        "403":
+          description: Not allowed to find subset
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "400":
-          description: Malformed select query
+        "406":
+          description: Failed to find acceptable representation
           content:
             application/json:
               schema:
@@ -1243,14 +1235,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "403":
-          description: Not allowed to find subset
+        "400":
+          description: Malformed select query
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorDto"
-        "406":
-          description: Failed to find acceptable representation
+        "200":
+          description: Found subset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryDto"
+            text/csv: {}
+        "404":
+          description: Failed to find database in metadata database or query in query
+            store of the data database
           content:
             application/json:
               schema:
@@ -1356,10 +1356,18 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              key: value
+          example:
+            key: value
         keys:
           type: object
           additionalProperties:
             type: object
+            example:
+              id: 1
+          example:
+            id: 1
     QueryPersistDto:
       required:
       - persist
@@ -1368,13 +1376,58 @@ components:
         persist:
           type: boolean
           example: true
+    CreatorBriefDto:
+      required:
+      - creator_name
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 11
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: "Carberry, Josiah"
+        name_type:
+          type: string
+          example: Personal
+          enum:
+          - Personal
+          - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+          - ORCID
+          - ROR
+          - ISNI
+          - GRID
+        affiliation_identifier:
+          type: string
+          example: https://ror.org/05gq02987
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+          - ROR
+          - GRID
+          - ISNI
     IdentifierBriefDto:
       required:
-      - created_by
+      - creators
       - database_id
       - id
+      - owned_by
       - publication_year
       - publisher
+      - status
       - titles
       - type
       type: object
@@ -1382,13 +1435,19 @@ components:
         id:
           type: integer
           format: int64
+          example: 2
         type:
           type: string
+          example: database
           enum:
           - database
           - subset
           - table
           - view
+        creators:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreatorBriefDto"
         titles:
           type: array
           items:
@@ -1401,6 +1460,7 @@ components:
           example: TU Wien
         status:
           type: string
+          example: draft
           enum:
           - draft
           - published
@@ -1424,9 +1484,10 @@ components:
           type: integer
           format: int32
           example: 2022
-        created_by:
+        owned_by:
           type: string
           format: uuid
+          example: 2f45ef7a-7f9b-4667-9156-152c87fe1ca5
     IdentifierTitleDto:
       required:
       - id
@@ -1435,6 +1496,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         title:
           type: string
           example: Airquality Demonstrator
@@ -1649,6 +1711,7 @@ components:
         id:
           type: integer
           format: int64
+          example: 4
         owner:
           $ref: "#/components/schemas/UserBriefDto"
         execution:
@@ -1671,6 +1734,7 @@ components:
         database_id:
           type: integer
           format: int64
+          example: 1
         query_normalized:
           type: string
           example: SELECT `id` FROM `air_quality`
@@ -1725,6 +1789,10 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              key: value
+          example:
+            key: value
     ImportDto:
       required:
       - header
@@ -1739,6 +1807,7 @@ components:
           type: boolean
           description: "If true, the first line contains the column names, otherwise\
             \ it contains only data"
+          example: true
         separator:
           type: string
           example: ","
@@ -1782,6 +1851,10 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              id: 1
+          example:
+            id: 1
   securitySchemes:
     basicAuth:
       type: http

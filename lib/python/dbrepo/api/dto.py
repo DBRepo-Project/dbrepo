@@ -463,16 +463,16 @@ class License(BaseModel):
     description: str
 
 
-class CreateData(BaseModel):
+class Tuple(BaseModel):
     data: dict
 
 
-class UpdateData(BaseModel):
+class TupleUpdate(BaseModel):
     data: dict
     keys: dict
 
 
-class DeleteData(BaseModel):
+class TupleDelete(BaseModel):
     keys: dict
 
 
@@ -528,7 +528,26 @@ class CreateTableConstraints(BaseModel):
     foreign_keys: List[CreateForeignKey] = field(default_factory=list)
 
 
-class IdentifierCreator(BaseModel):
+class NameIdentifierSchemeType(str, Enum):
+    """
+    Enumeration of name identifier scheme types.
+    """
+    ORCID = "ORCID"
+    ROR = "ROR"
+    ISNI = "ISNI"
+    GRID = "GRID"
+
+
+class AffiliationIdentifierSchemeType(str, Enum):
+    """
+    Enumeration of affiliation identifier scheme types.
+    """
+    ROR = "ROR"
+    ISNI = "ISNI"
+    GRID = "GRID"
+
+
+class Creator(BaseModel):
     id: int
     creator_name: str
     firstname: Optional[str] = None
@@ -536,11 +555,22 @@ class IdentifierCreator(BaseModel):
     affiliation: Optional[str] = None
     name_type: Optional[str] = None
     name_identifier: Optional[str] = None
-    name_identifier_scheme: Optional[str] = None
+    name_identifier_scheme: Optional[NameIdentifierSchemeType] = None
     name_identifier_scheme_uri: Optional[str] = None
     affiliation_identifier: Optional[str] = None
     affiliation_identifier_scheme: Optional[str] = None
     affiliation_identifier_scheme_uri: Optional[str] = None
+
+
+class CreatorBrief(BaseModel):
+    id: int
+    creator_name: str
+    affiliation: Optional[str] = None
+    name_type: Optional[str] = None
+    name_identifier: Optional[str] = None
+    name_identifier_scheme: Optional[NameIdentifierSchemeType] = None
+    affiliation_identifier: Optional[str] = None
+    affiliation_identifier_scheme: Optional[str] = None
 
 
 class CreateIdentifierCreator(BaseModel):
@@ -603,7 +633,7 @@ class Identifier(BaseModel):
     status: IdentifierStatusType
     publication_year: int
     publisher: str
-    creators: List[IdentifierCreator]
+    creators: List[Creator]
     titles: List[IdentifierTitle]
     descriptions: List[IdentifierDescription]
     funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
@@ -627,7 +657,7 @@ class IdentifierBrief(BaseModel):
     id: int
     database_id: int
     type: IdentifierType
-    created_by: str
+    owned_by: str
     status: IdentifierStatusType
     publication_year: int
     publisher: str
@@ -872,7 +902,7 @@ class Query(BaseModel):
     result_hash: str
     query_normalized: str
     result_number: Optional[int] = None
-    identifiers: List[Identifier] = field(default_factory=list)
+    identifiers: List[IdentifierBrief] = field(default_factory=list)
 
 
 class UpdateQuery(BaseModel):
@@ -966,36 +996,17 @@ class Table(BaseModel):
     avg_row_length: Optional[int] = None
 
 
-class TableMinimal(BaseModel):
-    id: int
-    database_id: int
-
-
-class ColumnMinimal(BaseModel):
-    id: int
-    table_id: int
-    database_id: int
-
-
 class DatabaseBrief(BaseModel):
     id: int
     name: str
-    owner: UserBrief
     contact: UserBrief
-    exchange_name: str
+    owner_id: str
     internal_name: str
     is_public: bool
     is_schema_public: bool
-    container: ContainerBrief
     identifiers: Optional[List[IdentifierBrief]] = field(default_factory=list)
-    subsets: Optional[List[IdentifierBrief]] = field(default_factory=list)
     preview_image: Optional[str] = None
     description: Optional[str] = None
-    tables: Optional[List[TableBrief]] = field(default_factory=list)
-    views: Optional[List[ViewBrief]] = field(default_factory=list)
-    image: Optional[str] = None
-    accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
-    exchange_name: Optional[str] = None
 
 
 class Database(BaseModel):
@@ -1014,22 +1025,21 @@ class Database(BaseModel):
     description: Optional[str] = None
     tables: Optional[List[Table]] = field(default_factory=list)
     views: Optional[List[View]] = field(default_factory=list)
-    image: Optional[str] = None
     accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
     exchange_name: Optional[str] = None
 
 
 class Unique(BaseModel):
     id: int
-    table: TableMinimal
-    columns: List[ColumnMinimal]
+    table: TableBrief
+    columns: List[ColumnBrief]
 
 
 class ForeignKeyReference(BaseModel):
     id: int
-    foreign_key: ForeignKeyMinimal
-    column: ColumnMinimal
-    referenced_column: ColumnMinimal
+    foreign_key: ForeignKeyBrief
+    column: ColumnBrief
+    referenced_column: ColumnBrief
 
 
 class ReferenceType(str, Enum):
@@ -1043,7 +1053,7 @@ class ReferenceType(str, Enum):
     SET_DEFAULT = "set_default"
 
 
-class ForeignKeyMinimal(BaseModel):
+class ForeignKeyBrief(BaseModel):
     id: int
 
 
@@ -1051,8 +1061,8 @@ class ForeignKey(BaseModel):
     id: int
     name: str
     references: List[ForeignKeyReference]
-    table: TableMinimal
-    referenced_table: TableMinimal
+    table: TableBrief
+    referenced_table: TableBrief
     on_update: Optional[ReferenceType] = None
     on_delete: Optional[ReferenceType] = None
 
@@ -1067,8 +1077,8 @@ class CreateForeignKey(BaseModel):
 
 class PrimaryKey(BaseModel):
     id: int
-    table: TableMinimal
-    column: ColumnMinimal
+    table: TableBrief
+    column: ColumnBrief
 
 
 class Constraints(BaseModel):

@@ -1,11 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.ContainerCreateDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
-import java.security.Principal;
 import java.util.List;
 
 public interface ContainerService {
@@ -18,7 +16,7 @@ public interface ContainerService {
      * @throws ImageNotFoundException          The image of the container was not found in the metadata database.
      * @throws ContainerAlreadyExistsException A container with this name already exists.
      */
-    Container create(ContainerCreateDto createDto) throws ImageNotFoundException,
+    Container create(CreateContainerDto createDto) throws ImageNotFoundException,
             ContainerAlreadyExistsException;
 
     /**

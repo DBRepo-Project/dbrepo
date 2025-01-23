@@ -262,15 +262,15 @@ public abstract class BaseTest {
     public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
 
-    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_READ_DTO = UpdateDatabaseAccessDto.builder()
+    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_READ_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.READ)
             .build();
 
-    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_WRITE_OWN_DTO = UpdateDatabaseAccessDto.builder()
+    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_OWN_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .build();
 
-    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_WRITE_ALL_DTO = UpdateDatabaseAccessDto.builder()
+    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_ALL_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .build();
 
@@ -3371,6 +3371,31 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .enums(null)
                     .sets(null)
+                    .build());
+
+    public final static List<ColumnBriefDto> TABLE_2_COLUMNS_BRIEF_DTO = List.of(ColumnBriefDto.builder()
+                    .id(COLUMN_2_1_ID)
+                    .tableId(TABLE_2_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .name("location")
+                    .internalName("location")
+                    .columnType(ColumnTypeDto.VARCHAR)
+                    .build(),
+            ColumnBriefDto.builder()
+                    .id(COLUMN_2_2_ID)
+                    .tableId(TABLE_2_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .name("lat")
+                    .internalName("lat")
+                    .columnType(ColumnTypeDto.DOUBLE)
+                    .build(),
+            ColumnBriefDto.builder()
+                    .id(COLUMN_2_3_ID)
+                    .tableId(TABLE_2_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .name("lng")
+                    .internalName("lng")
+                    .columnType(ColumnTypeDto.DOUBLE)
                     .build());
 
     public final static Long COLUMN_3_1_ID = 9L;
@@ -8104,7 +8129,7 @@ public abstract class BaseTest {
                     .id(1L)
                     .table(TABLE_2_BRIEF_DTO)
                     .name("uk_1")
-                    .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS_DTO.get(1))))
+                    .columns(new LinkedList<>(List.of(TABLE_2_COLUMNS_BRIEF_DTO.get(1))))
                     .build())))
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
                     .table(TABLE_2_BRIEF_DTO)

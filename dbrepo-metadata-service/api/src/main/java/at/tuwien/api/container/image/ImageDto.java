@@ -20,6 +20,7 @@ import java.util.List;
 public class ImageDto {
 
     @NotNull
+    @Schema(example = "1")
     private Long id;
 
     @NotBlank

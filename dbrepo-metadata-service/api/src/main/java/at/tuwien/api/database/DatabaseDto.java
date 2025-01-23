@@ -27,6 +27,7 @@ import java.util.List;
 public class DatabaseDto extends CacheableDto {
 
     @NotNull
+    @Schema(example = "3")
     private Long id;
 
     @NotBlank
@@ -50,8 +51,10 @@ public class DatabaseDto extends CacheableDto {
     @Schema(example = "Air Quality")
     private String description;
 
+    @NotNull
     private List<TableDto> tables;
 
+    @NotNull
     private List<ViewDto> views;
 
     @NotNull
@@ -67,10 +70,13 @@ public class DatabaseDto extends CacheableDto {
     @NotNull
     private ContainerDto container;
 
+    @NotNull
     private List<DatabaseAccessDto> accesses;
 
+    @NotNull
     private List<IdentifierDto> identifiers;
 
+    @NotNull
     private List<IdentifierDto> subsets;
 
     @NotNull
@@ -85,22 +91,23 @@ public class DatabaseDto extends CacheableDto {
     /* lombok limitations prevent from convenient builder functions */
 
     @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
     private Instant lastRetrieved;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "mariadb")
     private String jdbcMethod;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "data-db")
     private String host;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "3306")
     private Integer port;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "username")
     private String username;
 
     @ToString.Exclude
@@ -108,7 +115,7 @@ public class DatabaseDto extends CacheableDto {
     private String password;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "air_quality")
     private String database;
 
 }

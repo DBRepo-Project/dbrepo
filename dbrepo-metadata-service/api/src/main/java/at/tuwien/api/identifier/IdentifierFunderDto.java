@@ -19,6 +19,7 @@ import org.springframework.data.annotation.Id;
 public class IdentifierFunderDto {
 
     @NotNull
+    @Schema(example = "2")
     private Long id;
 
     @NotBlank

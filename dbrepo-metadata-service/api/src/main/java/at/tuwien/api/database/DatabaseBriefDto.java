@@ -23,6 +23,7 @@ import java.util.UUID;
 public class DatabaseBriefDto {
 
     @NotNull
+    @Schema(example = "3")
     private Long id;
 
     @NotBlank
@@ -47,6 +48,7 @@ public class DatabaseBriefDto {
     @Schema(example = "true")
     private Boolean isSchemaPublic;
 
+    @NotNull
     private List<IdentifierBriefDto> identifiers;
 
     @NotNull
@@ -54,6 +56,7 @@ public class DatabaseBriefDto {
 
     @NotNull
     @JsonProperty("owner_id")
+    @Schema(example = "2f45ef7a-7f9b-4667-9156-152c87fe1ca5")
     private UUID ownerId;
 
     @JsonProperty("preview_image")

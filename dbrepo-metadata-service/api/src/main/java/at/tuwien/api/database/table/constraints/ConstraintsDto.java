@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -24,6 +25,7 @@ public class ConstraintsDto {
     @JsonProperty("foreign_keys")
     private List<ForeignKeyDto> foreignKeys;
 
+    @Schema(example = "[\"value > 1\"]")
     private Set<String> checks;
 
     @JsonProperty("primary_key")

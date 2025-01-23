@@ -127,6 +127,7 @@ export default {
   data () {
     return {
       loading: true,
+      error: true,
       loadingData: false,
       loadingCount: false,
       loadingDelete: false,

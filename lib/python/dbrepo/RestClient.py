@@ -1091,7 +1091,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the insert.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateData(data=data))
+        response = self._wrapper(method="post", url=url, force_auth=True, payload=Tuple(data=data))
         if response.status_code == 201:
             return
         if response.status_code == 400:
@@ -1279,7 +1279,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateData(data=data, keys=keys))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=TupleUpdate(data=data, keys=keys))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1309,7 +1309,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="delete", url=url, force_auth=True, payload=DeleteData(keys=keys))
+        response = self._wrapper(method="delete", url=url, force_auth=True, payload=TupleDelete(keys=keys))
         if response.status_code == 202:
             return
         if response.status_code == 400:

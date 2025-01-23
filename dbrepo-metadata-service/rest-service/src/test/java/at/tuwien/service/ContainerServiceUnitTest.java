@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.repository.ContainerRepository;
@@ -48,7 +48,7 @@ public class ContainerServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws ContainerAlreadyExistsException, ImageNotFoundException {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .imageId(IMAGE_1_ID)
                 .name(CONTAINER_1_NAME)
                 .build();
@@ -68,7 +68,7 @@ public class ContainerServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_containerExists_fails() {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .imageId(IMAGE_1_ID)
                 .name(CONTAINER_1_NAME)
                 .build();
@@ -85,7 +85,7 @@ public class ContainerServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_imageNotFound_fails() {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .name(CONTAINER_3_NAME)
                 .imageId(9999L)
                 .build();
