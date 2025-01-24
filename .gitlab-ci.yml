@@ -266,7 +266,7 @@ test-data-service:
   dependencies:
     - build-data-service
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests $MAVEN_OPTS"
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
