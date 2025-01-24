@@ -107,6 +107,8 @@ public class TableDto extends CacheableDto {
     @NotNull
     private List<ColumnDto> columns;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private DatabaseDto database;
 
     @NotNull

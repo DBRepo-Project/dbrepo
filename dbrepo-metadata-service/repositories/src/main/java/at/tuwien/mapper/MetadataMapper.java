@@ -536,6 +536,8 @@ public interface MetadataMapper {
     }
 
     default TableDto tableToTableDto(Table data) {
+        data.getDatabase()
+                .setTables(null);
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -548,6 +550,7 @@ public interface MetadataMapper {
                 .description(data.getDescription())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
+                .database(databaseToDatabaseDto(data.getDatabase()))
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .build();
         if (data.getIdentifiers() != null) {
@@ -833,6 +836,9 @@ public interface MetadataMapper {
                 .trim();
     }
 
+    @Mappings({
+            @Mapping(target = "database.views", ignore = true)
+    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({

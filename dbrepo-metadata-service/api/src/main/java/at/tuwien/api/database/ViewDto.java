@@ -65,6 +65,8 @@ public class ViewDto extends CacheableDto {
     @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private DatabaseDto database;
 
     @NotNull

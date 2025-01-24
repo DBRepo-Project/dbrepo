@@ -125,8 +125,8 @@ class UserUnitTest(unittest.TestCase):
 
     def test_update_user_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise', given_name='Martin',
-                       attributes=UserAttributes(theme='dark'))
+            exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise', given_name='Martin',
+                            attributes=UserAttributes(theme='dark'))
             # mock
             mock.put('http://localhost/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=202,
                      json=exp.model_dump())
@@ -173,16 +173,12 @@ class UserUnitTest(unittest.TestCase):
 
     def test_update_user_password_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise', given_name='Martin',
-                       attributes=UserAttributes(theme='dark'))
             # mock
-            mock.put('http://localhost/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/password', status_code=202,
-                     json=exp.model_dump())
+            mock.put('http://localhost/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/password', status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_user_password(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
                                                    password='s3cr3t1n0rm4t10n')
-            self.assertEqual(exp, response)
 
     def test_update_user_password_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:

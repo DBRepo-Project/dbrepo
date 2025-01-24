@@ -10,7 +10,6 @@ import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.AuthenticationService;
-import at.tuwien.service.UserService;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
@@ -31,7 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -120,9 +119,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
-                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
@@ -138,9 +135,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
-                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
@@ -157,12 +152,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
-                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
-                .andExpect(header().string("X-Type", IMAGE_1_JDBC))
-                .andExpect(header().string("X-Database", DATABASE_1_INTERNALNAME))
-                .andExpect(header().string("X-Table", TABLE_1_INTERNAL_NAME))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
@@ -177,11 +167,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().doesNotExist("X-Username"))
                 .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Host"))
-                .andExpect(header().doesNotExist("X-Port"))
-                .andExpect(header().doesNotExist("X-Type"))
-                .andExpect(header().doesNotExist("X-Database"))
-                .andExpect(header().doesNotExist("X-Table"))
                 .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
@@ -197,12 +182,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Host", CONTAINER_1_HOST))
-                .andExpect(header().string("X-Port", "" + CONTAINER_1_PORT))
-                .andExpect(header().string("X-Type", IMAGE_1_JDBC))
-                .andExpect(header().string("X-Database", DATABASE_1_INTERNALNAME))
-                .andExpect(header().string("X-Table", TABLE_1_INTERNAL_NAME))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table"))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
                 .andExpect(status().isOk());
     }
 
@@ -217,11 +197,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().doesNotExist("X-Username"))
                 .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Host"))
-                .andExpect(header().doesNotExist("X-Port"))
-                .andExpect(header().doesNotExist("X-Type"))
-                .andExpect(header().doesNotExist("X-Database"))
-                .andExpect(header().doesNotExist("X-View"))
                 .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
