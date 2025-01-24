@@ -13,7 +13,6 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.TableService;
-import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
@@ -29,10 +28,9 @@ import java.util.UUID;
 
 @Log4j2
 @Service
-public class SubsetServiceMariaDbImpl extends DataConnector<DatabaseDto> implements SubsetService {
+public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
 
     private final DataMapper dataMapper;
-    private final ViewService viewService;
     private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
@@ -40,11 +38,10 @@ public class SubsetServiceMariaDbImpl extends DataConnector<DatabaseDto> impleme
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(DataMapper dataMapper, ViewService viewService, TableService tableService,
-                                    MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
-                                    DatabaseService databaseService, MetadataServiceGateway metadataServiceGateway) {
+    public SubsetServiceMariaDbImpl(DataMapper dataMapper, TableService tableService, MariaDbMapper mariaDbMapper,
+                                    MetadataMapper metadataMapper, DatabaseService databaseService,
+                                    MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
-        this.viewService = viewService;
         this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;

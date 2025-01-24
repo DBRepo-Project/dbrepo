@@ -458,9 +458,9 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(userDto);
 
         /* test */
-        final ResponseEntity<UserDto> response = userEndpoint.create(data);
+        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        final UserDto body = response.getBody();
+        final UserBriefDto body = response.getBody();
         assertNotNull(body);
     }
 
@@ -496,9 +496,9 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(user);
 
         /* test */
-        final ResponseEntity<UserDto> response = userEndpoint.modify(userId, data, principal);
+        final ResponseEntity<UserBriefDto> response = userEndpoint.modify(userId, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final UserDto body = response.getBody();
+        final UserBriefDto body = response.getBody();
         assertNotNull(body);
     }
 

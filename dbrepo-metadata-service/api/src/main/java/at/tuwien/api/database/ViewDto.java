@@ -3,7 +3,6 @@ package at.tuwien.api.database;
 import at.tuwien.api.CacheableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -66,6 +65,8 @@ public class ViewDto extends CacheableDto {
     @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
+    private DatabaseDto database;
+
     @NotNull
     private UserBriefDto owner;
 
@@ -77,29 +78,5 @@ public class ViewDto extends CacheableDto {
     @JsonProperty("last_retrieved")
     @Schema(example = "2025-01-23T12:09:01")
     private Instant lastRetrieved;
-
-    @ToString.Exclude
-    @Schema(example = "mariadb")
-    private String jdbcMethod;
-
-    @ToString.Exclude
-    @Schema(example = "data-db")
-    private String host;
-
-    @ToString.Exclude
-    @Schema(example = "3306")
-    private Integer port;
-
-    @ToString.Exclude
-    @Schema(example = "username")
-    private String username;
-
-    @ToString.Exclude
-    @JsonIgnore
-    private String password;
-
-    @ToString.Exclude
-    @Schema(example = "air_quality")
-    private String database;
 
 }

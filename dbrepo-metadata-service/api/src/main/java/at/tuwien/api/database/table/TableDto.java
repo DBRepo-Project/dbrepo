@@ -1,6 +1,8 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.CacheableDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.identifier.IdentifierDto;
@@ -105,6 +107,8 @@ public class TableDto extends CacheableDto {
     @NotNull
     private List<ColumnDto> columns;
 
+    private DatabaseDto database;
+
     @NotNull
     private ConstraintsDto constraints;
 
@@ -113,29 +117,5 @@ public class TableDto extends CacheableDto {
     @JsonProperty("last_retrieved")
     @Schema(example = "2025-01-23T12:09:01")
     private Instant lastRetrieved;
-
-    @ToString.Exclude
-    @Schema(example = "mariadb")
-    private String jdbcMethod;
-
-    @ToString.Exclude
-    @Schema(example = "data-db")
-    private String host;
-
-    @ToString.Exclude
-    @Schema(example = "3306")
-    private Integer port;
-
-    @ToString.Exclude
-    @Schema(example = "username")
-    private String username;
-
-    @ToString.Exclude
-    @JsonIgnore
-    private String password;
-
-    @ToString.Exclude
-    @Schema(example = "air_quality")
-    private String database;
 
 }

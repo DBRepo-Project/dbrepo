@@ -19,7 +19,7 @@ import java.sql.SQLException;
 
 @Log4j2
 @Service
-public class ContainerServiceMariaDbImpl extends DataConnector<ContainerDto> implements ContainerService {
+public class ContainerServiceMariaDbImpl extends DataConnector implements ContainerService {
 
     private final RabbitConfig rabbitConfig;
     private final MariaDbMapper mariaDbMapper;

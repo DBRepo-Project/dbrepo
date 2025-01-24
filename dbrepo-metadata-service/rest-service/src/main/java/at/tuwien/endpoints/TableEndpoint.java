@@ -358,9 +358,9 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                           @NotNull @Valid @RequestBody TableCreateDto data,
-                                           @NotNull Principal principal) throws NotAllowedException, MalformedException,
+    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                @NotNull @Valid @RequestBody TableCreateDto data,
+                                                @NotNull Principal principal) throws NotAllowedException, MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
@@ -370,7 +370,7 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyAccess(database, principal, true);
         endpointValidator.validateColumnCreateConstraints(data);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(metadataMapper.tableToTableDto(
+                .body(metadataMapper.tableToTableBriefDto(
                         tableService.createTable(database, data, principal)));
     }
 
@@ -413,10 +413,10 @@ public class TableEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                           @NotNull @PathVariable("tableId") Long tableId,
-                                           @NotNull @Valid @RequestBody TableUpdateDto data,
-                                           @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                @NotNull @PathVariable("tableId") Long tableId,
+                                                @NotNull @Valid @RequestBody TableUpdateDto data,
+                                                @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, TableNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint update table, databaseId={}, data.is_public={}, data.is_schema_public={}, principal.name={}",
@@ -428,7 +428,7 @@ public class TableEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to update table: not owner");
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.tableToTableDto(
+                .body(metadataMapper.tableToTableBriefDto(
                         tableService.updateTable(table, data)));
     }
 
@@ -443,11 +443,6 @@ public class TableEndpoint extends AbstractEndpoint {
                     description = "Find table successfully",
                     headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
                             @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Host", description = "The database hostname", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Port", description = "The database port number", schema = @Schema(implementation = Integer.class)),
-                            @Header(name = "X-Type", description = "The JDBC connection type", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Database", description = "The database internal name", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Table", description = "The table internal name", schema = @Schema(implementation = String.class)),
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
@@ -500,20 +495,18 @@ public class TableEndpoint extends AbstractEndpoint {
             table.setColumns(List.of());
             table.setConstraints(null);
         }
+        final TableDto dto = metadataMapper.tableToTableDto(table);
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
             headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
-            headers.set("X-Host", table.getDatabase().getContainer().getHost());
-            headers.set("X-Port", "" + table.getDatabase().getContainer().getPort());
-            headers.set("X-Type", table.getDatabase().getContainer().getImage().getJdbcMethod());
-            headers.set("X-Database", table.getDatabase().getInternalName());
-            headers.set("X-Table", table.getInternalName());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Table");
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+        } else {
+            removeInternalData(dto.getDatabase().getContainer());
         }
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(metadataMapper.tableToTableDto(table));
+                .body(dto);
     }
 
     @DeleteMapping("/{tableId}")

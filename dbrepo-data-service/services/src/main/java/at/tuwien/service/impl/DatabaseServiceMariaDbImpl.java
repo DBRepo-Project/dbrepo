@@ -29,7 +29,7 @@ import java.util.List;
 
 @Log4j2
 @Service
-public class DatabaseServiceMariaDbImpl extends DataConnector<DatabaseDto> implements DatabaseService {
+public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
 
     private final DataMapper dataMapper;
     private final QueryConfig queryConfig;

@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Log4j2
 @Service
-public class QueueServiceRabbitMqImpl extends DataConnector<TableDto> implements QueueService {
+public class QueueServiceRabbitMqImpl extends DataConnector implements QueueService {
 
     private final DataMapper dataMapper;
     private final MetadataMapper metadataMapper;

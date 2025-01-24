@@ -723,11 +723,11 @@ public class TableEndpoint extends RestEndpoint {
     public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") Long databaseId,
                                                        @NotNull @PathVariable("tableId") Long tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
-            MetadataServiceException, TableMalformedException, DatabaseNotFoundException {
+            MetadataServiceException, TableMalformedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);
-        final TableDto table = credentialService.getTable(databaseId, tableId);
         try {
-            return ResponseEntity.ok(tableService.getStatistics(credentialService.getDatabase(table.getTdbid()), table));
+            return ResponseEntity.ok(tableService.getStatistics(
+                    credentialService.getTable(databaseId, tableId)));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);

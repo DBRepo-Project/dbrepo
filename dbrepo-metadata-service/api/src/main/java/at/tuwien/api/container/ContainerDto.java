@@ -2,7 +2,6 @@ package at.tuwien.api.container;
 
 import at.tuwien.api.CacheableDto;
 import at.tuwien.api.container.image.ImageDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -35,6 +34,12 @@ public class ContainerDto extends CacheableDto {
     @Schema(example = "air_quality")
     private String internalName;
 
+    @Schema(example = "data-db")
+    private String host;
+
+    @Schema(example = "3306")
+    private Integer port;
+
     @JsonProperty("ui_host")
     @Schema(example = "example.com")
     private String uiHost;
@@ -54,34 +59,18 @@ public class ContainerDto extends CacheableDto {
     @Schema(example = "10")
     private Long count;
 
-    /* lombok limitations prevent from convenient builder functions */
-
-    @JsonProperty("last_retrieved")
-    @Schema(example = "2025-01-23T12:09:01")
-    private Instant lastRetrieved;
-
-    @ToString.Exclude
-    @Schema(example = "mariadb")
-    private String jdbcMethod;
-
-    @ToString.Exclude
-    @Schema(example = "data-db")
-    private String host;
-
-    @ToString.Exclude
-    @Schema(example = "3306")
-    private Integer port;
-
     @ToString.Exclude
     @Schema(example = "username")
     private String username;
 
     @ToString.Exclude
-    @JsonIgnore
+    @Schema(example = "p4ssw0rd")
     private String password;
 
-    @ToString.Exclude
-    @Schema(example = "air_quality")
-    private String database;
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

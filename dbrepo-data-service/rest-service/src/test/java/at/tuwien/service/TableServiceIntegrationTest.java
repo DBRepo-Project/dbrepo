@@ -374,7 +374,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
-        final TableStatisticDto response = tableService.getStatistics(DATABASE_1_DTO, TABLE_2_DTO);
+        final TableStatisticDto response = tableService.getStatistics(TABLE_2_DTO);
         assertEquals(TABLE_2_COLUMNS.size(), response.getColumns().size());
         log.trace("response rows: {}", response.getRows());
         assertEquals(3L, response.getRows());

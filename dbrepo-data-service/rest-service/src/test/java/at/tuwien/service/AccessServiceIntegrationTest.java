@@ -44,16 +44,16 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
     public void create_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultRead.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -63,8 +63,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void create_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultWrite.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -74,8 +74,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void create_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.create(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.create(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultWrite.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -85,8 +85,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void update_read_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.READ);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultRead.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -96,8 +96,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void update_writeOwn_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_OWN);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultWrite.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -107,8 +107,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void update_writeAll_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.update(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.WRITE_ALL);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         for (String privilege : grantDefaultWrite.split(",")) {
             assertTrue(privileges.stream().anyMatch(p -> p.trim().equals(privilege.trim())));
         }
@@ -119,7 +119,7 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.update(DATABASE_1_DTO, USER_5_DTO, AccessTypeDto.WRITE_ALL);
+            accessService.update(DATABASE_1_PRIVILEGED_DTO, USER_5_DTO, AccessTypeDto.WRITE_ALL);
         });
     }
 
@@ -127,8 +127,8 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
     public void delete_succeeds() throws SQLException, DatabaseMalformedException {
 
         /* test */
-        accessService.delete(DATABASE_1_DTO, USER_1_DTO);
-        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_DTO, USER_1_USERNAME);
+        accessService.delete(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
+        final List<String> privileges = MariaDbConfig.getPrivileges(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
         assertEquals(1, privileges.size());
         assertEquals("USAGE", privileges.get(0));
     }
@@ -138,7 +138,7 @@ public class AccessServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            accessService.delete(DATABASE_1_DTO, USER_5_DTO);
+            accessService.delete(DATABASE_1_PRIVILEGED_DTO, USER_5_DTO);
         });
     }
 

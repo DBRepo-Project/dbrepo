@@ -571,7 +571,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(VIEW_1);
 
         /* test */
-        final ResponseEntity<ViewDto> response = viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, principal);
+        final ResponseEntity<ViewBriefDto> response = viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }

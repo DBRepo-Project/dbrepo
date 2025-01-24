@@ -2,8 +2,8 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.image.DataTypeDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageCreateDto;
@@ -833,9 +833,6 @@ public interface MetadataMapper {
                 .trim();
     }
 
-    @Mappings({
-            @Mapping(target = "database", ignore = true)
-    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({

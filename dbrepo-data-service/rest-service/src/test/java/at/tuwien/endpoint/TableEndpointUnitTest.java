@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.endpoints.TableEndpoint;
@@ -166,12 +165,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void statistic_succeeds() throws DatabaseUnavailableException, TableNotFoundException, SQLException,
-            TableMalformedException, RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
+            TableMalformedException, RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getTable(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(TABLE_8_DTO);
-        when(tableService.getStatistics(any(DatabaseDto.class), any(TableDto.class)))
+        when(tableService.getStatistics(any(TableDto.class)))
                 .thenReturn(TABLE_8_STATISTIC_DTO);
 
         /* test */
@@ -189,7 +188,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_DTO);
         doThrow(SQLException.class)
                 .when(tableService)
-                .getStatistics(any(DatabaseDto.class), any(TableDto.class));
+                .getStatistics(any(TableDto.class));
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {

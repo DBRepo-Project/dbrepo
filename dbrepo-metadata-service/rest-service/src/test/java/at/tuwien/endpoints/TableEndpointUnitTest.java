@@ -1040,7 +1040,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        final ResponseEntity<TableDto> response = generic_update(request, USER_1_PRINCIPAL);
+        final ResponseEntity<TableBriefDto> response = generic_update(request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -1147,7 +1147,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.list(databaseId, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_create(Long databaseId, Database database, TableCreateDto data,
+    protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, TableCreateDto data,
                                                       Principal principal, User user, DatabaseAccess access)
             throws MalformedException, NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
@@ -1273,7 +1273,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.updateColumn(databaseId, tableId, columnId, data, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_update(TableUpdateDto data, Principal caller)
+    protected ResponseEntity<TableBriefDto> generic_update(TableUpdateDto data, Principal caller)
             throws TableNotFoundException, SearchServiceException, NotAllowedException, DataServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException {
 

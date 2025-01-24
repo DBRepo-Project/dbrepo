@@ -17,7 +17,7 @@ import java.sql.SQLException;
 
 @Log4j2
 @Service
-public class AccessServiceMariaDbImpl extends DataConnector<DatabaseDto> implements AccessService {
+public class AccessServiceMariaDbImpl extends DataConnector implements AccessService {
 
     @Value("${dbrepo.grant.default.read}")
     private String grantDefaultRead;

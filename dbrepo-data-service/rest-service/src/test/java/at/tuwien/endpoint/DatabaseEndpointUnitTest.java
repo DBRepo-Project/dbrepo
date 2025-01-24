@@ -5,7 +5,10 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.service.*;
+import at.tuwien.service.AccessService;
+import at.tuwien.service.ContainerService;
+import at.tuwien.service.CredentialService;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +37,6 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
-
-    @MockBean
-    private SubsetService queryService;
 
     @MockBean
     private ContainerService containerService;

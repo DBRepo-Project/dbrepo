@@ -42,6 +42,8 @@ public abstract class AbstractUnitTest extends BaseTest {
         TABLE_1.setColumns(new LinkedList<>(TABLE_1_COLUMNS));
         TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
         TABLE_1_DTO.setColumns(new LinkedList<>(TABLE_1_COLUMNS_DTO));
+        TABLE_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
+        TABLE_2_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         VIEW_1_DTO.setIdentifiers(VIEW_1_DTO_IDENTIFIERS);
         DATABASE_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4)));
         IDENTIFIER_1.setDatabase(DATABASE_1);
@@ -76,10 +78,13 @@ public abstract class AbstractUnitTest extends BaseTest {
         VIEW_1.setDatabase(DATABASE_1);
         VIEW_1.setColumns(new LinkedList<>(VIEW_1_COLUMNS));
         VIEW_1.setIdentifiers(new LinkedList<>(List.of(IDENTIFIER_3)));
+        VIEW_1_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         VIEW_2.setDatabase(DATABASE_1);
         VIEW_2.setColumns(new LinkedList<>(VIEW_2_COLUMNS));
+        VIEW_2_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         VIEW_3.setDatabase(DATABASE_1);
         VIEW_3.setColumns(new LinkedList<>(VIEW_3_COLUMNS));
+        VIEW_3_PRIVILEGED_DTO.setDatabase(DATABASE_1_PRIVILEGED_DTO);
         IDENTIFIER_1.setDatabase(DATABASE_1);
         IDENTIFIER_2.setDatabase(DATABASE_1);
         IDENTIFIER_3.setDatabase(DATABASE_1);

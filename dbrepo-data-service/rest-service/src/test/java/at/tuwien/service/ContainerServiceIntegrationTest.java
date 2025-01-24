@@ -45,7 +45,7 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
     }
 
     @Test

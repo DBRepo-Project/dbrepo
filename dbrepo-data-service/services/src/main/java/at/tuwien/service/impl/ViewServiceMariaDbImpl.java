@@ -17,7 +17,7 @@ import java.time.Instant;
 
 @Log4j2
 @Service
-public class ViewServiceMariaDbImpl extends DataConnector<ViewDto> implements ViewService {
+public class ViewServiceMariaDbImpl extends DataConnector implements ViewService {
 
     private final MariaDbMapper mariaDbMapper;
 
@@ -57,7 +57,7 @@ public class ViewServiceMariaDbImpl extends DataConnector<ViewDto> implements Vi
             /* find view data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            view.getDatabase(), view.getInternalName(), timestamp))
+                            view.getDatabase().getInternalName(), view.getInternalName(), timestamp))
                     .executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);

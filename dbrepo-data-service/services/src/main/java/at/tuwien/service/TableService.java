@@ -17,14 +17,13 @@ public interface TableService {
     /**
      * Generate table statistic for a given table. Only numerical columns are calculated.
      *
-     * @param database The database.
      * @param table The table.
      * @return The table statistic, if successful.
      * @throws SQLException            Failed to parse SQL query, contains invalid syntax.
      * @throws TableMalformedException The table statistic generation was unsuccessful, likely due to a bug in the mapping.
      * @throws TableNotFoundException  The table could not be inspected in the data database.
      */
-    TableStatisticDto getStatistics(DatabaseDto database, TableDto table) throws SQLException, TableMalformedException,
+    TableStatisticDto getStatistics(TableDto table) throws SQLException, TableMalformedException,
             TableNotFoundException;
 
     /**

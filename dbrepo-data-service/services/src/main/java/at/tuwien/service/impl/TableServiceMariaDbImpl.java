@@ -33,7 +33,7 @@ import java.util.Properties;
 
 @Log4j2
 @Service
-public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements TableService {
+public class TableServiceMariaDbImpl extends DataConnector implements TableService {
 
     private final DataMapper dataMapper;
     private final SparkSession sparkSession;
@@ -52,7 +52,7 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
     }
 
     @Override
-    public TableStatisticDto getStatistics(DatabaseDto database, TableDto table) throws SQLException, TableMalformedException,
+    public TableStatisticDto getStatistics(TableDto table) throws SQLException, TableMalformedException,
             TableNotFoundException {
         final ComboPooledDataSource dataSource = getDataSource(table);
         final Connection connection = dataSource.getConnection();
@@ -62,14 +62,14 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
             final long start = System.currentTimeMillis();
             final String query = mariaDbMapper.tableColumnStatisticsSelectRawQuery(table.getColumns(), table.getInternalName());
             if (query == null) {
-                log.debug("table {}.{} does not have columns that can be analysed for statistical properties (i.e. no numeric columns)", database.getInternalName(), table.getInternalName());
+                log.debug("table {}.{} does not have columns that can be analysed for statistical properties (i.e. no numeric columns)", table.getDatabase().getInternalName(), table.getInternalName());
                 statistic = null;
             } else {
                 final ResultSet resultSet = connection.prepareStatement(query)
                         .executeQuery();
                 log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
                 statistic = dataMapper.resultSetToTableStatistic(resultSet);
-                final TableDto tmpTable = databaseService.inspectTable(database, table.getInternalName());
+                final TableDto tmpTable = databaseService.inspectTable(table.getDatabase(), table.getInternalName());
                 statistic.setAvgRowLength(tmpTable.getAvgRowLength());
                 statistic.setDataLength(tmpTable.getDataLength());
                 statistic.setMaxDataLength(tmpTable.getMaxDataLength());
@@ -95,7 +95,7 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
     @Override
     public void updateTable(TableDto table, TableUpdateDto data) throws SQLException,
             TableMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(table);
+        final ComboPooledDataSource dataSource = getDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
@@ -122,7 +122,7 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
 
     @Override
     public void delete(TableDto table) throws SQLException, QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(table);
+        final ComboPooledDataSource dataSource = getDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         try {
             /* create table if not exists */
@@ -144,14 +144,14 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
     @Override
     public List<TableHistoryDto> history(TableDto table, Long size) throws SQLException,
             TableNotFoundException {
-        final ComboPooledDataSource dataSource = getDataSource(table);
+        final ComboPooledDataSource dataSource = getDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         final List<TableHistoryDto> history;
         try {
             /* find table data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectHistoryRawQuery(
-                            table.getDatabase(), table.getInternalName(), size))
+                            table.getDatabase().getInternalName(), table.getInternalName(), size))
                     .executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             history = dataMapper.resultSetToTableHistory(resultSet);
@@ -170,14 +170,14 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
     @Override
     public Long getCount(TableDto table, Instant timestamp) throws SQLException,
             QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(table);
+        final ComboPooledDataSource dataSource = getDataSource(table.getDatabase());
         final Connection connection = dataSource.getConnection();
         final Long queryResult;
         try {
             /* find table data */
             final long start = System.currentTimeMillis();
             final ResultSet resultSet = connection.prepareStatement(mariaDbMapper.selectCountRawQuery(
-                            table.getDatabase(), table.getInternalName(), timestamp))
+                            table.getDatabase().getInternalName(), table.getInternalName(), timestamp))
                     .executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryResult = mariaDbMapper.resultSetToNumber(resultSet);
@@ -204,8 +204,8 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
         final Dataset<Row> dataset = storageService.loadDataset(columns, data.getLocation(),
                 String.valueOf(data.getSeparator()), data.getHeader());
         final Properties properties = new Properties();
-        properties.setProperty("user", table.getUsername());
-        properties.setProperty("password", table.getPassword());
+        properties.setProperty("user", table.getDatabase().getContainer().getUsername());
+        properties.setProperty("password", table.getDatabase().getContainer().getPassword());
         final String temporaryTable = table.getInternalName() + "_tmp";
         try {
             log.trace("import dataset to temporary table: {}", temporaryTable);
@@ -375,10 +375,9 @@ public class TableServiceMariaDbImpl extends DataConnector<TableDto> implements 
         try {
             return sparkSession.read()
                     .format("jdbc")
-                    .option("user", database.getUsername())
-                    .option("password", database.getPassword())
-                    .option("url", getSparkUrl(database.getJdbcMethod(), database.getHost(), database.getPort(),
-                            database.getInternalName()))
+                    .option("user", database.getContainer().getUsername())
+                    .option("password", database.getContainer().getPassword())
+                    .option("url", getSparkUrl(database))
                     .option("query", mariaDbMapper.defaultRawSelectQuery(database.getInternalName(), tableOrView,
                             timestamp, page, size))
                     .load();

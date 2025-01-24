@@ -57,8 +57,8 @@ public class DefaultListenerIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* database */
-        MariaDbConfig.dropAllDatabases(CONTAINER_1_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
+        MariaDbConfig.dropAllDatabases(CONTAINER_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
     }
 
     @Test
