@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.config.KeycloakConfig;
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(SignupRequestDto data, UUID id) {
+    public User create(CreateUserDto data, UUID id) {
         /* create at authentication service */
         final User entity = User.builder()
                 .id(id)

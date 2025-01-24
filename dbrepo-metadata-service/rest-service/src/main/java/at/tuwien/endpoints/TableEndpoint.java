@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -359,7 +359,7 @@ public class TableEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody TableCreateDto data,
+                                                @NotNull @Valid @RequestBody CreateTableDto data,
                                                 @NotNull Principal principal) throws NotAllowedException, MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,

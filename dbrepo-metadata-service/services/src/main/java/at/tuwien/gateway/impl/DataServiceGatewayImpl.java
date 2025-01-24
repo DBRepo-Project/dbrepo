@@ -4,7 +4,7 @@ import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.TableUpdateDto;
@@ -188,7 +188,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public void createTable(Long databaseId, TableCreateDto data) throws DataServiceConnectionException, DataServiceException,
+    public void createTable(Long databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException {
         final ResponseEntity<Void> response;
         final String path = "/api/database/" + databaseId + "/table";
@@ -239,7 +239,7 @@ public class DataServiceGatewayImpl implements DataServiceGateway {
     }
 
     @Override
-    public ViewDto createView(Long databaseId, ViewCreateDto data) throws DataServiceConnectionException, DataServiceException {
+    public ViewDto createView(Long databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException {
         final ResponseEntity<ViewDto> response;
         final String path = "/api/database/" + databaseId + "/view";
         log.trace("create view at endpoint {} with path {}", gatewayConfig.getDataEndpoint(), path);

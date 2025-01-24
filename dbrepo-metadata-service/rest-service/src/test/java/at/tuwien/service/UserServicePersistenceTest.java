@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
@@ -69,7 +69,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException {
-        final SignupRequestDto request = SignupRequestDto.builder()
+        final CreateUserDto request = CreateUserDto.builder()
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
                 .email(USER_2_EMAIL)
@@ -109,7 +109,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        final User user = userService.create(SignupRequestDto.builder()
+        final User user = userService.create(CreateUserDto.builder()
                 .username(USER_3_USERNAME)
                 .password(USER_3_PASSWORD)
                 .email(USER_3_EMAIL)

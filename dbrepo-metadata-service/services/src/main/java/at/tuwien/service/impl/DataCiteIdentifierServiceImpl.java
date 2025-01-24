@@ -6,7 +6,7 @@ import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoiEvent;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.CreateIdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.DataCiteConfig;
@@ -105,7 +105,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(Database database, User user, IdentifierCreateDto data) throws DataServiceException,
+    public Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
             DatabaseNotFoundException, QueryNotFoundException, SearchServiceException,
             SearchServiceConnectionException, ExternalServiceException {

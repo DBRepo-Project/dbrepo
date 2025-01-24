@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.ViewBriefDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -137,7 +137,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @Valid @RequestBody ViewCreateDto data,
+                                               @NotNull @Valid @RequestBody CreateViewDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException {

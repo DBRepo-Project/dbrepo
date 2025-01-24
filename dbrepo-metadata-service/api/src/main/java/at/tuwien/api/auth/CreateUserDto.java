@@ -4,10 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -19,11 +18,8 @@ import java.util.List;
 @ToString
 public class CreateUserDto {
 
-    @NotNull
-    @Schema(example = "true")
-    private Boolean enabled;
-
     @NotBlank
+    @Pattern(regexp = "^[a-z0-9]{3,}$")
     @Schema(example = "user")
     private String username;
 
@@ -32,11 +28,8 @@ public class CreateUserDto {
     @Schema(example = "user@example.com")
     private String email;
 
-    private String firstName;
-
-    private String lastName;
-
     @NotNull
-    private List<CredentialDto> credentials;
+    @ToString.Exclude
+    private String password;
 
 }

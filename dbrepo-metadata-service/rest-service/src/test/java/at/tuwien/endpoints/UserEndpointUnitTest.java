@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.keycloak.UserAttributesDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
@@ -107,7 +107,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void create_anonymous_succeeds() throws UserExistsException, EmailExistsException, UserNotFoundException,
             AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
-        final SignupRequestDto request = SignupRequestDto.builder()
+        final CreateUserDto request = CreateUserDto.builder()
                 .email(USER_1_EMAIL)
                 .username(USER_1_USERNAME)
                 .password(USER_1_PASSWORD)
@@ -120,7 +120,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void create_isAuthenticated_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
+        final CreateUserDto request = CreateUserDto.builder()
                 .email(USER_2_EMAIL)
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
@@ -312,7 +312,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(authenticationService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.create(any(SignupRequestDto.class), any(UUID.class)))
+        when(userService.create(any(CreateUserDto.class), any(UUID.class)))
                 .thenReturn(USER_1);
 
         /* test */
@@ -445,7 +445,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         return response.getBody();
     }
 
-    protected void create_generic(SignupRequestDto data, User user, at.tuwien.api.keycloak.UserDto userDto, UUID id)
+    protected void create_generic(CreateUserDto data, User user, at.tuwien.api.keycloak.UserDto userDto, UUID id)
             throws UserExistsException, EmailExistsException, UserNotFoundException, AuthServiceException,
             AuthServiceConnectionException, CredentialsInvalidException {
 

@@ -419,7 +419,7 @@ class IdentifierTitle(BaseModel):
     type: Optional[TitleType] = None
 
 
-class CreateIdentifierTitle(BaseModel):
+class SaveIdentifierTitle(BaseModel):
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
@@ -432,7 +432,7 @@ class IdentifierDescription(BaseModel):
     type: Optional[DescriptionType] = None
 
 
-class CreateIdentifierDescription(BaseModel):
+class SaveIdentifierDescription(BaseModel):
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
@@ -448,7 +448,7 @@ class IdentifierFunder(BaseModel):
     award_title: Optional[str] = None
 
 
-class CreateIdentifierFunder(BaseModel):
+class SaveIdentifierFunder(BaseModel):
     funder_name: str
     funder_identifier: Optional[str] = None
     funder_identifier_type: Optional[str] = None
@@ -594,7 +594,7 @@ class RelatedIdentifier(BaseModel):
     relation: RelatedIdentifierRelation
 
 
-class CreateRelatedIdentifier(BaseModel):
+class SaveRelatedIdentifier(BaseModel):
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
@@ -606,9 +606,9 @@ class CreateIdentifier(BaseModel):
     creators: List[CreateIdentifierCreator]
     publication_year: int
     publisher: str
-    titles: List[CreateIdentifierTitle]
-    descriptions: List[CreateIdentifierDescription]
-    funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
+    titles: List[SaveIdentifierTitle]
+    descriptions: List[SaveIdentifierDescription]
+    funders: Optional[List[SaveIdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
@@ -618,7 +618,7 @@ class CreateIdentifier(BaseModel):
     query: Optional[str] = None
     query_normalized: Optional[str] = None
     execution: Optional[str] = None
-    related_identifiers: Optional[List[CreateRelatedIdentifier]] = field(default_factory=list)
+    related_identifiers: Optional[List[SaveRelatedIdentifier]] = field(default_factory=list)
     result_hash: Optional[str] = None
     result_number: Optional[int] = None
     publication_day: Optional[int] = None

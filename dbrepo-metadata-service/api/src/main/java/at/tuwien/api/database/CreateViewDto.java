@@ -1,7 +1,5 @@
-package at.tuwien.api.database.table;
+package at.tuwien.api.database;
 
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -9,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -20,16 +16,16 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class TableCreateDto {
+public class CreateViewDto {
 
     @NotBlank
-    @Size(min = 1, max = 64)
+    @Size(min = 1, max = 63)
     @Schema(example = "Air Quality")
     private String name;
 
-    @Size(max = 180)
-    @Schema(example = "Air Quality in Austria")
-    private String description;
+    @NotBlank
+    @Schema(example = "SELECT `id` FROM `air_quality`")
+    private String query;
 
     @NotNull
     @JsonProperty("is_public")
@@ -41,9 +37,4 @@ public class TableCreateDto {
     @Schema(example = "true")
     private Boolean isSchemaPublic;
 
-    @NotNull
-    private List<ColumnCreateDto> columns;
-
-    @NotNull
-    private ConstraintsCreateDto constraints;
 }

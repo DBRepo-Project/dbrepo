@@ -68,7 +68,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void create_anonymous_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
@@ -83,7 +83,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
                 .cid(CONTAINER_3_ID)
                 .name(DATABASE_3_NAME)
                 .isPublic(DATABASE_3_PUBLIC)
@@ -101,7 +101,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, ContainerNotFoundException, SearchServiceException,
             SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
             BrokerServiceException, BrokerServiceConnectionException, ContainerQuotaException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
@@ -124,7 +124,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database"})
     public void create_quotaExceeded_fails() throws UserNotFoundException, ContainerNotFoundException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+        final CreateDatabaseDto request = CreateDatabaseDto.builder()
                 .cid(CONTAINER_4_ID)
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
@@ -669,7 +669,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertEquals(expectedSize, body.size());
     }
 
-    public void create_generic(DatabaseCreateDto data, Principal principal, User user) throws DataServiceException,
+    public void create_generic(CreateDatabaseDto data, Principal principal, User user) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             BrokerServiceException, BrokerServiceConnectionException, ContainerQuotaException {

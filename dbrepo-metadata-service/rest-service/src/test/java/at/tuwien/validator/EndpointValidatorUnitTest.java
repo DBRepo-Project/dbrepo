@@ -1,8 +1,8 @@
 package at.tuwien.validator;
 
 import at.tuwien.SortType;
-import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.database.Database;
@@ -264,8 +264,8 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("needSize_parameters")
     public void validateColumnCreateConstraints_needSize_fails(ColumnTypeDto type) {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .type(type)
                         .size(null) // <<<<<<
                         .build()))
@@ -279,8 +279,8 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     @Test
     public void validateColumnCreateConstraints_needEnum_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .type(ColumnTypeDto.ENUM)
                         .enums(null) // <<<<<<<
                         .build()))
@@ -294,8 +294,8 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     @Test
     public void validateColumnCreateConstraints_needSet_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
-                .columns(List.of(ColumnCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .type(ColumnTypeDto.SET)
                         .sets(null) // <<<<<<<
                         .build()))

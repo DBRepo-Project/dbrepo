@@ -2,7 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
@@ -139,7 +139,7 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
+    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
             throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
             UserNotFoundException, CredentialsInvalidException {
         log.debug("endpoint create user, data.username={}", data.getUsername());
@@ -201,7 +201,7 @@ public class UserEndpoint extends AbstractEndpoint {
         } catch (UserNotFoundException e) {
             /* need to sync */
             log.warn("User with username {} does not exist in metadata database yet", data.getUsername());
-            final SignupRequestDto request = SignupRequestDto.builder()
+            final CreateUserDto request = CreateUserDto.builder()
                     .username(data.getUsername())
                     .email("noreply@example.com")
                     .password(data.getPassword())

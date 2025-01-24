@@ -42,8 +42,8 @@ class AnalyseUnitTest(unittest.TestCase):
     skipped: [str] = []
 
     def setUp(self):
-        with open('../../.docs/.openapi/api.yaml', 'r') as f:
-            self.schemas = safe_load(f)['components']['schemas']
+        with open('../../.docs/.openapi/api.yaml') as fh:
+            self.schemas = safe_load(fh)['components']['schemas']
             for name, obj in inspect.getmembers(sys.modules[dto.__name__]):
                 self.found += 1
                 if not inspect.isclass(obj):

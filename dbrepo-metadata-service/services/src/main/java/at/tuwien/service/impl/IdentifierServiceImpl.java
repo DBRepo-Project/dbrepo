@@ -3,7 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.CreateIdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.MetadataConfig;
@@ -228,7 +228,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Database database, User user, IdentifierCreateDto data) throws SearchServiceException,
+    public Identifier create(Database database, User user, CreateIdentifierDto data) throws SearchServiceException,
             DataServiceException, QueryNotFoundException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
         final Identifier identifier = metadataMapper.identifierCreateDtoToIdentifier(data);

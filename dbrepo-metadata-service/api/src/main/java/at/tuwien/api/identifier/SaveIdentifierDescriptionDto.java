@@ -15,21 +15,21 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class IdentifierSaveTitleDto {
+public class SaveIdentifierDescriptionDto {
 
     @NotNull
     @Schema(example = "1")
     private Long id;
 
     @NotBlank
-    @Schema(example = "Airquality Demonstrator")
-    private String title;
+    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
+    private String description;
 
     @Schema(example = "en")
     private LanguageTypeDto language;
 
+    @Schema(example = "Abstract")
     @JsonProperty("type")
-    @Schema(example = "Subtitle")
-    private TitleTypeDto titleType;
+    private DescriptionTypeDto descriptionType;
 
 }

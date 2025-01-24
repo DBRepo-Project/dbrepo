@@ -1,6 +1,6 @@
 package at.tuwien.api.database.table.constraints;
 
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -17,14 +17,14 @@ import java.util.Set;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ConstraintsCreateDto {
+public class CreateTableConstraintsDto {
 
     @NotNull
     private List<List<String>> uniques;
 
     @NotNull
     @JsonProperty("foreign_keys")
-    private List<ForeignKeyCreateDto> foreignKeys;
+    private List<CreateForeignKeyDto> foreignKeys;
 
     @NotNull
     private Set<String> checks;

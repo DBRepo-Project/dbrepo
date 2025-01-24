@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ColumnCreateDto {
+public class CreateTableColumnDto {
 
     @NotBlank
     @Schema(example = "Date")

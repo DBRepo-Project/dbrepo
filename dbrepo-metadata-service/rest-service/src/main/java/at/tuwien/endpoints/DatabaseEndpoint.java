@@ -153,7 +153,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody DatabaseCreateDto data,
+    public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody CreateDatabaseDto data,
                                                    @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,

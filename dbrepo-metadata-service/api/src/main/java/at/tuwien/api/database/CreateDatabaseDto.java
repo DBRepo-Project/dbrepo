@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class DatabaseCreateDto {
+public class CreateDatabaseDto {
 
     @NotNull
     @JsonProperty("container_id")

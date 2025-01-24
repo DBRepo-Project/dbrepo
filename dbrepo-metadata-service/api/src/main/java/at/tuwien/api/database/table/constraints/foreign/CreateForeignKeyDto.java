@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ForeignKeyCreateDto {
+public class CreateForeignKeyDto {
 
     @NotNull
     private List<String> columns;

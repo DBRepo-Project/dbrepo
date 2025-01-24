@@ -1,6 +1,6 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.CreateContainerDto;
@@ -13,13 +13,13 @@ import at.tuwien.api.database.*;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
@@ -363,19 +363,19 @@ public interface MetadataMapper {
                 .build();
     }
 
-    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
+    Identifier identifierCreateDtoToIdentifier(CreateIdentifierDto data);
 
     Identifier identifierUpdateDtoToIdentifier(IdentifierSaveDto data);
 
     License licenseDtoToLicense(LicenseDto data);
 
-    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierSaveTitleDto data);
+    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(SaveIdentifierTitleDto data);
 
-    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierSaveDescriptionDto data);
+    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(SaveIdentifierDescriptionDto data);
 
-    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(IdentifierFunderSaveDto data);
+    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(SaveIdentifierFunderDto data);
 
-    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(IdentifierCreateDto data);
+    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(CreateIdentifierDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
@@ -389,9 +389,9 @@ public interface MetadataMapper {
             @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
             @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
     })
-    Creator creatorCreateDtoToCreator(CreatorSaveDto data);
+    Creator creatorCreateDtoToCreator(SaveIdentifierCreatorDto data);
 
-    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierSaveDto data);
+    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(SaveRelatedIdentifierDto data);
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
@@ -637,7 +637,7 @@ public interface MetadataMapper {
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto data);
 
     /* keep */
-    default Constraints constraintsCreateDtoToConstraints(ConstraintsCreateDto data, Database database, Table table) {
+    default Constraints constraintsCreateDtoToConstraints(CreateTableConstraintsDto data, Database database, Table table) {
         final int[] idx = new int[]{0, 0};
         final Constraints constrains = Constraints.builder()
                 .checks(data.getChecks())
@@ -744,7 +744,7 @@ public interface MetadataMapper {
             @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
     })
-    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data, ContainerImage image);
+    TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
     default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
         return UpdateCredentialsDto.builder()
@@ -756,7 +756,7 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default UserCreateDto signupRequestDtoToUserCreateDto(SignupRequestDto data) {
+    default UserCreateDto signupRequestDtoToUserCreateDto(CreateUserDto data) {
         return UserCreateDto.builder()
                 .username(data.getUsername())
                 .email(data.getEmail())

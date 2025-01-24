@@ -1767,13 +1767,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update query: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[CreateIdentifierTitle],
+    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[SaveIdentifierTitle],
                           publisher: str, creators: List[CreateIdentifierCreator], publication_year: int,
-                          descriptions: List[CreateIdentifierDescription] = None,
-                          funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
+                          descriptions: List[SaveIdentifierDescription] = None,
+                          funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
                           language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
                           publication_day: int = None, publication_month: int = None,
-                          related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
+                          related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
         Create an identifier draft.
 
@@ -1828,12 +1828,12 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def save_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
-                        titles: List[CreateIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
-                        publication_year: int, descriptions: List[CreateIdentifierDescription] = None,
-                        funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
+                        titles: List[SaveIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
+                        publication_year: int, descriptions: List[SaveIdentifierDescription] = None,
+                        funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
                         language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
                         publication_day: int = None, publication_month: int = None,
-                        related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
+                        related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
         Save an existing identifier and update the metadata attached to it.
 

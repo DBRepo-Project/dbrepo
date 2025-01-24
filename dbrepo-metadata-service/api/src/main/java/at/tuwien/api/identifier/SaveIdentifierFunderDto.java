@@ -14,7 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class IdentifierFunderSaveDto {
+public class SaveIdentifierFunderDto {
 
     @NotNull
     @Schema(example = "1")

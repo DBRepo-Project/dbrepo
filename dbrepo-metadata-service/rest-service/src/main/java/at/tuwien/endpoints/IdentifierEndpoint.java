@@ -475,7 +475,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
+    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody CreateIdentifierDto data,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, MalformedException, DataServiceConnectionException,
             SearchServiceException, DataServiceException, QueryNotFoundException, SearchServiceConnectionException,

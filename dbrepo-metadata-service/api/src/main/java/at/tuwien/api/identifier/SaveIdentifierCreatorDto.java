@@ -15,7 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CreatorSaveDto {
+public class SaveIdentifierCreatorDto {
 
     @NotNull
     @Schema(example = "1")

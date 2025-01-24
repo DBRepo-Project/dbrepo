@@ -1,9 +1,9 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.TableUpdateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.RabbitConfig;
@@ -90,7 +90,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
-    public Table createTable(Database database, TableCreateDto data, Principal principal) throws DataServiceException,
+    public Table createTable(Database database, CreateTableDto data, Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException {
@@ -117,7 +117,7 @@ public class TableServiceImpl implements TableService {
             /* set the ordinal position for the columns */
             final int[] idx = new int[]{0};
             for (int i = 0; i < data.getColumns().size(); i++) {
-                final ColumnCreateDto c = data.getColumns().get(i);
+                final CreateTableColumnDto c = data.getColumns().get(i);
                 final TableColumn column = metadataMapper.columnCreateDtoToTableColumn(c, database.getContainer().getImage());
                 column.setOrdinalPosition(idx[0]++);
                 column.setTable(table);
