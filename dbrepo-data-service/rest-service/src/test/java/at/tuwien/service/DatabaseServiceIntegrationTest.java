@@ -106,7 +106,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
         MariaDbConfig.grantWriteAccess(DATABASE_1_DTO, USER_1_USERNAME);
 
         /* pre-condition */
@@ -131,7 +131,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {

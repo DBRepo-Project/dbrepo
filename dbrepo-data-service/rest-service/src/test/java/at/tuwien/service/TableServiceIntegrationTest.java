@@ -82,11 +82,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void beforeEach() throws SQLException {
         genesis();
         /* metadata database */
-        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_2_INTERNALNAME);
-        MariaDbConfig.dropDatabase(CONTAINER_1_DTO, DATABASE_3_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_1_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_DTO, DATABASE_3_DTO);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_DTO);
         /* s3 */
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
