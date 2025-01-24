@@ -5,7 +5,7 @@ import at.tuwien.endpoints.ViewEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.service.CredentialService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.TableService;
+import at.tuwien.service.SubsetService;
 import at.tuwien.service.ViewService;
 import at.tuwien.test.AbstractUnitTest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +51,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     private HttpServletRequest httpServletRequest;
 
     @MockBean
-    private TableService tableService;
+    private SubsetService subsetService;
 
     @Autowired
     private ViewEndpoint viewEndpoint;
@@ -282,7 +282,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(VIEW_1_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
-        when(tableService.getData(eq(DATABASE_1_DTO), eq(VIEW_1_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(eq(DATABASE_1_DTO), eq(VIEW_1_INTERNAL_NAME), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");

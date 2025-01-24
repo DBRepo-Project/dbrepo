@@ -49,15 +49,11 @@ public abstract class DataConnector {
     }
 
     public String getSparkUrl(TableDto table) {
-        return getSparkUrl(table.getDatabase().getContainer(), null);
+        return getSparkUrl(table.getDatabase().getContainer(), table.getDatabase().getInternalName());
     }
 
     public String getSparkUrl(DatabaseDto databaseDto) {
-        return getSparkUrl(databaseDto.getContainer(), null);
-    }
-
-    public String getSparkUrl(ContainerDto container) {
-        return getSparkUrl(container, null);
+        return getSparkUrl(databaseDto.getContainer(), databaseDto.getInternalName());
     }
 
     public String getJdbcUrl(ContainerDto container, String databaseName) {

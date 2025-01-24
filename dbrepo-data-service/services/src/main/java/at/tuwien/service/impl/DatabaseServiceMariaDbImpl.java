@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
@@ -146,7 +146,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
     }
 
     @Override
-    public ViewDto createView(DatabaseDto database, ViewCreateDto data) throws SQLException,
+    public ViewDto createView(DatabaseDto database, CreateViewDto data) throws SQLException,
             ViewMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();

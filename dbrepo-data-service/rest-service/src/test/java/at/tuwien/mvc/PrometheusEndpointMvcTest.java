@@ -140,7 +140,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, 0L, 10L);
+            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, 0L, 10L);
         } catch (Exception e) {
             /* ignore */
         }

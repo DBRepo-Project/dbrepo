@@ -10,6 +10,7 @@ import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -48,6 +49,8 @@ import java.util.Map;
 public class TableEndpoint extends RestEndpoint {
 
     private final TableService tableService;
+    private final MariaDbMapper mariaDbMapper;
+    private final SubsetService subsetService;
     private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
@@ -56,10 +59,13 @@ public class TableEndpoint extends RestEndpoint {
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public TableEndpoint(TableService tableService, MetricsService metricsService, StorageService storageService,
-                         DatabaseService databaseService, CredentialService credentialService,
-                         EndpointValidator endpointValidator, MetadataServiceGateway metadataServiceGateway) {
+    public TableEndpoint(TableService tableService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                         MetricsService metricsService, StorageService storageService, DatabaseService databaseService,
+                         CredentialService credentialService, EndpointValidator endpointValidator,
+                         MetadataServiceGateway metadataServiceGateway) {
         this.tableService = tableService;
+        this.mariaDbMapper = mariaDbMapper;
+        this.subsetService = subsetService;
         this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
@@ -287,8 +293,10 @@ public class TableEndpoint extends RestEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", table.getColumns().stream().map(ColumnDto::getInternalName).toList()));
-            final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(table.getTdbid()),
-                    table.getInternalName(), timestamp, page, size, null, null);
+            final String query = mariaDbMapper.defaultRawSelectQuery(table.getDatabase().getInternalName(),
+                    table.getInternalName(), timestamp, page, size);
+            final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(table.getTdbid()),
+                    query, timestamp, page, size, null, null);
             metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -624,8 +632,10 @@ public class TableEndpoint extends RestEndpoint {
             }
             credentialService.getAccess(databaseId, getId(principal));
         }
-        final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(table.getTdbid()),
-                table.getInternalName(), timestamp, null, null, null, null);
+        final String query = mariaDbMapper.defaultRawSelectQuery(table.getDatabase().getInternalName(),
+                table.getInternalName(), timestamp, null, null);
+        final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(table.getTdbid()),
+                query, timestamp, null, null, null, null);
         metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();

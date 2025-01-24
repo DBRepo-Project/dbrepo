@@ -1,12 +1,13 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -45,6 +46,8 @@ public class ViewEndpoint extends RestEndpoint {
 
     private final ViewService viewService;
     private final TableService tableService;
+    private final MariaDbMapper mariaDbMapper;
+    private final SubsetService subsetService;
     private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
@@ -52,11 +55,14 @@ public class ViewEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, TableService tableService, MetricsService metricsService,
-                        StorageService storageService, DatabaseService databaseService,
-                        CredentialService credentialService, EndpointValidator endpointValidator) {
+    public ViewEndpoint(ViewService viewService, TableService tableService, MariaDbMapper mariaDbMapper,
+                        SubsetService subsetService, MetricsService metricsService, StorageService storageService,
+                        DatabaseService databaseService, CredentialService credentialService,
+                        EndpointValidator endpointValidator) {
         this.viewService = viewService;
         this.tableService = tableService;
+        this.mariaDbMapper = mariaDbMapper;
+        this.subsetService = subsetService;
         this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
@@ -147,7 +153,7 @@ public class ViewEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                          @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
+                                          @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
         final DatabaseDto database = credentialService.getDatabase(databaseId);
@@ -288,8 +294,10 @@ public class ViewEndpoint extends RestEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
-            final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(databaseId),
-                    view.getInternalName(), timestamp, page, size, null, null);
+            final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+                    view.getInternalName(), timestamp, page, size);
+            final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+                    query, timestamp, page, size, null, null);
             metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -353,8 +361,10 @@ public class ViewEndpoint extends RestEndpoint {
             }
             credentialService.getAccess(databaseId, getId(principal));
         }
-        final Dataset<Row> dataset = tableService.getData(credentialService.getDatabase(databaseId),
-                view.getInternalName(), timestamp, null, null, null, null);
+        final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+                view.getInternalName(), timestamp, null, null);
+        final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+                query, timestamp, null, null, null, null);
         metricsService.countViewGetData(databaseId, viewId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();

@@ -9,6 +9,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
@@ -48,6 +49,7 @@ import java.util.UUID;
 @RequestMapping(path = "/api/database/{databaseId}/subset")
 public class SubsetEndpoint extends RestEndpoint {
 
+    private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
     private final MetricsService metricsService;
@@ -57,9 +59,10 @@ public class SubsetEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public SubsetEndpoint(SubsetService subsetService, MetadataMapper metadataMapper, MetricsService metricsService,
-                          StorageService storageService, DatabaseService databaseService,
+    public SubsetEndpoint(MariaDbMapper mariaDbMapper, SubsetService subsetService, MetadataMapper metadataMapper,
+                          MetricsService metricsService, StorageService storageService, DatabaseService databaseService,
                           CredentialService credentialService, EndpointValidator endpointValidator) {
+        this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
         this.metricsService = metricsService;
@@ -188,20 +191,16 @@ public class SubsetEndpoint extends RestEndpoint {
                 return ResponseEntity.ok(subset);
             case "text/csv":
                 log.trace("accept header matches csv");
-                try {
-                    final Dataset<Row> dataset = subsetService.getData(database, subset, null, null);
-                    metricsService.countSubsetGetData(databaseId, subsetId);
-                    final ExportResourceDto resource = storageService.transformDataset(dataset);
-                    final HttpHeaders headers = new HttpHeaders();
-                    headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-                    log.trace("export table resulted in resource {}", resource);
-                    return ResponseEntity.ok()
-                            .headers(headers)
-                            .body(resource.getResource());
-                } catch (SQLException e) {
-                    log.error("Failed to find data: {}", e.getMessage());
-                    throw new DatabaseUnavailableException("Failed to find data: " + e.getMessage(), e);
-                }
+                final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, null, null);
+                final Dataset<Row> dataset = subsetService.getData(database, query, timestamp, null, null, null, null);
+                metricsService.countSubsetGetData(databaseId, subsetId);
+                final ExportResourceDto resource = storageService.transformDataset(dataset);
+                final HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+                log.trace("export table resulted in resource {}", resource);
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(resource.getResource());
         }
         throw new FormatNotAvailableException("Must provide either application/json or text/csv value for header 'Accept': provided " + accept + " instead");
     }
@@ -290,7 +289,7 @@ public class SubsetEndpoint extends RestEndpoint {
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
             final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
-            return getData(databaseId, subsetId, principal, request, page, size);
+            return getData(databaseId, subsetId, principal, request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -337,11 +336,12 @@ public class SubsetEndpoint extends RestEndpoint {
                                                              @NotNull @PathVariable("subsetId") Long subsetId,
                                                              Principal principal,
                                                              @NotNull HttpServletRequest request,
+                                                             @RequestParam(required = false) Instant timestamp,
                                                              @RequestParam(required = false) Long page,
                                                              @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -363,6 +363,10 @@ public class SubsetEndpoint extends RestEndpoint {
             size = 10L;
             log.debug("size not set: default to {}", size);
         }
+        if (timestamp == null) {
+            timestamp = Instant.now();
+            log.debug("timestamp not set: default to {}", timestamp);
+        }
         try {
             final HttpHeaders headers = new HttpHeaders();
             headers.set("X-Id", "" + subsetId);
@@ -375,7 +379,8 @@ public class SubsetEndpoint extends RestEndpoint {
                         .headers(headers)
                         .build();
             }
-            final Dataset<Row> dataset = subsetService.getData(database, subset, page, size);
+            final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, page, size);
+            final Dataset<Row> dataset = subsetService.getData(database, query, timestamp, page, size, null, null);
             metricsService.countSubsetGetData(databaseId, subsetId);
             final String viewName = metadataMapper.queryDtoToViewName(subset);
             final ViewDto view = databaseService.inspectView(database, viewName);

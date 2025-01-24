@@ -1,7 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.SortTypeDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -16,8 +14,10 @@ import at.tuwien.service.TableService;
 import at.tuwien.utils.MariaDbUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
-import org.apache.spark.sql.*;
-import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
+import org.apache.spark.sql.AnalysisException;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,16 +36,14 @@ import java.util.Properties;
 public class TableServiceMariaDbImpl extends DataConnector implements TableService {
 
     private final DataMapper dataMapper;
-    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
 
     @Autowired
-    public TableServiceMariaDbImpl(DataMapper dataMapper, SparkSession sparkSession, MariaDbMapper mariaDbMapper,
-                                   StorageService storageService, DatabaseService databaseService) {
+    public TableServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, StorageService storageService,
+                                   DatabaseService databaseService) {
         this.dataMapper = dataMapper;
-        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
@@ -366,32 +364,6 @@ public class TableServiceMariaDbImpl extends DataConnector implements TableServi
         }
         return optional.get()
                 .getColumnType();
-    }
-
-    @Override
-    public Dataset<Row> getData(DatabaseDto database, String tableOrView, Instant timestamp,
-                                Long page, Long size, SortTypeDto sortDirection, String sortColumn)
-            throws QueryMalformedException, TableNotFoundException {
-        try {
-            return sparkSession.read()
-                    .format("jdbc")
-                    .option("user", database.getContainer().getUsername())
-                    .option("password", database.getContainer().getPassword())
-                    .option("url", getSparkUrl(database))
-                    .option("query", mariaDbMapper.defaultRawSelectQuery(database.getInternalName(), tableOrView,
-                            timestamp, page, size))
-                    .load();
-
-        } catch (Exception e) {
-            if (e instanceof ExtendedAnalysisException exception) {
-                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
-                    log.error("Failed to find named reference: {}", exception.getSimpleMessage());
-                    throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
-                }
-            }
-            log.error("Malformed query: {}", e.getMessage());
-            throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
-        }
     }
 
 }

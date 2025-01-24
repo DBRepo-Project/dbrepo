@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
@@ -48,7 +48,7 @@ public interface DatabaseService {
      * @throws SQLException
      * @throws ViewMalformedException
      */
-    ViewDto createView(DatabaseDto database, ViewCreateDto data) throws SQLException,
+    ViewDto createView(DatabaseDto database, CreateViewDto data) throws SQLException,
             ViewMalformedException;
 
     /**

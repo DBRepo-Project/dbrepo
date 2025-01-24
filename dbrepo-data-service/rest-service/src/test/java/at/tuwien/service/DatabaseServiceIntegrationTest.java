@@ -4,12 +4,12 @@ import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
+import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
 import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
@@ -619,8 +619,8 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final at.tuwien.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
                 .name("missing_foreign_key")
                 .columns(List.of())
-                .constraints(ConstraintsCreateDto.builder()
-                        .foreignKeys(List.of(ForeignKeyCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
+                        .foreignKeys(List.of(CreateForeignKeyDto.builder()
                                 .columns(List.of("i_do_not_exist"))
                                 .referencedTable("neither_do_i")
                                 .referencedColumns(List.of("behold"))
@@ -639,27 +639,27 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
             TableExistsException {
         final at.tuwien.api.database.table.internal.TableCreateDto request = TableCreateDto.builder()
                 .name("composite_primary_key")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                                 .name("name")
                                 .type(ColumnTypeDto.VARCHAR)
                                 .size(255L)
                                 .nullAllowed(false)
                                 .build(),
-                        ColumnCreateDto.builder()
+                        CreateTableColumnDto.builder()
                                 .name("lat")
                                 .type(ColumnTypeDto.DECIMAL)
                                 .size(10L)
                                 .d(10L)
                                 .nullAllowed(false)
                                 .build(),
-                        ColumnCreateDto.builder()
+                        CreateTableColumnDto.builder()
                                 .name("lng")
                                 .type(ColumnTypeDto.DECIMAL)
                                 .size(10L)
                                 .d(10L)
                                 .nullAllowed(false)
                                 .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .primaryKey(Set.of("lat", "lng"))
                         .foreignKeys(List.of())
                         .checks(Set.of())

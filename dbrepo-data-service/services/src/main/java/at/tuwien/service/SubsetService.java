@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.exception.*;
@@ -12,22 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SubsetService {
-
-    /**
-     * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
-     *
-     * @param database The database.
-     * @param subset   The subset.
-     * @param page     The page number.
-     * @param size     Te result size.
-     * @return The data.
-     * @throws ViewMalformedException  The view is malformed.
-     * @throws SQLException            The connection to the database could not be established.
-     * @throws QueryMalformedException The mapped query produced a database error.
-     * @throws TableNotFoundException  The database table is malformed.
-     */
-    Dataset<Row> getData(DatabaseDto database, QueryDto subset, Long page, Long size)
-            throws ViewMalformedException, SQLException, QueryMalformedException, TableNotFoundException;
 
     /**
      * Creates a subset from the given statement at given time in the given database.
@@ -54,6 +39,21 @@ public interface SubsetService {
      */
     Long reExecuteCount(DatabaseDto database, QueryDto query) throws TableMalformedException,
             SQLException, QueryMalformedException;
+
+    /**
+     * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
+     *
+     * @param database The database.
+     * @param query   The query statements.
+     * @param page     The page number.
+     * @param size     Te result size.
+     * @return The data.
+     * @throws QueryMalformedException The mapped query produced a database error.
+     * @throws TableNotFoundException  The database table is malformed.
+     */
+    Dataset<Row> getData(DatabaseDto database, String query, Instant timestamp, Long page, Long size,
+                         SortTypeDto sortDirection, String sortColumn) throws QueryMalformedException,
+            TableNotFoundException;
 
     /**
      * Finds all queries in the query store of the given database id and query id.

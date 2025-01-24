@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
@@ -9,14 +9,13 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
-import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
-import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,40 +30,41 @@ import java.util.UUID;
 public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
 
     private final DataMapper dataMapper;
-    private final TableService tableService;
+    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
-    private final MetadataMapper metadataMapper;
-    private final DatabaseService databaseService;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(DataMapper dataMapper, TableService tableService, MariaDbMapper mariaDbMapper,
-                                    MetadataMapper metadataMapper, DatabaseService databaseService,
+    public SubsetServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SparkSession sparkSession,
                                     MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
-        this.tableService = tableService;
+        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
-        this.metadataMapper = metadataMapper;
-        this.databaseService = databaseService;
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @Override
-    public Dataset<Row> getData(DatabaseDto database, QueryDto subset, Long page, Long size)
-            throws ViewMalformedException, SQLException, QueryMalformedException, TableNotFoundException {
-        final String viewName = metadataMapper.queryDtoToViewName(subset);
-        if (!databaseService.existsView(database, viewName)) {
-            log.warn("Missing internal view {} for subset with id {}: create it from subset query", viewName, subset.getId());
-            databaseService.createView(database, ViewCreateDto.builder()
-                    .isPublic(false)
-                    .isSchemaPublic(false)
-                    .name(viewName)
-                    .query(subset.getQuery())
-                    .build());
-        } else {
-            log.debug("internal view {}.{} for subset with id {} exists", database.getInternalName(), viewName, subset.getId());
+    public Dataset<Row> getData(DatabaseDto database, String query, Instant timestamp, Long page, Long size,
+                                SortTypeDto sortDirection, String sortColumn)
+            throws QueryMalformedException, TableNotFoundException {
+        try {
+            return sparkSession.read()
+                    .format("jdbc")
+                    .option("user", database.getContainer().getUsername())
+                    .option("password", database.getContainer().getPassword())
+                    .option("url", getSparkUrl(database))
+                    .option("query", query)
+                    .load();
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
+                    log.error("Failed to find named reference: {}", exception.getSimpleMessage());
+                    throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                }
+            }
+            log.error("Malformed query: {}", e.getMessage());
+            throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
         }
-        return tableService.getData(database, viewName, subset.getExecution(), page, size, null, null);
     }
 
     @Override

@@ -1,12 +1,8 @@
 package at.tuwien.service;
 
-import at.tuwien.api.SortTypeDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.table.*;
 import at.tuwien.exception.*;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -122,8 +118,4 @@ public interface TableService {
      */
     void updateTuple(TableDto table, TupleUpdateDto data) throws SQLException,
             QueryMalformedException, TableMalformedException;
-
-    Dataset<Row> getData(DatabaseDto database, String tableOrView, Instant timestamp,
-                         Long page, Long size, SortTypeDto sortDirection, String sortColumn)
-            throws QueryMalformedException, TableNotFoundException;
 }
