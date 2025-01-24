@@ -7,7 +7,6 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.test.AbstractUnitTest;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -42,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -58,9 +55,6 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private S3Config s3Config;
-
-    @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
@@ -85,8 +79,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_PRIVILEGED_DTO);
         /* s3 */
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
@@ -101,8 +95,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, MetadataServiceException {
+    public void updateTuple_succeeds() throws SQLException, TableMalformedException, QueryMalformedException {
         /* modify row based on primary key */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -116,15 +109,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.updateTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -133,9 +120,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_modifyPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            MetadataServiceException {
+    public void updateTuple_modifyPrimaryKey_succeeds() throws SQLException, TableMalformedException,
+            QueryMalformedException {
         /* modify row primary key based on primary key */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -150,15 +136,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.updateTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -167,9 +147,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_missingPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            MetadataServiceException {
+    public void updateTuple_missingPrimaryKey_succeeds() throws SQLException, TableMalformedException,
+            QueryMalformedException {
         /* modify row based on non-primary key column */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -183,15 +162,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.updateTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -200,9 +173,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updateTuple_notInOrder_succeeds() throws SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            MetadataServiceException {
+    public void updateTuple_notInOrder_succeeds() throws SQLException, TableMalformedException,
+            QueryMalformedException {
         /* modify row based on non-primary key column */
         final TupleUpdateDto request = TupleUpdateDto.builder()
                 .data(new HashMap<>() {{
@@ -216,15 +188,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.updateTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
         assertEquals("Vienna", result.get(0).get("location")); // <<<
@@ -233,9 +199,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException {
+    public void createTuple_succeeds() throws SQLException, TableMalformedException, QueryMalformedException,
+            StorageUnavailableException, StorageNotFoundException {
         /* add row with primary key */
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
@@ -247,15 +212,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.createTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.createTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
         assertEquals("Vienna", result.get(0).get("location"));
@@ -264,9 +223,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void createTuple_autogeneratedBlob_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, StorageUnavailableException,
-            StorageNotFoundException, MetadataServiceException, IOException {
+    public void createTuple_autogeneratedBlob_succeeds() throws SQLException, TableMalformedException,
+            QueryMalformedException, StorageUnavailableException, StorageNotFoundException, IOException {
         /* add row with primary key */
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
@@ -276,26 +234,21 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8_DTO);
         s3Client.putObject(PutObjectRequest.builder()
                 .key("s3key")
                 .bucket(s3Config.getS3Bucket())
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/keyboard.csv")));
 
         /* test */
-        tableService.createTuple(TABLE_8_DTO, request);
-        final List<Map<String, byte[]>> result = MariaDbConfig.selectQueryByteArr(DATABASE_3_DTO, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
+        tableService.createTuple(TABLE_8_PRIVILEGED_DTO, request);
+        final List<Map<String, byte[]>> result = MariaDbConfig.selectQueryByteArr(DATABASE_3_PRIVILEGED_DTO, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
     }
 
     @Test
-    public void createTuple_notInOrder_succeeds() throws SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            StorageUnavailableException, StorageNotFoundException, MetadataServiceException {
+    public void createTuple_notInOrder_succeeds() throws SQLException, TableMalformedException, QueryMalformedException,
+            StorageUnavailableException, StorageNotFoundException {
         /* add row with primary key */
         final TupleDto request = TupleDto.builder()
                 .data(new HashMap<>() {{
@@ -307,15 +260,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.createTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
+        tableService.createTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
         assertEquals("Vienna", result.get(0).get("location"));
@@ -324,8 +271,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void deleteTuple_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, MetadataServiceException {
+    public void deleteTuple_succeeds() throws SQLException, TableMalformedException, QueryMalformedException {
         /* delete row based on primary key */
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
@@ -333,22 +279,15 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.deleteTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
+        tableService.deleteTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
 
     @Test
-    public void deleteTuple_withoutPrimaryKey_succeeds() throws SQLException, RemoteUnavailableException,
-            ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException,
-            MetadataServiceException {
+    public void deleteTuple_withoutPrimaryKey_succeeds() throws SQLException, TableMalformedException,
+            QueryMalformedException {
         /* remove row based on non-primary key */
         final TupleDeleteDto request = TupleDeleteDto.builder()
                 .keys(new HashMap<>() {{
@@ -357,15 +296,9 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 }})
                 .build();
 
-        /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
-
         /* test */
-        tableService.deleteTuple(TABLE_1_DTO, request);
-        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
+        tableService.deleteTuple(TABLE_1_PRIVILEGED_DTO, request);
+        final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
 
@@ -374,7 +307,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
-        final TableStatisticDto response = tableService.getStatistics(TABLE_2_DTO);
+        final TableStatisticDto response = tableService.getStatistics(TABLE_2_PRIVILEGED_DTO);
         assertEquals(TABLE_2_COLUMNS.size(), response.getColumns().size());
         log.trace("response rows: {}", response.getRows());
         assertEquals(3L, response.getRows());
@@ -403,18 +336,18 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void delete_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        tableService.delete(TABLE_1_DTO);
+        tableService.delete(TABLE_1_PRIVILEGED_DTO);
     }
 
     @Test
     public void delete_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            tableService.delete(TABLE_5_DTO);
+            tableService.delete(TABLE_5_PRIVILEGED_DTO);
         });
     }
 
@@ -422,7 +355,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(TABLE_1_DTO, null);
+        final Long response = tableService.getCount(TABLE_1_PRIVILEGED_DTO, null);
         assertEquals(3, response);
     }
 
@@ -430,7 +363,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_timestamp_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(TABLE_1_DTO, Instant.ofEpochSecond(0));
+        final Long response = tableService.getCount(TABLE_1_PRIVILEGED_DTO, Instant.ofEpochSecond(0));
         assertEquals(0, response);
     }
 
@@ -438,11 +371,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            tableService.getCount(TABLE_5_DTO, null);
+            tableService.getCount(TABLE_5_PRIVILEGED_DTO, null);
         });
     }
 
@@ -450,7 +383,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void history_succeeds() throws SQLException, TableNotFoundException {
 
         /* test */
-        final List<TableHistoryDto> response = tableService.history(TABLE_1_DTO, 1000L);
+        final List<TableHistoryDto> response = tableService.history(TABLE_1_PRIVILEGED_DTO, 1000L);
         assertEquals(1, response.size());
         final TableHistoryDto history0 = response.get(0);
         assertNotNull(history0.getTimestamp());
@@ -462,11 +395,11 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void history_notFound_fails() throws SQLException {
 
         /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.history(TABLE_5_DTO, null);
+            tableService.history(TABLE_5_PRIVILEGED_DTO, null);
         });
     }
 
@@ -488,7 +421,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
-        tableService.importDataset(TABLE_1_DTO, request);
+        tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
     }
 
     @Test
@@ -509,7 +442,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_DTO, request);
+            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
         });
     }
 
@@ -531,7 +464,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_DTO, request);
+            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
         });
     }
 

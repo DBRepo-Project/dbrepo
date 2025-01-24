@@ -541,7 +541,7 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("UPDATE `")
-                .append(table.getDatabase())
+                .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` SET ");
@@ -579,7 +579,7 @@ public interface MariaDbMapper {
         }
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(table.getDatabase())
+                .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` (");

@@ -5,23 +5,23 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.columns.concepts.*;
-import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.*;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
@@ -150,6 +150,8 @@ public abstract class BaseTest {
     public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
 
     public final static String MARIADB_IMAGE = "mariadb:11.3.2";
+
+    public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
 
     public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:24.0";
 
@@ -1268,10 +1270,7 @@ public abstract class BaseTest {
     public final static String DATABASE_1_EXCHANGE = "dbrepo";
     public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
     public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
-    public final static UUID DATABASE_1_OWNER = USER_1_ID;
     public final static UUID DATABASE_1_CREATED_BY = USER_1_ID;
-    public final static UserDto DATABASE_1_CREATOR_DTO = USER_1_DTO;
-    public final static UserDto DATABASE_1_OWNER_DTO = USER_1_DTO;
 
     public final static CreateDatabaseDto DATABASE_1_CREATE = CreateDatabaseDto.builder()
             .name(DATABASE_1_NAME)
@@ -1664,7 +1663,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .identifiers(new LinkedList<>())
             .columns(new LinkedList<>() /* TABLE_1_COLUMNS_DTO */)
-            .constraints(null) /* TABLE_1_CONSTRAINT_DTO */
+            .constraints(null) /* TABLE_1_CONSTRAINTS_DTO */
             .owner(USER_1_BRIEF_DTO)
             .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
             .numRows(TABLE_1_NUM_ROWS)
@@ -2241,6 +2240,28 @@ public abstract class BaseTest {
             .numRows(TABLE_4_NUM_ROWS)
             .dataLength(TABLE_4_DATA_LENGTH)
             .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
+            .build();
+
+    public final static TableDto TABLE_4_PRIVILEGED_DTO = TableDto.builder()
+            .id(TABLE_4_ID)
+            .tdbid(DATABASE_1_ID)
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .database(null) /* DATABASE_1_DTO */
+            .columns(new LinkedList<>()) /* TABLE_4_COLUMNS_DTO */
+            .constraints(null) /* TABLE_4_CONSTRAINTS_DTO */
+            .isVersioned(TABLE_4_VERSIONED)
+            .isPublic(TABLE_4_IS_PUBLIC)
+            .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
+            .owner(USER_1_BRIEF_DTO)
+            .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
+            .numRows(TABLE_4_NUM_ROWS)
+            .dataLength(TABLE_4_DATA_LENGTH)
+            .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
+            .lastRetrieved(Instant.now())
             .build();
 
     public final static TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
@@ -2909,6 +2930,33 @@ public abstract class BaseTest {
             .resultNumber(3L)
             .build();
 
+    public final static ViewDto QUERY_1_VIEW_DTO = ViewDto.builder()
+            .vdbid(QUERY_1_DATABASE_ID)
+            .query(QUERY_1_STATEMENT)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .columns(new LinkedList<>(List.of(ViewColumnDto.builder()
+                            .name("id")
+                            .internalName("id")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("date")
+                            .internalName("date")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("location")
+                            .internalName("location")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("mintemp")
+                            .internalName("mintemp")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("rainfall")
+                            .internalName("rainfall")
+                            .build())))
+            .build();
+
     public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
             .id(QUERY_1_ID)
             .databaseId(QUERY_1_DATABASE_ID)
@@ -3078,6 +3126,21 @@ public abstract class BaseTest {
             .execution(QUERY_5_EXECUTION)
             .isPersisted(QUERY_5_PERSISTED)
             .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final static ViewDto QUERY_5_VIEW_DTO = ViewDto.builder()
+            .vdbid(DATABASE_3_ID)
+            .query(QUERY_5_STATEMENT)
+            .queryHash(QUERY_5_QUERY_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .columns(new LinkedList<>(List.of(ViewColumnDto.builder()
+                            .name("id")
+                            .internalName("id")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("value")
+                            .internalName("value")
+                            .build())))
             .build();
 
     public final static List<Map<String, Object>> QUERY_5_RESULT_DTO = new LinkedList<>(List.of(
@@ -7518,7 +7581,7 @@ public abstract class BaseTest {
             .lastModified(DATABASE_1_LAST_MODIFIED)
             .ownedBy(DATABASE_1_CREATED_BY)
             .owner(USER_1)
-            .ownedBy(DATABASE_1_OWNER)
+            .ownedBy(USER_1_ID)
             .owner(USER_1)
             .image(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
             .contactPerson(USER_1_ID)
@@ -7541,6 +7604,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)))
             .tables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)))
             .views(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)))
+            .owner(USER_1_BRIEF_DTO)
             .build();
 
     public final static DatabaseDto DATABASE_1_PRIVILEGED_DTO = DatabaseDto.builder()
@@ -7551,9 +7615,11 @@ public abstract class BaseTest {
             .container(CONTAINER_1_PRIVILEGED_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
+            .accesses(new LinkedList<>(List.of())) /* DATABASE_1_USER_1_READ_ACCESS_DTO */
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO)))
             .tables(new LinkedList<>(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO)))
             .views(new LinkedList<>(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO)))
+            .owner(USER_1_BRIEF_DTO)
             .lastRetrieved(Instant.now())
             .build();
 
@@ -7891,6 +7957,13 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .user(USER_1_BRIEF_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
@@ -8087,9 +8160,9 @@ public abstract class BaseTest {
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
             .primaryKey(new LinkedHashSet<>(Set.of(PrimaryKeyDto.builder()
+                    .id(1L)
                     .table(TABLE_1_BRIEF_DTO)
                     .column(TABLE_1_COLUMNS_BRIEF_0_DTO)
-                    .id(1L)
                     .build())))
             .build();
 

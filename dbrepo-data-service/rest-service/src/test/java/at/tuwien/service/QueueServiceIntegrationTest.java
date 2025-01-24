@@ -53,7 +53,7 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -69,12 +69,12 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_DTO);
+                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+                .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
-        queueService.insert(TABLE_1_DTO, request);
+        queueService.insert(TABLE_1_PRIVILEGED_DTO, request);
     }
 
     @Test
@@ -87,10 +87,10 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
 
         /* mock */
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+                .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
-        queueService.insert(TABLE_1_DTO, request);
+        queueService.insert(TABLE_1_PRIVILEGED_DTO, request);
     }
 
 }

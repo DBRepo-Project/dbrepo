@@ -6,7 +6,7 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.endpoints.RestEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,12 +24,12 @@ import java.util.regex.Pattern;
 public class EndpointValidator extends RestEndpoint {
 
     private final QueryConfig queryConfig;
-    private final MetadataServiceGateway metadataServiceGateway;
+    private final CredentialService credentialService;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, MetadataServiceGateway metadataServiceGateway) {
+    public EndpointValidator(QueryConfig queryConfig, CredentialService credentialService) {
         this.queryConfig = queryConfig;
-        this.metadataServiceGateway = metadataServiceGateway;
+        this.credentialService = credentialService;
     }
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
@@ -90,7 +90,7 @@ public class EndpointValidator extends RestEndpoint {
         if (isSystem(principal)) {
             return;
         }
-        final DatabaseAccessDto access = metadataServiceGateway.getAccess(database.getId(), getId(principal));
+        final DatabaseAccessDto access = credentialService.getAccess(database.getId(), getId(principal));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessTypeDto.WRITE_OWN) || access.getType().equals(AccessTypeDto.WRITE_ALL))) {
             log.error("Access not allowed: no write access");

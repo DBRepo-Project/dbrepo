@@ -45,7 +45,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_BRIEF_DTO), true);
-        final QueryDto response = queryService.findById(DATABASE_1_DTO, QUERY_2_ID);
+        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_2_ID);
         assertEquals(2L, response.getId());
         assertTrue(response.getIsPersisted());
     }
@@ -123,7 +123,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_BRIEF_DTO), false);
-        final QueryDto response = queryService.findById(DATABASE_1_DTO, QUERY_1_ID);
+        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID);
         assertEquals(1L, response.getId());
         assertFalse(response.getIsPersisted());
     }
@@ -140,10 +140,10 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO));
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
-        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
-        final QueryDto response = queryService.findById(DATABASE_1_DTO, queryId);
+        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId);
         assertEquals(QUERY_1_ID, response.getId());
     }
 
@@ -155,13 +155,13 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, null))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_5_BRIEF_DTO));
 
         /* test */
-        return queryService.findAll(DATABASE_1_DTO, filterPersisted);
+        return queryService.findAll(DATABASE_1_PRIVILEGED_DTO, filterPersisted);
     }
 
     protected void persist_generic(Long queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
@@ -174,11 +174,11 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
                 .thenReturn(identifiers);
-        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_DTO, QUERY_2_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
 
         /* test */
-        queryService.persist(DATABASE_1_DTO, queryId, persist);
+        queryService.persist(DATABASE_1_PRIVILEGED_DTO, queryId, persist);
     }
 
 }

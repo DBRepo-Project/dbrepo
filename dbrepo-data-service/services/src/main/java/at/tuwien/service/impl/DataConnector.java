@@ -26,11 +26,11 @@ public abstract class DataConnector {
     }
 
     public ComboPooledDataSource getDataSource(ViewDto view) {
-        return getDataSource(view.getDatabase().getContainer(), null);
+        return getDataSource(view.getDatabase().getContainer(), view.getDatabase().getInternalName());
     }
 
     public ComboPooledDataSource getDataSource(TableDto table) {
-        return getDataSource(table.getDatabase().getContainer(), null);
+        return getDataSource(table.getDatabase().getContainer(), table.getDatabase().getInternalName());
     }
 
     public ComboPooledDataSource getDataSource(ContainerDto container) {

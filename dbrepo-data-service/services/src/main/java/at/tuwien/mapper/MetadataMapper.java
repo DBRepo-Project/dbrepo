@@ -52,8 +52,6 @@ public interface MetadataMapper {
 
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);
 
-    TableDto databaseDtoToTableDto(DatabaseDto data);
-
     default String metricToUri(String baseUrl, Long databaseId, Long tableId, Long subsetId, Long viewId) {
         final StringBuilder uri = new StringBuilder(baseUrl)
                 .append("/database/")

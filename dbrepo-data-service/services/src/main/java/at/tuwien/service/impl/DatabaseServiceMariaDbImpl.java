@@ -93,7 +93,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
 
     @Override
     public TableDto createTable(DatabaseDto database, TableCreateDto data) throws SQLException,
-            TableMalformedException, TableExistsException {
+            TableMalformedException, TableExistsException, TableNotFoundException {
         final String tableName = mariaDbMapper.nameToInternalName(data.getName());
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -116,33 +116,8 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             dataSource.close();
         }
         log.info("Created table with name {}", tableName);
-        final TableDto table = metadataMapper.databaseDtoToTableDto(database);
-        table.setInternalName(tableName);
+        final TableDto table = inspectTable(database, tableName);
         return table;
-    }
-
-    @Override
-    public Boolean existsView(DatabaseDto database, String viewName) throws SQLException,
-            QueryMalformedException {
-        final ComboPooledDataSource dataSource = getDataSource(database);
-        final Connection connection = dataSource.getConnection();
-        final Boolean queryResult;
-        try {
-            /* find view data */
-            final long start = System.currentTimeMillis();
-            final PreparedStatement statement = connection.prepareStatement(mariaDbMapper.selectExistsTableOrViewRawQuery());
-            statement.setString(1, database.getInternalName());
-            statement.setString(2, viewName);
-            final ResultSet resultSet = statement.executeQuery();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            queryResult = mariaDbMapper.resultSetToBoolean(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}", e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        return queryResult;
     }
 
     @Override

@@ -37,9 +37,6 @@ public interface DatabaseService {
     TableDto createTable(DatabaseDto database, TableCreateDto data) throws SQLException,
             TableMalformedException, TableExistsException, TableNotFoundException;
 
-    Boolean existsView(DatabaseDto database, String viewName) throws SQLException,
-            QueryMalformedException;
-
     /**
      * Creates a view in given data database with view definition.
      * @param database The data database object.

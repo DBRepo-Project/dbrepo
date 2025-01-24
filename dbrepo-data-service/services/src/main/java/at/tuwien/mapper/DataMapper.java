@@ -99,6 +99,7 @@ public interface DataMapper {
                 .vdbid(database.getId())
                 .isInitialView(false)
                 .isPublic(database.getIsPublic())
+                .isSchemaPublic(database.getIsSchemaPublic())
                 .query(resultSet.getString(9))
                 .queryHash(Hashing.sha256()
                         .hashString(resultSet.getString(9), StandardCharsets.UTF_8)

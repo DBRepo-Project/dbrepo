@@ -60,31 +60,36 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, InterruptedException {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_DTO);
+        Thread.sleep(1000) /* wait for test container some more */;
     }
 
     @Test
     public void createView_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        databaseService.createView(DATABASE_1_DTO, VIEW_1_CREATE_DTO);
+        databaseService.createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
     }
 
     @Test
     public void exploreViews_succeeds() throws SQLException, ViewNotFoundException, DatabaseMalformedException {
 
         /* test */
-        final List<ViewDto> response = databaseService.exploreViews(DATABASE_1_DTO);
+        final List<ViewDto> response = databaseService.exploreViews(DATABASE_1_PRIVILEGED_DTO);
         final ViewDto view0 = response.get(0);
         assertEquals("not_in_metadata_db2", view0.getName());
         assertEquals("not_in_metadata_db2", view0.getInternalName());
         assertEquals(DATABASE_1_ID, view0.getVdbid());
-        assertEquals(DATABASE_1_OWNER, view0.getOwner().getId());
+        assertEquals(USER_1_BRIEF_DTO, view0.getOwner());
         assertFalse(view0.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, view0.getIsPublic());
+        assertEquals(DATABASE_1_SCHEMA_PUBLIC, view0.getIsSchemaPublic());
         assertTrue(view0.getQuery().length() >= 69);
         assertNotNull(view0.getQueryHash());
         assertEquals(4, view0.getColumns().size());
@@ -106,8 +111,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
-        MariaDbConfig.grantWriteAccess(DATABASE_1_DTO, USER_1_USERNAME);
+        MariaDbConfig.grantWriteAccess(DATABASE_1_PRIVILEGED_DTO, USER_1_USERNAME);
 
         /* pre-condition */
         MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNALNAME, "CREATE SEQUENCE debug NOCACHE", USER_1_USERNAME, USER_1_PASSWORD);
@@ -119,34 +123,31 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         }
 
         /* test */
-        databaseService.update(DATABASE_1_DTO, request);
+        databaseService.update(DATABASE_1_PRIVILEGED_DTO, request);
         MariaDbConfig.mockQuery(CONTAINER_1_HOST, CONTAINER_1_PORT, DATABASE_1_INTERNALNAME, "CREATE SEQUENCE debug2 NOCACHE", USER_1_USERNAME, USER_2_PASSWORD);
     }
 
     @Test
-    public void update_notExists_fails() throws SQLException {
+    public void update_notExists_fails() {
         final UpdateUserPasswordDto request = UpdateUserPasswordDto.builder()
                 .username("i_do_not_exist")
                 .password(USER_1_PASSWORD)
                 .build();
 
-        /* mock */
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
-
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            databaseService.update(DATABASE_1_DTO, request);
+            databaseService.update(DATABASE_1_PRIVILEGED_DTO, request);
         });
     }
-    
+
     @Test
     public void inspectTable_sameNameDifferentDb_succeeds() throws TableNotFoundException, SQLException {
 
         /* mock */
-        MariaDbConfig.execute(DATABASE_2_DTO, "CREATE TABLE not_in_metadata_db (wrong_id BIGINT NOT NULL PRIMARY KEY, given_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), family_name VARCHAR(255) NOT NULL, age INT NOT NULL) WITH SYSTEM VERSIONING;");
+        MariaDbConfig.execute(DATABASE_2_PRIVILEGED_DTO, "CREATE TABLE not_in_metadata_db (wrong_id BIGINT NOT NULL PRIMARY KEY, given_name VARCHAR(255) NOT NULL, middle_name VARCHAR(255), family_name VARCHAR(255) NOT NULL, age INT NOT NULL) WITH SYSTEM VERSIONING;");
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_1_DTO, "not_in_metadata_db");
+        final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db");
         assertEquals("not_in_metadata_db", response.getInternalName());
         assertEquals("not_in_metadata_db", response.getName());
         assertEquals(DATABASE_1_ID, response.getTdbid());
@@ -182,7 +183,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectTableEnum_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_2_DTO, "experiments");
+        final TableDto response = databaseService.inspectTable(DATABASE_2_PRIVILEGED_DTO, "experiments");
         assertEquals("experiments", response.getInternalName());
         assertEquals("experiments", response.getName());
         assertEquals(DATABASE_2_ID, response.getTdbid());
@@ -215,14 +216,14 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectTableFullConstraints_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_1_DTO, "weather_aus");
+        final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "weather_aus");
         assertEquals("weather_aus", response.getInternalName());
         assertEquals("weather_aus", response.getName());
         assertEquals(DATABASE_1_ID, response.getTdbid());
         assertTrue(response.getIsVersioned());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
         assertNotNull(response.getOwner());
-        assertEquals(DATABASE_1_OWNER, response.getOwner().getId());
+        assertEquals(USER_1_BRIEF_DTO, response.getOwner());
         assertEquals(USER_1_NAME, response.getOwner().getName());
         assertEquals(USER_1_USERNAME, response.getOwner().getUsername());
         assertEquals(USER_1_FIRSTNAME, response.getOwner().getFirstname());
@@ -315,7 +316,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectTable_multipleForeignKeyReferences_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_1_DTO, "complex_foreign_keys");
+        final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "complex_foreign_keys");
         final ConstraintsDto constraints = response.getConstraints();
         final List<ForeignKeyDto> foreignKeys = constraints.getForeignKeys();
         assertEquals(1, foreignKeys.size());
@@ -368,7 +369,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectTable_multiplePrimaryKey_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_1_DTO, "complex_primary_key");
+        final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "complex_primary_key");
         final ConstraintsDto constraints = response.getConstraints();
         final List<PrimaryKeyDto> primaryKey = new LinkedList<>(constraints.getPrimaryKey());
         assertEquals(2, primaryKey.size());
@@ -406,7 +407,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectTable_exoticBoolean_succeeds() throws TableNotFoundException, SQLException {
 
         /* test */
-        final TableDto response = databaseService.inspectTable(DATABASE_1_DTO, "exotic_boolean");
+        final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "exotic_boolean");
         final ConstraintsDto constraints = response.getConstraints();
         final List<PrimaryKeyDto> primaryKey = new LinkedList<>(constraints.getPrimaryKey());
         assertEquals(1, primaryKey.size());
@@ -435,11 +436,11 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void inspectView_succeeds() throws SQLException, ViewNotFoundException {
 
         /* test */
-        final ViewDto response = databaseService.inspectView(DATABASE_1_DTO, "not_in_metadata_db2");
+        final ViewDto response = databaseService.inspectView(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db2");
         assertEquals("not_in_metadata_db2", response.getInternalName());
         assertEquals("not_in_metadata_db2", response.getName());
         assertEquals(DATABASE_1_ID, response.getVdbid());
-        assertEquals(DATABASE_1_OWNER, response.getOwner().getId());
+        assertEquals(USER_1_BRIEF_DTO, response.getOwner());
         assertFalse(response.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
         assertTrue(response.getQuery().length() >= 69);
@@ -467,7 +468,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void getSchemas_succeeds() throws TableNotFoundException, SQLException, DatabaseMalformedException {
 
         /* test */
-        final List<TableDto> response = databaseService.exploreTables(DATABASE_1_DTO);
+        final List<TableDto> response = databaseService.exploreTables(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(4, response.size());
         final TableDto table0 = response.get(0);
         Assertions.assertEquals("complex_foreign_keys", table0.getInternalName());
@@ -599,8 +600,8 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
             TableExistsException {
 
         /* test */
-        final TableDto response = databaseService.createTable(DATABASE_1_DTO, TABLE_4_CREATE_INTERNAL_DTO);
-        assertEquals(TABLE_4_NAME, response.getName());
+        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_4_CREATE_INTERNAL_DTO);
+        assertEquals(TABLE_4_INTERNALNAME, response.getName());
         assertEquals(TABLE_4_INTERNALNAME, response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
         assertEquals(TABLE_4_COLUMNS.size(), columns.size());
@@ -630,7 +631,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            databaseService.createTable(DATABASE_1_DTO, request);
+            databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, request);
         });
     }
 
@@ -668,7 +669,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        final TableDto response = databaseService.createTable(DATABASE_1_DTO, request);
+        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, request);
         assertEquals("composite_primary_key", response.getName());
         assertEquals("composite_primary_key", response.getInternalName());
         final List<ColumnDto> columns = response.getColumns();
@@ -699,11 +700,11 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
             TableExistsException {
 
         /* mock */
-        MariaDbConfig.dropTable(DATABASE_1_DTO, TABLE_1_INTERNAL_NAME);
+        MariaDbConfig.dropTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_INTERNAL_NAME);
 
         /* test */
-        final TableDto response = databaseService.createTable(DATABASE_1_DTO, TABLE_1_CREATE_INTERNAL_DTO);
-        assertEquals(TABLE_1_NAME, response.getName());
+        final TableDto response = databaseService.createTable(DATABASE_1_PRIVILEGED_DTO, TABLE_1_CREATE_INTERNAL_DTO);
+        assertEquals(TABLE_1_INTERNAL_NAME, response.getName());
         assertEquals(TABLE_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
     }

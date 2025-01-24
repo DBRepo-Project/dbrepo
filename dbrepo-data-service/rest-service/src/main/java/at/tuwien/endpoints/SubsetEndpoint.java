@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
@@ -163,8 +164,7 @@ public class SubsetEndpoint extends RestEndpoint {
                                       Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, FormatNotAvailableException, StorageUnavailableException, UserNotFoundException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException, QueryMalformedException,
-            NotAllowedException {
+            MetadataServiceException, TableNotFoundException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
         final DatabaseDto database = credentialService.getDatabase(databaseId);
@@ -341,7 +341,7 @@ public class SubsetEndpoint extends RestEndpoint {
                                                              @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException {
+            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
@@ -383,6 +383,12 @@ public class SubsetEndpoint extends RestEndpoint {
             final Dataset<Row> dataset = subsetService.getData(database, query, timestamp, page, size, null, null);
             metricsService.countSubsetGetData(databaseId, subsetId);
             final String viewName = metadataMapper.queryDtoToViewName(subset);
+            databaseService.createView(database, CreateViewDto.builder()
+                    .name(viewName)
+                    .isPublic(false)
+                    .isSchemaPublic(false)
+                    .query(query)
+                    .build());
             final ViewDto view = databaseService.inspectView(database, viewName);
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));

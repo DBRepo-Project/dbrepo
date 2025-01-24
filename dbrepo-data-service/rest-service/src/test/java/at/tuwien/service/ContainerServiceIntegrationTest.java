@@ -42,17 +42,22 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, InterruptedException {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        MariaDbConfig.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+        Thread.sleep(1000) /* wait for test container some more */;
     }
 
     @Test
     public void create_succeeds() throws SQLException, DatabaseMalformedException {
 
+        /* mock */
+        MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
+
         /* test */
-        final DatabaseDto response = containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL);
+        final DatabaseDto response = containerService.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
         assertNull(response.getName());
         assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
         assertEquals(EXCHANGE_DBREPO_NAME, response.getExchangeName());
@@ -65,45 +70,26 @@ public class ContainerServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_exists_fails() throws SQLException {
-
-        /* mock */
-        MariaDbConfig.createDatabase(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
+    public void create_exists_fails() {
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
-            containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL);
+            containerService.createDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_CREATE_INTERNAL);
         });
     }
 
     @Test
     public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException, InterruptedException {
 
-        /* mock */
-        MariaDbConfig.dropQueryStore(DATABASE_1_DTO);
-
         /* test */
         createQueryStore_generic(DATABASE_1_INTERNALNAME);
     }
 
-    @Test
-    public void createQueryStore_fails() {
+    protected void createQueryStore_generic(String databaseName) throws SQLException, QueryStoreCreateException {
 
         /* test */
-        assertThrows(QueryStoreCreateException.class, () -> {
-            createQueryStore_generic(DATABASE_1_INTERNALNAME);
-        });
-    }
-
-    protected void createQueryStore_generic(String databaseName) throws SQLException, QueryStoreCreateException,
-            InterruptedException {
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
-
-        /* test */
-        containerService.createQueryStore(CONTAINER_1_DTO, databaseName);
-        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_DTO);
+        containerService.createQueryStore(CONTAINER_1_PRIVILEGED_DTO, databaseName);
+        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
         assertEquals(0, response.size());
     }
 }

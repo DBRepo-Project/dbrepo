@@ -13,7 +13,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ForeignKeyBriefDto {
 
-    @NonNull
     @Schema(example = "8")
     private Long id;
 }

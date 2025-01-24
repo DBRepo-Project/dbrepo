@@ -65,13 +65,13 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         when(credentialService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(containerService)
                 .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_DTO), any(UserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
 
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(DATABASE_1_CREATE_INTERNAL);
@@ -87,13 +87,13 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         when(credentialService.getContainer(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1_DTO);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(containerService)
                 .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_DTO), any(UserDto.class), any(AccessTypeDto.class));
+                .create(eq(DATABASE_1_PRIVILEGED_DTO), any(UserDto.class), any(AccessTypeDto.class));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -145,7 +145,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .when(credentialService)
                 .getContainer(CONTAINER_1_ID);
         when(containerService.createDatabase(CONTAINER_1_DTO, DATABASE_1_CREATE_INTERNAL))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(QueryStoreCreateException.class)
                 .when(containerService)
                 .createQueryStore(CONTAINER_1_DTO, DATABASE_1_INTERNALNAME);
@@ -163,7 +163,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
         databaseEndpoint.update(DATABASE_1_ID, USER_1_UPDATE_PASSWORD_DTO);
@@ -176,10 +176,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .update(DATABASE_1_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -193,7 +193,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -224,10 +224,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(DatabaseMalformedException.class)
                 .when(databaseService)
-                .update(DATABASE_1_DTO, USER_1_UPDATE_PASSWORD_DTO);
+                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_UPDATE_PASSWORD_DTO);
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {

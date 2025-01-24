@@ -59,7 +59,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.OK)
                         .headers(headers)
-                        .body(TABLE_1_DTO));
+                        .body(TABLE_1_PRIVILEGED_DTO));
 
         /* test */
         final TableDto response = metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
@@ -105,7 +105,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body(TABLE_1_DTO));
+                        .body(TABLE_1_PRIVILEGED_DTO));
 
         /* test */
         assertThrows(MetadataServiceException.class, () -> {
@@ -115,7 +115,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Test
     public void getTableById_headerMissing_fails() {
-        final List<String> customHeaders = List.of("X-Type", "X-Host", "X-Port", "X-Username", "X-Password", "X-Database", "X-Sidecar-Host", "X-Sidecar-Port");
+        final List<String> customHeaders = List.of("X-Username", "X-Password");
 
         for (int i = 0; i < customHeaders.size(); i++) {
             final HttpHeaders headers = new HttpHeaders();
@@ -126,7 +126,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
             when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableDto.class)))
                     .thenReturn(ResponseEntity.status(HttpStatus.OK)
                             .headers(headers)
-                            .body(TABLE_1_DTO));
+                            .body(TABLE_1_PRIVILEGED_DTO));
             /* test */
             assertThrows(MetadataServiceException.class, () -> {
                 metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID);
@@ -163,7 +163,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(DatabaseDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
-                        .body(DATABASE_1_DTO));
+                        .body(DATABASE_1_PRIVILEGED_DTO));
 
         /* test */
         final DatabaseDto response = metadataServiceGateway.getDatabaseById(DATABASE_1_ID);
@@ -359,7 +359,7 @@ public class MetadataServiceGatewayUnitTest extends AbstractUnitTest {
         when(internalRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ViewDto.class)))
                 .thenReturn(ResponseEntity.ok()
                         .headers(headers)
-                        .body(VIEW_1_DTO));
+                        .body(VIEW_1_PRIVILEGED_DTO));
 
         /* test */
         final ViewDto response = metadataServiceGateway.getViewById(CONTAINER_1_ID, VIEW_1_ID);

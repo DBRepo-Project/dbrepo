@@ -51,7 +51,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_DTO);
 
@@ -68,7 +68,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
@@ -85,12 +85,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
-                .create(DATABASE_1_DTO, USER_4_DTO, AccessTypeDto.READ);
+                .create(DATABASE_1_PRIVILEGED_DTO, USER_4_DTO, AccessTypeDto.READ);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -121,7 +121,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
                 .getUser(USER_4_ID);
@@ -149,7 +149,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
@@ -166,12 +166,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
-                .update(DATABASE_1_DTO, USER_1_DTO, AccessTypeDto.READ);
+                .update(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO, AccessTypeDto.READ);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -186,7 +186,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_DTO);
 
@@ -229,7 +229,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
                 .getUser(USER_1_ID);
@@ -248,7 +248,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_DTO);
         doNothing()
@@ -268,7 +268,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_4_ID))
                 .thenReturn(USER_4_DTO);
 
@@ -311,7 +311,7 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(UserNotFoundException.class)
                 .when(credentialService)
                 .getUser(USER_1_ID);
@@ -329,12 +329,12 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getUser(USER_1_ID))
                 .thenReturn(USER_1_DTO);
         doThrow(SQLException.class)
                 .when(accessService)
-                .delete(DATABASE_1_DTO, USER_1_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO, USER_1_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {

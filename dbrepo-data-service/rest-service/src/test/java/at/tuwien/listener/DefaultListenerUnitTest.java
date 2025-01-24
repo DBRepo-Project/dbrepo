@@ -5,7 +5,7 @@ import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class DefaultListenerUnitTest extends AbstractUnitTest {
 
     @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
+    private CredentialService credentialService;
 
     @Autowired
     private DefaultListener defaultListener;
@@ -54,7 +54,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropAllDatabases(CONTAINER_1_PRIVILEGED_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -81,8 +81,8 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
         final Message request = buildMessage("dbrepo.1.1", "{,}", new HashMap<>());
 
         /* mock */
-        when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_DTO);
+        when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1_PRIVILEGED_DTO);
 
         /* test */
         defaultListener.onMessage(request);
@@ -96,8 +96,8 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
 
         /* mock */
         doThrow(TableNotFoundException.class)
-                .when(metadataServiceGateway)
-                .getTableById(DATABASE_1_ID, TABLE_1_ID);
+                .when(credentialService)
+                .getTable(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         defaultListener.onMessage(request);
