@@ -242,7 +242,7 @@ export default {
       if (!this.user) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
     },
     identifier () {
       if (this.pid) {
@@ -336,7 +336,10 @@ export default {
       if (this.error) {
         return false
       }
-      return this.database
+      if (!this.database) {
+        return false
+      }
+      return this.database.is_schema_public
     }
   }
 }

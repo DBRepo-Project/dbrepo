@@ -55,12 +55,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-</script>
 <script>
 import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel } from '@/utils'
@@ -94,6 +88,9 @@ export default {
     },
     subset () {
       return this.cacheStore.getSubset
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     identifiers () {
       if (!this.subset) {
@@ -152,10 +149,10 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     canGetPid () {
-      if (!this.userInfo || !this.subset || !this.database) {
+      if (!this.cacheUser || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.userInfo.uid || (this.subset.owner.id === this.userInfo.uid && this.hasReadAccess)
+      return this.database.owner.id === this.cacheUser.uid || (this.subset.owner.id === this.cacheUser.uid && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

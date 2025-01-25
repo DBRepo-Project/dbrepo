@@ -81,13 +81,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import { useCacheStore } from '@/stores/cache.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
@@ -109,6 +102,12 @@ export default {
     },
     access () {
       return this.cacheStore.getAccess
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     isContrastTheme () {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
@@ -140,12 +139,6 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
-    canImportCsv () {
-      if (!this.user || !this.hasWriteAccess) {
-        return false
-      }
-      return this.roles.includes('insert-table-data')
-    },
     canCreateSubset () {
       if (!this.database) {
         return false
@@ -156,22 +149,22 @@ export default {
       return this.hasReadAccess
     },
     canCreateView () {
-      if (!this.user || !this.isOwner) {
+      if (!this.cacheUser || !this.isOwner) {
         return false
       }
       return this.roles.includes('create-database-view')
     },
     canCreateTable () {
-      if (!this.user || !this.hasWriteAccess) {
+      if (!this.cacheUser || !this.hasWriteAccess) {
         return false
       }
       return this.roles.includes('create-table')
     },
     isOwner () {
-      if (!this.database || !this.user) {
+      if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.id === this.userInfo.uid
+      return this.database.owner.id === this.cacheUser.uid
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

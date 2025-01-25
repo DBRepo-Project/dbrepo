@@ -7,6 +7,7 @@
       indeterminate />
   </v-list-item-title>
 </template>
+
 <script>
 export default {
   props: {

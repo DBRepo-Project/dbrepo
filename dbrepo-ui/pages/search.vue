@@ -63,12 +63,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
 
@@ -92,12 +86,6 @@ export default {
     },
     header () {
       return `${this.results.length} ${this.results.length !== 1 ? this.$t('toolbars.search.results') : this.$t('toolbars.search.result')}`
-    },
-    canCreateDatabase () {
-      if (!this.roles) {
-        return false
-      }
-      return this.roles.includes('create-database')
     },
     isDatabaseSearch () {
       return this.type === 'database'

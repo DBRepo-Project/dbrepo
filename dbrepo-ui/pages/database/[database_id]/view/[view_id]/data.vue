@@ -38,7 +38,7 @@
 import { ref } from 'vue'
 
 const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const cacheUser = ref(loggedIn ? user.value?.cacheUser : null)
 </script>
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
@@ -88,11 +88,8 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     canReadData () {
       if (!this.view) {
@@ -101,10 +98,14 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.userInfo) {
+      if (!this.access) {
         return false
       }
-      return this.view.owner.id === this.userInfo.uid || this.hasReadAccess
+      if (!this.cacheUser) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) || this.database.owner.id === this.cacheUser.uid
     },
   },
   mounted () {

@@ -64,7 +64,7 @@
             :title="$t('pages.table.owner.title')">
             <UserBadge
               :user="table.owner"
-              :other-user="user" />
+              :other-user="cacheUser" />
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -118,13 +118,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
@@ -184,14 +177,21 @@ export default {
     table () {
       return this.cacheStore.getTable
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     canRead () {
       if (this.database && this.database.is_public) {
         return true
       }
-      if (!this.user || !this.access) {
+      if (!this.access) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     canViewSchema () {
       if (this.error) {
@@ -203,16 +203,15 @@ export default {
       if (this.table.is_schema_public || this.table.is_public) {
         return true
       }
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canWrite () {
-      if (!this.table || !this.user || !this.access) {
-        return false
-      }
-      return (this.access.type === 'write_own' && this.table.owned_by === this.userInfo.uid) || this.access.type === 'write_all'
+      const userService = useUserService()
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser)
     },
     access () {
       return this.cacheStore.getAccess
@@ -236,10 +235,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.userInfo.uid)
+      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.cacheUser.uid)
     },
     identifier () {
       if (this.pid) {

@@ -50,7 +50,9 @@
             v-if="subset.creator"
             :title="$t('pages.subset.creator.title')"
             density="compact">
-            <UserBadge :user="subset.creator" :other-user="user" />
+            <UserBadge
+              :user="subset.creator"
+              :other-user="cacheUser" />
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.query.title')"
@@ -143,8 +145,8 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    access () {
-      return this.cacheStore.getAccess
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     subset () {
       return this.cacheStore.getSubset

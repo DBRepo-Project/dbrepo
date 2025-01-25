@@ -827,13 +827,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
@@ -972,6 +965,12 @@ export default {
     }
   },
   computed: {
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     isSubset () {
       return this.type === 'subset'
     },
@@ -1045,19 +1044,19 @@ export default {
       }
     },
     canInsertSelf () {
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.user.given_name || this.user.family_name || this.user.attributes.affiliation || this.user.attributes.orcid
+      return this.cacheUser.given_name || this.cacheUser.family_name || this.cacheUser.attributes.affiliation || this.cacheUser.attributes.orcid
     },
     isCreator () {
-      if (!this.user || !this.identifier) {
+      if (!this.cacheUser || !this.identifier) {
         return false
       }
-      if (!this.identifier.creator) {
+      if (!this.identifier.owner) {
         return true
       }
-      return this.identifier.creator.id === this.user.id
+      return this.identifier.owner.id === this.cacheUser.uid
     },
     formValid () {
       /* somehow Vue3/Vuetify3 validation form is broken for arrays */
@@ -1119,10 +1118,10 @@ export default {
       return this.roles.includes('create-identifier') && !this.isPublished
     },
     canRemove () {
-      if (!this.roles || !this.identifier || !this.identifier.creator || !this.user) {
+      if (!this.roles || !this.identifier || !this.identifier.owner || !this.cacheUser) {
         return false
       }
-      return this.roles.includes('delete-identifier') && this.identifier.creator.id === this.user.id && !this.isPublished
+      return this.roles.includes('delete-identifier') && this.identifier.owner.id === this.cacheUser.uid && !this.isPublished
     },
     canPublish () {
       if (!this.roles || !this.identifier || !this.roles.includes('publish-identifier') || this.isPublished || !this.identifier.id) {
@@ -1490,15 +1489,15 @@ export default {
       if (this.isPublished) {
         return false
       }
-      if (this.user.attributes.orcid) {
-        creator.name_identifier = this.user.attributes.orcid
+      if (this.cacheUser.attributes.orcid) {
+        creator.name_identifier = this.cacheUser.attributes.orcid
         this.retrieveCreator(creator)
         return
       }
-      creator.firstname = this.user.given_name
-      creator.lastname = this.user.family_name
+      creator.firstname = this.cacheUser.given_name
+      creator.lastname = this.cacheUser.family_name
       creator.creator_name = (creator.lastname ? creator.lastname + ', ' : '') + creator.firstname
-      creator.affiliation = this.user.attributes.affiliation
+      creator.affiliation = this.cacheUser.attributes.affiliation
     },
     canShiftUp (creator, idx) {
       if (this.isPublished) {

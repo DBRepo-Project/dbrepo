@@ -123,9 +123,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
@@ -187,6 +185,12 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     hasReadAccess () {
       if (!this.access) {
         return false
@@ -203,16 +207,17 @@ export default {
       if (this.table.is_schema_public) {
         return true
       }
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
     },
     canAssignSemanticInformation () {
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return false
       }
       if (this.roles.includes('modify-foreign-table-column-semantics')) {
@@ -221,7 +226,7 @@ export default {
       if (!this.access) {
         return false
       }
-      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.id === this.userInfo.uid)
+      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.id === this.cacheUser.uid)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

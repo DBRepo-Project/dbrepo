@@ -9,12 +9,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import Persist from '@/components/identifier/Persist.vue'
 import { useCacheStore } from '@/stores/cache.js'

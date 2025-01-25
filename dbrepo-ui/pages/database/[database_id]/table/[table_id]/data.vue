@@ -107,11 +107,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import TableHistory from '@/components/table/TableHistory.vue'
@@ -197,14 +193,11 @@ export default {
     table () {
       return this.cacheStore.getTable
     },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     access () {
       return this.cacheStore.getAccess
-    },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     title () {
       return (this.version ? this.$t('toolbars.database.history') : this.$t('toolbars.database.current')) + ' ' + this.versionFormatted
@@ -230,15 +223,6 @@ export default {
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
-    canModify () {
-      if (!this.userInfo || !this.access || !this.table) {
-        return false
-      }
-      if (this.access.type === 'write_own' && this.table.owner.id === this.userInfo.uid) {
-        return true
-      }
-      return this.access.type === 'write_all'
-    },
     primaryKeyColumns () {
       if (!this.table) {
         return []
@@ -258,7 +242,11 @@ export default {
       if (!this.roles || !this.roles.includes('view-table-data')) {
         return false
       }
-      return this.hasReadAccess
+      if (!this.access) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     canAddTuple () {
       if (!this.roles) {

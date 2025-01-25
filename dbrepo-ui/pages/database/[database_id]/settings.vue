@@ -349,16 +349,16 @@ export default {
       if (!this.database || !this.user) {
         return false
       }
-      if (this.database.owner.id === null || this.user.id === null) {
+      if (this.database.owner.id === null || this.userInfo.uid === null) {
         return false
       }
-      return this.database.owner.id === this.user.id
+      return this.database.owner.id === this.userInfo.uid
     },
     isSameOwner () {
-      if (!this.modifyOwner || !this.user) {
+      if (!this.modifyOwner || !this.userInfo) {
         return false
       }
-      return this.modifyOwner.id === this.user.id
+      return this.modifyOwner.id === this.userInfo.uid
     },
     isSameVisibility () {
       if (!this.modifyVisibility || !this.database) {
@@ -406,7 +406,13 @@ export default {
       if (this.error) {
         return false
       }
-      return this.database
+      if (!this.database) {
+        return false
+      }
+      if (!this.cacheUser) {
+        return false
+      }
+      return this.database.owner.id === this.cacheUser.uid
     },
     previewImage () {
       if (this.file) {

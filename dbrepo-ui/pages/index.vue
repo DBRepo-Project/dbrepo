@@ -27,9 +27,6 @@
   </div>
 </template>
 
-<script setup>
-const { loggedIn, user, login, logout } = useOidcAuth()
-</script>
 <script>
 import DatabaseList from '@/components/database/DatabaseList.vue'
 import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
@@ -47,17 +44,8 @@ export default {
     }
   },
   computed: {
-    userInfo () {
-      if (!this.user) {
-        return null
-      }
-      return this.user.userInfo
-    },
     roles () {
-      if (!this.user) {
-        return []
-      }
-      return []
+      return this.cacheStore.getRoles
     },
     canCreateDatabase () {
       if (!this.roles) {

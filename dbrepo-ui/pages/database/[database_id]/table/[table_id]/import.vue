@@ -28,13 +28,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import TableImport from '@/components/table/TableImport.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -81,6 +74,9 @@ export default {
   computed: {
     table () {
       return this.cacheStore.getTable
+    },
+    roles () {
+      return this.cacheStore.getRoles
     },
     title () {
       if (!this.table) {

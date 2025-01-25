@@ -105,10 +105,10 @@
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="loggedIn"
+          v-if="cacheUser"
           to="/user"
           variant="plain"
-          :text="userInfo.preferred_username" />
+          :text="cacheUser.preferred_username" />
         <v-menu
           v-if="loggedIn"
           location="bottom">
@@ -119,19 +119,18 @@
           </template>
           <v-list>
             <v-list-item
-              v-if="user"
+              v-if="cacheUser"
               exact
-              :to="`/search?type=database&owner.username=${user.username}`">
+              :to="`/search?type=database&owner.username=${cacheUser.username}`">
               {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
             </v-list-item>
             <v-list-item
-              v-if="user"
+              v-if="cacheUser"
               exact
-              :to="`/search?type=identifier&identifiers.creator.username=${user.username}`">
+              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.username}`">
               {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
             </v-list-item>
             <v-list-item
-              v-if="user"
               @click="logout()">
               {{ $t('navigation.logout') }}
             </v-list-item>
@@ -154,10 +153,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+const cacheStore = useCacheStore()
+cacheStore.setUser(loggedIn ? user.value?.userInfo : null)
+cacheStore.setRoles(loggedIn ? user.value?.claims?.realm_access?.roles : [])
 const runtimeConfig = useRuntimeConfig()
 const config = ref(runtimeConfig)
 useServerHead({
@@ -172,7 +173,6 @@ useServerHead({
 import JumboBox from '@/components/JumboBox.vue'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
-
 
 export default {
   components: {
@@ -211,6 +211,12 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     resource () {
       if (!this.$route.params.database_id) {
         return null
@@ -248,13 +254,13 @@ export default {
       if (!this.user) {
         return null
       }
-      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.user.id) {
+      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.cacheUser.uid) {
         return makeError(403, null, null)
       }
-      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.user.id) {
+      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.cacheUser.uid) {
         return makeError(403, null, null)
       }
-      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.user.id) {
+      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.cacheUser.uid) {
         return makeError(403, null, null)
       }
       return null
@@ -266,10 +272,7 @@ export default {
       return this.roles.includes('list-ontologies')
     },
     canListContainers () {
-      if (!this.roles) {
-        return false
-      }
-      return this.roles.includes('list-containers')
+      return this.cacheUser
     },
     logo () {
       return this.$config.public.logo
@@ -291,19 +294,18 @@ export default {
           this.cacheStore.setTable(null)
           this.cacheStore.setView(null)
           this.cacheStore.setSubset(null)
+          this.cacheStore.setAccess(null)
           return
         }
         if (import.meta.server) {
           return
         }
         /* load database and optional access */
+        this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.uid)
         this.cacheStore.setRouteDatabase(newObj.database_id)
           .catch((error) => {
             this.databaseError = error
           })
-        if (this.userInfo) {
-          this.cacheStore.setRouteAccess(newObj.database_id, this.userInfo.uid)
-        }
         /* load table */
         if (newObj.table_id) {
           this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
@@ -328,14 +330,14 @@ export default {
     }
   },
   mounted () {
-    this.initEnvironment()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
-    if (!this.user) {
+    if (!this.cacheUser) {
       return
     }
     this.setTheme()
+    this.setLocale()
     this.cacheStore.reloadMessages()
   },
   methods: {
@@ -343,7 +345,7 @@ export default {
       console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
-    initEnvironment () {
+    setLocale () {
       if (!this.locale) {
         this.cacheStore.setLocale('en')
         return
@@ -351,7 +353,10 @@ export default {
       this.$i18n.locale = this.locale
     },
     setTheme () {
-      switch (this.user.attributes.theme) {
+      if (!this.cacheUser?.attributes?.theme) {
+        return
+      }
+      switch (this.cacheUser.attributes.theme) {
         case 'dark':
           this.$vuetify.theme.global.name = 'tuwThemeDark'
           break
@@ -365,10 +370,6 @@ export default {
           this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
           break
       }
-    },
-    setLocale (code) {
-      this.cacheStore.setLocale(code)
-      this.$i18n.locale = this.locale
     }
   }
 }

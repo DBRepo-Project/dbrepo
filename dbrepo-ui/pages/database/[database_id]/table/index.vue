@@ -52,7 +52,10 @@ export default {
       if (this.error) {
         return false
       }
-      return this.database
+      if (!this.database) {
+        return false
+      }
+      return this.database.is_schema_public
     }
   }
 }

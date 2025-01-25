@@ -123,13 +123,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -184,8 +177,11 @@ export default {
     locale () {
       return this.cacheStore.getLocale
     },
-    canModifyTheme () {
-      return this.roles.includes('modify-user-theme')
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     canModifyInformation () {
       return this.roles.includes('modify-user-information')
@@ -216,7 +212,7 @@ export default {
         language: this.model.language,
       }
       const userService = useUserService()
-      userService.update(this.userInfo.id, payload)
+      userService.update(this.cacheUser.uid, payload)
         .then((user) => {
           console.info('Updated user information')
           const toast = useToastInstance()
@@ -252,14 +248,14 @@ export default {
         return
       }
       this.model = {
-        id: this.userInfo.id,
-        username: this.userInfo.username,
-        firstname: this.userInfo.given_name,
-        lastname: this.userInfo.family_name,
-        orcid: this.userInfo.attributes.orcid,
-        affiliation: this.userInfo.attributes.affiliation,
-        theme: this.userInfo.attributes.theme,
-        language: this.userInfo.attributes.language
+        id: this.cacheUser.uid,
+        username: this.cacheUser.username,
+        firstname: this.cacheUser.given_name,
+        lastname: this.cacheUser.family_name,
+        orcid: this.cacheUser.attributes.orcid,
+        affiliation: this.cacheUser.attributes.affiliation,
+        theme: this.cacheUser.attributes.theme,
+        language: this.cacheUser.attributes.language
       }
     },
     retrieve () {

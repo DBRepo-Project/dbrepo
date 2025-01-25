@@ -304,11 +304,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-</script>
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import Raw from '@/components/subset/Raw.vue'

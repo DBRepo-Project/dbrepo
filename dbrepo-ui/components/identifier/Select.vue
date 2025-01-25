@@ -41,16 +41,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import Banner from '@/components/identifier/Banner.vue'
-import { formatTimestampUTCLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -82,10 +74,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -104,7 +96,6 @@ export default {
     this.init()
   },
   methods: {
-    formatTimestampUTCLabel,
     href (identifier) {
       if (identifier.status === 'published') {
         return `/pid/${identifier.id}`

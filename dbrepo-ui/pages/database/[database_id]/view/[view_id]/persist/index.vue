@@ -51,14 +51,14 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
     view () {
       if (!this.database) {
         return null
       }
       return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
-    },
-    access () {
-      return this.cacheStore.getAccess
     },
     canPersistView () {
       if (!this.view) {

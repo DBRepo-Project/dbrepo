@@ -90,13 +90,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -167,11 +160,11 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     isChange () {
       if (!this.view) {
@@ -183,22 +176,22 @@ export default {
       return this.view.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateVisibility () {
-      if (!this.roles || !this.userInfo || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.userInfo.uid
+      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.cacheUser.uid
     },
     canDeleteView () {
-      if (!this.roles || !this.userInfo || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.view.owner.id === this.userInfo.uid
+      return this.roles.includes('delete-database-view') && this.view.owner.id === this.cacheUser.uid
     },
     canViewSettings () {
-      if (!this.userInfo || !this.view) {
+      if (!this.cacheUser || !this.view) {
         return false
       }
-      return this.view.owner.id === this.userInfo.uid
+      return this.view.owner.id === this.cacheUser.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

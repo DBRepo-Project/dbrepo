@@ -61,11 +61,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'

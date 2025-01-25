@@ -185,12 +185,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
@@ -265,6 +259,9 @@ export default {
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    roles () {
+      return this.cacheStore.getRoles
     },
     canCreateTable () {
       if (!this.roles) {

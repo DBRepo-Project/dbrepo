@@ -3,6 +3,7 @@
     {{ prefix }}: <a :href="href">{{ displayName }}</a>
   </div>
 </template>
+
 <script>
 export default {
   props: {

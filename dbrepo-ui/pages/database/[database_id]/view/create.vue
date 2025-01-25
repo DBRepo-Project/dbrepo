@@ -6,12 +6,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import Builder from '@/components/subset/Builder.vue'
 
@@ -43,6 +37,9 @@ export default {
     }
   },
   computed: {
+    roles () {
+      return this.cacheStore.getRoles
+    },
     canCreateView () {
       if (!this.roles) {
         return false

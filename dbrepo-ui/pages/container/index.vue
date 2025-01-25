@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <v-toolbar
       flat
       :title="$t('pages.container.title')">
@@ -11,6 +12,9 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn } = useOidcAuth()
+</script>
 <script>
 import ContainerList from '@/components/container/ContainerList.vue'
 

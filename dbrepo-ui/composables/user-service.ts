@@ -141,13 +141,13 @@ export const useUserService = (): any => {
   }
 
   function hasWriteAccess(table: TableDto, access: DatabaseAccessDto, user: UserDto): boolean {
-    if (!table || !access) {
+    if (!table || !access || !user) {
       return false
     }
     if (access.type === 'write_all') {
       return true
     }
-    return access.type === 'write_own' && table.owner.id === user.id
+    return access.type === 'write_own' && table.owner.id === user.uid
   }
 
   return {
@@ -156,7 +156,6 @@ export const useUserService = (): any => {
     update,
     create,
     updatePassword,
-    refreshToken,
     nameIdentifierToNameIdentifierScheme,
     userToFullName,
     hasReadAccess,

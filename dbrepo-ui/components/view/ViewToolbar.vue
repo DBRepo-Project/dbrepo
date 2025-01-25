@@ -56,13 +56,6 @@
   </v-toolbar>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import { useCacheStore } from '@/stores/cache.js'
 import CreateOntology from '@/components/dialogs/CreateOntology.vue'
@@ -96,6 +89,12 @@ export default {
     view () {
       return this.cacheStore.getView
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     canViewData () {
       if (!this.view) {
         return false
@@ -103,10 +102,10 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.userInfo.id || this.database.owner.id === this.userInfo.id
+      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canViewSchema () {
       if (!this.view) {
@@ -115,23 +114,23 @@ export default {
       if (this.view.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.userInfo.id || this.database.owner.id === this.userInfo.id
+      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canViewSettings () {
-      if (!this.user || !this.view) {
+      if (!this.cacheUser || !this.view) {
         return false
       }
-      return this.view.owner.id === this.userInfo.id
+      return this.view.owner.id === this.cacheUser.uid
     },
     canCreatePid () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      const userService = useUserService()
-      return this.roles.includes('create-identifier') && userService.hasReadAccess(this.access)
+      const cacheUserService = useUserService()
+      return cacheUserService.hasReadAccess(this.access) && this.roles.includes('create-identifier')
     },
     access () {
       return this.cacheStore.getAccess

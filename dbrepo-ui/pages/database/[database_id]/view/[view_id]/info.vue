@@ -59,12 +59,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
@@ -121,11 +115,11 @@ export default {
     view () {
       return this.cacheStore.getView
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     identifiers () {
       if (!this.view) {
@@ -137,10 +131,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
     },
     identifier () {
       if (this.pid) {
@@ -177,10 +171,14 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.userInfo) {
+      if (!this.access) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
+      if (!this.cacheUser) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAcess(this.access) || this.database.owner.id === this.cacheUser.uid
     }
   },
   methods: {

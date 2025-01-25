@@ -8,13 +8,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import Persist from '@/components/identifier/Persist.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -48,6 +41,9 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     hasIdentifier () {
       if (this.database && 'identifier' in this.database && this.database.identifier) {
         return 'id' in this.database.identifier
@@ -55,10 +51,10 @@ export default {
       return false
     },
     isOwner () {
-      if (!this.database || !this.userInfo) {
+      if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.id === this.userInfo.uid
+      return this.database.owner.id === this.cacheUser.uid
     },
     canCreateIdentifier () {
       if (!this.roles || this.hasIdentifier) {

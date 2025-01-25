@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-const { loggedIn, user, login, logout } = useOidcAuth()
+const { loggedIn } = useOidcAuth()
 </script>
 <script>
 export default {

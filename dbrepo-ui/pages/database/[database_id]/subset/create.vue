@@ -6,12 +6,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import Builder from '@/components/subset/Builder.vue'
 import {useCacheStore} from '@/stores/cache.js'
@@ -51,12 +45,6 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
     canCreateSubset () {
       if (!this.database) {
         return false
@@ -64,7 +52,8 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      return this.hasReadAccess
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   }
 }

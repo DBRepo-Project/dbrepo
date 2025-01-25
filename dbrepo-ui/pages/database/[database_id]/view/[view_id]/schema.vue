@@ -51,12 +51,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -113,11 +107,11 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     canViewSchema () {
       if (!this.view) {
@@ -126,10 +120,14 @@ export default {
       if (this.view.is_schema_public) {
         return true
       }
-      if (!this.userInfo) {
+      if (!this.access) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
+      if (!this.cacheUser) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) || this.database.owner.id === this.cacheUser.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

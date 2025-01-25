@@ -3,7 +3,6 @@
     v-if="canUpdateTable">
     <TableToolbar />
     <v-window
-      v-if="loggedIn"
       v-model="tab">
       <v-window-item>
         <v-form
@@ -114,13 +113,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -194,11 +186,11 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
     },
     isChange () {
       if (!this.table) {
@@ -210,26 +202,20 @@ export default {
       return this.table.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateTable () {
-      if (!this.roles || !this.userInfo || !this.table) {
+      if (!this.roles || !this.cacheUser || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.userInfo.uid
-    },
-    canModifyVisibility () {
-      if (!this.roles || !this.userInfo || !this.table) {
-        return false
-      }
-      return this.roles.includes('update-table') && this.table.owner.id === this.userInfo.uid
+      return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
     },
     canDropTable () {
-      if (!this.roles || !this.table || !this.userInfo) {
+      if (!this.roles || !this.table || !this.cacheUser) {
         return false
       }
       if (this.roles.includes('delete-foreign-table')) {
         return true
       }
       const tableService = useTableService()
-      return tableService.isOwner(this.table, this.userInfo) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
+      return tableService.isOwner(this.table, this.cacheUser) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

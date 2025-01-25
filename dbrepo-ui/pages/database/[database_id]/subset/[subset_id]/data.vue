@@ -139,10 +139,6 @@ export default {
           this.loadingSubset = false
         })
     },
-    loadResult () {
-      if (this.subset) {
-      }
-    },
     download () {
       this.downloadLoading = true
       const queryService = useQueryService()
