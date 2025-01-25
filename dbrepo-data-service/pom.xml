@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
     <name>dbrepo-data-service</name>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
 
     <description>Service that manages the data</description>
 

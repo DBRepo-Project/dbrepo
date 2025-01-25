@@ -1,8 +1,8 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
@@ -122,7 +122,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void create_anonymous_fails() {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .name(CONTAINER_1_NAME)
                 .imageId(IMAGE_1_ID)
                 .build();
@@ -136,7 +136,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-container"})
     public void create_hasRole_succeeds() throws ContainerAlreadyExistsException, ImageNotFoundException {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .name(CONTAINER_1_NAME)
                 .imageId(IMAGE_1_ID)
                 .build();
@@ -148,7 +148,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
-        final ContainerCreateDto request = ContainerCreateDto.builder()
+        final CreateContainerDto request = CreateContainerDto.builder()
                 .name(CONTAINER_1_NAME)
                 .imageId(IMAGE_1_ID)
                 .build();
@@ -221,7 +221,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         assertEquals(CONTAINER_2_INTERNALNAME, container2.getInternalName());
     }
 
-    public void create_generic(ContainerCreateDto data) throws ContainerAlreadyExistsException, ImageNotFoundException {
+    public void create_generic(CreateContainerDto data) throws ContainerAlreadyExistsException, ImageNotFoundException {
 
         /* mock */
         when(containerService.create(data))

@@ -1,10 +1,8 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.service.UserService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -43,6 +41,13 @@ public abstract class AbstractEndpoint {
             return UUID.fromString(user.getId());
         }
         throw new IllegalArgumentException("Unknown principal instance: " + authentication.getPrincipal().getClass());
+    }
+
+    public void removeInternalData(ContainerDto container) {
+        container.setPassword(null);
+        container.setUsername(null);
+        container.setHost(null);
+        container.setPort(null);
     }
 
 }

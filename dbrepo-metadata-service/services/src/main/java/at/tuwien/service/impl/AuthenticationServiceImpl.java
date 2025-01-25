@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -30,7 +30,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public UserDto create(SignupRequestDto data) throws UserExistsException, AuthServiceException,
+    public UserDto create(CreateUserDto data) throws UserExistsException, AuthServiceException,
             AuthServiceConnectionException, EmailExistsException, CredentialsInvalidException {
         keycloakGateway.createUser(metadataMapper.signupRequestDtoToUserCreateDto(data));
         try {

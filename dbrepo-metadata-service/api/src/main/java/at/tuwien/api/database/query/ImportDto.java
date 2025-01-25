@@ -22,7 +22,7 @@ public class ImportDto {
     private String location;
 
     @NotNull
-    @Schema(description = "If true, the first line contains the column names, otherwise it contains only data")
+    @Schema(example = "true", description = "If true, the first line contains the column names, otherwise it contains only data")
     private Boolean header;
 
     @NotNull

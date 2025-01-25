@@ -1,13 +1,13 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
-import at.tuwien.api.database.table.constraints.foreign.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
+import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -135,7 +135,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.updateStatistics(TABLE_8);
@@ -224,7 +224,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
@@ -256,7 +256,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final TableColumn response = tableService.update(TABLE_1_COLUMNS.get(0), request);
@@ -275,11 +275,11 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_1);
         doNothing()
                 .when(dataServiceGateway)
-                .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
@@ -291,15 +291,15 @@ public class TableServiceUnitTest extends AbstractUnitTest {
             DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
             TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
             OntologyNotFoundException, SemanticEntityNotFoundException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("I Am Späshül")
                         .nullAllowed(true)
                         .type(ColumnTypeDto.TEXT)
                         .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .checks(Set.of())
                         .uniques(List.of(List.of("I Am Späshül")))
                         .foreignKeys(List.of())
@@ -312,11 +312,11 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_1);
         doNothing()
                 .when(dataServiceGateway)
-                .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
@@ -344,15 +344,15 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     public void createTable_dateFormatNotFound_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("date")
                         .nullAllowed(true)
                         .type(ColumnTypeDto.DATE)
                         .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .checks(Set.of())
                         .uniques(List.of(List.of("date")))
                         .foreignKeys(List.of())
@@ -365,11 +365,11 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(USER_1);
         doNothing()
                 .when(dataServiceGateway)
-                .createTable(eq(DATABASE_1_ID), any(TableCreateDto.class));
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         assertThrows(MalformedException.class, () -> {
@@ -392,7 +392,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
@@ -413,7 +413,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
@@ -423,11 +423,11 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void createTable_primaryKeyMalformed_fails() throws UserNotFoundException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
                 .columns(TABLE_5_COLUMNS_CREATE)
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
                         .primaryKey(Set.of("i_do_not_exist"))
@@ -447,11 +447,11 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void createTable_uniquesMalformed_fails() throws UserNotFoundException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
                 .columns(TABLE_5_COLUMNS_CREATE)
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .foreignKeys(new LinkedList<>())
                         .checks(new LinkedHashSet<>())
                         .primaryKey(new LinkedHashSet<>())
@@ -473,12 +473,12 @@ public class TableServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void createTable_foreignKeyMalformed_fails() throws UserNotFoundException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name(TABLE_5_NAME)
                 .description(TABLE_5_DESCRIPTION)
                 .columns(TABLE_5_COLUMNS_CREATE)
-                .constraints(ConstraintsCreateDto.builder()
-                        .foreignKeys(List.of(ForeignKeyCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
+                        .foreignKeys(List.of(CreateForeignKeyDto.builder()
                                 .columns(List.of("some_column"))
                                 .referencedColumns(List.of("some_foreign_column"))
                                 .referencedTable("some_referenced_table")
@@ -511,7 +511,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_1_ID);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_1);
@@ -527,7 +527,7 @@ public class TableServiceUnitTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .deleteTable(DATABASE_1_ID, TABLE_4_ID);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         tableService.deleteTable(TABLE_4);

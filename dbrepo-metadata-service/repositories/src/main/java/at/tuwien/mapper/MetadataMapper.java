@@ -1,25 +1,25 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.image.DataTypeDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.database.*;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
@@ -110,7 +110,7 @@ public interface MetadataMapper {
     @Mappings({
             @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping")
     })
-    Container containerCreateRequestDtoToContainer(ContainerCreateDto data);
+    Container containerCreateRequestDtoToContainer(CreateContainerDto data);
 
     ContainerDto containerToContainerDto(Container data);
 
@@ -120,7 +120,10 @@ public interface MetadataMapper {
     })
     ContainerBriefDto containerToContainerBriefDto(Container data);
 
-    PrivilegedDatabaseDto databaseToPrivilegedDatabaseDto(Database data);
+    @Mappings({
+            @Mapping(target = "previewImage", expression = "java(database.getImage() != null ? \"/api/database/\" + database.getId() + \"/image\" : null)")
+    })
+    DatabaseDto databaseToDatabaseDto(Database database);
 
     @Mappings({
             @Mapping(target = "titles", source = "."),
@@ -300,7 +303,8 @@ public interface MetadataMapper {
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id")
+            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "ownedBy", source = "owner.id")
     })
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
@@ -359,19 +363,19 @@ public interface MetadataMapper {
                 .build();
     }
 
-    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
+    Identifier identifierCreateDtoToIdentifier(CreateIdentifierDto data);
 
     Identifier identifierUpdateDtoToIdentifier(IdentifierSaveDto data);
 
     License licenseDtoToLicense(LicenseDto data);
 
-    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierSaveTitleDto data);
+    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(SaveIdentifierTitleDto data);
 
-    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierSaveDescriptionDto data);
+    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(SaveIdentifierDescriptionDto data);
 
-    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(IdentifierFunderSaveDto data);
+    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(SaveIdentifierFunderDto data);
 
-    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(IdentifierCreateDto data);
+    IdentifierSaveDto identifierCreateDtoToIdentifierSaveDto(CreateIdentifierDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
@@ -385,9 +389,9 @@ public interface MetadataMapper {
             @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
             @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
     })
-    Creator creatorCreateDtoToCreator(CreatorSaveDto data);
+    Creator creatorCreateDtoToCreator(SaveIdentifierCreatorDto data);
 
-    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierSaveDto data);
+    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(SaveRelatedIdentifierDto data);
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
@@ -490,7 +494,7 @@ public interface MetadataMapper {
                 .name(data.getName())
                 .columns(data.getColumns()
                         .stream()
-                        .map(this::tableColumnToColumnDto)
+                        .map(this::tableColumnToColumnBriefDto)
                         .toList())
                 .table(tableToTableBriefDto(data.getTable()))
                 .build();
@@ -531,7 +535,9 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default TableDto customTableToTableDto(Table data) {
+    default TableDto tableToTableDto(Table data) {
+        data.getDatabase()
+                .setTables(null);
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -544,6 +550,7 @@ public interface MetadataMapper {
                 .description(data.getDescription())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
+                .database(databaseToDatabaseDto(data.getDatabase()))
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .build();
         if (data.getIdentifiers() != null) {
@@ -620,7 +627,8 @@ public interface MetadataMapper {
     Unique uniqueDtoToUnique(UniqueDto data);
 
     @Mappings({
-            @Mapping(target = "ownedBy", source = "owner.id")
+            @Mapping(target = "ownedBy", source = "owner.id"),
+            @Mapping(target = "database", ignore = true)
     })
     Table tableDtoToTable(TableDto data);
 
@@ -629,7 +637,7 @@ public interface MetadataMapper {
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto data);
 
     /* keep */
-    default Constraints constraintsCreateDtoToConstraints(ConstraintsCreateDto data, Database database, Table table) {
+    default Constraints constraintsCreateDtoToConstraints(CreateTableConstraintsDto data, Database database, Table table) {
         final int[] idx = new int[]{0, 0};
         final Constraints constrains = Constraints.builder()
                 .checks(data.getChecks())
@@ -724,13 +732,19 @@ public interface MetadataMapper {
     ColumnDto tableColumnToColumnDto(TableColumn data);
 
     @Mappings({
+            @Mapping(target = "tableId", source = "table.id"),
+            @Mapping(target = "databaseId", source = "table.database.id")
+    })
+    ColumnBriefDto tableColumnToColumnBriefDto(TableColumn data);
+
+    @Mappings({
             @Mapping(target = "id", expression = "java(null)"),
             @Mapping(target = "columnType", source = "data.type"),
             @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
             @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
     })
-    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data, ContainerImage image);
+    TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
     default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
         return UpdateCredentialsDto.builder()
@@ -742,7 +756,7 @@ public interface MetadataMapper {
                 .build();
     }
 
-    default UserCreateDto signupRequestDtoToUserCreateDto(SignupRequestDto data) {
+    default UserCreateDto signupRequestDtoToUserCreateDto(CreateUserDto data) {
         return UserCreateDto.builder()
                 .username(data.getUsername())
                 .email(data.getEmail())
@@ -822,6 +836,9 @@ public interface MetadataMapper {
                 .trim();
     }
 
+    @Mappings({
+            @Mapping(target = "database.views", ignore = true)
+    })
     ViewDto viewToViewDto(View data);
 
     @Mappings({
@@ -831,6 +848,9 @@ public interface MetadataMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
+    @Mappings({
+            @Mapping(target = "database", ignore = true)
+    })
     View viewDtoToView(ViewDto data);
 
     /* keep */
@@ -852,60 +872,7 @@ public interface MetadataMapper {
 
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    default DatabaseDto customDatabaseToDatabaseDto(Database data) {
-        if (data == null) {
-            return null;
-        }
-        final DatabaseDto database = DatabaseDto.builder()
-                .id(data.getId())
-                .name(data.getName())
-                .internalName(data.getInternalName())
-                .description(data.getDescription())
-                .exchangeName(data.getExchangeName())
-                .previewImage(data.getImage() != null ? "/api/database/" + data.getId() + "/image" : null)
-                .isPublic(data.getIsPublic())
-                .isSchemaPublic(data.getIsSchemaPublic())
-                .container(containerToContainerBriefDto(data.getContainer()))
-                .owner(userToUserBriefDto(data.getOwner()))
-                .contact(userToUserBriefDto(data.getContact()))
-                .subsets(new LinkedList<>())
-                .accesses(new LinkedList<>())
-                .tables(new LinkedList<>())
-                .identifiers(new LinkedList<>())
-                .build();
-        if (data.getSubsets() != null) {
-            database.setSubsets(new LinkedList<>(data.getSubsets()
-                    .stream()
-                    .map(this::identifierToIdentifierBriefDto)
-                    .toList()));
-        }
-        if (data.getTables() != null) {
-            database.setTables(new LinkedList<>(data.getTables()
-                    .stream()
-                    .map(this::tableToTableBriefDto)
-                    .toList()));
-        }
-        if (data.getViews() != null) {
-            database.setViews(new LinkedList<>(data.getViews()
-                    .stream()
-                    .map(this::viewToViewBriefDto)
-                    .toList()));
-        }
-        if (data.getAccesses() != null) {
-            database.setAccesses(new LinkedList<>(data.getAccesses()
-                    .stream()
-                    .filter(a -> !a.getUser().getIsInternal())
-                    .map(this::databaseAccessToDatabaseAccessDto)
-                    .toList()));
-        }
-        if (data.getIdentifiers() != null) {
-            database.setIdentifiers(new LinkedList<>(data.getIdentifiers()
-                    .stream()
-                    .map(this::identifierToIdentifierBriefDto)
-                    .toList()));
-        }
-        return database;
-    }
+    DatabaseBriefDto databaseDtoToDatabaseBriefDto(DatabaseDto data);
 
     @Mappings({
             @Mapping(target = "ownerId", source = "owner.id")

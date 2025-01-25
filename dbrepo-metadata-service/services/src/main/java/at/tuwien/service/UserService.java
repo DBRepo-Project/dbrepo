@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
@@ -47,7 +47,7 @@ public interface UserService {
      * @param id   The user id.
      * @return The user, if successful.
      */
-    User create(SignupRequestDto data, UUID id);
+    User create(CreateUserDto data, UUID id);
 
     /**
      * Updates the user information for a user with given id in the metadata database.

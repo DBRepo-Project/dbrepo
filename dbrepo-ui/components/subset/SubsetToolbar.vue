@@ -35,7 +35,6 @@
         variant="flat"
         class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
-        :disabled="!executionUTC"
         :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/persist`">
         {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.pid.xl') + ' ' : '') + $t('toolbars.subset.pid.permanent') }}
       </v-btn>
@@ -177,8 +176,9 @@ export default {
       this.loadingSave = true
       const queryService = useQueryService()
       queryService.update(this.$route.params.database_id, this.$route.params.subset_id, { persist: true })
-        .then((subset) => {
-          this.subset = subset
+        .then(() => {
+          const cacheStore = useCacheStore()
+          cacheStore.reloadSubset()
           this.loadingSave = false
         })
         .catch(() => {
@@ -192,8 +192,10 @@ export default {
       this.loadingSave = true
       const queryService = useQueryService()
       queryService.update(this.$route.params.database_id, this.$route.params.subset_id, { persist: false })
-        .then((subset) => {
-          this.subset = subset
+        .then(() => {
+          const cacheStore = useCacheStore()
+          cacheStore.reloadSubset()
+          this.loadingSave = false
         })
         .catch(() => {
           this.loadingSave = false

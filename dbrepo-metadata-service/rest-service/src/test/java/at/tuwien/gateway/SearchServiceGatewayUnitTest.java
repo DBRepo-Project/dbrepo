@@ -1,7 +1,7 @@
 package at.tuwien.gateway;
 
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.exception.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -37,11 +37,11 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
     @Test
     public void update_succeeds() throws DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
-        final ResponseEntity<DatabaseDto> mock = ResponseEntity.accepted()
+        final ResponseEntity<DatabaseBriefDto> mock = ResponseEntity.accepted()
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -50,11 +50,11 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Test
     public void update_badRequest_fails() {
-        final ResponseEntity<DatabaseDto> mock = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        final ResponseEntity<DatabaseBriefDto> mock = ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -65,11 +65,11 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
 
     @Test
     public void update_unexpectedResponse_fails() {
-        final ResponseEntity<DatabaseDto> mock = ResponseEntity.status(HttpStatus.OK)
+        final ResponseEntity<DatabaseBriefDto> mock = ResponseEntity.status(HttpStatus.OK)
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -84,7 +84,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpServerErrorException.ServiceUnavailable.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -98,7 +98,7 @@ public class SearchServiceGatewayUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {

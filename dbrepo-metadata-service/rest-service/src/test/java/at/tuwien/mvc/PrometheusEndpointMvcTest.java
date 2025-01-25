@@ -1,11 +1,8 @@
 package at.tuwien.mvc;
 
 import at.tuwien.api.auth.RefreshTokenRequestDto;
-import at.tuwien.api.database.table.TableStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.semantics.TableColumnEntityDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.container.ContainerCreateDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.MetricsConfig;
@@ -173,7 +170,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            containerEndpoint.create(ContainerCreateDto.builder().name(CONTAINER_1_NAME).imageId(IMAGE_1_ID).build());
+            containerEndpoint.create(CreateContainerDto.builder().name(CONTAINER_1_NAME).imageId(IMAGE_1_ID).build());
         } catch (Exception e) {
             /* ignore */
         }

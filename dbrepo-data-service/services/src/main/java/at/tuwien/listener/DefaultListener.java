@@ -1,8 +1,10 @@
 package at.tuwien.listener;
 
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.exception.MetadataServiceException;
+import at.tuwien.exception.RemoteUnavailableException;
+import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.service.CredentialService;
 import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,14 +28,13 @@ public class DefaultListener implements MessageListener {
 
     private final ObjectMapper objectMapper;
     private final QueueService queueService;
-    private final MetadataServiceGateway metadataServiceGateway;
+    private final CredentialService credentialService;
 
     @Autowired
-    public DefaultListener(ObjectMapper objectMapper, QueueService queueService,
-                           MetadataServiceGateway metadataServiceGateway) {
+    public DefaultListener(ObjectMapper objectMapper, QueueService queueService, CredentialService credentialService) {
         this.objectMapper = objectMapper;
         this.queueService = queueService;
-        this.metadataServiceGateway = metadataServiceGateway;
+        this.credentialService = credentialService;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class DefaultListener implements MessageListener {
         log.trace("received message for table with id {} of database id {}: {} bytes", tableId, databaseId, message.getMessageProperties().getContentLength());
         final Map<String, Object> body;
         try {
-            final PrivilegedTableDto table = metadataServiceGateway.getTableById(databaseId, tableId);
+            final TableDto table = credentialService.getTable(databaseId, tableId);
             body = objectMapper.readValue(message.getBody(), typeRef);
             queueService.insert(table, body);
         } catch (IOException e) {

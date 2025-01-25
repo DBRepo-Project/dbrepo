@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.CreateDatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -68,7 +68,7 @@ public interface DatabaseService {
      * @throws DataServiceException           If the data service returned non-successfully.
      * @throws DataServiceConnectionException If failing to connect to the data service/search service.
      */
-    Database create(Container container, DatabaseCreateDto createDto, User user, List<User> internalUsers) throws UserNotFoundException,
+    Database create(Container container, CreateDatabaseDto createDto, User user, List<User> internalUsers) throws UserNotFoundException,
             ContainerNotFoundException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException;
 

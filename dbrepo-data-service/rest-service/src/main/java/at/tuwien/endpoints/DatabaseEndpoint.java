@@ -1,19 +1,17 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AccessService;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.CredentialService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.SubsetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,21 +33,19 @@ import java.sql.SQLException;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database")
-public class DatabaseEndpoint extends AbstractEndpoint {
+public class DatabaseEndpoint extends RestEndpoint {
 
-    private final SubsetService queryService;
     private final AccessService accessService;
-    private final MetadataMapper metadataMapper;
     private final DatabaseService databaseService;
+    private final ContainerService containerService;
     private final CredentialService credentialService;
 
     @Autowired
-    public DatabaseEndpoint(SubsetService queryService, AccessService accessService, MetadataMapper metadataMapper,
-                            DatabaseService databaseService, CredentialService credentialService) {
-        this.queryService = queryService;
+    public DatabaseEndpoint(AccessService accessService, DatabaseService databaseService,
+                            ContainerService containerService, CredentialService credentialService) {
         this.accessService = accessService;
-        this.metadataMapper = metadataMapper;
         this.databaseService = databaseService;
+        this.containerService = containerService;
         this.credentialService = credentialService;
     }
 
@@ -90,18 +86,18 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
-        final PrivilegedContainerDto container = credentialService.getContainer(data.getContainerId());
+        final ContainerDto container = credentialService.getContainer(data.getContainerId());
         try {
-            final PrivilegedDatabaseDto database = databaseService.create(container, data);
-            queryService.createQueryStore(container, data.getInternalName());
-            final PrivilegedUserDto user = PrivilegedUserDto.builder()
+            final DatabaseDto database = containerService.createDatabase(container, data);
+            containerService.createQueryStore(container, data.getInternalName());
+            final UserDto user = UserDto.builder()
                     .id(data.getUserId())
                     .username(data.getUsername())
                     .password(data.getPassword())
                     .build();
             accessService.create(database, user, AccessTypeDto.WRITE_ALL);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(metadataMapper.privilegedDatabaseDtoToDatabaseDto(database));
+                    .body(database);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -138,7 +134,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint update user password in database, databaseId={}, data.username={}", databaseId,
                 data.getUsername());
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             databaseService.update(database, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)

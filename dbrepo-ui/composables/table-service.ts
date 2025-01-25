@@ -9,7 +9,7 @@ export const useTableService = (): any => {
     return new Promise<TableBriefDto>((resolve, reject) => {
       axios.get<TableBriefDto>(`/api/database/${databaseId}/table`)
         .then((response) => {
-          console.info('Found tables(s)')
+          console.info(`Found ${response.data.length} tables(s)`)
           resolve(response.data)
         })
         .catch((error) => {
@@ -25,7 +25,7 @@ export const useTableService = (): any => {
     return new Promise<TableDto>((resolve, reject) => {
       axios.get<TableDto>(`/api/database/${databaseId}/table/${tableId}`)
         .then((response) => {
-          console.info('Found table with id', tableId, 'in database with id', databaseId);
+          console.info('Found table');
           resolve(response.data)
         })
         .catch((error) => {
@@ -41,7 +41,7 @@ export const useTableService = (): any => {
     return new Promise<ColumnDto>((resolve, reject) => {
       axios.put<ColumnDto>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}`, data)
         .then((response) => {
-          console.info('Updated column with id', columnId, 'table with id', tableId, 'in database with id', databaseId);
+          console.info('Updated column');
           resolve(response.data)
         })
         .catch((error) => {
@@ -57,7 +57,7 @@ export const useTableService = (): any => {
     return new Promise<TableDto>((resolve, reject) => {
       axios.put<TableDto>(`/api/database/${databaseId}/table/${tableId}`, data)
         .then((response) => {
-          console.info('Updated table with id', tableId, 'in database with id', databaseId);
+          console.info('Updated table');
           resolve(response.data)
         })
         .catch((error) => {
@@ -73,7 +73,7 @@ export const useTableService = (): any => {
     return new Promise<ImportDto>((resolve, reject) => {
       axios.post<ImportDto>(`/api/database/${databaseId}/table/${tableId}/data/import`, data)
         .then((response) => {
-          console.info('Imported csv to table with id', tableId, 'in database with id', databaseId)
+          console.info('Imported csv to table')
           resolve(response.data)
         })
         .catch((error) => {
@@ -89,7 +89,7 @@ export const useTableService = (): any => {
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, page, size) })
         .then((response) => {
-          console.info('Got data for table with id', tableId, 'in database with id', databaseId)
+          console.info('Got data for table')
           const result: QueryResultDto = {
             id: tableId,
             headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
@@ -111,7 +111,7 @@ export const useTableService = (): any => {
       axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, { params: mapFilter(timestamp, null, null) })
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
-          console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)
+          console.info(`Found ${count} tuple(s)`)
           resolve(count)
         })
         .catch((error) => {
@@ -134,7 +134,7 @@ export const useTableService = (): any => {
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/export`, config)
         .then((response) => {
-          console.info('Exported data for table with id', tableId, 'in database with id', databaseId)
+          console.info('Exported data for table')
           resolve(response.data)
         })
         .catch((error) => {
@@ -150,7 +150,7 @@ export const useTableService = (): any => {
     return new Promise<TableDto>((resolve, reject) => {
       axios.post<TableDto>(`/api/database/${databaseId}/table`, data)
         .then((response) => {
-          console.info('Created table in database with id', databaseId)
+          console.info('Created table')
           resolve(response.data)
         })
         .catch((error: AxiosError) => {
@@ -166,7 +166,7 @@ export const useTableService = (): any => {
     return new Promise<void>((resolve, reject) => {
       axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`)
         .then((response) => {
-          console.info('Deleted table with id', tableId, 'in database with id', databaseId)
+          console.info('Deleted table')
           resolve(response.data)
         })
         .catch((error) => {
@@ -182,7 +182,7 @@ export const useTableService = (): any => {
     return new Promise<void>((resolve, reject) => {
       axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`, {data})
         .then((response) => {
-          console.info('Deleted tuple(s) in table with id', tableId, 'in database with id', databaseId)
+          console.info(`Deleted tuple(s)`)
           resolve(response.data)
         })
         .catch((error) => {
@@ -198,7 +198,7 @@ export const useTableService = (): any => {
     return new Promise<TableHistoryDto[]>((resolve, reject) => {
       axios.get<TableHistoryDto[]>(`/api/database/${databaseId}/table/${tableId}/history`)
         .then((response) => {
-          console.info('Loaded history of table with id', tableId, 'in database with id', databaseId)
+          console.info('Loaded history of table')
           resolve(response.data)
         })
         .catch((error) => {
@@ -214,7 +214,7 @@ export const useTableService = (): any => {
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
       axios.get<TableColumnEntityDto[]>(`/api/database/${databaseId}/table/${tableId}/column/${columnId}/suggest`)
         .then((response) => {
-          console.info('Suggested semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
+          console.info('Suggested semantic entities')
           resolve(response.data)
         })
         .catch((error) => {

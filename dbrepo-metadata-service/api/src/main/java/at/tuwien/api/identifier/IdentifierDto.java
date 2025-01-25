@@ -25,6 +25,7 @@ import java.util.List;
 public class IdentifierDto {
 
     @NotNull
+    @Schema(example = "2")
     private Long id;
 
     @NotNull
@@ -45,13 +46,16 @@ public class IdentifierDto {
     private Long viewId;
 
     @NotNull
+    @Schema(example = "database")
     private IdentifierTypeDto type;
 
     @NotNull
     private List<IdentifierTitleDto> titles;
 
+    @NotNull
     private List<IdentifierDescriptionDto> descriptions;
 
+    @NotNull
     private List<IdentifierFunderDto> funders;
 
     @NotBlank
@@ -106,13 +110,17 @@ public class IdentifierDto {
     @Schema(example = "2022")
     private Integer publicationYear;
 
+    @NotNull
     private LanguageTypeDto language;
 
+    @NotNull
     private List<LicenseDto> licenses;
 
     @NotNull
     private List<CreatorDto> creators;
 
+    @NotNull
+    @Schema(example = "draft")
     private IdentifierStatusTypeDto status;
 
 }

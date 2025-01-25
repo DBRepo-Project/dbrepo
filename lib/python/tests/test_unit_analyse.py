@@ -1,6 +1,5 @@
 import unittest
 import requests_mock
-import dataclasses
 
 from dbrepo.RestClient import RestClient
 

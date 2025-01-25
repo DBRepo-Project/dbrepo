@@ -21,7 +21,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -46,7 +45,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -129,25 +128,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         assertFalse(response.getIsPersisted());
     }
 
-    @Test
-    public void createQueryStore_succeeds() throws SQLException, QueryStoreCreateException, InterruptedException {
-
-        /* mock */
-        MariaDbConfig.dropQueryStore(DATABASE_1_PRIVILEGED_DTO);
-
-        /* test */
-        createQueryStore_generic(DATABASE_1_INTERNALNAME);
-    }
-
-    @Test
-    public void createQueryStore_fails() {
-
-        /* test */
-        assertThrows(QueryStoreCreateException.class, () -> {
-            createQueryStore_generic(DATABASE_1_INTERNALNAME);
-        });
-    }
-
     protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
             UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
@@ -199,18 +179,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         queryService.persist(DATABASE_1_PRIVILEGED_DTO, queryId, persist);
-    }
-
-    protected void createQueryStore_generic(String databaseName) throws SQLException, QueryStoreCreateException,
-            InterruptedException {
-
-        /* pre-condition */
-        Thread.sleep(1000) /* wait for test container some more */;
-
-        /* test */
-        queryService.createQueryStore(CONTAINER_1_PRIVILEGED_DTO, databaseName);
-        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(DATABASE_1_PRIVILEGED_DTO);
-        assertEquals(0, response.size());
     }
 
 }

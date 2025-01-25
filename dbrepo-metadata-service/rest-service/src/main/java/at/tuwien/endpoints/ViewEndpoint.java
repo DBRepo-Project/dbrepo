@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.ViewBriefDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -137,7 +137,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @Valid @RequestBody ViewCreateDto data,
+                                               @NotNull @Valid @RequestBody CreateViewDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
             UserNotFoundException, SearchServiceException, SearchServiceConnectionException {
@@ -202,9 +202,13 @@ public class ViewEndpoint extends AbstractEndpoint {
             headers.set("X-View", view.getInternalName());
             headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
         }
+        final ViewDto dto = metadataMapper.viewToViewDto(view);
+        if (!isSystem(principal)) {
+            removeInternalData(dto.getDatabase().getContainer());
+        }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .body(metadataMapper.viewToViewDto(view));
+                .body(dto);
     }
 
     @DeleteMapping("/{viewId}")
@@ -248,9 +252,9 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                    @NotNull @PathVariable("viewId") Long viewId,
-                                    @NotNull Principal principal) throws NotAllowedException, DataServiceException,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("viewId") Long viewId,
+                                       @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
@@ -301,10 +305,10 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @PathVariable("viewId") Long viewId,
-                                          @NotNull @Valid @RequestBody ViewUpdateDto data,
-                                          @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @PathVariable("viewId") Long viewId,
+                                               @NotNull @Valid @RequestBody ViewUpdateDto data,
+                                               @NotNull Principal principal) throws NotAllowedException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint update view, databaseId={}, viewId={}", databaseId, viewId);
@@ -315,7 +319,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to update view: not the database- or view owner");
         }
         return ResponseEntity.accepted()
-                .body(metadataMapper.viewToViewDto(
+                .body(metadataMapper.viewToViewBriefDto(
                         viewService.update(database, view, data)));
     }
 

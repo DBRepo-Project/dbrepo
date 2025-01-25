@@ -81,6 +81,14 @@ export const useCacheStore = defineStore('cache', {
           console.error('Failed to reload view', error)
         })
     },
+    reloadSubset() {
+      const queryService = useQueryService()
+      queryService.findOne(this.subset.database_id, this.subset.id)
+        .then(subset => this.subset = subset)
+        .catch((error) => {
+          console.error('Failed to reload subset', error)
+        })
+    },
     setRouteDatabase (databaseId) {
       return new Promise((resolve, reject) => {
         if (!databaseId) {

@@ -20,10 +20,12 @@ import java.util.UUID;
 public class TableBriefDto {
 
     @NotNull
+    @Schema(example = "3")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "2")
     private Long databaseId;
 
     @NotBlank
@@ -55,5 +57,6 @@ public class TableBriefDto {
 
     @NotNull
     @JsonProperty("owned_by")
+    @Schema(example = "78337b80-5699-45db-8111-cec86439ab6b")
     private UUID ownedBy;
 }

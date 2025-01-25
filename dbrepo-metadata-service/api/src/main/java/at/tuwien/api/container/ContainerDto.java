@@ -1,7 +1,7 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.CacheableDto;
 import at.tuwien.api.container.image.ImageDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -14,13 +14,15 @@ import java.time.Instant;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ContainerDto {
+public class ContainerDto extends CacheableDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @NotBlank
@@ -29,19 +31,21 @@ public class ContainerDto {
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Schema(example = "data-db")
+    @Schema(example = "air_quality")
     private String internalName;
 
-    @NotBlank
+    @Schema(example = "data-db")
     private String host;
 
-    @NotNull
+    @Schema(example = "3306")
     private Integer port;
 
     @JsonProperty("ui_host")
+    @Schema(example = "example.com")
     private String uiHost;
 
     @JsonProperty("ui_port")
+    @Schema(example = "3306")
     private Integer uiPort;
 
     @NotNull
@@ -54,5 +58,19 @@ public class ContainerDto {
     @NotNull
     @Schema(example = "10")
     private Long count;
+
+    @ToString.Exclude
+    @Schema(example = "username")
+    private String username;
+
+    @ToString.Exclude
+    @Schema(example = "p4ssw0rd")
+    private String password;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

@@ -2,11 +2,11 @@ package at.tuwien.validation;
 
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.QueryConfig;
-import at.tuwien.endpoints.AbstractEndpoint;
+import at.tuwien.endpoints.RestEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
+import at.tuwien.service.CredentialService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,15 +21,15 @@ import java.util.regex.Pattern;
 
 @Log4j2
 @Component
-public class EndpointValidator extends AbstractEndpoint {
+public class EndpointValidator extends RestEndpoint {
 
     private final QueryConfig queryConfig;
-    private final MetadataServiceGateway metadataServiceGateway;
+    private final CredentialService credentialService;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, MetadataServiceGateway metadataServiceGateway) {
+    public EndpointValidator(QueryConfig queryConfig, CredentialService credentialService) {
         this.queryConfig = queryConfig;
-        this.metadataServiceGateway = metadataServiceGateway;
+        this.credentialService = credentialService;
     }
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
@@ -48,12 +48,12 @@ public class EndpointValidator extends AbstractEndpoint {
         }
     }
 
-    public void validateOnlyPrivateSchemaAccess(PrivilegedDatabaseDto database, Principal principal)
+    public void validateOnlyPrivateSchemaAccess(DatabaseDto database, Principal principal)
             throws NotAllowedException, RemoteUnavailableException, MetadataServiceException {
         validateOnlyPrivateSchemaAccess(database, principal, false);
     }
 
-    public void validateOnlyPrivateSchemaAccess(PrivilegedDatabaseDto database, Principal principal,
+    public void validateOnlyPrivateSchemaAccess(DatabaseDto database, Principal principal,
                                                 boolean writeAccessOnly) throws NotAllowedException,
             RemoteUnavailableException, MetadataServiceException {
         if (database.getIsSchemaPublic()) {
@@ -63,7 +63,7 @@ public class EndpointValidator extends AbstractEndpoint {
         validateOnlyAccess(database, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateSchemaHasRole(PrivilegedDatabaseDto database, Principal principal, String role)
+    public void validateOnlyPrivateSchemaHasRole(DatabaseDto database, Principal principal, String role)
             throws NotAllowedException {
         if (database.getIsSchemaPublic()) {
             log.trace("database with id {} has public schema: no access needed", database.getId());
@@ -82,7 +82,7 @@ public class EndpointValidator extends AbstractEndpoint {
         log.trace("principal has role '{}': access granted", role);
     }
 
-    public void validateOnlyAccess(PrivilegedDatabaseDto database, Principal principal, boolean writeAccessOnly)
+    public void validateOnlyAccess(DatabaseDto database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, RemoteUnavailableException, MetadataServiceException {
         if (principal == null) {
             throw new NotAllowedException("No principal provided");
@@ -90,7 +90,7 @@ public class EndpointValidator extends AbstractEndpoint {
         if (isSystem(principal)) {
             return;
         }
-        final DatabaseAccessDto access = metadataServiceGateway.getAccess(database.getId(), getId(principal));
+        final DatabaseAccessDto access = credentialService.getAccess(database.getId(), getId(principal));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessTypeDto.WRITE_OWN) || access.getType().equals(AccessTypeDto.WRITE_ALL))) {
             log.error("Access not allowed: no write access");

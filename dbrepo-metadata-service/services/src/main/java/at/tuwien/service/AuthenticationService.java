@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -22,7 +22,7 @@ public interface AuthenticationService {
      * @throws AuthServiceConnectionException The connection with the auth service could not be established.
      * @throws EmailExistsException       The user email already exists in the metadata database.
      */
-    UserDto create(SignupRequestDto data) throws UserExistsException, AuthServiceException, AuthServiceConnectionException,
+    UserDto create(CreateUserDto data) throws UserExistsException, AuthServiceException, AuthServiceConnectionException,
             EmailExistsException, CredentialsInvalidException;
 
     /**

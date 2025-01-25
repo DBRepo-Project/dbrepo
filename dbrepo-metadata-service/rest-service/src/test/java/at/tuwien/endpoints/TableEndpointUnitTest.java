@@ -1,14 +1,14 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableUpdateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.Database;
@@ -203,10 +203,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicDecimalColumnSizeTooSmall_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
                         .size(-1L) // <<<
@@ -224,10 +224,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicDecimalColumnDTooSmall_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
                         .size(0L)
@@ -247,10 +247,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicOptionalSizeNone_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
             NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(null) // <<<
@@ -278,10 +278,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicOptionalSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
             NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(40L)
@@ -303,15 +303,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedNothing_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
             NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .nullAllowed(false)
                         .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .uniques(List.of(List.of("ID")))
                         .build())
                 .build();
@@ -329,10 +329,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedSize_succeeds(ColumnTypeDto columnType) throws UserNotFoundException, SearchServiceException,
             NotAllowedException, SemanticEntityNotFoundException, DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException, SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(40L)
@@ -353,10 +353,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("needSize_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicNeedSizeNone_fails(ColumnTypeDto columnType) {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(null) // <<<
@@ -375,10 +375,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("canHaveSizeAndD_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDSizeNone_fails(ColumnTypeDto columnType) {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(null) // <<<
@@ -397,10 +397,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("canHaveSizeAndD_parameters")
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicCanHaveSizeAndDDNone_fails(ColumnTypeDto columnType) {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(0L)
@@ -423,10 +423,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
             DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException,
             SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(null) // <<<
@@ -446,20 +446,20 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicHasMultipleSerial_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                                 .name("ID")
                                 .type(ColumnTypeDto.SERIAL)
                                 .nullAllowed(false)
                                 .build(),
-                        ColumnCreateDto.builder()
+                        CreateTableColumnDto.builder()
                                 .name("Counter")
                                 .type(ColumnTypeDto.SERIAL)
                                 .nullAllowed(false)
                                 .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .uniques(List.of(List.of("ID"),
                                 List.of("Counter")))
                         .build())
@@ -474,15 +474,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
     public void create_publicSerialNullAllowed_fails() {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.SERIAL)
                         .nullAllowed(true) // <<<
                         .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .uniques(List.of(List.of("ID")))
                         .build())
                 .build();
@@ -501,10 +501,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DataServiceConnectionException, TableNotFoundException, MalformedException, DataServiceException,
             DatabaseNotFoundException, AccessNotFoundException, OntologyNotFoundException, TableExistsException,
             SearchServiceConnectionException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("Some Table")
                 .description("Some Description")
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                         .name("ID")
                         .type(columnType)
                         .size(0L) // <<<
@@ -1040,7 +1040,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        final ResponseEntity<TableDto> response = generic_update(request, USER_1_PRINCIPAL);
+        final ResponseEntity<TableBriefDto> response = generic_update(request, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -1147,7 +1147,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.list(databaseId, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_create(Long databaseId, Database database, TableCreateDto data,
+    protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, CreateTableDto data,
                                                       Principal principal, User user, DatabaseAccess access)
             throws MalformedException, NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
@@ -1273,7 +1273,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.updateColumn(databaseId, tableId, columnId, data, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_update(TableUpdateDto data, Principal caller)
+    protected ResponseEntity<TableBriefDto> generic_update(TableUpdateDto data, Principal caller)
             throws TableNotFoundException, SearchServiceException, NotAllowedException, DataServiceException,
             DatabaseNotFoundException, SearchServiceConnectionException, DataServiceConnectionException {
 

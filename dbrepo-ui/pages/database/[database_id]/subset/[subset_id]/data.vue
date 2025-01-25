@@ -119,7 +119,7 @@ export default {
     },
   },
   mounted () {
-    this.loadResult()
+    this.loadSubset()
   },
   methods: {
     loadSubset () {
@@ -128,7 +128,9 @@ export default {
       queryService.findOne(this.$route.params.database_id, this.$route.params.subset_id)
         .then((subset) => {
           this.subset = subset
-          this.loadResult()
+          this.$refs.queryResults.reExecute(subset.id)
+          this.$refs.queryResults.reExecuteCount(subset.id)
+          this.loadingSubset = false
         })
         .catch(() => {
           this.loadingSubset = false
@@ -139,8 +141,6 @@ export default {
     },
     loadResult () {
       if (this.subset) {
-        this.$refs.queryResults.reExecute(this.subset.id)
-        this.$refs.queryResults.reExecuteCount(this.subset.id)
       }
     },
     download () {

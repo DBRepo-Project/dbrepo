@@ -1,18 +1,14 @@
 package at.tuwien.config;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.*;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,38 +17,7 @@ import java.util.regex.Pattern;
 @Configuration
 public class MariaDbConfig {
 
-    /**
-     * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
-     * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
-     *
-     * @param database The database.
-     * @param query    The query.
-     * @param username The connection username.
-     * @param password The connection password.
-     * @return The generated or retrieved query id.
-     * @throws SQLException The procedure did not succeed.
-     */
-    public static Long mockSystemQueryInsert(PrivilegedDatabaseDto database, String query, String username, String password)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final String call = "{call _store_query(?,?,?,?)}";
-            log.trace("prepare procedure '{}'", call);
-            final CallableStatement statement = connection.prepareCall(call);
-            statement.setString(1, username);
-            statement.setString(2, query);
-            statement.setTimestamp(3, Timestamp.from(Instant.now()));
-            statement.registerOutParameter(4, Types.BIGINT);
-            statement.executeUpdate();
-            final Long queryId = statement.getLong(4);
-            statement.close();
-            log.debug("received queryId={}", queryId);
-            return queryId;
-        }
-    }
-
-    public static void createDatabase(PrivilegedContainerDto container, String database) throws SQLException {
+    public static void createDatabase(ContainerDto container, String database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
@@ -65,7 +30,7 @@ public class MariaDbConfig {
         log.debug("created database {}", database);
     }
 
-    public static void createInitDatabase(PrivilegedContainerDto container, DatabaseDto database) throws SQLException {
+    public static void createInitDatabase(ContainerDto container, DatabaseDto database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
@@ -76,21 +41,7 @@ public class MariaDbConfig {
         log.debug("created init database {}", database.getInternalName());
     }
 
-    public static void grantReadAccess(PrivilegedDatabaseDto database, String username) {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            connection.prepareStatement("GRANT SELECT ON *.* TO `" + username + "`@`%`;")
-                    .executeUpdate();
-            connection.prepareStatement("FLUSH PRIVILEGES;")
-                    .executeUpdate();
-        } catch (SQLException e) {
-            log.error("could not grant read access", e);
-        }
-        log.debug("granted read access to user {} in database {}", username, database.getInternalName());
-    }
-
-    public static void grantWriteAccess(PrivilegedDatabaseDto database, String username) {
+    public static void grantWriteAccess(DatabaseDto database, String username) {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -104,7 +55,7 @@ public class MariaDbConfig {
         log.debug("granted read access to user {} in database {}", username, database.getInternalName());
     }
 
-    public static void dropAllDatabases(PrivilegedContainerDto container) {
+    public static void dropAllDatabases(ContainerDto container) {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
@@ -130,7 +81,7 @@ public class MariaDbConfig {
         log.debug("dropped all databases");
     }
 
-    public static void dropDatabase(PrivilegedContainerDto container, String database)
+    public static void dropDatabase(ContainerDto container, String database)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
@@ -144,26 +95,7 @@ public class MariaDbConfig {
         log.debug("dropped database {}", database);
     }
 
-    public static List<String> getUsernames(String hostname, String database, String username, String password)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
-        log.trace("connect to database {}", jdbc);
-        final List<String> usernames = new LinkedList<>();
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final String query = "SELECT User FROM mysql.user;";
-            log.trace("prepare statement '{}'", query);
-            final PreparedStatement statement = connection.prepareStatement(query);
-            final ResultSet set = statement.executeQuery();
-            statement.close();
-            while (set.next()) {
-                usernames.add(set.getString("User"));
-            }
-            log.debug("received usernames={}", usernames);
-            return usernames;
-        }
-    }
-
-    public static List<String> getPrivileges(PrivilegedDatabaseDto database, String username) throws SQLException {
+    public static List<String> getPrivileges(DatabaseDto database, String username) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -185,7 +117,7 @@ public class MariaDbConfig {
         throw new SQLException("Failed to get privileges");
     }
 
-    public static void dropTable(PrivilegedDatabaseDto database, String table) throws SQLException {
+    public static void dropTable(DatabaseDto database, String table) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -209,50 +141,7 @@ public class MariaDbConfig {
         }
     }
 
-    /**
-     * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
-     * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
-     *
-     * @param database The database.
-     * @param query    The query.
-     * @param username The connection username.
-     * @param password The connection password.
-     * @return The generated or retrieved query id.
-     * @throws SQLException The procedure did not succeed.
-     */
-    public static Long mockUserQueryInsert(PrivilegedDatabaseDto database, String query, String username, String password)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database: {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final String call = "{call store_query(?,?,?)}";
-            log.trace("prepare procedure '{}'", call);
-            final CallableStatement statement = connection.prepareCall(call);
-            statement.setString(1, query);
-            statement.setTimestamp(2, Timestamp.from(Instant.now()));
-            statement.registerOutParameter(3, Types.BIGINT);
-            statement.executeUpdate();
-            final Long queryId = statement.getLong(3);
-            statement.close();
-            log.debug("received queryId={}", queryId);
-            return queryId;
-        }
-    }
-
-    /**
-     * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
-     * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
-     *
-     * @param database The database.
-     * @param query    The query.
-     * @return The generated or retrieved query id.
-     * @throws SQLException The procedure did not succeed.
-     */
-    public static Long mockSystemQueryInsert(PrivilegedDatabaseDto database, String query) throws SQLException {
-        return mockSystemQueryInsert(database, query, database.getContainer().getUsername(), database.getContainer().getPassword());
-    }
-
-    public static void insertQueryStore(PrivilegedDatabaseDto database, QueryDto query, UUID userId) throws SQLException {
+    public static void insertQueryStore(DatabaseDto database, QueryDto query, UUID userId) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -272,7 +161,7 @@ public class MariaDbConfig {
         }
     }
 
-    public static List<Map<String, Object>> listQueryStore(PrivilegedDatabaseDto database) throws SQLException {
+    public static List<Map<String, Object>> listQueryStore(DatabaseDto database) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
@@ -297,7 +186,7 @@ public class MariaDbConfig {
         }
     }
 
-    public static List<Map<String, String>> selectQuery(PrivilegedDatabaseDto database, String query, Set<String> columns)
+    public static List<Map<String, String>> selectQuery(DatabaseDto database, String query, Set<String> columns)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -318,7 +207,7 @@ public class MariaDbConfig {
         return rows;
     }
 
-    public static List<Map<String, byte[]>> selectQueryByteArr(PrivilegedDatabaseDto database, String query, Set<String> columns)
+    public static List<Map<String, byte[]>> selectQueryByteArr(DatabaseDto database, String query, Set<String> columns)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -339,7 +228,7 @@ public class MariaDbConfig {
         return rows;
     }
 
-    public static void execute(PrivilegedDatabaseDto database, String query)
+    public static void execute(DatabaseDto database, String query)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -349,17 +238,7 @@ public class MariaDbConfig {
         }
     }
 
-    public static void execute(PrivilegedContainerDto container, String query)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
-        log.trace("connect to database: {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
-            final Statement statement = connection.createStatement();
-            statement.executeUpdate(query);
-        }
-    }
-
-    public static void dropQueryStore(PrivilegedDatabaseDto database)
+    public static void dropQueryStore(DatabaseDto database)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
@@ -370,80 +249,6 @@ public class MariaDbConfig {
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `hash_table`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `store_query`;");
             statement.executeUpdate("DROP PROCEDURE IF EXISTS `_store_query`;");
-        }
-    }
-
-    public static Map<String, List<Object>> describeTableSchema(PrivilegedTableDto table, String username, String password)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + table.getDatabase().getContainer().getHost() + ":" + table.getDatabase().getContainer().getPort() + "/" + table.getDatabase().getInternalName();
-        log.trace("connect to database {}", jdbc);
-        final Map<String, List<Object>> out = new HashMap<>();
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final String query = "SHOW COLUMNS FROM `" + table.getInternalName() + "`;";
-            log.trace("prepare statement '{}'", query);
-            final PreparedStatement statement = connection.prepareStatement(query);
-            final ResultSet resultSet = statement.executeQuery();
-            statement.close();
-            while (resultSet.next()) {
-                if (resultSet.getString("Field").equals("id")) {
-                    continue;
-                }
-                out.put(resultSet.getString("Field"), List.of(resultSet.getString("Type"), resultSet.getString("Null"), resultSet.getString("Key")));
-            }
-            return out;
-        }
-    }
-
-    public static ColumnTypeDto typetoColumnTypeDto(String data) throws Exception {
-        if (data.toUpperCase().startsWith("TINYINT(1)")) {
-            /* boolean in MySQL */
-            return ColumnTypeDto.BOOL;
-        }
-        final Matcher matcher = Pattern.compile("([A-Z]+)")
-                .matcher(data.toUpperCase());
-        if (!matcher.find()) {
-            log.error("Failed to map type: does not match expected format");
-            throw new Exception("Failed to map type: does not match expected format");
-        }
-        final String type = matcher.group(1);
-        try {
-            return ColumnTypeDto.valueOf(type);
-        } catch (IllegalArgumentException e) {
-            if (type.startsWith("TINYINT")) {
-                /* boolean in MySQL */
-                return ColumnTypeDto.BOOL;
-            } else if (type.startsWith("BOOL")) {
-                /* boolean */
-                return ColumnTypeDto.BOOL;
-            } else if (type.startsWith("DOUBLE")) {
-                /* double precision */
-                return ColumnTypeDto.DOUBLE;
-            } else if (type.startsWith("INT")) {
-                /* integer synonym */
-                return ColumnTypeDto.INT;
-            } else if (type.startsWith("DEC")) {
-                /* decimal synonym */
-                return ColumnTypeDto.DECIMAL;
-            } else if (type.startsWith("ENUM")) {
-                return ColumnTypeDto.ENUM;
-            } else if (type.startsWith("SET")) {
-                return ColumnTypeDto.SET;
-            }
-        }
-        log.error("Failed to map data {} and type {}", data, type);
-        throw new Exception("Failed to map data " + data + " and type " + type);
-    }
-
-    public static boolean tableExists(PrivilegedDatabaseDto database, String tableName)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            final Statement statement = connection.createStatement();
-            final String query = "SHOW TABLES LIKE '" + tableName + "';";
-            log.trace("execute query {}", query);
-            final ResultSet result = statement.executeQuery(query);
-            return result.next();
         }
     }
 

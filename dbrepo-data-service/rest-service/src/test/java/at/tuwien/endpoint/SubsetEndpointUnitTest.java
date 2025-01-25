@@ -1,14 +1,14 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.CreateViewDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.endpoints.SubsetEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CredentialService;
-import at.tuwien.service.SchemaService;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StorageService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.test.AbstractUnitTest;
@@ -25,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -54,22 +53,16 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     private SubsetService subsetService;
 
     @MockBean
-    private SchemaService schemaService;
-
-    @MockBean
-    private MetadataServiceGateway metadataServiceGateway;
-
-    @MockBean
     private HttpServletRequest httpServletRequest;
 
     @MockBean
     private StorageService storageService;
 
     @MockBean
-    private CredentialService credentialService;
+    private DatabaseService databaseService;
 
     @MockBean
-    private MockHttpServletRequest mockHttpServletRequest;
+    private CredentialService credentialService;
 
     @BeforeEach
     public void beforeEach() {
@@ -98,6 +91,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
             MetadataServiceException {
 
         /* mock */
+        when(credentialService.getAccess(DATABASE_3_ID, USER_3_ID))
+                .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
         when(subsetService.findAll(DATABASE_3_PRIVILEGED_DTO, null))
                 .thenReturn(List.of(QUERY_1_DTO, QUERY_2_DTO, QUERY_3_DTO, QUERY_4_DTO, QUERY_5_DTO, QUERY_6_DTO));
 
@@ -136,14 +131,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_privateDataPrivateSchemaAnonymous_fails() throws DatabaseNotFoundException, SQLException,
-            RemoteUnavailableException, UserNotFoundException, QueryNotFoundException, MetadataServiceException {
+    public void findById_privateDataPrivateSchemaAnonymous_fails() throws DatabaseNotFoundException,
+            RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
-                .thenReturn(QUERY_1_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -214,10 +207,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_5_DTO);
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+                .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
-                .thenReturn(mock);
 
         /* test */
         generic_findById(DATABASE_1_ID, QUERY_1_ID, "text/csv", null, USER_1_PRINCIPAL);
@@ -226,20 +219,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_publicDataPrivateSchemaAnonymous_fails() throws DatabaseNotFoundException,
-            RemoteUnavailableException, UserNotFoundException, StorageUnavailableException, QueryMalformedException,
-            QueryNotFoundException, SQLException, MetadataServiceException, TableNotFoundException,
-            ViewMalformedException {
-        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+            RemoteUnavailableException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-                .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
-                .thenReturn(mock);
-        when(storageService.transformDataset(any(Dataset.class)))
-                .thenReturn(EXPORT_RESOURCE_DTO);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -251,7 +235,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void findById_publicDataPublicSchemaAnonymous_fails() throws DatabaseNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, QueryMalformedException, StorageUnavailableException,
-            QueryNotFoundException, MetadataServiceException, TableNotFoundException, ViewMalformedException {
+            QueryNotFoundException, MetadataServiceException, TableNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -259,7 +243,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(PrivilegedDatabaseDto.class), any(QueryDto.class), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
@@ -305,29 +289,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void findById_publicDataPrivateSchemaUnavailableExport_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, SQLException, QueryMalformedException, UserNotFoundException,
-            QueryNotFoundException, TableNotFoundException, ViewMalformedException, StorageUnavailableException {
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_3_PRIVILEGED_DTO, QUERY_5_ID))
-                .thenReturn(QUERY_5_DTO);
-        when(storageService.transformDataset(any(Dataset.class)))
-                .thenReturn(EXPORT_RESOURCE_DTO);
-        doThrow(SQLException.class)
-                .when(subsetService)
-                .getData(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_DTO), eq(null), eq(null));
-
-        /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
-            generic_findById(DATABASE_3_ID, QUERY_5_ID, "text/csv", null, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
     public void create_noAccess_succeeds() throws UserNotFoundException, QueryStoreInsertException,
             TableMalformedException, NotAllowedException, QueryNotSupportedException, PaginationException,
@@ -342,12 +303,12 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
         when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_5_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -388,49 +349,21 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.create(any(DatabaseDto.class), eq(QUERY_5_STATEMENT), any(Instant.class), eq(USER_1_ID)))
+                .thenReturn(QUERY_5_ID);
+        when(subsetService.findById(any(DatabaseDto.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
+        when(databaseService.createView(any(DatabaseDto.class), any(CreateViewDto.class)))
+                .thenReturn(QUERY_5_VIEW_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_5_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
         /* test */
         subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
-    public void create_unavailable_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
-            SQLException, MetadataServiceException, QueryMalformedException, TableNotFoundException,
-            ViewMalformedException, UserNotFoundException, QueryNotFoundException, QueryStoreInsertException,
-            NotAllowedException {
-        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement(QUERY_5_STATEMENT)
-                .build();
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        doThrow(SQLException.class)
-                .when(subsetService)
-                .getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(null), eq(null));
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
-                .thenReturn(QUERY_5_DTO);
-        when(metadataServiceGateway.getAccess(DATABASE_3_ID, USER_1_ID))
-                .thenReturn(DATABASE_3_USER_1_READ_ACCESS_DTO);
-        doThrow(SQLException.class)
-                .when(subsetService)
-                .create(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_STATEMENT), any(Instant.class), eq(USER_1_ID));
-        when(httpServletRequest.getMethod())
-                .thenReturn("POST");
-
-        /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
-            subsetEndpoint.create(DATABASE_3_ID, request, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
-        });
     }
 
     @Test
@@ -455,34 +388,6 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void create_noRole_fails() throws DatabaseNotFoundException, RemoteUnavailableException,
-            MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
-            NotAllowedException, SQLException, QueryNotFoundException, DatabaseUnavailableException,
-            StorageUnavailableException, QueryMalformedException, QueryNotSupportedException, PaginationException,
-            StorageNotFoundException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
-        final Dataset<Row> mock = sparkSession.emptyDataFrame();
-        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement(QUERY_5_STATEMENT)
-                .build();
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_3_ID))
-                .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
-                .thenReturn(mock);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
-                .thenReturn(QUERY_5_DTO);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
-        when(httpServletRequest.getMethod())
-                .thenReturn("POST");
-
-        /* test */
-        subsetEndpoint.create(DATABASE_3_ID, request, USER_4_PRINCIPAL, httpServletRequest, null, null, null);
-    }
-
-    @Test
     @WithAnonymousUser
     public void create_publicDataPublicSchemaAnonymous_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException, UserNotFoundException, QueryStoreInsertException, TableMalformedException,
@@ -499,10 +404,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_4_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), anyLong()))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(eq(DATABASE_4_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_4_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_5_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -527,10 +432,10 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_1_PRIVILEGED_DTO), anyLong()))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.getData(eq(DATABASE_1_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_1_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_1_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_1_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -542,7 +447,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @WithAnonymousUser
     public void create_privateDataPublicSchemaAnonymous_fails() throws DatabaseNotFoundException, SQLException,
             MetadataServiceException, UserNotFoundException, QueryNotFoundException, QueryMalformedException,
-            TableNotFoundException, ViewMalformedException, ViewNotFoundException, RemoteUnavailableException {
+            TableNotFoundException, RemoteUnavailableException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_5_STATEMENT)
@@ -553,10 +458,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_2_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_2_PRIVILEGED_DTO), anyLong()))
                 .thenReturn(QUERY_2_DTO);
-        when(subsetService.getData(eq(DATABASE_2_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_2_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_4_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
 
@@ -570,7 +473,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void getData_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException, QueryMalformedException,
             DatabaseUnavailableException, PaginationException, MetadataServiceException, TableNotFoundException,
-            ViewMalformedException, ViewNotFoundException {
+            ViewNotFoundException, ViewMalformedException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -580,15 +483,15 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_5_DTO);
         when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
                 .thenReturn(QUERY_5_RESULT_NUMBER);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), any(QueryDto.class), eq(0L), eq(10L)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_5_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_5_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null);
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -597,7 +500,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void getData_head_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             UserNotFoundException, NotAllowedException, SQLException, QueryNotFoundException, TableMalformedException,
             QueryMalformedException, DatabaseUnavailableException, PaginationException, MetadataServiceException,
-            TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+            TableNotFoundException, ViewNotFoundException, ViewMalformedException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
@@ -610,7 +513,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null);
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_3_ID, QUERY_5_ID, null, httpServletRequest, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("X-Count"));
         assertEquals(1, response.getHeaders().get("X-Count").size());
@@ -622,7 +525,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void getData_private_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, TableMalformedException,
             QueryMalformedException, QueryNotFoundException, PaginationException, SQLException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+            MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -632,15 +535,15 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_1_DTO);
         when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
                 .thenReturn(QUERY_1_RESULT_NUMBER);
-        when(subsetService.getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L))
+        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
                 .thenReturn(mock);
-        when(schemaService.inspectView(eq(DATABASE_1_PRIVILEGED_DTO), anyString()))
-                .thenReturn(VIEW_1_DTO);
+        when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
+                .thenReturn(QUERY_1_VIEW_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
@@ -656,7 +559,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, null, httpServletRequest, null, null);
+            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, null, httpServletRequest, null, null, null);
         });
     }
 
@@ -674,7 +577,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
+            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
         });
     }
 
@@ -683,7 +586,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void getData_privateHead_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             UserNotFoundException, DatabaseUnavailableException, NotAllowedException, TableMalformedException,
             QueryMalformedException, QueryNotFoundException, PaginationException, SQLException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException, ViewNotFoundException {
+            MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
@@ -696,34 +599,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn("HEAD");
 
         /* test */
-        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
+        final ResponseEntity<List<Map<String, Object>>> response = subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().get("X-Count"));
         assertEquals(1, response.getHeaders().get("X-Count").size());
         assertEquals(QUERY_1_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void getData_unavailable_fails() throws DatabaseNotFoundException, RemoteUnavailableException, SQLException,
-            UserNotFoundException, QueryNotFoundException, MetadataServiceException, QueryMalformedException,
-            TableNotFoundException, ViewMalformedException {
-
-        /* mock */
-        when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
-                .thenReturn(QUERY_1_DTO);
-        when(httpServletRequest.getMethod())
-                .thenReturn("GET");
-        doThrow(SQLException.class)
-                .when(subsetService)
-                .getData(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, 0L, 10L);
-
-        /* test */
-        assertThrows(DatabaseUnavailableException.class, () -> {
-            subsetEndpoint.getData(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, httpServletRequest, null, null);
-        });
     }
 
     @Test
@@ -825,7 +705,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-    protected List<QueryDto> generic_list(Long databaseId, PrivilegedDatabaseDto database, Principal principal)
+    protected List<QueryDto> generic_list(Long databaseId, DatabaseDto database, Principal principal)
             throws NotAllowedException, DatabaseUnavailableException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
 

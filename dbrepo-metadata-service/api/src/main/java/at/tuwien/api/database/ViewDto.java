@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.CacheableDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,29 +10,33 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class ViewDto {
+public class ViewDto extends CacheableDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "1")
     private Long vdbid;
 
     @NotBlank
     @Schema(example = "Air Quality")
     private String name;
 
+    @NotNull
     private List<IdentifierDto> identifiers;
 
     @NotBlank
@@ -60,10 +65,20 @@ public class ViewDto {
     @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private DatabaseDto database;
+
     @NotNull
     private UserBriefDto owner;
 
     @NotNull
     private List<ViewColumnDto> columns;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

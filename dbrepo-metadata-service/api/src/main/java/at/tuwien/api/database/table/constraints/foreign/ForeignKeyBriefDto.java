@@ -1,5 +1,6 @@
 package at.tuwien.api.database.table.constraints.foreign;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -12,5 +13,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class ForeignKeyBriefDto {
 
+    @Schema(example = "8")
     private Long id;
 }

@@ -1,11 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 
 import java.util.UUID;
@@ -22,7 +22,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedDatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    DatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -35,7 +35,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedContainerDto getContainer(Long id) throws ContainerNotFoundException, RemoteUnavailableException,
+    ContainerDto getContainer(Long id) throws ContainerNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -49,7 +49,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedTableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
+    TableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException;
 
     /**
@@ -63,7 +63,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
+    ViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
             MetadataServiceException, ViewNotFoundException;
 
     /**
@@ -76,7 +76,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    PrivilegedUserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
+    UserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
             UserNotFoundException;
 
     /**

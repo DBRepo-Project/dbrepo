@@ -1,11 +1,11 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.service.CredentialService;
@@ -21,19 +21,19 @@ import java.util.UUID;
 public class CredentialServiceImpl implements CredentialService {
 
     private final MetadataServiceGateway gateway;
-    private final Cache<UUID, PrivilegedUserDto> userCache;
-    private final Cache<Long, PrivilegedViewDto> viewCache;
+    private final Cache<UUID, UserDto> userCache;
+    private final Cache<Long, ViewDto> viewCache;
     private final Cache<Long, DatabaseAccessDto> accessCache;
-    private final Cache<Long, PrivilegedTableDto> tableCache;
-    private final Cache<Long, PrivilegedDatabaseDto> databaseCache;
-    private final Cache<Long, PrivilegedContainerDto> containerCache;
+    private final Cache<Long, TableDto> tableCache;
+    private final Cache<Long, DatabaseDto> databaseCache;
+    private final Cache<Long, ContainerDto> containerCache;
 
     @Autowired
-    public CredentialServiceImpl(MetadataServiceGateway gateway, Cache<UUID, PrivilegedUserDto> userCache,
-                                 Cache<Long, PrivilegedViewDto> viewCache, Cache<Long, DatabaseAccessDto> accessCache,
-                                 Cache<Long, PrivilegedTableDto> tableCache,
-                                 Cache<Long, PrivilegedDatabaseDto> databaseCache,
-                                 Cache<Long, PrivilegedContainerDto> containerCache) {
+    public CredentialServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
+                                 Cache<Long, ViewDto> viewCache, Cache<Long, DatabaseAccessDto> accessCache,
+                                 Cache<Long, TableDto> tableCache,
+                                 Cache<Long, DatabaseDto> databaseCache,
+                                 Cache<Long, ContainerDto> containerCache) {
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
@@ -44,29 +44,29 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public PrivilegedDatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    public DatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
-        final PrivilegedDatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
+        final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
         if (cacheDatabase != null) {
             log.trace("found database with id {} in cache", id);
             return cacheDatabase;
         }
         log.debug("database with id {} not it cache (anymore): reload from metadata service", id);
-        final PrivilegedDatabaseDto database = gateway.getDatabaseById(id);
+        final DatabaseDto database = gateway.getDatabaseById(id);
         databaseCache.put(id, database);
         return database;
     }
 
     @Override
-    public PrivilegedTableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
+    public TableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException {
-        final PrivilegedTableDto cacheTable = tableCache.getIfPresent(tableId);
+        final TableDto cacheTable = tableCache.getIfPresent(tableId);
         if (cacheTable != null) {
             log.trace("found table with id {} in cache", tableId);
             return cacheTable;
         }
         log.debug("table with id {} not it cache (anymore): reload from metadata service", tableId);
-        final PrivilegedTableDto table = gateway.getTableById(databaseId, tableId);
+        final TableDto table = gateway.getTableById(databaseId, tableId);
         tableCache.put(tableId, table);
         return table;
     }
@@ -78,43 +78,43 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public PrivilegedContainerDto getContainer(Long id) throws RemoteUnavailableException, MetadataServiceException,
+    public ContainerDto getContainer(Long id) throws RemoteUnavailableException, MetadataServiceException,
             ContainerNotFoundException {
-        final PrivilegedContainerDto cacheContainer = containerCache.getIfPresent(id);
+        final ContainerDto cacheContainer = containerCache.getIfPresent(id);
         if (cacheContainer != null) {
             log.trace("found container with id {} in cache", id);
             return cacheContainer;
         }
         log.debug("container with id {} not it cache (anymore): reload from metadata service", id);
-        final PrivilegedContainerDto container = gateway.getContainerById(id);
+        final ContainerDto container = gateway.getContainerById(id);
         containerCache.put(id, container);
         return container;
     }
 
     @Override
-    public PrivilegedViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
+    public ViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
             MetadataServiceException, ViewNotFoundException {
-        final PrivilegedViewDto cacheView = viewCache.getIfPresent(viewId);
+        final ViewDto cacheView = viewCache.getIfPresent(viewId);
         if (cacheView != null) {
             log.trace("found view with id {} in cache", viewId);
             return cacheView;
         }
         log.debug("view with id {} not it cache (anymore): reload from metadata service", viewId);
-        final PrivilegedViewDto view = gateway.getViewById(databaseId, viewId);
+        final ViewDto view = gateway.getViewById(databaseId, viewId);
         viewCache.put(viewId, view);
         return view;
     }
 
     @Override
-    public PrivilegedUserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
+    public UserDto getUser(UUID id) throws RemoteUnavailableException, MetadataServiceException,
             UserNotFoundException {
-        final PrivilegedUserDto cacheUser = userCache.getIfPresent(id);
+        final UserDto cacheUser = userCache.getIfPresent(id);
         if (cacheUser != null) {
             log.trace("found user with id {} in cache", id);
             return cacheUser;
         }
         log.debug("user with id {} not it cache (anymore): reload from metadata service", id);
-        final PrivilegedUserDto user = gateway.getPrivilegedUserById(id);
+        final UserDto user = gateway.getUserById(id);
         userCache.put(id, user);
         return user;
     }

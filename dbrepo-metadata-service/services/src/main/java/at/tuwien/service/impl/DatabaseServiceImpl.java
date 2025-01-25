@@ -1,10 +1,9 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.CreateDatabaseDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
@@ -96,7 +95,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional
-    public Database create(Container container, DatabaseCreateDto data, User user, List<User> internalUsers)
+    public Database create(Container container, CreateDatabaseDto data, User user, List<User> internalUsers)
             throws UserNotFoundException, ContainerNotFoundException, DataServiceException, SearchServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceConnectionException {
         final Database entity = Database.builder()
@@ -116,7 +115,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .identifiers(new LinkedList<>())
                 .build();
         /* create in data database */
-        final CreateDatabaseDto payload = CreateDatabaseDto.builder()
+        final at.tuwien.api.database.internal.CreateDatabaseDto payload = at.tuwien.api.database.internal.CreateDatabaseDto.builder()
                 .containerId(data.getCid())
                 .userId(user.getId())
                 .username(user.getUsername())

@@ -3,11 +3,11 @@ package at.tuwien.gateway;
 import at.tuwien.ExportResourceDto;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.internal.CreateDatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.TableUpdateDto;
@@ -94,7 +94,7 @@ public interface DataServiceGateway {
      * @throws DatabaseNotFoundException      Some of the privileged parameters of the given database were not provided by the metadata service.
      * @throws TableExistsException           A table with this internal name exists already in the database.
      */
-    void createTable(Long databaseId, TableCreateDto data) throws DataServiceConnectionException, DataServiceException,
+    void createTable(Long databaseId, CreateTableDto data) throws DataServiceConnectionException, DataServiceException,
             DatabaseNotFoundException, TableExistsException;
 
     /**
@@ -118,7 +118,7 @@ public interface DataServiceGateway {
      * @throws DataServiceConnectionException The connection to the data service could not be established.
      * @throws DataServiceException           The data service responded unexpectedly.
      */
-    ViewDto createView(Long databaseId, ViewCreateDto data) throws DataServiceConnectionException, DataServiceException;
+    ViewDto createView(Long databaseId, CreateViewDto data) throws DataServiceConnectionException, DataServiceException;
 
     /**
      * Deletes a given view in the given database.

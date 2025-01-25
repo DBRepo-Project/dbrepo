@@ -1,8 +1,9 @@
 package at.tuwien.api.database;
 
-import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.CacheableDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,19 +12,21 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class DatabaseDto {
+public class DatabaseDto extends CacheableDto {
 
     @NotNull
+    @Schema(example = "3")
     private Long id;
 
     @NotBlank
@@ -47,9 +50,11 @@ public class DatabaseDto {
     @Schema(example = "Air Quality")
     private String description;
 
-    private List<TableBriefDto> tables;
+    @NotNull
+    private List<TableDto> tables;
 
-    private List<ViewBriefDto> views;
+    @NotNull
+    private List<ViewDto> views;
 
     @NotNull
     @JsonProperty("is_public")
@@ -61,14 +66,16 @@ public class DatabaseDto {
     @Schema(example = "true")
     private Boolean isSchemaPublic;
 
-    @NotNull
-    private ContainerBriefDto container;
+    private ContainerDto container;
 
+    @NotNull
     private List<DatabaseAccessDto> accesses;
 
-    private List<IdentifierBriefDto> identifiers;
+    @NotNull
+    private List<IdentifierDto> identifiers;
 
-    private List<IdentifierBriefDto> subsets;
+    @NotNull
+    private List<IdentifierDto> subsets;
 
     @NotNull
     private UserBriefDto contact;
@@ -78,5 +85,11 @@ public class DatabaseDto {
 
     @JsonProperty("preview_image")
     private String previewImage;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

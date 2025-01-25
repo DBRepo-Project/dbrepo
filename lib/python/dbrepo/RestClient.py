@@ -252,7 +252,7 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def update_user(self, user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None,
-                    affiliation: str = None, orcid: str = None) -> User:
+                    affiliation: str = None, orcid: str = None) -> UserBrief:
         """
         Updates a user with given user id.
 
@@ -277,7 +277,7 @@ class RestClient:
                                                     lastname=lastname, affiliation=affiliation, orcid=orcid))
         if response.status_code == 202:
             body = response.json()
-            return User.model_validate(body)
+            return UserBrief.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update user: {response.text}')
         if response.status_code == 403:
@@ -287,14 +287,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update user: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def update_user_password(self, user_id: str, password: str) -> User:
+    def update_user_password(self, user_id: str, password: str) -> None:
         """
         Updates the password of a user with given user id.
 
         :param user_id: The user id of the user that should be updated.
         :param password: The updated user password.
-
-        :returns: The user, if successful.
 
         :raises MalformedError: If the payload was rejected by the service.
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -306,8 +304,7 @@ class RestClient:
         url = f'/api/user/{user_id}/password'
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserPassword(password=password))
         if response.status_code == 202:
-            body = response.json()
-            return User.model_validate(body)
+            return None
         if response.status_code == 400:
             raise MalformedError(f'Failed to update user password: {response.text}')
         if response.status_code == 403:
@@ -617,7 +614,7 @@ class RestClient:
 
     def create_table(self, database_id: int, name: str, is_public: bool, is_schema_public: bool,
                      columns: List[CreateTableColumn], constraints: CreateTableConstraints,
-                     description: str = None) -> Table:
+                     description: str = None) -> TableBrief:
         """
         Updates the database owner of a database with given database id.
 
@@ -645,7 +642,7 @@ class RestClient:
                                                      description=description, columns=columns, constraints=constraints))
         if response.status_code == 201:
             body = response.json()
-            return Table.model_validate(body)
+            return TableBrief.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create table: {response.text}')
         if response.status_code == 403:
@@ -871,7 +868,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find view: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_view(self, database_id: int, view_id: int, is_public: bool) -> View:
+    def update_view(self, database_id: int, view_id: int, is_public: bool) -> ViewBrief:
         """
         Get a view of a database with given database id and view id.
 
@@ -889,7 +886,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, payload=UpdateView(is_public=is_public))
         if response.status_code == 202:
             body = response.json()
-            return View.model_validate(body)
+            return ViewBrief.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to update view: not allowed')
         if response.status_code == 404:
@@ -1091,7 +1088,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the insert.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateData(data=data))
+        response = self._wrapper(method="post", url=url, force_auth=True, payload=Tuple(data=data))
         if response.status_code == 201:
             return
         if response.status_code == 400:
@@ -1279,7 +1276,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the update.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateData(data=data, keys=keys))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=TupleUpdate(data=data, keys=keys))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1309,7 +1306,7 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the deletion.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        response = self._wrapper(method="delete", url=url, force_auth=True, payload=DeleteData(keys=keys))
+        response = self._wrapper(method="delete", url=url, force_auth=True, payload=TupleDelete(keys=keys))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1770,13 +1767,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update query: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[CreateIdentifierTitle],
+    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[SaveIdentifierTitle],
                           publisher: str, creators: List[CreateIdentifierCreator], publication_year: int,
-                          descriptions: List[CreateIdentifierDescription] = None,
-                          funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
+                          descriptions: List[SaveIdentifierDescription] = None,
+                          funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
                           language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
                           publication_day: int = None, publication_month: int = None,
-                          related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
+                          related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
         Create an identifier draft.
 
@@ -1831,12 +1828,12 @@ class RestClient:
                                 f'201 (CREATED): {response.text}')
 
     def save_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
-                        titles: List[CreateIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
-                        publication_year: int, descriptions: List[CreateIdentifierDescription] = None,
-                        funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
+                        titles: List[SaveIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
+                        publication_year: int, descriptions: List[SaveIdentifierDescription] = None,
+                        funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
                         language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
                         publication_day: int = None, publication_month: int = None,
-                        related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
+                        related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
         Save an existing identifier and update the metadata attached to it.
 

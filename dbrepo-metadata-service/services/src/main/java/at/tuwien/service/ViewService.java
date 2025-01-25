@@ -1,12 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -53,7 +52,7 @@ public interface ViewService {
      * @throws SearchServiceConnectionException
      * @throws ViewNotFoundException
      */
-    View create(Database database, User user, ViewCreateDto data) throws MalformedException, DataServiceException,
+    View create(Database database, User user, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException;
 

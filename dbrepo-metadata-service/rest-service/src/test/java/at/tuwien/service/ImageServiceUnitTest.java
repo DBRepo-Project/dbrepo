@@ -132,7 +132,7 @@ public class ImageServiceUnitTest extends AbstractUnitTest {
         when(imageRepository.save(any()))
                 .thenReturn(IMAGE_1);
         when(mockImageService.update(IMAGE_1, request))
-                .thenReturn(CONTAINER_1_IMAGE);
+                .thenReturn(IMAGE_1);
 
         /* test */
         final ContainerImage response = mockImageService.update(IMAGE_1, request);
@@ -153,7 +153,7 @@ public class ImageServiceUnitTest extends AbstractUnitTest {
         when(imageRepository.save(any()))
                 .thenReturn(IMAGE_1);
         when(mockImageService.update(IMAGE_1, request))
-                .thenReturn(CONTAINER_1_IMAGE);
+                .thenReturn(IMAGE_1);
 
         /* test */
         final ContainerImage response = mockImageService.update(IMAGE_1, request);

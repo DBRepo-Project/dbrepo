@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -87,7 +87,7 @@ public class ViewServiceImpl implements ViewService {
 
     @Override
     @Transactional
-    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException,
+    public View create(Database database, User creator, CreateViewDto data) throws MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
         /* create in metadata database */

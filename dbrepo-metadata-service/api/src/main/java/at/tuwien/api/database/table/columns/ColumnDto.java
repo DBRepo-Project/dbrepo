@@ -25,44 +25,49 @@ import java.util.List;
 public class ColumnDto {
 
     @NotNull
+    @Schema(example = "1")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "2")
     private Long databaseId;
 
     @NotNull
     @JsonProperty("table_id")
+    @Schema(example = "3")
     private Long tableId;
 
     @NotNull
-    @Schema(example = "0")
     @JsonProperty("ord")
+    @Schema(example = "0")
     private Integer ordinalPosition;
 
     @NotBlank
     @Size(max = 64)
-    @Schema(example = "Date")
+    @Schema(example = "Given Name")
     private String name;
 
     @NotBlank
     @Size(max = 64)
     @JsonProperty("internal_name")
-    @Schema(example = "mdb_date")
+    @Schema(example = "given_name")
     private String internalName;
 
-    @Schema
+    @Schema(example = "firstname")
     private String alias;
 
     @JsonProperty("index_length")
+    @Schema(example = "255")
     private Long indexLength;
 
     @JsonProperty("length")
+    @Schema(example = "255")
     private Long length;
 
     @NotNull
     @JsonProperty("type")
-    @Schema(example = "string")
+    @Schema(example = "varchar")
     private ColumnTypeDto columnType;
 
     @Schema(example = "255")
@@ -114,9 +119,11 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
+    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 
+    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> sets;
 
