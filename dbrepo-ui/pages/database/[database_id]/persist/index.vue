@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canCreateIdentifier || canUpdateIdentifier">
+    v-if="canPersistDatabase">
     <Persist
       type="database"
       :database="database" />
@@ -44,32 +44,24 @@ export default {
     cacheUser () {
       return this.cacheStore.getUser
     },
-    hasIdentifier () {
-      if (this.database && 'identifier' in this.database && this.database.identifier) {
-        return 'id' in this.database.identifier
-      }
-      return false
-    },
     isOwner () {
       if (!this.database || !this.cacheUser) {
         return false
       }
       return this.database.owner.id === this.cacheUser.uid
     },
-    canCreateIdentifier () {
-      if (!this.roles || this.hasIdentifier) {
+    canPersistDatabase () {
+      if (!this.database || !this.roles) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      return this.roles.includes('create-identifier') && this.isOwner
-    },
-    canUpdateIdentifier () {
-      if (!this.roles) {
+      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
         return false
       }
-      return this.hasIdentifier && this.roles.includes('modify-identifier-metadata')
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.database.owner.id === this.cacheUser.uid
     }
   }
 }

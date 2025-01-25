@@ -188,10 +188,11 @@ export default {
       return this.roles.includes('delete-database-view') && this.view.owner.id === this.cacheUser.uid
     },
     canViewSettings () {
-      if (!this.cacheUser || !this.view) {
+      if (!this.view || !this.access || !this.cacheUser) {
         return false
       }
-      return this.view.owner.id === this.cacheUser.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

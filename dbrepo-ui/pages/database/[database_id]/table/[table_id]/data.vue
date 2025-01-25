@@ -199,6 +199,9 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     title () {
       return (this.version ? this.$t('toolbars.database.history') : this.$t('toolbars.database.current')) + ' ' + this.versionFormatted
     },
@@ -230,19 +233,13 @@ export default {
       return this.table.constraints.primary_key.map(pk => pk.column)
     },
     canViewTableData () {
-      if (this.error) {
-        return false
-      }
-      if (!this.table) {
+      if (this.error || !this.table) {
         return false
       }
       if (this.table.is_public) {
         return true
       }
-      if (!this.roles || !this.roles.includes('view-table-data')) {
-        return false
-      }
-      if (!this.access) {
+      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
         return false
       }
       const userService = useUserService()
@@ -253,28 +250,28 @@ export default {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.userInfo) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canSelectTuples () {
       if (!this.roles) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.userInfo) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
       if (!this.roles || this.selection === null || this.selection.length !== 1) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.userInfo) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
       if (!this.roles || this.selection === null || this.selection.length < 1) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.userInfo) && this.roles.includes('delete-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('delete-table-data')
     }
   },
   watch: {

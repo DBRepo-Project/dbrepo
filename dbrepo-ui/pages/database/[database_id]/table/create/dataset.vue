@@ -219,6 +219,12 @@
   </div>
 </template>
 
+<script setup>
+const { refresh, user } = useOidcAuth()
+if (user.value?.canRefresh) {
+  await refresh()
+}
+</script>
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'

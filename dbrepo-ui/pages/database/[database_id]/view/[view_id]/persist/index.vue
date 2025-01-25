@@ -54,18 +54,24 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     view () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+      return this.cacheStore.getView
     },
     canPersistView () {
-      if (!this.view) {
+      if (!this.view || !this.roles) {
+        return false
+      }
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
+      }
+      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access)
+      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
     }
   }
 }

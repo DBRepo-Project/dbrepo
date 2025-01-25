@@ -30,6 +30,7 @@
 <script>
 import DatabaseList from '@/components/database/DatabaseList.vue'
 import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -40,7 +41,8 @@ export default {
     return {
       loading: true,
       dialog: null,
-      databases: []
+      databases: [],
+      cacheStore: useCacheStore()
     }
   },
   computed: {

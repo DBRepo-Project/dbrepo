@@ -70,14 +70,17 @@ export default {
     }
   },
   computed: {
+    cacheUser () {
+      return this.cacheUser.getUser
+    },
     displayIdentifiers () {
       if (!this.identifiers) {
         return []
       }
-      if (!this.userInfo) {
+      if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()

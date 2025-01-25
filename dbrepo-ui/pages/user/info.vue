@@ -199,8 +199,6 @@ export default {
     this.init()
   },
   methods: {
-    submit () {
-    },
     updateInfo () {
       this.loadingUpdate = true
       const payload = {
@@ -244,7 +242,7 @@ export default {
         })
     },
     init () {
-      if (!this.user) {
+      if (!this.cacheUser) {
         return
       }
       this.model = {

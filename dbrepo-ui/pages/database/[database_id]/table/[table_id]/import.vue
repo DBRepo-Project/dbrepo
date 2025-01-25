@@ -78,6 +78,9 @@ export default {
     roles () {
       return this.cacheStore.getRoles
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     title () {
       if (!this.table) {
         return this.$t('pages.table.import.title')
@@ -85,10 +88,11 @@ export default {
       return this.$t('pages.table.import.title') + ' ' + this.table.name
     },
     canInsertTableData () {
-      if (!this.roles) {
+      if (!this.table || !this.access || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data')) {
         return false
       }
-      return this.roles.includes('insert-table-data')
+      const userService = useUserService()
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser)
     }
   }
 }

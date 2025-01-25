@@ -229,6 +229,9 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     identifiers () {
       if (!this.database) {
         return []
@@ -239,10 +242,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
     },
     identifier () {
       if (this.pid) {
@@ -339,7 +342,11 @@ export default {
       if (!this.database) {
         return false
       }
-      return this.database.is_schema_public
+      if (this.database.is_schema_public) {
+        return true
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   }
 }

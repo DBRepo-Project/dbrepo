@@ -56,6 +56,16 @@ export default {
     roles () {
       return this.cacheStore.getRoles
     },
+    view () {
+      return this.cacheStore.getView
+    },
+    identifier () {
+      if (!this.view) {
+        return false
+      }
+      const filter = this.view.identifiers.filter(i => i.id === Number(this.$route.params.identifier_id))
+      return filter.length === 1 ? filter[0] : null
+    },
     canCreateIdentifier () {
       if (!this.roles) {
         return false
@@ -63,13 +73,19 @@ export default {
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      return this.roles.includes('create-identifier')
+      if (!this.view) {
+        return false
+      }
+      return this.roles.includes('create-identifier') && this.view.owner.id === this.cacheUser.uid
     },
     canUpdateIdentifier () {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('modify-identifier-metadata')
+      if (!this.identifier) {
+        return false
+      }
+      return this.roles.includes('modify-identifier-metadata') && this.identifier.owner.id === this.cacheUser.uid
     }
   }
 }

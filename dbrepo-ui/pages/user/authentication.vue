@@ -65,6 +65,7 @@ const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -89,10 +90,14 @@ export default {
       ],
       email: null,
       password: null,
-      password2: null
+      password2: null,
+      cacheStore: useCacheStore()
     }
   },
   computed: {
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
@@ -106,7 +111,7 @@ export default {
     changePassword () {
       this.loadingUpdate = true
       const userService = useUserService()
-      userService.updatePassword(this.userInfo.uid, {'password': this.password})
+      userService.updatePassword(this.cacheUser.uid, {'password': this.password})
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.user.password'))

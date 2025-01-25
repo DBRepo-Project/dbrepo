@@ -85,6 +85,7 @@ services:
       - ./dbrepo-auth-service/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./dbrepo-auth-service/master-realm.json:/opt/keycloak/data/import/master-realm.json
       - ./dbrepo-auth-service/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
+      - ./dbrepo-auth-service/create-event-listener/create-event-listener.jar:/opt/bitnami/keycloak/providers/create-event-listener.jar
     ports:
       - "8080:8080"
     environment:
@@ -94,6 +95,7 @@ services:
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      WEBHOOK_URL: https://webhook.site/a3349f41-ebfd-443a-bd06-a0d9c503e76c
     healthcheck:
       test: curl -fsS http://localhost:8080/realms/master
       interval: 10s
@@ -530,6 +532,7 @@ services:
       AWS_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       AWS_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       AWS_REGION: "${STORAGE_REGION_NAME:-default}"
+      METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy

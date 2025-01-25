@@ -101,11 +101,8 @@ export default {
       if (!this.access) {
         return false
       }
-      if (!this.cacheUser) {
-        return false
-      }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) || this.database.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access)
     },
   },
   mounted () {

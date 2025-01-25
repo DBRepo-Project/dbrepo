@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canPersistQuery">
+    v-if="canPersistSubset">
     <Persist
       type="subset"
       :database="database"
@@ -56,12 +56,21 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
-    canPersistQuery () {
-      if (this.loadingQuery || !this.query) {
+    subset () {
+      return this.cacheStore.getSubset
+    },
+    canPersistSubset () {
+      if (!this.subset || !this.roles) {
+        return false
+      }
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
+      }
+      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access)
+      return userService.hasReadAccess(this.access) && this.subset.owner.id === this.cacheUser.uid
     }
   },
   mounted () {

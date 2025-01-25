@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="canViewSubsetData">
     <SubsetToolbar />
     <v-toolbar
       color="secondary"
@@ -117,6 +118,19 @@ export default {
       }
       return this.subset.owner.username === this.username
     },
+    canViewSubsetData () {
+      if (this.error || !this.subset) {
+        return false
+      }
+      if (this.subset.is_public) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
+    }
   },
   mounted () {
     this.loadSubset()

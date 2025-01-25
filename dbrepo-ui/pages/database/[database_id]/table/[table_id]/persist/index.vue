@@ -61,11 +61,17 @@ export default {
       return this.cacheStore.getTable
     },
     canPersistTable () {
-      if (!this.table) {
+      if (!this.table || !this.roles) {
+        return false
+      }
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
+      }
+      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access)
+      return userService.hasReadAccess(this.access) && this.table.owner.id === this.cacheUser.uid
     }
   }
 }

@@ -202,10 +202,11 @@ export default {
       return this.table.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateTable () {
-      if (!this.roles || !this.cacheUser || !this.table) {
+      if (!this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.table.owner.id === this.cacheUser.uid
     },
     canDropTable () {
       if (!this.roles || !this.table || !this.cacheUser) {

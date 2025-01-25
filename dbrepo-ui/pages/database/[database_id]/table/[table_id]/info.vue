@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canViewSchema">
+    v-if="canViewInfo">
     <TableToolbar
       :selection="selection" />
     <v-card
@@ -193,21 +193,18 @@ export default {
       const userService = useUserService()
       return userService.hasReadAccess(this.access)
     },
-    canViewSchema () {
-      if (this.error) {
+    canViewInfo () {
+      if (this.error || !this.table) {
         return false
       }
-      if (!this.table) {
-        return false
-      }
-      if (this.table.is_schema_public || this.table.is_public) {
+      if (this.table.is_public || this.table.is_schema_public) {
         return true
       }
-      if (!this.cacheUser) {
+      if (!this.access) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access)
     },
     canWrite () {
       const userService = useUserService()

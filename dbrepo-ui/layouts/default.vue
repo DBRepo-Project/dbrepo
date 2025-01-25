@@ -251,7 +251,7 @@ export default {
       if (this.accessError) {
         return this.accessError
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return null
       }
       if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.cacheUser.uid) {

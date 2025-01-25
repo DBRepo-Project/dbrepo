@@ -1,14 +1,13 @@
 <template>
   <div
-    v-if="canView">
+    v-if="canViewSettings">
     <DatabaseToolbar
       ref="toolbar" />
     <v-window
-      v-if="user"
       v-model="tab">
       <v-window-item>
         <v-card
-          v-if="isOwner && canModifyImage"
+          v-if="canModifyImage"
           variant="flat"
           rounded="0"
           :title="$t('pages.database.subpages.settings.title')"
@@ -89,7 +88,6 @@
         </v-card>
         <v-divider />
         <v-card
-          v-if="isOwner"
           variant="flat"
           rounded="0"
           :title="$t('pages.database.subpages.access.title')"
@@ -106,7 +104,7 @@
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
-                v-if="item && item.user && item.user.username !== user.username"
+                v-if="item && item.user && item.user.username !== cacheUser.username"
                 size="x-small"
                 variant="flat"
                 color="warning"
@@ -244,13 +242,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const userInfo = ref(loggedIn ? user.value?.userInfo : null)
-const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
-</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
@@ -342,23 +333,20 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     uploadProgress () {
       return this.cacheStore.getUploadProgress
     },
-    isOwner () {
-      if (!this.database || !this.user) {
-        return false
-      }
-      if (this.database.owner.id === null || this.userInfo.uid === null) {
-        return false
-      }
-      return this.database.owner.id === this.userInfo.uid
-    },
     isSameOwner () {
-      if (!this.modifyOwner || !this.userInfo) {
+      if (!this.modifyOwner || !this.cacheUser) {
         return false
       }
-      return this.modifyOwner.id === this.userInfo.uid
+      return this.modifyOwner.id === this.cacheUser.uid
     },
     isSameVisibility () {
       if (!this.modifyVisibility || !this.database) {
@@ -367,52 +355,47 @@ export default {
       return this.modifyVisibility.is_public === this.database.is_public && this.modifyVisibility.is_schema_public === this.database.is_schema_public
     },
     canModifyVisibility () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('modify-database-visibility')
     },
     canModifyOwnership () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('modify-database-owner')
     },
     canUpdateScheme () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('find-database')
     },
     canModifyAccess () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('update-database-access')
     },
     canCreateAccess () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('create-database-access')
     },
     canModifyImage () {
-      if (!this.isOwner) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('modify-database-image')
     },
-    canView () {
-      if (this.error) {
+    canViewSettings () {
+      if (this.error || !this.database || !this.cacheUser || !this.access) {
         return false
       }
-      if (!this.database) {
-        return false
-      }
-      if (!this.cacheUser) {
-        return false
-      }
-      return this.database.owner.id === this.cacheUser.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.database.owner.id === this.cacheUser.uid
     },
     previewImage () {
       if (this.file) {

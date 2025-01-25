@@ -198,20 +198,17 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     canViewSchema () {
-      if (this.error) {
-        return false
-      }
-      if (!this.table) {
+      if (this.error || !this.table) {
         return false
       }
       if (this.table.is_schema_public) {
         return true
       }
-      if (!this.cacheUser) {
+      if (!this.access) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
+      return userService.hasReadAccess(this.access)
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')

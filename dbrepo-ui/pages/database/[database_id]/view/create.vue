@@ -37,6 +37,9 @@ export default {
     }
   },
   computed: {
+    access () {
+      return this.cacheStore.getAccess
+    },
     roles () {
       return this.cacheStore.getRoles
     },
@@ -44,7 +47,8 @@ export default {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('create-database-view')
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.roles.includes('create-database-view')
     }
   }
 }
