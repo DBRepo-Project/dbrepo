@@ -6,8 +6,13 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
-import { useUserStore } from '@/stores/user.js'
 import Builder from '@/components/subset/Builder.vue'
 import {useCacheStore} from '@/stores/cache.js'
 
@@ -36,22 +41,15 @@ export default {
           disabled: true
         }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {

@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <v-toolbar flat>
       <v-btn
         size="small"
@@ -303,12 +304,16 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import Raw from '@/components/subset/Raw.vue'
 import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import { format } from 'sql-formatter'
 
 export default {
@@ -359,8 +364,7 @@ export default {
       tabs: 0,
       loadingQuery: false,
       loadingColumns: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -387,9 +391,6 @@ export default {
         return []
       }
       return this.database.container.image.data_types
-    },
-    user () {
-      return this.userStore.getUser
     },
     viewNames () {
       if (!this.database) {

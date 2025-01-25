@@ -1,6 +1,9 @@
 <template>
-  <div>
-    <v-toolbar title="Settings" flat>
+  <div
+    v-if="loggedIn">
+    <v-toolbar
+      title="Settings"
+      flat>
       <template v-slot:extension>
         <v-tabs
           v-model="tab"
@@ -11,31 +14,20 @@
           <v-tab
             :text="$t('toolbars.user.authentication')"
             to="/user/authentication" />
-          <v-tab
-            :text="$t('toolbars.user.developer')"
-            to="/user/developer" />
         </v-tabs>
       </template>
     </v-toolbar>
   </div>
 </template>
 
+<script setup>
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
-import { useUserStore } from '@/stores/user.js'
-
 export default {
   data () {
     return {
       tab: null,
-      userStore: useUserStore()
-    }
-  },
-  computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
     }
   }
 }

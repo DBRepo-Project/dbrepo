@@ -107,11 +107,32 @@ export default defineNuxtConfig({
     port: 3001
   },
 
+  oidc: {
+    providers: {
+      keycloak: {
+        audience: 'account',
+        baseUrl: 'http://localhost:8080/realms/dbrepo',
+        clientId: 'dbrepo-client',
+        clientSecret: '', // inject on runtime
+        scope: ['openid', 'roles'],
+        optionalClaims: ['realm_access'],
+        redirectUri: 'http://localhost/auth/keycloak/callback',
+        userNameClaim: 'preferred_username',
+        exposeAccessToken: true,
+        logoutRedirectUri: 'http://localhost',
+      },
+    },
+    middleware: {
+      globalMiddlewareEnabled: false
+    },
+  },
+
   modules: [
-    '@artmizu/nuxt-prometheus',
+    ['@artmizu/nuxt-prometheus', {verbose: false}],
     '@nuxtjs/i18n',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
+    'nuxt-oidc-auth',
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
         vuetify()
@@ -160,6 +181,8 @@ export default defineNuxtConfig({
     },
   },
 
-  devtools: {enabled: true},
-  compatibilityDate: '2024-07-24'
+  devtools: {
+    enabled: false
+  },
+  compatibilityDate: '2025-01-25'
 })

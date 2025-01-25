@@ -90,9 +90,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -148,14 +154,10 @@ export default {
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -163,16 +165,13 @@ export default {
       return this.cacheStore.getView
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     isChange () {
       if (!this.view) {
@@ -184,22 +183,22 @@ export default {
       return this.view.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateVisibility () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.userInfo || !this.view) {
         return false
       }
-      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.user.id
+      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.userInfo.uid
     },
     canDeleteView () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.userInfo || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.view.owner.id === this.user.id
+      return this.roles.includes('delete-database-view') && this.view.owner.id === this.userInfo.uid
     },
     canViewSettings () {
-      if (!this.user || !this.view) {
+      if (!this.userInfo || !this.view) {
         return false
       }
-      return this.view.owner.id === this.user.id
+      return this.view.owner.id === this.userInfo.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="!loggedIn">
     <v-toolbar
       :title="$t('pages.signup.name')"
       flat />
@@ -91,6 +92,9 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
 export default {
   data () {

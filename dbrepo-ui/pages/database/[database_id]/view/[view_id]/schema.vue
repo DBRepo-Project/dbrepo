@@ -51,9 +51,14 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -95,14 +100,10 @@ export default {
         { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -110,7 +111,7 @@ export default {
       return this.cacheStore.getView
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
@@ -125,13 +126,10 @@ export default {
       if (this.view.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.hasReadAccess || this.view.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

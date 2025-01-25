@@ -77,10 +77,16 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -93,8 +99,7 @@ export default {
       error: false,
       edit: false,
       dropTableDialog: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -105,7 +110,7 @@ export default {
       return this.cacheStore.getTable
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
@@ -113,17 +118,11 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     canUpdateTable () {
       if (!this.roles || !this.user || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
+      return this.roles.includes('update-table') && this.table.owner.id === this.userInfo.uid
     },
     canExecuteQuery () {
       if (!this.roles || !this.table || !this.user) {
@@ -149,7 +148,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     },
     canViewSchema () {
       if (!this.table) {
@@ -161,7 +160,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     },
     canImportCsv () {
       if (!this.roles || !this.table || !this.user) {
@@ -173,7 +172,7 @@ export default {
       if (!this.user || !this.table || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || this.table.owner.id === this.user.id
+      return this.database.owner.id === this.userInfo.uid || this.table.owner.id === this.userInfo.uid
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

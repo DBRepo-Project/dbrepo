@@ -92,7 +92,6 @@ import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -134,7 +133,6 @@ export default {
       downloadLoading: false,
       error: false,
       promises: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -146,13 +144,10 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     subset () {
       return this.cacheStore.getSubset
-    },
-    user () {
-      return this.userStore.getUser
     },
     identifiers () {
       if (!this.database || !this.database.subsets || this.database.subsets.length === 0) {

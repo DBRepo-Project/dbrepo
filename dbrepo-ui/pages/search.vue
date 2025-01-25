@@ -63,9 +63,14 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -75,14 +80,10 @@ export default {
     return {
       results: [],
       type: 'database',
-      loading: false,
-      userStore: useUserStore()
+      loading: false
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     q () {
       if (!this.$route.query || !this.$route.query.q) {
         return null

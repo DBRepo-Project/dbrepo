@@ -81,9 +81,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {
@@ -94,8 +100,7 @@ export default {
     return {
       tab: null,
       error: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -103,13 +108,7 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getAccess
     },
     isContrastTheme () {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
@@ -172,7 +171,7 @@ export default {
       if (!this.database || !this.user) {
         return false
       }
-      return this.database.owner.username === this.user.username
+      return this.database.owner.id === this.userInfo.uid
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

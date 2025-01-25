@@ -13,7 +13,6 @@
 
 <script>
 import Persist from '@/components/identifier/Persist.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -48,19 +47,15 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     table () {
       return this.cacheStore.getTable

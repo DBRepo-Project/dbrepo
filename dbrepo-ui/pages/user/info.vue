@@ -1,7 +1,8 @@
 <template>
   <div>
     <UserToolbar />
-    <v-window v-model="tab">
+    <v-window
+      v-model="tab">
       <v-window-item>
         <v-form v-model="valid1" @submit.prevent="submit">
           <v-card
@@ -122,9 +123,16 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -169,18 +177,12 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     locale () {
-      return this.userStore.getLocale
+      return this.cacheStore.getLocale
     },
     canModifyTheme () {
       return this.roles.includes('modify-user-theme')
@@ -214,14 +216,13 @@ export default {
         language: this.model.language,
       }
       const userService = useUserService()
-      userService.update(this.user.id, payload)
+      userService.update(this.userInfo.id, payload)
         .then((user) => {
           console.info('Updated user information')
           const toast = useToastInstance()
           toast.success(this.$t('success.user.info'))
-          this.userStore.setUser(user)
           /* language */
-          this.userStore.setLocale(this.model.language)
+          this.cacheStore.setLocale(this.model.language)
           this.$i18n.locale = this.locale
           /* theme */
           switch (this.model.theme) {
@@ -251,14 +252,14 @@ export default {
         return
       }
       this.model = {
-        id: this.user.id,
-        username: this.user.username,
-        firstname: this.user.given_name,
-        lastname: this.user.family_name,
-        orcid: this.user.attributes.orcid,
-        affiliation: this.user.attributes.affiliation,
-        theme: this.user.attributes.theme,
-        language: this.user.attributes.language
+        id: this.userInfo.id,
+        username: this.userInfo.username,
+        firstname: this.userInfo.given_name,
+        lastname: this.userInfo.family_name,
+        orcid: this.userInfo.attributes.orcid,
+        affiliation: this.userInfo.attributes.affiliation,
+        theme: this.userInfo.attributes.theme,
+        language: this.userInfo.attributes.language
       }
     },
     retrieve () {

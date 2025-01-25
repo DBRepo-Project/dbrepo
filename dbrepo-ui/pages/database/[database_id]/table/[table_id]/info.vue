@@ -118,12 +118,18 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -165,7 +171,6 @@ export default {
       loading: false,
       exchange: null,
       queue: null,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -173,17 +178,11 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     table () {
       return this.cacheStore.getTable
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     canRead () {
       if (this.database && this.database.is_public) {
@@ -204,19 +203,19 @@ export default {
       if (this.table.is_schema_public || this.table.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     },
     canWrite () {
       if (!this.table || !this.user || !this.access) {
         return false
       }
-      return (this.access.type === 'write_own' && this.table.owned_by === this.user.id) || this.access.type === 'write_all'
+      return (this.access.type === 'write_own' && this.table.owned_by === this.userInfo.uid) || this.access.type === 'write_all'
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasDescription () {
       return this.table && this.table.description
@@ -237,10 +236,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.userInfo.uid)
     },
     identifier () {
       if (this.pid) {

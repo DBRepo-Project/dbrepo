@@ -6,9 +6,14 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import Builder from '@/components/subset/Builder.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -34,17 +39,10 @@ export default {
           to: `/database/${this.$route.params.database_id}/view/create`,
           disabled: true
         }
-      ],
-      userStore: useUserStore()
+      ]
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     canCreateView () {
       if (!this.roles) {
         return false

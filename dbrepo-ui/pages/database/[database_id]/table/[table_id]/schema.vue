@@ -120,9 +120,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -168,14 +174,10 @@ export default {
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -183,16 +185,13 @@ export default {
       return this.cacheStore.getTable
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     canViewSchema () {
       if (this.error) {
@@ -204,16 +203,16 @@ export default {
       if (this.table.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     },
     primaryKeysColumns () {
       return this.table.constraints.primary_key.map(pk => pk.column.internal_name).join(', ')
     },
     canAssignSemanticInformation () {
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
       if (this.roles.includes('modify-foreign-table-column-semantics')) {
@@ -222,7 +221,7 @@ export default {
       if (!this.access) {
         return false
       }
-      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.user.username)
+      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.id === this.userInfo.uid)
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

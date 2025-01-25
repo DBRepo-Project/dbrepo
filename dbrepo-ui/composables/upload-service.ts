@@ -1,11 +1,9 @@
 import * as tus from 'tus-js-client'
 import {useCacheStore} from '@/stores/cache'
-import {useUserStore} from '@/stores/user'
 
 export const useUploadService = (): any => {
 
   function create (data: File) {
-    const userStore = useUserStore()
     const config = useRuntimeConfig()
     const endpoint = config.public.upload.client
     return new Promise<string>((resolve, reject) => {
@@ -13,10 +11,16 @@ export const useUploadService = (): any => {
         console.error('Your browser does not support uploads!')
         return
       }
+      const { loggedIn, user, login, logout } = useOidcAuth()
+      if (!loggedIn || !user.value?.accessToken) {
+        console.error('Please login to use the upload!')
+        return
+      }
+      const { accessToken } = user.value
       const uploadClient: tus.Upload = new tus.Upload(data, {
         endpoint,
         headers: {
-          'Authorization': `Bearer ${userStore.getToken}`
+          'Authorization': `Bearer ${accessToken}`
         },
         retryDelays: [0, 3000, 5000, 10000, 20000],
         onError (error) {

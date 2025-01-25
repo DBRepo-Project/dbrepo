@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <UserToolbar />
     <v-window v-model="tab">
       <v-window-item>
@@ -10,8 +11,7 @@
           rounded="0">
           <v-card-text>
             <v-form
-              v-model="valid2"
-              @submit.prevent="submit">
+              v-model="valid2">
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
@@ -60,9 +60,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -87,14 +93,10 @@ export default {
       ],
       email: null,
       password: null,
-      password2: null,
-      userStore: useUserStore()
+      password2: null
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
@@ -104,15 +106,11 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
-  mounted () {
-  },
   methods: {
-    submit () {
-    },
     changePassword () {
       this.loadingUpdate = true
       const userService = useUserService()
-      userService.updatePassword(this.user.id, {'password': this.password})
+      userService.updatePassword(this.userInfo.uid, {'password': this.password})
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.user.password'))

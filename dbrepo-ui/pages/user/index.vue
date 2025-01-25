@@ -2,25 +2,13 @@
   <div />
 </template>
 
+<script setup>
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
-import { useUserStore } from '@/stores/user.js'
-
 export default {
-  data () {
-    return {
-      userStore: useUserStore()
-    }
-  },
-  computed: {
-    token () {
-      return this.userStore.getToken
-    },
-    user () {
-      return this.userStore.getUser
-    }
-  },
   mounted () {
-    if (!this.user) {
+    if (!this.loggedIn) {
       return
     }
     this.$router.push('/user/info')

@@ -7,7 +7,9 @@ export const useCacheStore = defineStore('cache', {
       database: null,
       table: null,
       view: null,
+      access: null,
       subset: null,
+      locale: null,
       ontologies: [],
       messages: [],
       uploadProgress: null
@@ -17,7 +19,9 @@ export const useCacheStore = defineStore('cache', {
     getDatabase: (state) => state.database,
     getTable: (state) => state.table,
     getView: (state) => state.view,
+    getAccess: (state) => state.access,
     getSubset: (state) => state.subset,
+    getLocale: (state) => state.locale,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
     getUploadProgress: (state) => state.uploadProgress,
@@ -32,8 +36,14 @@ export const useCacheStore = defineStore('cache', {
     setView(view) {
       this.view = view
     },
+    setAccess(access) {
+      this.access = access
+    },
     setSubset(subset) {
       this.subset = subset
+    },
+    setLocale(locale) {
+      this.locale = locale
     },
     setOntologies(ontologies) {
       this.ontologies = ontologies
@@ -116,6 +126,16 @@ export const useCacheStore = defineStore('cache', {
       const tableService = useTableService()
       tableService.findOne(databaseId, tableId)
         .then(table => this.table = table)
+    },
+    setRouteAccess(databaseId, userId) {
+      if (!databaseId || !userId) {
+        this.access = null
+        console.error('Cannot set route access: missing database id', databaseId, 'or user id', userId)
+        return
+      }
+      const accessService = useAccessService()
+      accessService.findOne(databaseId, userId)
+        .then(access => this.access = access)
     },
     setRouteView(databaseId, viewId) {
       if (!databaseId || !viewId) {

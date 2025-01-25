@@ -827,10 +827,16 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import { MerkleJson } from 'merkle-json'
 
 export default {
@@ -962,17 +968,10 @@ export default {
         { value: 'IsObsoletedBy' },
         { value: 'Obsoletes' }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     isSubset () {
       return this.type === 'subset'
     },
@@ -1044,9 +1043,6 @@ export default {
             info: this.table.name
           }
       }
-    },
-    isUpdate () {
-      return 'id' in this.identifier && this.identifier.id
     },
     canInsertSelf () {
       if (!this.user) {

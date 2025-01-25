@@ -55,10 +55,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+</script>
 <script>
 import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -71,7 +76,6 @@ export default {
       loading: false,
       loadingSave: false,
       downloadLoading: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -86,13 +90,7 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getAccess
     },
     subset () {
       return this.cacheStore.getSubset
@@ -154,10 +152,10 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     canGetPid () {
-      if (!this.user || !this.subset || !this.database) {
+      if (!this.userInfo || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || (this.subset.owner.id === this.user.id && this.hasReadAccess)
+      return this.database.owner.id === this.userInfo.uid || (this.subset.owner.id === this.userInfo.uid && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

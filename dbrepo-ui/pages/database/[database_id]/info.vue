@@ -163,13 +163,17 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { sizeToHumanLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -197,7 +201,6 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -223,14 +226,8 @@ export default {
       }
       return this.database.identifier.publisher
     },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     identifiers () {
       if (!this.database) {
@@ -257,7 +254,7 @@ export default {
       return this.filteredIdentifiers[0]
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     pid () {
       return this.$route.query.pid

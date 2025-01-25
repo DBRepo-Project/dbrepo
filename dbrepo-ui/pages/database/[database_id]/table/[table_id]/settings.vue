@@ -3,7 +3,7 @@
     v-if="canUpdateTable">
     <TableToolbar />
     <v-window
-      v-if="user"
+      v-if="loggedIn"
       v-model="tab">
       <v-window-item>
         <v-form
@@ -114,9 +114,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import { max } from '@/utils'
 
@@ -175,14 +181,10 @@ export default {
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -190,16 +192,13 @@ export default {
       return this.cacheStore.getTable
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     isChange () {
       if (!this.table) {
@@ -211,26 +210,26 @@ export default {
       return this.table.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateTable () {
-      if (!this.roles || !this.user || !this.table) {
+      if (!this.roles || !this.userInfo || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
+      return this.roles.includes('update-table') && this.table.owner.id === this.userInfo.uid
     },
     canModifyVisibility () {
-      if (!this.roles || !this.user || !this.table) {
+      if (!this.roles || !this.userInfo || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
+      return this.roles.includes('update-table') && this.table.owner.id === this.userInfo.uid
     },
     canDropTable () {
-      if (!this.roles || !this.table || !this.user) {
+      if (!this.roles || !this.table || !this.userInfo) {
         return false
       }
       if (this.roles.includes('delete-foreign-table')) {
         return true
       }
       const tableService = useTableService()
-      return tableService.isOwner(this.table, this.user) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
+      return tableService.isOwner(this.table, this.userInfo) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

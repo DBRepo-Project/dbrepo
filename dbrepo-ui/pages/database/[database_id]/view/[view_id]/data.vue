@@ -34,10 +34,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+</script>
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -70,14 +75,10 @@ export default {
           disabled: true
         }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -85,7 +86,7 @@ export default {
       return this.cacheStore.getView
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {
@@ -100,10 +101,10 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
-      return this.view.owner.id === this.user.id || this.hasReadAccess
+      return this.view.owner.id === this.userInfo.uid || this.hasReadAccess
     },
   },
   mounted () {

@@ -80,32 +80,6 @@ export const useUserService = (): any => {
     })
   }
 
-  async function obtainToken(username: string, password: string): Promise<KeycloakOpenIdTokenDto> {
-    console.debug('obtain user token for user with username', username)
-    return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
-      const config = useRuntimeConfig()
-      const userStore = useUserStore()
-      const instance = axios.create({
-        timeout: 90_000,
-        params: {},
-        baseURL: config.public.api.client
-      })
-      instance.post<KeycloakOpenIdTokenDto>('/api/user/token', {username, password})
-        .then((response) => {
-          console.info('Obtained user token')
-          // eslint-disable-next-line camelcase
-          const {access_token, refresh_token} = response.data
-          userStore.setToken(access_token)
-          userStore.setRefreshToken(refresh_token)
-          userStore.setRoles(tokenToRoles(access_token))
-          resolve(response.data)
-        }).catch((error) => {
-          console.error('Failed to obtain user token', error)
-          reject(axiosErrorToApiError(error))
-      })
-    })
-  }
-
   async function refreshToken(refreshToken: string): Promise<KeycloakOpenIdTokenDto> {
     console.debug('refresh user token')
     return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
@@ -134,21 +108,6 @@ export const useUserService = (): any => {
   function tokenToRoles(token: string): string[] {
     const data: Token = jwtDecode<Token>(token)
     return data.realm_access.roles || []
-  }
-
-  function tokenToUserId(token: string): string {
-    const data: Token = jwtDecode<Token>(token)
-    return data.uid
-  }
-
-  function userInfoToUser(data: UserDto) {
-    const obj: UserDto = Object.assign({}, data)
-    obj.attributes = {
-      theme: data.attributes.theme,
-      orcid: data.attributes.orcid,
-      affiliation: data.attributes.affiliation
-    }
-    return obj
   }
 
   function nameIdentifierToNameIdentifierScheme(nameIdentifier: string) {
@@ -197,11 +156,7 @@ export const useUserService = (): any => {
     update,
     create,
     updatePassword,
-    obtainToken,
     refreshToken,
-    tokenToRoles,
-    tokenToUserId,
-    userInfoToUser,
     nameIdentifierToNameIdentifierScheme,
     userToFullName,
     hasReadAccess,

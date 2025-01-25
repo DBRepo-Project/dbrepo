@@ -34,7 +34,6 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -43,14 +42,10 @@ export default {
       loading: false,
       loadingDetails: false,
       error: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },

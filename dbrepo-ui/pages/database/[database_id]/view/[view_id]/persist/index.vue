@@ -11,7 +11,6 @@
 
 <script>
 import Persist from '@/components/identifier/Persist.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -45,14 +44,10 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -63,7 +58,7 @@ export default {
       return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     canPersistView () {
       if (!this.view) {

@@ -244,10 +244,16 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -323,7 +329,6 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -335,16 +340,7 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    token () {
-      return this.userStore.getToken
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
-    user () {
-      return this.userStore.getUser
+      return this.cacheStore.getAccess
     },
     uploadProgress () {
       return this.cacheStore.getUploadProgress

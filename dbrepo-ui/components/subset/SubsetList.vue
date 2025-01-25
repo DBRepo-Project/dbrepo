@@ -45,8 +45,6 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -55,14 +53,10 @@ export default {
       loadingSubsets: false,
       loadingIdentifiers: false,
       subsets: [],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -130,7 +124,6 @@ export default {
   }
 }
 </script>
-
 <style lang="scss" scoped>
 .pid-icon {
   flex: 0 !important;

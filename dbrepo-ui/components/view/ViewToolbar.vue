@@ -56,8 +56,14 @@
   </v-toolbar>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import CreateOntology from '@/components/dialogs/CreateOntology.vue'
 import ViewVisibility from '@/components/dialogs/ViewVisibility.vue'
@@ -73,7 +79,6 @@ export default {
       loading: false,
       loadingDelete: false,
       updateViewDialog: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -101,7 +106,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.userInfo.id || this.database.owner.id === this.userInfo.id
     },
     canViewSchema () {
       if (!this.view) {
@@ -113,13 +118,13 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.userInfo.id || this.database.owner.id === this.userInfo.id
     },
     canViewSettings () {
       if (!this.user || !this.view) {
         return false
       }
-      return this.view.owner.id === this.user.id
+      return this.view.owner.id === this.userInfo.id
     },
     canCreatePid () {
       if (!this.roles || !this.user || !this.view) {
@@ -129,13 +134,7 @@ export default {
       return this.roles.includes('create-identifier') && userService.hasReadAccess(this.access)
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {

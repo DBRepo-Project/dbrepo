@@ -27,10 +27,12 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn, user, login, logout } = useOidcAuth()
+</script>
 <script>
 import DatabaseList from '@/components/database/DatabaseList.vue'
 import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -41,13 +43,21 @@ export default {
     return {
       loading: true,
       dialog: null,
-      databases: [],
-      userStore: useUserStore()
+      databases: []
     }
   },
   computed: {
+    userInfo () {
+      if (!this.user) {
+        return null
+      }
+      return this.user.userInfo
+    },
     roles () {
-      return this.userStore.getRoles
+      if (!this.user) {
+        return []
+      }
+      return []
     },
     canCreateDatabase () {
       if (!this.roles) {
@@ -57,17 +67,20 @@ export default {
     }
   },
   mounted () {
-    this.loading = true
-    const databaseService = useDatabaseService();
-    databaseService.findAll()
-      .then((databases) => {
-        this.databases = databases
-        this.loading = false
-      })
+    this.fetchDatabases()
   },
   methods: {
     closed () {
       this.dialog = false
+    },
+    fetchDatabases () {
+      this.loading = true
+      const databaseService = useDatabaseService()
+      databaseService.findAll()
+        .then((databases) => {
+          this.databases = databases
+          this.loading = false
+        })
     }
   }
 }

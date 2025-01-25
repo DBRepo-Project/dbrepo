@@ -8,10 +8,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
-import Persist from '~/components/identifier/Persist.vue'
-import { useUserStore } from '~/stores/user.js'
-import { useCacheStore } from '~/stores/cache.js'
+import Persist from '@/components/identifier/Persist.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -47,17 +52,10 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },

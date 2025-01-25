@@ -34,29 +34,20 @@
   </div>
 </template>
 
+<script setup>
+</script>
 <script>
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   data () {
     return {
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.userStore.getToken
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     ontologies () {
-      return this.cacheStore.getOntologies
+      return []
     }
   },
   mounted () {

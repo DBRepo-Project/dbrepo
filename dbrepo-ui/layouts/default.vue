@@ -96,16 +96,16 @@
           @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
-          v-if="!user"
+          v-if="!loggedIn"
           class="mr-2"
           color="secondary"
           variant="flat"
           :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-login' : null"
-          to="/login">
+          @click="login()">
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="!user"
+          v-if="!loggedIn"
           color="primary"
           variant="flat"
           :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-account-plus' : null"
@@ -113,12 +113,12 @@
           {{ $t('navigation.signup') }}
         </v-btn>
         <v-btn
-          v-if="user"
+          v-if="loggedIn"
           to="/user"
           variant="plain"
-          :text="user.username" />
+          :text="userInfo.preferred_username" />
         <v-menu
-          v-if="user"
+          v-if="loggedIn"
           location="bottom">
           <template v-slot:activator="{ props }">
             <v-btn
@@ -140,7 +140,7 @@
             </v-list-item>
             <v-list-item
               v-if="user"
-              @click="logout">
+              @click="logout()">
               {{ $t('navigation.logout') }}
             </v-list-item>
           </v-list>
@@ -163,6 +163,9 @@
 <script setup>
 import { ref } from 'vue'
 
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
 const runtimeConfig = useRuntimeConfig()
 const config = ref(runtimeConfig)
 useServerHead({
@@ -175,9 +178,9 @@ useServerHead({
 </script>
 <script>
 import JumboBox from '@/components/JumboBox.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
+
 
 export default {
   components: {
@@ -197,25 +200,12 @@ export default {
       loadingSearch: false,
       loadingDatabases: false,
       search: null,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.userStore.getToken
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    locale () {
-      return this.userStore.getLocale
-    },
     messages () {
       return this.cacheStore.getMessages
-    },
-    access () {
-      return this.userStore.getAccess
     },
     table () {
       return this.cacheStore.getTable
@@ -243,9 +233,6 @@ export default {
         return 'subset'
       }
       return 'database'
-    },
-    roles () {
-      return this.userStore.getRoles
     },
     version () {
       return this.$config.public.version
@@ -295,6 +282,9 @@ export default {
     logo () {
       return this.$config.public.logo
     },
+    locale () {
+      return this.cacheStore.getLocale
+    },
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
@@ -319,8 +309,8 @@ export default {
           .catch((error) => {
             this.databaseError = error
           })
-        if (this.user) {
-          this.userStore.setRouteAccess(newObj.database_id)
+        if (this.userInfo) {
+          this.cacheStore.setRouteAccess(newObj.database_id, this.userInfo.uid)
         }
         /* load table */
         if (newObj.table_id) {
@@ -357,27 +347,14 @@ export default {
     this.cacheStore.reloadMessages()
   },
   methods: {
-    errorCodeKey,
-    login () {
-      const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
-      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
-    },
-    logout () {
-      this.$vuetify.theme.global.name = 'tuwThemeLight'
-      this.userStore.logout()
-      this.$router.push('/database')
-    },
     retrieve () {
       console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
-      if (this.token && !this.user) {
-        console.error('Something went wrong with loading the user: reset user cache')
-        this.userStore.logout()
-      }
       if (!this.locale) {
-        this.userStore.setLocale('en')
+        this.cacheStore.setLocale('en')
+        return
       }
       this.$i18n.locale = this.locale
     },
@@ -398,7 +375,7 @@ export default {
       }
     },
     setLocale (code) {
-      this.userStore.setLocale(code)
+      this.cacheStore.setLocale(code)
       this.$i18n.locale = this.locale
     }
   }

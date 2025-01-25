@@ -219,10 +219,15 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const roles = ref(loggedIn ? user.value?.claims?.realm_access?.roles : [])
+</script>
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -304,7 +309,6 @@ export default {
       loading: false,
       url: null,
       columns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -316,12 +320,6 @@ export default {
     this.tableCreate.is_schema_public = this.database.is_schema_public
   },
   computed: {
-    user() {
-      return this.userStore.getUser
-    },
-    roles() {
-      return this.userStore.getRoles
-    },
     database() {
       return this.cacheStore.getDatabase
     },

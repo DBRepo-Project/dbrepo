@@ -59,13 +59,18 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const { loggedIn, user, login, logout } = useOidcAuth()
+const userInfo = ref(loggedIn ? user.value?.userInfo : null)
+</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -103,22 +108,15 @@ export default {
         }
       ],
       error: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     view () {
       return this.cacheStore.getView
@@ -139,10 +137,10 @@ export default {
       if (!this.identifiers) {
         return []
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.userInfo.uid)
     },
     identifier () {
       if (this.pid) {
@@ -179,10 +177,10 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.userInfo) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.userInfo.uid || this.database.owner.id === this.userInfo.uid
     }
   },
   methods: {
