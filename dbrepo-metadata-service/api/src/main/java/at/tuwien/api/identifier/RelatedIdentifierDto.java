@@ -24,6 +24,7 @@ import java.time.Instant;
 public class RelatedIdentifierDto {
 
     @NotNull
+    @Schema(example = "8")
     private Long id;
 
     @NotNull

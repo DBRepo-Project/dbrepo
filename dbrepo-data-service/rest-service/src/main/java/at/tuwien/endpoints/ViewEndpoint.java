@@ -1,13 +1,13 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.CreateViewDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
-import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.MariaDbMapper;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -42,23 +42,30 @@ import java.util.Map;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "/api/database/{databaseId}/view")
-public class ViewEndpoint extends AbstractEndpoint {
+public class ViewEndpoint extends RestEndpoint {
 
     private final ViewService viewService;
     private final TableService tableService;
+    private final MariaDbMapper mariaDbMapper;
+    private final SubsetService subsetService;
     private final MetricsService metricsService;
     private final StorageService storageService;
+    private final DatabaseService databaseService;
     private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, TableService tableService, MetricsService metricsService,
-                        StorageService storageService, CredentialService credentialService,
+    public ViewEndpoint(ViewService viewService, TableService tableService, MariaDbMapper mariaDbMapper,
+                        SubsetService subsetService, MetricsService metricsService, StorageService storageService,
+                        DatabaseService databaseService, CredentialService credentialService,
                         EndpointValidator endpointValidator) {
         this.viewService = viewService;
         this.tableService = tableService;
+        this.mariaDbMapper = mariaDbMapper;
+        this.subsetService = subsetService;
         this.metricsService = metricsService;
         this.storageService = storageService;
+        this.databaseService = databaseService;
         this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
     }
@@ -102,11 +109,11 @@ public class ViewEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<List<ViewDto>> getSchema(@NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
-            ViewNotFoundException, DatabaseMalformedException, MetadataServiceException {
+            DatabaseMalformedException, MetadataServiceException, ViewNotFoundException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         try {
-            return ResponseEntity.ok(viewService.getSchemas(database));
+            return ResponseEntity.ok(databaseService.exploreViews(database));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -146,13 +153,13 @@ public class ViewEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                          @Valid @RequestBody ViewCreateDto data) throws DatabaseUnavailableException,
+                                          @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
-        final PrivilegedDatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = credentialService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(viewService.create(database, data));
+                    .body(databaseService.createView(database, data));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -193,9 +200,9 @@ public class ViewEndpoint extends AbstractEndpoint {
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, MetadataServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = credentialService.getView(databaseId, viewId);
         try {
-            viewService.delete(view.getDatabase(), view.getInternalName());
+            viewService.delete(view);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -251,7 +258,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                                              @NotNull HttpServletRequest request,
                                                              Principal principal)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException, PaginationException,
-            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException {
+            QueryMalformedException, NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint get view data, databaseId={}, viewId={}, page={}, size={}, timestamp={}", databaseId,
                 viewId, page, size, timestamp);
         endpointValidator.validateDataParams(page, size);
@@ -268,7 +275,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = credentialService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to get data from view: unauthorized");
@@ -287,8 +294,10 @@ public class ViewEndpoint extends AbstractEndpoint {
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
-            final Dataset<Row> dataset = tableService.getData(view.getDatabase(), view.getInternalName(), timestamp,
-                    page, size, null, null);
+            final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+                    view.getInternalName(), timestamp, page, size);
+            final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+                    query, timestamp, page, size, null, null);
             metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -336,7 +345,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, ViewNotFoundException, NotAllowedException, MetadataServiceException,
-            StorageUnavailableException, QueryMalformedException, TableNotFoundException {
+            StorageUnavailableException, QueryMalformedException, TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint export view data, databaseId={}, viewId={}", databaseId, viewId);
         /* parameters */
         if (timestamp == null) {
@@ -344,7 +353,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* parameters */
-        final PrivilegedViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = credentialService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to export private view: principal is null");
@@ -352,8 +361,10 @@ public class ViewEndpoint extends AbstractEndpoint {
             }
             credentialService.getAccess(databaseId, getId(principal));
         }
-        final Dataset<Row> dataset = tableService.getData(view.getDatabase(), view.getInternalName(), timestamp, null,
-                null, null, null);
+        final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+                view.getInternalName(), timestamp, null, null);
+        final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+                query, timestamp, null, null, null, null);
         metricsService.countViewGetData(databaseId, viewId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();

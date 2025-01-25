@@ -3,7 +3,7 @@
     <v-form
       ref="form"
       v-model="valid"
-      @submit.prevent="submit">
+      @submit.prevent="validate">
       <v-card
         :title="title"
         :subtitle="this.$t('toolbars.table.data.subtitle')"
@@ -17,12 +17,10 @@
               <v-text-field
                 v-if="isNumber(column)"
                 v-model.number="tuple[column.internal_name]"
-                :disabled="!edit"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 type="number">
                 <template
@@ -48,11 +46,9 @@
               <v-text-field
                 v-if="isTextField(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 :clearable="!required(column)"
                 :counter="maxLength(column) !== null"
                 :maxlength="maxLength(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 persistent-hint
                 :variant="inputVariant"
@@ -82,10 +78,8 @@
               <v-text-field
                 v-if="isFloatingPoint(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 step=".1"
                 :clearable="!required(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 persistent-hint
                 :variant="inputVariant"
@@ -115,10 +109,8 @@
               <v-textarea
                 v-if="isTextArea(column)"
                 v-model="tuple[column.internal_name]"
-                :disabled="disabled(column)"
                 rows="3"
                 :clearable="!required(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 persistent-hint
                 :variant="inputVariant"
@@ -155,7 +147,6 @@
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 :clearable="!required(column)"
                 :items="isSet(column) ? column.sets : column.enums">
@@ -186,7 +177,6 @@
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)"
-                :rules="rules(column)"
                 :required="required(column)"
                 :items="bools"
                 :clearable="!required(column)">
@@ -322,10 +312,10 @@ export default {
       cacheStore: useCacheStore()
     }
   },
-  mounted() {
+  mounted () {
     this.fetchContainer()
-    this.$refs.form.validate()
     this.oldTuple = Object.assign({}, this.tuple)
+    this.validate()
   },
   computed: {
     database () {
@@ -358,8 +348,17 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
+  watch: {
+    tuple: {
+      handler () {
+        this.validate()
+      },
+      deep: true
+    }
+  },
   methods: {
-    submit () {
+    validate () {
+      console.debug('validate form')
       this.$refs.form.validate()
     },
     cancel () {
@@ -425,18 +424,6 @@ export default {
     isTimeField (column) {
       return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.type)
     },
-    rules (column) {
-      if (column.is_null_allowed) {
-        return []
-      }
-      const rules = []
-      rules.push(v => v !== null || this.$t('validation.required'))
-      if (column.type === 'decimal' || column.type === 'double') {
-        rules.push(v => !(!v || v.split('.')[0].length > column.size) || `${this.$t('pages.table.subpages.data.float.max')} ${column.size} ${this.$t('pages.table.subpages.data.float.before')}`)
-        rules.push(v => !(!v || (column.d && v.split('.')[1].length > column.d)) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
-      }
-      return rules
-    },
     maxLength (column) {
       if (!this.isTextField(column) || column.size === null) {
         return null
@@ -445,9 +432,6 @@ export default {
     },
     required (column) {
       return column.is_null_allowed === false
-    },
-    disabled (column) {
-      return (this.edit && column.is_primary_key) || !this.edit
     },
     updateTuple () {
       const constraints = {}

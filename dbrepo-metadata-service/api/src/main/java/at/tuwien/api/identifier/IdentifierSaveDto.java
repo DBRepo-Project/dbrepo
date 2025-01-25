@@ -51,11 +51,11 @@ public class IdentifierSaveDto {
 
     @NotNull
     @NotEmpty
-    private List<IdentifierSaveTitleDto> titles;
+    private List<SaveIdentifierTitleDto> titles;
 
-    private List<IdentifierSaveDescriptionDto> descriptions;
+    private List<SaveIdentifierDescriptionDto> descriptions;
 
-    private List<IdentifierFunderSaveDto> funders;
+    private List<SaveIdentifierFunderDto> funders;
 
     private List<LicenseDto> licenses;
 
@@ -80,9 +80,9 @@ public class IdentifierSaveDto {
 
     @NotNull
     @NotEmpty
-    private List<CreatorSaveDto> creators;
+    private List<SaveIdentifierCreatorDto> creators;
 
     @JsonProperty("related_identifiers")
-    private List<RelatedIdentifierSaveDto> relatedIdentifiers;
+    private List<SaveRelatedIdentifierDto> relatedIdentifiers;
 
 }

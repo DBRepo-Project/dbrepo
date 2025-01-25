@@ -4,7 +4,7 @@ import requests_mock
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Database, Container, Image, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
+from dbrepo.api.dto import Database, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
     ContainerBrief, ImageBrief
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
@@ -28,7 +28,19 @@ class DatabaseUnitTest(unittest.TestCase):
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 internal_name='test_abcd',
                 is_public=True,
-                is_schema_public=True)
+                is_schema_public=True,
+                container=ContainerBrief(
+                    id=1,
+                    name='MariaDB Galera 11.1.3',
+                    internal_name='mariadb',
+                    image=ImageBrief(
+                        id=1,
+                        name='mariadb',
+                        version='11.2.2',
+                        jdbc_method='mariadb'
+                    )
+                )
+            )
         ]
         with requests_mock.Mocker() as mock:
             # mock

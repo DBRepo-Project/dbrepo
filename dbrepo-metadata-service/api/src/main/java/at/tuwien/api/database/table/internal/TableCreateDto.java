@@ -1,7 +1,7 @@
 package at.tuwien.api.database.table.internal;
 
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -41,8 +41,8 @@ public class TableCreateDto {
     private Boolean isSchemaPublic;
 
     @NotNull
-    private List<ColumnCreateDto> columns;
+    private List<CreateTableColumnDto> columns;
 
     @NotNull
-    private ConstraintsCreateDto constraints;
+    private CreateTableConstraintsDto constraints;
 }

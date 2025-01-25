@@ -103,7 +103,7 @@ export const useIdentifierService = (): any => {
     })
   }
 
-  function identifierToCreators(identifier: IdentifierDto) {
+  function identifierToCreators(identifier: IdentifierDto): string | null {
     if (!identifier) {
       return null
     }

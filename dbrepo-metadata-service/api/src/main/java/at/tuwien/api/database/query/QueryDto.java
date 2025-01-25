@@ -24,10 +24,12 @@ import java.util.List;
 public class QueryDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "1")
     private Long databaseId;
 
     @NotNull

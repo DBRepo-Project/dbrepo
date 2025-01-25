@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.ViewBriefDto;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -461,7 +461,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                                   DatabaseAccess access) throws MalformedException, DataServiceException,
             DataServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        final ViewCreateDto request = ViewCreateDto.builder()
+        final CreateViewDto request = CreateViewDto.builder()
                 .name(VIEW_1_NAME)
                 .query(VIEW_1_QUERY)
                 .isPublic(VIEW_1_PUBLIC)
@@ -571,7 +571,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(VIEW_1);
 
         /* test */
-        final ResponseEntity<ViewDto> response = viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, principal);
+        final ResponseEntity<ViewBriefDto> response = viewEndpoint.update(DATABASE_1_ID, VIEW_1_ID, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }

@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.CreateIdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.entities.database.Database;
@@ -139,7 +139,7 @@ public interface IdentifierService {
      * @throws SearchServiceException
      * @throws SearchServiceConnectionException
      */
-    Identifier create(Database database, User user, IdentifierCreateDto data) throws DataServiceException,
+    Identifier create(Database database, User user, CreateIdentifierDto data) throws DataServiceException,
             DataServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
             DatabaseNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException;
 

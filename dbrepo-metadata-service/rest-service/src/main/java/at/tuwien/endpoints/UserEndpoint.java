@@ -2,7 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
@@ -139,14 +139,14 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
+    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
             throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
             UserNotFoundException, CredentialsInvalidException {
         log.debug("endpoint create user, data.username={}", data.getUsername());
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.userToUserDto(
+                .body(userMapper.userToUserBriefDto(
                         userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0])));
     }
 
@@ -201,7 +201,7 @@ public class UserEndpoint extends AbstractEndpoint {
         } catch (UserNotFoundException e) {
             /* need to sync */
             log.warn("User with username {} does not exist in metadata database yet", data.getUsername());
-            final SignupRequestDto request = SignupRequestDto.builder()
+            final CreateUserDto request = CreateUserDto.builder()
                     .username(data.getUsername())
                     .email("noreply@example.com")
                     .password(data.getPassword())
@@ -328,7 +328,7 @@ public class UserEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("userId") UUID userId,
+    public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal) throws NotAllowedException,
             UserNotFoundException, DatabaseNotFoundException {
@@ -339,7 +339,7 @@ public class UserEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify user: not current user " + user.getId());
         }
         return ResponseEntity.accepted()
-                .body(userMapper.userToUserDto(
+                .body(userMapper.userToUserBriefDto(
                         userService.modify(user, data)));
     }
 

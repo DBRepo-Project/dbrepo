@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.constraints.primary;
 
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -15,6 +16,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class PrimaryKeyDto {
 
+    @Schema(example = "8")
     private Long id;
 
     @NotNull

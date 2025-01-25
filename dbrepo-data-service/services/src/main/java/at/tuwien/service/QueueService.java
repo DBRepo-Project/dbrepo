@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.database.table.TableDto;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -14,5 +14,5 @@ public interface QueueService {
      * @param data     The data.
      * @throws SQLException The connection to the database could not be established.
      */
-    void insert(PrivilegedTableDto table, Map<String, Object> data) throws SQLException;
+    void insert(TableDto table, Map<String, Object> data) throws SQLException;
 }

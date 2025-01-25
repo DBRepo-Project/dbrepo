@@ -110,7 +110,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.modifyImage(DATABASE_1, image);
@@ -164,7 +164,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateViewMetadata(DATABASE_1);
@@ -222,7 +222,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateViewMetadata(DATABASE_1);
@@ -240,7 +240,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateViewMetadata(DATABASE_1);
@@ -258,7 +258,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateTableMetadata(DATABASE_1);
@@ -276,7 +276,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateTableMetadata(DATABASE_1);
@@ -294,7 +294,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Database response = databaseService.updateTableMetadata(DATABASE_1);
@@ -517,7 +517,7 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
 

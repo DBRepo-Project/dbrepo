@@ -2,6 +2,22 @@
 author: Martin Weise
 ---
 
+## v1.6.2 (2025-01-24)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.2)
+
+### What's Changed
+
+#### Changes
+
+* Added interface tests for the Python library in Gitlab CI/CD pipeline
+  in [#486](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/486).
+
+#### Fixes
+
+* Fixed a bug where no pagination was possible
+  in [#487](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/487).
+
 ## v1.6.1 (2025-01-21)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.1)
@@ -15,7 +31,7 @@ author: Martin Weise
 
 #### Fixes
 
-* Added init container that adds the admin user to the Metadata Database 
+* Added init container that adds the admin user to the Metadata Database
   in [#480](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/480).
 
 ## v1.6.0 (2025-01-07)

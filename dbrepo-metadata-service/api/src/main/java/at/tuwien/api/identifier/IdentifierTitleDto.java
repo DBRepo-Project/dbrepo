@@ -19,6 +19,7 @@ import org.springframework.data.annotation.Id;
 public class IdentifierTitleDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @Schema(example = "Airquality Demonstrator")

@@ -110,8 +110,8 @@ services:
   dbrepo-auth-service-init:
     init: true
     restart: "no"
-    image: dbrepo-auth-service-init:latest
     container_name: dbrepo-auth-service-init
+    image: dbrepo-auth-service-init:latest
     build:
       context: ./dbrepo-auth-service/init
       network: host

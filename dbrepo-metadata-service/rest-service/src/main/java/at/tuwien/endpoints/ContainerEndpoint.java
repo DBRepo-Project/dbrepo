@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.ContainerCreateDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
@@ -105,7 +105,7 @@ public class ContainerEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ContainerDto> create(@Valid @RequestBody ContainerCreateDto data)
+    public ResponseEntity<ContainerDto> create(@Valid @RequestBody CreateContainerDto data)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
         log.debug("endpoint create container, data={}", data);
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -39,7 +39,7 @@ public interface TableService {
      * @param principal The principal.
      * @return The created table.
      */
-    Table createTable(Database database, TableCreateDto createDto, Principal principal)
+    Table createTable(Database database, CreateTableDto createDto, Principal principal)
             throws TableNotFoundException, DataServiceException, DataServiceConnectionException, UserNotFoundException,
             DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
 

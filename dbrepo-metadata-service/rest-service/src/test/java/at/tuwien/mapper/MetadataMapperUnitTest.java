@@ -1,13 +1,7 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.ViewBriefDto;
-import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.test.AbstractUnitTest;

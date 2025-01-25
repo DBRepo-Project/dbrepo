@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -50,7 +50,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
     @Test
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
-        final ViewCreateDto request = ViewCreateDto.builder()
+        final CreateViewDto request = CreateViewDto.builder()
                 .name(VIEW_1_NAME)
                 .query(VIEW_1_QUERY)
                 .isPublic(VIEW_1_PUBLIC)
@@ -62,7 +62,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final View response = viewService.create(DATABASE_1, USER_1, request);
@@ -117,7 +117,7 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
         when(databaseRepository.save(any(Database.class)))
                 .thenReturn(DATABASE_1);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         viewService.delete(VIEW_1);

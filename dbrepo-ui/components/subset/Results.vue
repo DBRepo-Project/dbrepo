@@ -110,9 +110,13 @@ export default {
             this.id = id
             this.loadingExecute = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
+            if (message) {
+              toast.error(message)
+              return
+            }
             if (typeof code !== 'string') {
               return
             }
@@ -129,9 +133,13 @@ export default {
             this.id = id
             this.loadingExecute = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
+            if (message) {
+              toast.error(message)
+              return
+            }
             if (typeof code !== 'string') {
               return
             }
@@ -148,9 +156,13 @@ export default {
             this.id = id
             this.loadingExecute = false
           })
-          .catch(({code}) => {
+          .catch(({code, message}) => {
             this.loadingExecute = false
             const toast = useToastInstance()
+            if (message) {
+              toast.error(message)
+              return
+            }
             if (typeof code !== 'string') {
               return
             }

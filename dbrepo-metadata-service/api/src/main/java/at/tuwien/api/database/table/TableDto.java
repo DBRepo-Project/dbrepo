@@ -1,9 +1,13 @@
 package at.tuwien.api.database.table;
 
+import at.tuwien.api.CacheableDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -12,23 +16,26 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.Instant;
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class TableDto {
+public class TableDto extends CacheableDto {
 
     @NotNull
+    @Schema(example = "3")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "2")
     private Long tdbid;
 
     @NotBlank
@@ -40,7 +47,7 @@ public class TableDto {
     @Schema(example = "air_quality")
     private String internalName;
 
-    @Schema
+    @Schema(example = "a")
     private String alias;
 
     private List<IdentifierDto> identifiers;
@@ -100,7 +107,17 @@ public class TableDto {
     @NotNull
     private List<ColumnDto> columns;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private DatabaseDto database;
+
     @NotNull
     private ConstraintsDto constraints;
+
+    /* lombok limitations prevent from convenient builder functions */
+
+    @JsonProperty("last_retrieved")
+    @Schema(example = "2025-01-23T12:09:01")
+    private Instant lastRetrieved;
 
 }

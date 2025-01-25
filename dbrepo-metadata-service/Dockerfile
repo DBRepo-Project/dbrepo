@@ -12,7 +12,7 @@ COPY ./rest-service/pom.xml ./rest-service/
 COPY ./services/pom.xml ./services/
 COPY ./test/pom.xml ./test/
 
-RUN mvn verify -B -fn
+RUN mvn -fn -B dependency:go-offline
 
 COPY ./api ./api
 COPY ./entities ./entities
@@ -24,7 +24,7 @@ COPY ./services ./services
 COPY ./test ./test
 
 # Make sure it compiles
-RUN mvn clean install -DskipTests
+RUN mvn -fn -B clean install -DskipTests
 
 ###### SECOND STAGE ######
 FROM amazoncorretto:17-alpine3.19 AS runtime

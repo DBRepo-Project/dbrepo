@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -82,22 +82,22 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
     @Transactional
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, TableNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException, SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
-        final TableCreateDto request = TableCreateDto.builder()
+        final CreateTableDto request = CreateTableDto.builder()
                 .name("New Table")
                 .description("A wonderful table")
                 .isPublic(true)
                 .isSchemaPublic(true)
-                .columns(List.of(ColumnCreateDto.builder()
+                .columns(List.of(CreateTableColumnDto.builder()
                                 .name("id")
                                 .nullAllowed(false)
                                 .type(ColumnTypeDto.BIGINT)
                                 .build(),
-                        ColumnCreateDto.builder()
+                        CreateTableColumnDto.builder()
                                 .name("date")
                                 .nullAllowed(true)
                                 .type(ColumnTypeDto.DATE)
                                 .build()))
-                .constraints(ConstraintsCreateDto.builder()
+                .constraints(CreateTableConstraintsDto.builder()
                         .checks(Set.of())
                         .uniques(List.of(List.of("date")))
                         .foreignKeys(List.of())
@@ -112,7 +112,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
                 .when(dataServiceGateway)
                 .createTable(DATABASE_1_ID, request);
         when(searchServiceGateway.update(any(Database.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_1_BRIEF_DTO);
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);

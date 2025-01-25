@@ -5,8 +5,6 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MetadataMapper;
@@ -73,7 +71,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose `X-Count` custom header", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
     })
     public ResponseEntity<List<DatabaseBriefDto>> list(@RequestParam(name = "internal_name", required = false) String internalName,
                                                        Principal principal) {
@@ -118,7 +116,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Created a new database",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Database create query is malformed or image is not supported",
                     content = {@Content(
@@ -155,8 +153,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> create(@Valid @RequestBody DatabaseCreateDto data,
-                                              @NotNull Principal principal) throws DataServiceException,
+    public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody CreateDatabaseDto data,
+                                                   @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException, SearchServiceException, SearchServiceConnectionException,
             ContainerQuotaException {
@@ -168,8 +166,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         }
         final User caller = userService.findById(getId(principal));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.customDatabaseToDatabaseDto(
-                        databaseService.create(container, data, caller, userService.findAllInternalUsers())));
+                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                        databaseService.create(container, data, caller, userService.findAllInternalUsers()))));
     }
 
     @PutMapping("/{databaseId}/metadata/table")
@@ -184,7 +182,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Refreshed database tables metadata",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Failed to parse payload at search service",
                     content = {@Content(
@@ -211,8 +209,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                            @NotNull Principal principal) throws DataServiceException,
+    public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                                 @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, UserNotFoundException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException,
             TableNotFoundException {
@@ -222,8 +220,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.customDatabaseToDatabaseDto(
-                databaseService.updateTableMetadata(database)));
+        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                databaseService.updateTableMetadata(database))));
     }
 
     @PutMapping("/{databaseId}/metadata/view")
@@ -238,7 +236,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Refreshed database views metadata",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Refresh view metadata is not permitted",
                     content = {@Content(
@@ -260,9 +258,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                           @NotNull Principal principal) throws DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, UserNotFoundException,
+    public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                                @NotNull Principal principal) throws DataServiceException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}, principal.name={}", databaseId, principal.getName());
         final Database database = databaseService.findById(databaseId);
@@ -270,8 +268,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.customDatabaseToDatabaseDto(
-                databaseService.updateViewMetadata(database)));
+        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                databaseService.updateViewMetadata(database))));
     }
 
     @PutMapping("/{databaseId}/visibility")
@@ -286,7 +284,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Visibility modified successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "The visibility payload is malformed",
                     content = {@Content(
@@ -313,9 +311,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @Valid @RequestBody DatabaseModifyVisibilityDto data,
-                                                  @NotNull Principal principal) throws DatabaseNotFoundException,
+    public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                       @Valid @RequestBody DatabaseModifyVisibilityDto data,
+                                                       @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, UserNotFoundException {
         log.debug("endpoint modify database visibility, databaseId={}, data={}", databaseId, data);
         final Database database = databaseService.findById(databaseId);
@@ -324,8 +322,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.customDatabaseToDatabaseDto(
-                        databaseService.modifyVisibility(database, data)));
+                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                        databaseService.modifyVisibility(database, data))));
     }
 
     @PutMapping("/{databaseId}/owner")
@@ -340,7 +338,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Transfer of ownership was successful",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Owner payload is malformed",
                     content = {@Content(
@@ -367,9 +365,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @Valid @RequestBody DatabaseTransferDto data,
-                                                @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                     @Valid @RequestBody DatabaseTransferDto data,
+                                                     @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
             SearchServiceException, SearchServiceConnectionException {
         log.debug("endpoint transfer database, databaseId={}, transferDto.id={}", databaseId, data.getId());
@@ -380,8 +378,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.customDatabaseToDatabaseDto(
-                        databaseService.modifyOwner(database, newOwner)));
+                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                        databaseService.modifyOwner(database, newOwner))));
     }
 
     @PutMapping("/{databaseId}/image")
@@ -396,7 +394,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     description = "Modify of image was successful",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Modify of image is not permitted",
                     content = {@Content(
@@ -423,9 +421,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> modifyImage(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                   @Valid @RequestBody DatabaseModifyImageDto data,
-                                                   @NotNull Principal principal) throws NotAllowedException,
+    public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                        @Valid @RequestBody DatabaseModifyImageDto data,
+                                                        @NotNull Principal principal) throws NotAllowedException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
             StorageUnavailableException, StorageNotFoundException {
         log.debug("endpoint modify database image, databaseId={}, data.key={}", databaseId, data.getKey());
@@ -439,8 +437,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             image = storageService.getBytes(data.getKey());
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.customDatabaseToDatabaseDto(
-                        databaseService.modifyImage(database, image)));
+                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                        databaseService.modifyImage(database, image))));
     }
 
     @GetMapping("/{databaseId}/image")
@@ -480,7 +478,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseDto.class))}),
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Not allowed to view database",
                     content = {@Content(
@@ -546,14 +544,14 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .toList());
             database.setAccesses(List.of());
         }
-        final DatabaseDto dto = databaseMapper.customDatabaseToDatabaseDto(database);
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-            headers.set("X-Host", database.getContainer().getHost());
-            headers.set("X-Port", "" + database.getContainer().getPort());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port");
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+        } else {
+            removeInternalData(dto.getContainer());
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)

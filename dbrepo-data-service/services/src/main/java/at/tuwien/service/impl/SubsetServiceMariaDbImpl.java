@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.container.internal.PrivilegedContainerDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.SortTypeDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
@@ -9,14 +9,13 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.SubsetService;
-import at.tuwien.service.TableService;
-import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.ExtendedAnalysisException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,95 +27,63 @@ import java.util.UUID;
 
 @Log4j2
 @Service
-public class SubsetServiceMariaDbImpl extends HibernateConnector implements SubsetService {
+public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetService {
 
     private final DataMapper dataMapper;
-    private final ViewService viewService;
-    private final TableService tableService;
+    private final SparkSession sparkSession;
     private final MariaDbMapper mariaDbMapper;
-    private final MetadataMapper metadataMapper;
     private final MetadataServiceGateway metadataServiceGateway;
 
     @Autowired
-    public SubsetServiceMariaDbImpl(DataMapper dataMapper, ViewService viewService, TableService tableService,
-                                    MariaDbMapper mariaDbMapper, MetadataMapper metadataMapper,
+    public SubsetServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper, SparkSession sparkSession,
                                     MetadataServiceGateway metadataServiceGateway) {
         this.dataMapper = dataMapper;
-        this.viewService = viewService;
-        this.tableService = tableService;
+        this.sparkSession = sparkSession;
         this.mariaDbMapper = mariaDbMapper;
-        this.metadataMapper = metadataMapper;
         this.metadataServiceGateway = metadataServiceGateway;
     }
 
     @Override
-    public void createQueryStore(PrivilegedContainerDto container, String databaseName) throws SQLException,
-            QueryStoreCreateException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(container, databaseName);
-        final Connection connection = dataSource.getConnection();
+    public Dataset<Row> getData(DatabaseDto database, String query, Instant timestamp, Long page, Long size,
+                                SortTypeDto sortDirection, String sortColumn)
+            throws QueryMalformedException, TableNotFoundException {
         try {
-            /* create query store */
-            long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateSequenceRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateTableRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateHashTableProcedureRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateStoreQueryProcedureRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.queryStoreCreateInternalStoreQueryProcedureRawQuery())
-                    .execute();
-            log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            log.error("Failed to create query store: {}", e.getMessage());
-            throw new QueryStoreCreateException("Failed to create query store: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
+            return sparkSession.read()
+                    .format("jdbc")
+                    .option("user", database.getContainer().getUsername())
+                    .option("password", database.getContainer().getPassword())
+                    .option("url", getSparkUrl(database))
+                    .option("query", query)
+                    .load();
+        } catch (Exception e) {
+            if (e instanceof ExtendedAnalysisException exception) {
+                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
+                    log.error("Failed to find named reference: {}", exception.getSimpleMessage());
+                    throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
+                }
+            }
+            log.error("Malformed query: {}", e.getMessage());
+            throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
         }
-        log.info("Created query store in database with name {}", databaseName);
     }
 
     @Override
-    public Dataset<Row> getData(PrivilegedDatabaseDto database, QueryDto subset, Long page, Long size)
-            throws ViewMalformedException, SQLException, QueryMalformedException, TableNotFoundException {
-        final String viewName = metadataMapper.queryDtoToViewName(subset);
-        if (!viewService.existsByName(database, viewName)) {
-            log.warn("Missing internal view {} for subset with id {}: create it from subset query", viewName, subset.getId());
-            viewService.create(database, subset);
-        } else {
-            log.debug("internal view {}.{} for subset with id {} exists", database.getInternalName(), viewName, subset.getId());
-        }
-        return tableService.getData(database, viewName, subset.getExecution(), page, size, null, null);
-    }
-
-    @Override
-    public Long create(PrivilegedDatabaseDto database, String statement, Instant timestamp, UUID userId)
+    public Long create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException {
         return storeQuery(database, statement, timestamp, userId);
     }
 
     @Override
-    public Long reExecuteCount(PrivilegedDatabaseDto database, QueryDto query) throws TableMalformedException,
+    public Long reExecuteCount(DatabaseDto database, QueryDto query) throws TableMalformedException,
             SQLException, QueryMalformedException {
         return executeCountNonPersistent(database, query.getQuery(), query.getExecution());
     }
 
     @Override
-    public List<QueryDto> findAll(PrivilegedDatabaseDto database, Boolean filterPersisted) throws SQLException,
+    public List<QueryDto> findAll(DatabaseDto database, Boolean filterPersisted) throws SQLException,
             QueryNotFoundException, RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
         final List<IdentifierBriefDto> identifiers = metadataServiceGateway.getIdentifiers(database.getId(), null);
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
@@ -147,9 +114,9 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public Long executeCountNonPersistent(PrivilegedDatabaseDto database, String statement, Instant timestamp)
+    public Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
             throws SQLException, QueryMalformedException, TableMalformedException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
@@ -166,9 +133,9 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public QueryDto findById(PrivilegedDatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
+    public QueryDto findById(DatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
             RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
@@ -193,11 +160,11 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public Long storeQuery(PrivilegedDatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
+    public Long storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
             QueryStoreInsertException {
         /* save */
         final Long queryId;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* insert query into query store */
@@ -228,9 +195,9 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public void persist(PrivilegedDatabaseDto database, Long queryId, Boolean persist) throws SQLException,
+    public void persist(DatabaseDto database, Long queryId, Boolean persist) throws SQLException,
             QueryStorePersistException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             /* update query */
@@ -250,8 +217,8 @@ public class SubsetServiceMariaDbImpl extends HibernateConnector implements Subs
     }
 
     @Override
-    public void deleteStaleQueries(PrivilegedDatabaseDto database) throws SQLException, QueryStoreGCException {
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database);
+    public void deleteStaleQueries(DatabaseDto database) throws SQLException, QueryStoreGCException {
+        final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();

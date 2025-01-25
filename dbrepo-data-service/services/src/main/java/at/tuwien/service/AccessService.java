@@ -1,8 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
-import at.tuwien.api.user.internal.PrivilegedUserDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.DatabaseMalformedException;
 
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void create(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access) throws SQLException,
+    void create(DatabaseDto database, UserDto user, AccessTypeDto access) throws SQLException,
             DatabaseMalformedException;
 
     /**
@@ -30,7 +30,7 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void update(PrivilegedDatabaseDto database, PrivilegedUserDto user, AccessTypeDto access) throws SQLException,
+    void update(DatabaseDto database, UserDto user, AccessTypeDto access) throws SQLException,
             DatabaseMalformedException;
 
     /**
@@ -41,6 +41,5 @@ public interface AccessService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws DatabaseMalformedException The database schema is malformed.
      */
-    void delete(PrivilegedDatabaseDto database, PrivilegedUserDto user) throws SQLException,
-            DatabaseMalformedException;
+    void delete(DatabaseDto database, UserDto user) throws SQLException, DatabaseMalformedException;
 }

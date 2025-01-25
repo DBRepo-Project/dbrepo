@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.exception.*;
 import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -80,7 +80,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
                         .build());
-        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
 
@@ -155,7 +155,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -174,7 +174,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -193,7 +193,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -212,7 +212,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpServerErrorException.InternalServerError.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -230,7 +230,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
-        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
 
@@ -305,7 +305,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -324,7 +324,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -343,7 +343,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -362,7 +362,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpServerErrorException.InternalServerError.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {
@@ -382,7 +382,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
-        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class)))
                 .thenReturn(ResponseEntity.accepted()
                         .build());
 
@@ -445,7 +445,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.BadRequest.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -466,7 +466,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.Unauthorized.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceException.class, () -> {
@@ -487,7 +487,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpClientErrorException.NotFound.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -508,7 +508,7 @@ public class AccessServiceUnitTest extends AbstractUnitTest {
                         .build());
         doThrow(HttpServerErrorException.InternalServerError.class)
                 .when(searchServiceRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseBriefDto.class));
 
         /* test */
         assertThrows(SearchServiceConnectionException.class, () -> {

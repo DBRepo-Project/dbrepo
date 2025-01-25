@@ -1,16 +1,21 @@
 #!/bin/bash
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.restart"
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.container_name"
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.hostname"
+function compare () {
+  diff <(yq ".$1" docker-compose.yml) <(yq ".$1" .docker/docker-compose.yml)
+}
+
+compare "services.$1.restart"
+compare "services.$1.container_name"
+compare "services.$1.hostname"
+compare "services.$1.environment"
+compare "services.$1.healthcheck"
+compare "services.$1.logging"
+
 if [ -z "$IGNORE_IMAGE" ]; then
-  yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.image"
+  compare "services.$1.image"
 fi
 if [ -z "$IGNORE_VOLUMES" ]; then
-  yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.volumes"
+  compare "services.$1.volumes"
 fi
 if [ -z "$IGNORE_PORTS" ]; then
-  yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.ports"
+  compare "services.$1.ports"
 fi
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.environment"
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.healthcheck"
-yq compare -P docker-compose.yml .docker/docker-compose.yml "services.$1.logging"

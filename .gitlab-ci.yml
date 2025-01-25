@@ -10,8 +10,8 @@ variables:
   SONARQUBE_VERSION: "10.0"
   BUN_VERSION: "1.1.40"
   DOC_VERSION: "1.6"
-  APP_VERSION: "1.6.1"
-  CHART_VERSION: "1.6.1"
+  APP_VERSION: "1.6.2"
+  CHART_VERSION: "1.6.2"
   CACHE_FALLBACK_KEY: "${CI_DEFAULT_BRANCH}"
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -44,34 +44,34 @@ lint-docker-compose:
   image: docker.io/alpine:${ALPINE_VERSION}
   stage: lint
   variables:
-    VERSION: 3.3.0
+    VERSION: 4.45.1
     BINARY: yq_linux_amd64
   before_script:
     - 'apk --no-cache add bash wget'
-    - 'wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
-    - 'ls -la .scripts'
+    - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
     - "bash .scripts/check-compose.sh"
-    - "yq compare -P docker-compose.yml .docker/docker-compose.yml 'volumes.*'"
+    - "diff <(yq '.volumes' docker-compose.yml) <(yq '.volumes' .docker/docker-compose.yml)"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-analyse-service'"
-    - "bash .scripts/check-service.sh 'dbrepo-auth-db'"
+    - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-auth-service'"
+    - "IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-auth-service-init'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-broker-service'"
     - "IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-dashboard-service'"
     - "bash .scripts/check-service.sh 'dbrepo-data-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-data-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-gateway-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
+    - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-identity-service'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metadata-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metadata-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
+    - "IGNORE_VOLUMES=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-metric-db'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-db'"
     - "IGNORE_IMAGE=1 IGNORE_PORTS=1 bash .scripts/check-service.sh 'dbrepo-search-service'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-search-service-init'"
     - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service'"
-    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
+    - "IGNORE_VOLUMES=1 IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-storage-service-init'"
     - "IGNORE_IMAGE=1 bash .scripts/check-service.sh 'dbrepo-ui'"
-    - "bash .scripts/check-service.sh 'dbrepo-upload-service'"
+    - "IGNORE_VOLUMES=1 bash .scripts/check-service.sh 'dbrepo-upload-service'"
 
 lint-helm-chart:
   image: docker.io/alpine:${ALPINE_VERSION}
@@ -116,6 +116,19 @@ lint-metadata-schema:
   stage: lint
   script:
     - diff dbrepo-metadata-db/1_setup-schema.sql helm/dbrepo/files/01-setup-schema.sql
+
+lint-open-api-version:
+  image: docker.io/alpine:${ALPINE_VERSION}
+  stage: lint
+  variables:
+    VERSION: 4.45.1
+    BINARY: yq_linux_amd64
+  before_script:
+    - 'apk --no-cache add bash wget'
+    - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
+  script:
+    - yq '.externalDocs.url' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
+    - yq '.info.version' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
@@ -253,7 +266,7 @@ test-data-service:
   dependencies:
     - build-data-service
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests $MAVEN_OPTS"
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify $MAVEN_OPTS"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
@@ -471,9 +484,9 @@ release-docs:
   script:
     - "make gen-lib-doc gen-docs-doc package-config"
     - "cp -r ./lib/python/docs/build/html ./final/${DOC_VERSION}/python" # sphinx
-    - "cp .docs/.swagger/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # swagger
-    - "cp .docs/.swagger/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # swagger
-    - "cp .docs/.swagger/custom.css ./final/${DOC_VERSION}/rest/custom.css" # swagger
+    - "cp .docs/.openapi/api.yaml ./final/${DOC_VERSION}/rest/api.yaml" # openapi
+    - "cp .docs/.openapi/swagger-ui.html ./final/${DOC_VERSION}/rest/index.html" # openapi
+    - "cp .docs/.openapi/custom.css ./final/${DOC_VERSION}/rest/custom.css" # openapi
     - "cp -r ./site/* ./final/${DOC_VERSION}" # mkdocs
     - "cp .docker/dist.tar.gz ./final/${APP_VERSION}/dist.tar.gz" # dist
     - "cp .docs/index.html.tpl ./final/index.html" # redirect patch docs

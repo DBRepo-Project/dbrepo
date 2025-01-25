@@ -1,7 +1,9 @@
 package at.tuwien.api.database.query;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema
 public enum QueryTypeDto {
 
     @JsonProperty("query")

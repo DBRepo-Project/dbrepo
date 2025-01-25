@@ -21,7 +21,7 @@ numpy = "*"
 pandas = "*"
 minio = "*"
 pydantic = "*"
-dbrepo = {path = "./lib/dbrepo-1.6.1.tar.gz"}
+dbrepo = {path = "./lib/dbrepo-1.6.2.tar.gz"}
 opensearch-py = "*"
 
 [dev-packages]

@@ -18,6 +18,7 @@ import lombok.extern.jackson.Jacksonized;
 public class ImageBriefDto {
 
     @NotNull
+    @Schema(example = "5")
     private Long id;
 
     @NotBlank

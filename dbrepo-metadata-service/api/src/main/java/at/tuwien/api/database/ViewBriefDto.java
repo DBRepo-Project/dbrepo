@@ -20,10 +20,12 @@ import java.util.UUID;
 public class ViewBriefDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @NotNull
     @JsonProperty("database_id")
+    @Schema(example = "1")
     private Long vdbid;
 
     @NotBlank
@@ -31,8 +33,8 @@ public class ViewBriefDto {
     private String name;
 
     @NotBlank
-    @JsonProperty("internal_name")
     @Schema(example = "air_quality")
+    @JsonProperty("internal_name")
     private String internalName;
 
     @JsonProperty("is_public")
@@ -57,6 +59,7 @@ public class ViewBriefDto {
     private String queryHash;
 
     @JsonProperty("owned_by")
+    @Schema(example = "ac750fcf-ea02-4fce-85ac-d73857e18b35")
     private UUID ownedBy;
 
 }

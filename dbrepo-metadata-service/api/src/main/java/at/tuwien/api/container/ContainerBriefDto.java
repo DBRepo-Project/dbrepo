@@ -22,6 +22,7 @@ import java.time.Instant;
 public class ContainerBriefDto {
 
     @NotNull
+    @Schema(example = "4")
     private Long id;
 
     @NotNull

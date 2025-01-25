@@ -21,6 +21,7 @@ import org.springframework.data.annotation.Id;
 public class CreatorDto {
 
     @NotNull
+    @Schema(example = "11")
     private Long id;
 
     @Schema(example = "Josiah")

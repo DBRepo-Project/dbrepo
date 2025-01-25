@@ -1,12 +1,12 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TupleDeleteDto;
 import at.tuwien.api.database.table.TupleDto;
 import at.tuwien.api.database.table.TupleUpdateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.utils.MariaDbUtil;
@@ -231,19 +231,13 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tableCreateDtoToSequenceName(at.tuwien.api.database.table.internal.TableCreateDto data) {
-        final String name = "seq_" + nameToInternalName(data.getName()) + "_id";
-        log.trace("mapped table name {} to sequence name {}", data.getName(), name);
-        return name;
-    }
-
     /**
      * Maps the desired data type to a MySQL string with the default MySQL 8 values for each
      *
      * @param data The column definition.
      * @return The MySQL string.
      */
-    default String columnTypeDtoToDataType(ColumnCreateDto data) {
+    default String columnTypeDtoToDataType(CreateTableColumnDto data) {
         return switch (data.getType()) {
             case CHAR -> "CHAR(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
             case VARCHAR -> "VARCHAR(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
@@ -266,7 +260,7 @@ public interface MariaDbMapper {
         };
     }
 
-    default String columnCreateDtoToPrimaryKeyLengthSpecification(ColumnCreateDto data) {
+    default String columnCreateDtoToPrimaryKeyLengthSpecification(CreateTableColumnDto data) {
         if (EnumSet.of(ColumnTypeDto.BLOB, ColumnTypeDto.TEXT).contains(data.getType())) {
             return "(" + Objects.requireNonNullElse(data.getIndexLength(), 255) + ")";
         }
@@ -315,7 +309,7 @@ public interface MariaDbMapper {
                 .append("` (");
         log.trace("primary key column(s) exist: {}", data.getConstraints().getPrimaryKey());
         final int[] idx = {0};
-        for (ColumnCreateDto column : data.getColumns()) {
+        for (CreateTableColumnDto column : data.getColumns()) {
             stringBuilder.append(idx[0]++ > 0 ? ", " : "")
                     .append("`")
                     .append(nameToInternalName(column.getName()))
@@ -342,11 +336,11 @@ public interface MariaDbMapper {
                                 .getPrimaryKey()
                                 .stream()
                                 .map(c -> {
-                                    final Optional<ColumnCreateDto> optional = data.getColumns()
+                                    final Optional<CreateTableColumnDto> optional = data.getColumns()
                                             .stream()
                                             .filter(cc -> cc.getName().equals(c))
                                             .findFirst();
-                                    log.trace("lookup {} in columns: {}", c, data.getColumns().stream().map(ColumnCreateDto::getName).toList());
+                                    log.trace("lookup {} in columns: {}", c, data.getColumns().stream().map(CreateTableColumnDto::getName).toList());
                                     return "`" + nameToInternalName(c) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(optional.get());
                                 })
                                 .toArray(String[]::new)))
@@ -519,7 +513,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawDeleteQuery(PrivilegedTableDto table, TupleDeleteDto data) throws TableMalformedException {
+    default String tupleToRawDeleteQuery(TableDto table, TupleDeleteDto data) throws TableMalformedException {
         log.trace("table csv to delete query, table.id={}, data.keys={}", table.getId(), data.getKeys());
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
@@ -540,7 +534,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawUpdateQuery(PrivilegedTableDto table, TupleUpdateDto data)
+    default String tupleToRawUpdateQuery(TableDto table, TupleUpdateDto data)
             throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
@@ -579,7 +573,7 @@ public interface MariaDbMapper {
         return statement.toString();
     }
 
-    default String tupleToRawCreateQuery(PrivilegedTableDto table, TupleDto data) throws TableMalformedException {
+    default String tupleToRawCreateQuery(TableDto table, TupleDto data) throws TableMalformedException {
         if (table.getColumns().isEmpty()) {
             throw new TableMalformedException("Columns are not known");
         }
@@ -731,27 +725,54 @@ public interface MariaDbMapper {
         }
     }
 
-    default String selectRawSelectQuery(String query, Instant timestamp, Long page, Long size) {
-        query = query.toLowerCase(Locale.ROOT)
-                .trim();
-        if (query.matches(";$")) {
-            /* remove last semicolon */
-            query = query.substring(0, query.length() - 1);
-        }
+    default String rawSelectQuery(String query, Instant timestamp, Long page, Long size) {
         /* query check (this is enforced by the db also) */
         final StringBuilder statement = new StringBuilder("SELECT * FROM (")
-                .append(query)
-                .append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("' as tbl");
+                .append(query);
+        statement.append(")");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        statement.append(" as tbl");
         /* pagination */
-        log.trace("pagination size/limit of {}", size);
-        statement.append(" LIMIT ")
-                .append(size);
-        log.trace("pagination page/offset of {}", page);
-        statement.append(" OFFSET ")
-                .append(page * size);
-        statement.append(";");
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            statement.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            statement.append(" OFFSET ")
+                    .append(page * size);
+        }
+        log.trace("mapped select query: {}", statement);
+        return statement.toString();
+    }
+
+    default String defaultRawSelectQuery(String databaseName, String tableOrViewName, Instant timestamp, Long page,
+                                         Long size) {
+        /* query check (this is enforced by the db also) */
+        final StringBuilder statement = new StringBuilder("SELECT * FROM (SELECT * FROM `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableOrViewName)
+                .append("`");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(mariaDbFormatter.format(timestamp))
+                    .append("'");
+        }
+        statement.append(" as tbl");
+        /* pagination */
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            statement.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            statement.append(" OFFSET ")
+                    .append(page * size);
+        }
+        statement.append(") as tbl2");
         log.trace("mapped select query: {}", statement);
         return statement.toString();
     }

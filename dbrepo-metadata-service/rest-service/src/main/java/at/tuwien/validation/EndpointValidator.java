@@ -1,8 +1,8 @@
 package at.tuwien.validation;
 
 import at.tuwien.SortType;
-import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.endpoints.AbstractEndpoint;
@@ -87,12 +87,12 @@ public class EndpointValidator extends AbstractEndpoint {
         }
     }
 
-    public void validateColumnCreateConstraints(TableCreateDto data) throws MalformedException {
+    public void validateColumnCreateConstraints(CreateTableDto data) throws MalformedException {
         if (data == null) {
             throw new MalformedException("Validation failed: table data is null");
         }
         /* check size */
-        final Optional<ColumnCreateDto> optional0 = data.getColumns()
+        final Optional<CreateTableColumnDto> optional0 = data.getColumns()
                 .stream()
                 .filter(c -> Objects.isNull(c.getSize()))
                 .filter(c -> NEED_SIZE.contains(c.getType()))
@@ -101,7 +101,7 @@ public class EndpointValidator extends AbstractEndpoint {
             log.error("Validation failed: column {} need size parameter", optional0.get().getName());
             throw new MalformedException("Validation failed: column " + optional0.get().getName() + " need size parameter");
         }
-        final Optional<ColumnCreateDto> optional0a = data.getColumns()
+        final Optional<CreateTableColumnDto> optional0a = data.getColumns()
                 .stream()
                 .filter(c -> !Objects.isNull(c.getSize()))
                 .filter(c -> CAN_HAVE_SIZE.contains(c.getType()) || CAN_HAVE_SIZE_AND_D.contains(c.getType()))
@@ -111,7 +111,7 @@ public class EndpointValidator extends AbstractEndpoint {
             log.error("Validation failed: column {} needs positive size parameter", optional0a.get().getName());
             throw new MalformedException("Validation failed: column " + optional0a.get().getName() + " needs positive size parameter");
         }
-        final Optional<ColumnCreateDto> optional0b = data.getColumns()
+        final Optional<CreateTableColumnDto> optional0b = data.getColumns()
                 .stream()
                 .filter(c -> !Objects.isNull(c.getD()))
                 .filter(c -> CAN_HAVE_SIZE_AND_D.contains(c.getType()))
@@ -122,7 +122,7 @@ public class EndpointValidator extends AbstractEndpoint {
             throw new MalformedException("Validation failed: column " + optional0b.get().getName() + " needs positive d parameter");
         }
         /* check size and d */
-        final Optional<ColumnCreateDto> optional1 = data.getColumns()
+        final Optional<CreateTableColumnDto> optional1 = data.getColumns()
                 .stream()
                 .filter(c -> Objects.isNull(c.getSize()) ^ Objects.isNull(c.getD()))
                 .filter(c -> CAN_HAVE_SIZE_AND_D.contains(c.getType()))
@@ -132,7 +132,7 @@ public class EndpointValidator extends AbstractEndpoint {
             throw new MalformedException("Validation failed: column " + optional1.get().getName() + " either needs both size and d parameter or none (use default)");
         }
         /* check enum */
-        final Optional<ColumnCreateDto> optional2 = data.getColumns()
+        final Optional<CreateTableColumnDto> optional2 = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.ENUM))
                 .filter(c -> c.getEnums() == null || c.getEnums().isEmpty())
@@ -142,7 +142,7 @@ public class EndpointValidator extends AbstractEndpoint {
             throw new MalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
         }
         /* check set */
-        final Optional<ColumnCreateDto> optional3 = data.getColumns()
+        final Optional<CreateTableColumnDto> optional3 = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SET))
                 .filter(c -> c.getEnums() == null || c.getSets().isEmpty())
@@ -152,7 +152,7 @@ public class EndpointValidator extends AbstractEndpoint {
             throw new MalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
         }
         /* check serial */
-        final List<ColumnCreateDto> list4a = data.getColumns()
+        final List<CreateTableColumnDto> list4a = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL))
                 .toList();
@@ -160,16 +160,16 @@ public class EndpointValidator extends AbstractEndpoint {
             log.error("Validation failed: only one column of type serial allowed");
             throw new MalformedException("Validation failed: only one column of type serial allowed");
         }
-        final Optional<ColumnCreateDto> optional4a = data.getColumns()
+        final Optional<CreateTableColumnDto> optional4a = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL))
-                .filter(ColumnCreateDto::getNullAllowed)
+                .filter(CreateTableColumnDto::getNullAllowed)
                 .findFirst();
         if (optional4a.isPresent()) {
             log.error("Validation failed: column {} type serial demands non-null", optional4a.get().getName());
             throw new MalformedException("Validation failed: column " + optional4a.get().getName() + " type serial demands non-null");
         }
-        final Optional<ColumnCreateDto> optional4b = data.getColumns()
+        final Optional<CreateTableColumnDto> optional4b = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL) && data.getConstraints()
                         .getUniques()
