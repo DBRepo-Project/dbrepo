@@ -105,14 +105,6 @@
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="!loggedIn"
-          color="primary"
-          variant="flat"
-          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-account-plus' : null"
-          to="/signup">
-          {{ $t('navigation.signup') }}
-        </v-btn>
-        <v-btn
           v-if="loggedIn"
           to="/user"
           variant="plain"
@@ -288,7 +280,7 @@ export default {
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
-    },
+    }
   },
   watch: {
     '$route.params': {
