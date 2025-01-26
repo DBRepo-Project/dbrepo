@@ -414,7 +414,7 @@
             "hashes": [
                 "sha256:181e3da705d8f61ef26a743e0a445c5363b68c671c63f655791d340efdd7aac0"
             ],
-            "path": "./lib/dbrepo-1.6.2.tar.gz"
+            "path": "./lib/dbrepo-1.6.3.tar.gz"
         },
         "events": {
             "hashes": [
