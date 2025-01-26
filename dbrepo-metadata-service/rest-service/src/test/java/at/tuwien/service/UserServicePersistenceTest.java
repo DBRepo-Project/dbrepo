@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
@@ -69,14 +68,9 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException {
-        final CreateUserDto request = CreateUserDto.builder()
-                .username(USER_2_USERNAME)
-                .password(USER_2_PASSWORD)
-                .email(USER_2_EMAIL)
-                .build();
 
         /* test */
-        final User response = userService.create(request, USER_2_ID);
+        final User response = userService.create(USER_2_SIGNUP_REQUEST_DTO);
         assertEquals(USER_2_USERNAME, response.getUsername());
     }
 
@@ -109,11 +103,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        final User user = userService.create(CreateUserDto.builder()
-                .username(USER_3_USERNAME)
-                .password(USER_3_PASSWORD)
-                .email(USER_3_EMAIL)
-                .build(), USER_3_ID);
+        final User user = userService.create(USER_3_SIGNUP_REQUEST_DTO);
 
         /* test */
         userService.updatePassword(user, request);
@@ -149,22 +139,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
         /* test */
         assertThrows(UserExistsException.class, () -> {
             userService.validateUsernameNotExists(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void validateEmailNotExists_succeeds() throws EmailExistsException {
-
-        /* test */
-        userService.validateEmailNotExists(USER_2_EMAIL);
-    }
-
-    @Test
-    public void validateEmailNotExists_fails() {
-
-        /* test */
-        assertThrows(EmailExistsException.class, () -> {
-            userService.validateEmailNotExists(USER_1_EMAIL);
         });
     }
 }

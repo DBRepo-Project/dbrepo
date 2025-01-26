@@ -61,11 +61,25 @@ public class CreateEventListenerProvider implements EventListenerProvider {
 
     private void sendUserData(UserModel user) {
         try {
-            Client.postService("{\"ldap\":\"" + user.getFirstAttribute("LDAP_ID") + "\", \"id\":\"" + user.getId() + "\",\"username\":\"" + user.getUsername() + "\"}");
+            Client.postService("{" +
+                    quoteAttr("id", user.getId()) + ", " +
+                    quoteAttr("username", user.getUsername()) + ", " +
+                    quoteAttr("email", user.getEmail()) + ", " +
+                    quoteAttr("ldap_id", user.getFirstAttribute("LDAP_ID")) + ", " +
+                    quoteAttr("given_name", user.getFirstName()) + ", " +
+                    quoteAttr("family_name", user.getLastName()) +
+                    "}");
             log.debug("A new user has been created and post API");
         } catch (Exception e) {
             log.errorf("Failed to call API: %s", e);
         }
+    }
+
+    private static String quoteAttr(String key, String value) {
+        if (value == null || value.isBlank() || value.isEmpty() || value.contentEquals(" ")) {
+            return "\"" + key + "\": null";
+        }
+        return "\"" + key + "\": \"" + value + "\"";
     }
 
     @Override

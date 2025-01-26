@@ -1,10 +1,10 @@
 package at.tuwien.gateway;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.impl.KeycloakGatewayImpl;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,73 +38,6 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
 
     @Autowired
     private KeycloakGatewayImpl keycloakGateway;
-
-    @Test
-    public void createUser_succeeds() throws UserExistsException, EmailExistsException, AuthServiceException,
-            AuthServiceConnectionException {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        when(keycloakRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
-                        .build());
-
-        /* test */
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
-    }
-
-    @Test
-    public void createUser_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        when(keycloakRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .build());
-
-        /* test */
-        assertThrows(AuthServiceException.class, () -> {
-            keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
-        });
-    }
-
-    @Test
-    public void createUser_sameUsername_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpClientErrorException.Conflict.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(UserExistsException.class, () -> {
-            keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
-        });
-    }
-
-    @Test
-    public void createUser_connection_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpServerErrorException.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
-        });
-    }
 
     @Test
     public void deleteUser_fails() {

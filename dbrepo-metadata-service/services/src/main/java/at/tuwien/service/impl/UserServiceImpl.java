@@ -3,15 +3,14 @@ package at.tuwien.service.impl;
 import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.config.KeycloakConfig;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.EmailExistsException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +23,10 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final KeycloakConfig keycloakConfig;
     private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(KeycloakConfig keycloakConfig, UserRepository userRepository) {
-        this.keycloakConfig = keycloakConfig;
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -64,15 +61,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(CreateUserDto data, UUID id) {
+    public User create(CreateUserDto data) {
         /* create at authentication service */
         final User entity = User.builder()
-                .id(id)
+                .id(data.getLdapId())
                 .username(data.getUsername())
-                .email(data.getEmail())
                 .theme("light")
-                .mariadbPassword(getMariaDbPassword(data.getPassword()))
+                .mariadbPassword(getMariaDbPassword(RandomStringUtils.randomAlphabetic(10))) /* user needs to set it later to access */
                 .language("en")
+                .firstname(data.getGivenName())
+                .lastname(data.getFamilyName())
                 .isInternal(false)
                 .build();
         /* create at metadata database */
@@ -107,13 +105,6 @@ public class UserServiceImpl implements UserService {
     public void validateUsernameNotExists(String username) throws UserExistsException {
         if (userRepository.existsByUsername(username)) {
             throw new UserExistsException("User with username " + username + " already exists");
-        }
-    }
-
-    @Override
-    public void validateEmailNotExists(String email) throws EmailExistsException {
-        if (userRepository.existsByEmail(email)) {
-            throw new EmailExistsException("User with email " + email + " already exists");
         }
     }
 

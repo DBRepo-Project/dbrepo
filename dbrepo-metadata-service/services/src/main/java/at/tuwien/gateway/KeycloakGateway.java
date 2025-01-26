@@ -1,7 +1,6 @@
 package at.tuwien.gateway;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.exception.*;
@@ -15,16 +14,6 @@ public interface KeycloakGateway {
 
     TokenDto refreshUserToken(String refreshToken) throws AuthServiceConnectionException,
             CredentialsInvalidException;
-
-    /**
-     * Creates a user at the Authentication Service with given credentials.
-     *
-     * @param data The user credentials.
-     * @throws UserExistsException      The user already exists at the Authentication Service.
-     * @throws EmailExistsException The user email already exists in the metadata database.
-     */
-    void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException, UserExistsException;
 
     /**
      * Deletes a user at the Authentication Service with given user id.

@@ -1,6 +1,5 @@
 package at.tuwien.api.user;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -29,10 +28,6 @@ public class UserDetailsDto implements UserDetails {
     @NotNull
     @ToString.Exclude
     private String password;
-
-    @NotNull
-    @Email
-    private String email;
 
     @Override
     public boolean isAccountNonExpired() {

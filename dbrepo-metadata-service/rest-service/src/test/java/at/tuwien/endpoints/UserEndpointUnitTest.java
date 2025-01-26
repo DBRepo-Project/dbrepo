@@ -1,8 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.CreateUserDto;
-import at.tuwien.api.keycloak.UserAttributesDto;
+import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -17,9 +16,6 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -34,7 +30,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,13 +50,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Autowired
     private UserEndpoint userEndpoint;
-
-    public static Stream<Arguments> getToken_parameters() {
-        return Stream.of(
-                Arguments.arguments("null", null),
-                Arguments.arguments("empty", new UUID[]{})
-        );
-    }
 
     @BeforeEach
     public void beforeEach() {
@@ -104,31 +92,21 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void create_anonymous_succeeds() throws UserExistsException, EmailExistsException, UserNotFoundException,
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void create_succeeds() throws UserExistsException, EmailExistsException, UserNotFoundException,
             AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
-        final CreateUserDto request = CreateUserDto.builder()
-                .email(USER_1_EMAIL)
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .build();
 
         /* test */
-        create_generic(request, USER_1, USER_1_KEYCLOAK_DTO, USER_1_ID);
+        create_generic(USER_1_SIGNUP_REQUEST_DTO, USER_1);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void create_isAuthenticated_fails() {
-        final CreateUserDto request = CreateUserDto.builder()
-                .email(USER_2_EMAIL)
-                .username(USER_2_USERNAME)
-                .password(USER_2_PASSWORD)
-                .build();
+    public void create_noRole_fails() {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(request, null, null, null);
+            create_generic(USER_1_SIGNUP_REQUEST_DTO, null);
         });
     }
 
@@ -312,48 +290,11 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(authenticationService.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.create(any(CreateUserDto.class), any(UUID.class)))
+        when(userService.create(any(CreateUserDto.class)))
                 .thenReturn(USER_1);
 
         /* test */
         getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, null);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void getToken_notExists_fails() throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* mock */
-        doThrow(UserNotFoundException.class)
-                .when(authenticationService)
-                .findByUsername(USER_1_USERNAME);
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, null);
-        });
-    }
-
-    @ParameterizedTest
-    @MethodSource("getToken_parameters")
-    @WithAnonymousUser
-    public void getToken_missingLdapId_fails(String name, UUID[] ldapId) throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException {
-        final at.tuwien.api.keycloak.UserDto mock = at.tuwien.api.keycloak.UserDto.builder()
-                .attributes(UserAttributesDto.builder()
-                        .ldapId(ldapId)
-                        .build())
-                .build();
-
-        /* mock */
-        when(authenticationService.findByUsername(USER_1_USERNAME))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, null);
-        });
     }
 
     @Test
@@ -445,17 +386,12 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         return response.getBody();
     }
 
-    protected void create_generic(CreateUserDto data, User user, at.tuwien.api.keycloak.UserDto userDto, UUID id)
-            throws UserExistsException, EmailExistsException, UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException {
+    protected void create_generic(CreateUserDto data, User user) throws UserExistsException, EmailExistsException,
+            UserNotFoundException, AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
-        when(userService.create(eq(data), any(UUID.class)))
+        when(userService.create(any(CreateUserDto.class)))
                 .thenReturn(user);
-        when(authenticationService.findByUsername(data.getUsername()))
-                .thenReturn(userDto);
-        when(authenticationService.create(data))
-                .thenReturn(userDto);
 
         /* test */
         final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);

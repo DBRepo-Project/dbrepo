@@ -1,9 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.test.AbstractUnitTest;
+import at.tuwien.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,9 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @Autowired
     private KeycloakGateway keycloakGateway;
+
+    @Autowired
+    private KeycloakUtils keycloakUtils;
 
     @BeforeEach
     public void beforeEach() {
@@ -60,7 +64,7 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         final User request = User.builder()
                 .id(keycloakGateway.findByUsername(USER_1_USERNAME).getId())
                 .username(USER_1_USERNAME)
@@ -68,22 +72,6 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         authenticationService.delete(request);
-    }
-
-    @Test
-    public void create_succeeds() throws EmailExistsException, UserExistsException,
-            DataServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
-
-        /* mock */
-        try {
-            keycloakGateway.deleteUser(keycloakGateway.findByUsername(USER_1_USERNAME).getId());
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        authenticationService.create(USER_1_SIGNUP_REQUEST_DTO);
     }
 
 }

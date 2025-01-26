@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -11,19 +10,6 @@ import at.tuwien.exception.*;
 import java.util.UUID;
 
 public interface AuthenticationService {
-
-    /**
-     * Create a user at the Authentication Service with given credentials.
-     *
-     * @param data The credentials.
-     * @return The user, if successful.
-     * @throws UserExistsException        The user already exists at the auth database.
-     * @throws AuthServiceException           The auth service responded with unexpected behavior.
-     * @throws AuthServiceConnectionException The connection with the auth service could not be established.
-     * @throws EmailExistsException       The user email already exists in the metadata database.
-     */
-    UserDto create(CreateUserDto data) throws UserExistsException, AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException, CredentialsInvalidException;
 
     /**
      * Deletes a user at the Authentication Service with given user id.

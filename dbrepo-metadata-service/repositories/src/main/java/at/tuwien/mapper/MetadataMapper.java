@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.CreateContainerDto;
@@ -13,14 +12,14 @@ import at.tuwien.api.database.*;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
-import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
@@ -34,7 +33,6 @@ import at.tuwien.api.identifier.ld.LdDatasetDto;
 import at.tuwien.api.keycloak.CredentialDto;
 import at.tuwien.api.keycloak.CredentialTypeDto;
 import at.tuwien.api.keycloak.UpdateCredentialsDto;
-import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
@@ -753,19 +751,6 @@ public interface MetadataMapper {
                         .type(CredentialTypeDto.PASSWORD)
                         .value(password)
                         .build()))
-                .build();
-    }
-
-    default UserCreateDto signupRequestDtoToUserCreateDto(CreateUserDto data) {
-        return UserCreateDto.builder()
-                .username(data.getUsername())
-                .email(data.getEmail())
-                .credentials(List.of(CredentialDto.builder()
-                        .type(CredentialTypeDto.PASSWORD)
-                        .temporary(false)
-                        .value(data.getPassword())
-                        .build()))
-                .enabled(true)
                 .build();
     }
 

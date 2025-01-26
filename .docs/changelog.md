@@ -2,6 +2,17 @@
 author: Martin Weise
 ---
 
+## v1.6.3 (2025-01-27)
+
+[:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.3)
+
+### What's Changed
+
+#### Changes
+
+* Refactored the UI to support OIDC and added an event listener to the Auth Service that syncs users on creation to the
+  Metadata DB in [#488](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/488).
+
 ## v1.6.2 (2025-01-24)
 
 [:simple-gitlab: GitLab Release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.6.2)

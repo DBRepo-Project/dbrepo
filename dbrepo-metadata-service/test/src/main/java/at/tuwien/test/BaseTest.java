@@ -446,7 +446,6 @@ public abstract class BaseTest {
     public final static String USER_LOCAL_ADMIN_THEME = "dark";
     public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
     public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
-    public final static String USER_LOCAL_ADMIN_EMAIL = "admin@local";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
@@ -465,7 +464,6 @@ public abstract class BaseTest {
     public final static User USER_LOCAL = User.builder()
             .id(USER_LOCAL_ADMIN_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
-            .email(USER_LOCAL_ADMIN_EMAIL)
             .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
             .theme(USER_LOCAL_ADMIN_THEME)
             .isInternal(USER_LOCAL_ADMIN_IS_INTERNAL)
@@ -475,8 +473,7 @@ public abstract class BaseTest {
             USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static UUID USER_1_LDAP_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static String USER_1_EMAIL = "john.doe@example.com";
+    public final static UUID USER_1_KEYCLOAK_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_USERNAME = "junit1";
     @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD = "junit1";
@@ -530,7 +527,6 @@ public abstract class BaseTest {
 
     public final static UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
             .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
             .enabled(USER_1_ENABLED)
             .credentials(new LinkedList<>(List.of(USER_1_KEYCLOAK_CREDENTIAL_1)))
             .attributes(UserCreateAttributesDto.builder()
@@ -540,7 +536,6 @@ public abstract class BaseTest {
 
     public final static UserCreateDto USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
             .username(USER_LOCAL_ADMIN_USERNAME)
-            .email(USER_LOCAL_ADMIN_EMAIL)
             .enabled(USER_LOCAL_ADMIN_ENABLED)
             .credentials(new LinkedList<>(List.of(USER_LOCAL_KEYCLOAK_CREDENTIAL_1)))
             .groups(new LinkedList<>(List.of("system")))
@@ -552,7 +547,6 @@ public abstract class BaseTest {
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
@@ -589,13 +583,12 @@ public abstract class BaseTest {
     public final static at.tuwien.api.keycloak.UserDto USER_1_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
             .emailVerified(USER_1_VERIFIED)
             .notBefore(USER_1_NOT_BEFORE)
             .totp(USER_1_TOTP)
             .attributes(at.tuwien.api.keycloak.UserAttributesDto.builder()
                     .ldapEntryDn(new String[]{"cn=" + USER_1_USERNAME + ",dn=dbrepo,dn=at"})
-                    .ldapId(new UUID[]{USER_1_LDAP_ID})
+                    .ldapId(new UUID[]{USER_1_KEYCLOAK_ID})
                     .build())
             .build();
 
@@ -612,7 +605,6 @@ public abstract class BaseTest {
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
             .id(USER_1_ID.toString())
             .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
@@ -621,9 +613,9 @@ public abstract class BaseTest {
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
     public final static CreateUserDto USER_1_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
+            .id(USER_1_KEYCLOAK_ID)
+            .ldapId(USER_1_ID)
             .username(USER_1_USERNAME)
-            .password(USER_1_PASSWORD)
-            .email(USER_1_EMAIL)
             .build();
 
     public final static LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
@@ -632,7 +624,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static UUID USER_2_LDAP_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
+    public final static UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
@@ -667,7 +659,6 @@ public abstract class BaseTest {
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .affiliation(USER_2_AFFILIATION)
@@ -699,26 +690,19 @@ public abstract class BaseTest {
             .build();
 
     public final static CreateUserDto USER_2_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
+            .id(USER_2_KEYCLOAK_ID)
+            .ldapId(USER_2_ID)
             .username(USER_2_USERNAME)
-            .password(USER_2_PASSWORD)
             .email(USER_2_EMAIL)
+            .givenName(USER_2_FIRSTNAME)
+            .familyName(USER_2_LASTNAME)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
             .id(USER_2_ID.toString())
             .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
-            .build();
-
-    public final static at.tuwien.api.keycloak.UserDto USER_2_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
-            .id(USER_2_ID)
-            .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
-            .emailVerified(USER_2_VERIFIED)
-            .notBefore(USER_2_NOT_BEFORE)
-            .totp(USER_2_TOTP)
             .build();
 
     public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
@@ -730,7 +714,7 @@ public abstract class BaseTest {
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
-    public final static UUID USER_3_LDAP_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
+    public final static UUID USER_3_KEYCLOAK_ID = UUID.fromString("b0108bc3-95aa-4a3f-8868-dc301286aeca");
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
@@ -763,7 +747,6 @@ public abstract class BaseTest {
     public final static User USER_3 = User.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
-            .email(USER_3_EMAIL)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
             .affiliation(USER_3_AFFILIATION)
@@ -795,9 +778,14 @@ public abstract class BaseTest {
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
             .id(USER_3_ID.toString())
             .username(USER_3_USERNAME)
-            .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .build();
+
+    public final static CreateUserDto USER_3_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
+            .id(USER_3_KEYCLOAK_ID)
+            .ldapId(USER_3_ID)
+            .username(USER_3_USERNAME)
             .build();
 
     public final static at.tuwien.api.keycloak.UserDto USER_3_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
@@ -818,7 +806,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
-    public final static UUID USER_4_LDAP_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
+    public final static UUID USER_4_KEYCLOAK_ID = UUID.fromString("25040ad3-6d57-4052-b357-6b4c8a6e7f4d");
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
@@ -830,7 +818,6 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
-    public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
     public final static Boolean USER_4_IS_INTERNAL = false;
@@ -848,7 +835,6 @@ public abstract class BaseTest {
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
-            .email(USER_4_EMAIL)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
             .affiliation(USER_4_AFFILIATION)
@@ -880,7 +866,6 @@ public abstract class BaseTest {
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
             .id(USER_4_ID.toString())
             .username(USER_4_USERNAME)
-            .email(USER_4_EMAIL)
             .password(USER_4_PASSWORD)
             .authorities(new LinkedList<>())
             .build();
@@ -901,7 +886,6 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
-    public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
     public final static Boolean USER_5_IS_INTERNAL = false;
@@ -936,7 +920,6 @@ public abstract class BaseTest {
     public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
             .id(USER_5_ID.toString())
             .username(USER_5_USERNAME)
-            .email(USER_5_EMAIL)
             .password(USER_5_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
@@ -947,7 +930,6 @@ public abstract class BaseTest {
     public final static User USER_5 = User.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
-            .email(USER_5_EMAIL)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
             .affiliation(USER_5_AFFILIATION)
@@ -967,7 +949,6 @@ public abstract class BaseTest {
     public final static String USER_6_PASSWORD = "junit5";
     @SuppressWarnings("java:S2068")
     public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
-    public final static String USER_6_EMAIL = "system@ossdip.at";
     public final static Boolean USER_6_VERIFIED = true;
     public final static Boolean USER_6_ENABLED = true;
     public final static Boolean USER_6_IS_INTERNAL = false;
@@ -985,7 +966,6 @@ public abstract class BaseTest {
     public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
             .id(USER_6_ID.toString())
             .username(USER_6_USERNAME)
-            .email(USER_6_EMAIL)
             .password(USER_6_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();

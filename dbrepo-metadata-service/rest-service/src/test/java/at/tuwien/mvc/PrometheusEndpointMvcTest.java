@@ -2,11 +2,13 @@ package at.tuwien.mvc;
 
 import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.CreateContainerDto;
-import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.*;
+import at.tuwien.api.database.DatabaseModifyImageDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
+import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
+import at.tuwien.test.AbstractUnitTest;
 import io.micrometer.observation.annotation.Observed;
 import io.micrometer.observation.tck.TestObservationRegistry;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +34,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static io.micrometer.observation.tck.TestObservationRegistryAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -619,11 +624,8 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbrepo_user_create", "dbrepo_user_token")) {
-            assertThat(registry)
-                    .hasObservationWithNameEqualTo(metric);
-        }
-        // already done above
+        assertThat(registry)
+                .hasObservationWithNameEqualTo("dbrepo_user_token");
     }
 
     @Test

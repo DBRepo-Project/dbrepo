@@ -4,7 +4,6 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.EmailExistsException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
 
@@ -44,10 +43,9 @@ public interface UserService {
      * Creates a user in the metadata database managed by Keycloak in the given realm.
      *
      * @param data The user data.
-     * @param id   The user id.
      * @return The user, if successful.
      */
-    User create(CreateUserDto data, UUID id);
+    User create(CreateUserDto data);
 
     /**
      * Updates the user information for a user with given id in the metadata database.
@@ -73,14 +71,6 @@ public interface UserService {
      * @throws UserExistsException The user with this username already exists.
      */
     void validateUsernameNotExists(String username) throws UserExistsException;
-
-    /**
-     * Validates if a user with the given email already exists in the metadata database.
-     *
-     * @param email The email.
-     * @throws EmailExistsException The user with this email already exists.
-     */
-    void validateEmailNotExists(String email) throws EmailExistsException;
 
     String getMariaDbPassword(String password);
 }

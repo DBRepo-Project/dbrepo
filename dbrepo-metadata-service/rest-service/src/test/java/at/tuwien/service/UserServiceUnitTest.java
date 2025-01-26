@@ -1,10 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
+import at.tuwien.test.AbstractUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,14 +86,11 @@ public class UserServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(userRepository.save(any(User.class)))
                 .thenReturn(USER_1);
-        doNothing()
-                .when(keycloakGateway)
-                .createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
 
         /* test */
-        final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO, USER_1_ID);
+        final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
     }

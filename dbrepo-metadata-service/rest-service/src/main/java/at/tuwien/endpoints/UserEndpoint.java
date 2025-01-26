@@ -1,8 +1,8 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
@@ -95,10 +95,11 @@ public class UserEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("!isAuthenticated()")
+    @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_user_create")
     @Operation(summary = "Create user",
-            description = "Creates a user in the auth service and metadata database. Requires that no credentials are sent in the request.")
+            description = "Creates a user in the auth service and metadata database. Requires that no credentials are sent in the request.",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created user",
@@ -142,12 +143,10 @@ public class UserEndpoint extends AbstractEndpoint {
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
             throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
             UserNotFoundException, CredentialsInvalidException {
-        log.debug("endpoint create user, data.username={}", data.getUsername());
-        userService.validateUsernameNotExists(data.getUsername());
-        userService.validateEmailNotExists(data.getEmail());
+        log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserBriefDto(
-                        userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0])));
+                        userService.create(data)));
     }
 
     @PostMapping("/token")
@@ -170,11 +169,6 @@ public class UserEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find user in auth database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "428",
                     description = "Account is not fully setup in auth service (requires password change?)",
                     content = {@Content(
@@ -185,35 +179,10 @@ public class UserEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to get user in auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
-            throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
-            AccountNotSetupException {
+            throws AuthServiceConnectionException, CredentialsInvalidException, AccountNotSetupException {
         log.debug("endpoint get token, data.username={}", data.getUsername());
-        /* check */
-        try {
-            userService.findByUsername(data.getUsername());
-        } catch (UserNotFoundException e) {
-            /* need to sync */
-            log.warn("User with username {} does not exist in metadata database yet", data.getUsername());
-            final CreateUserDto request = CreateUserDto.builder()
-                    .username(data.getUsername())
-                    .email("noreply@example.com")
-                    .password(data.getPassword())
-                    .build();
-            final at.tuwien.api.keycloak.UserDto user = authenticationService.findByUsername(data.getUsername());
-            if (user.getAttributes().getLdapId() == null || user.getAttributes().getLdapId().length != 1) {
-                log.error("Failed to map ldap id for user with username: {}", data.getUsername());
-                throw new UserNotFoundException("Failed to map ldap id");
-            }
-            userService.create(request, user.getAttributes().getLdapId()[0]);
-            log.info("Patched missing user information for user with username: {}", data.getUsername());
-        }
         return ResponseEntity.accepted()
                 .body(authenticationService.obtainToken(data));
     }
@@ -329,8 +298,8 @@ public class UserEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
-                                          @NotNull @Valid @RequestBody UserUpdateDto data,
-                                          @NotNull Principal principal) throws NotAllowedException,
+                                               @NotNull @Valid @RequestBody UserUpdateDto data,
+                                               @NotNull Principal principal) throws NotAllowedException,
             UserNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);

@@ -1,14 +1,12 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AuthenticationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +18,11 @@ import java.util.UUID;
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final MetadataMapper metadataMapper;
     private final KeycloakGateway keycloakGateway;
 
     @Autowired
-    public AuthenticationServiceImpl(MetadataMapper metadataMapper, KeycloakGateway keycloakGateway) {
-        this.metadataMapper = metadataMapper;
+    public AuthenticationServiceImpl(KeycloakGateway keycloakGateway) {
         this.keycloakGateway = keycloakGateway;
-    }
-
-    @Override
-    public UserDto create(CreateUserDto data) throws UserExistsException, AuthServiceException,
-            AuthServiceConnectionException, EmailExistsException, CredentialsInvalidException {
-        keycloakGateway.createUser(metadataMapper.signupRequestDtoToUserCreateDto(data));
-        try {
-            return findByUsername(data.getUsername());
-        } catch (UserNotFoundException e) {
-            throw new AuthServiceException("Failed to find user in auth service", e);
-        }
     }
 
     @Override

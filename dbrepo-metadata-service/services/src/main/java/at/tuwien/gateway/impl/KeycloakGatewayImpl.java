@@ -1,7 +1,9 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.auth.KeycloakErrorDto;
-import at.tuwien.api.keycloak.*;
+import at.tuwien.api.keycloak.TokenDto;
+import at.tuwien.api.keycloak.UpdateCredentialsDto;
+import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.exception.*;
@@ -104,35 +106,6 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             throw new CredentialsInvalidException("Unexpected response: " + e.getMessage(), e);
         }
         return response.getBody();
-    }
-
-    @Override
-    public void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException, UserExistsException {
-        final String path = "/admin/realms/dbrepo/users";
-        log.trace("create user at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
-        final ResponseEntity<Void> response;
-        try {
-            response = keycloakRestTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), Void.class);
-        } catch (HttpServerErrorException e) {
-            log.error("Failed to create user: {}", e.getMessage());
-            throw new AuthServiceConnectionException("Service unavailable", e);
-        } catch (HttpClientErrorException.Conflict e) {
-            if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
-                final KeycloakErrorDto error = e.getResponseBodyAs(KeycloakErrorDto.class);
-                if (error != null && error.getErrorMessage().contains("same email")) {
-                    log.error("Failed to create user: email exists: {}", e.getMessage());
-                    throw new EmailExistsException("E-Mail exists", e);
-                }
-            }
-            log.error("Failed to create user: user exists: {}", e.getMessage());
-            throw new UserExistsException("User exists", e);
-        }
-        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to create user: unexpected status: {}", response.getStatusCode().value());
-            throw new AuthServiceException("Unexpected status: " + response.getStatusCode().value());
-        }
-        log.debug("Created user {} at auth service", data.getUsername());
     }
 
     @Override

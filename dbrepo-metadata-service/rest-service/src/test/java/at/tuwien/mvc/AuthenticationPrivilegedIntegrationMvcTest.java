@@ -4,7 +4,6 @@ import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.CredentialsInvalidException;
-import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -48,9 +47,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
 
     @Autowired
     private KeycloakUtils keycloakUtils;
-
-    @Autowired
-    private KeycloakGateway keycloakGateway;
 
     @Autowired
     private UserRepository userRepository;
@@ -97,7 +93,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_database_basicUser_succeeds() throws Exception {
 
         /* mock */
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
@@ -112,7 +108,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_database_basicAdmin_succeeds() throws Exception {
 
         /* pre condition */
-        keycloakGateway.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1").with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
@@ -127,7 +123,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_database_bearerAdmin_succeeds() throws Exception {
 
         /* pre condition */
-        keycloakGateway.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
         final TokenDto jwt = authenticationService.obtainToken(USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO);
 
         /* test */
@@ -143,7 +139,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_table_bearerAdmin_succeeds() throws Exception {
 
         /* pre condition */
-        keycloakGateway.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
         final TokenDto jwt = authenticationService.obtainToken(USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO);
 
 
@@ -160,7 +156,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_table_basicUser_succeeds() throws Exception {
 
         /* mock */
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1/table/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
@@ -175,7 +171,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_table_basicAdmin_succeeds() throws Exception {
 
         /* mock */
-        keycloakGateway.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1/table/1").with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
@@ -190,7 +186,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_view_basicUser_succeeds() throws Exception {
 
         /* mock */
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1/view/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
@@ -205,7 +201,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
     public void findById_container_basicUser_succeeds() throws Exception {
 
         /* mock */
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
 
         /* test */
         this.mockMvc.perform(get("/api/container/1").with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))

@@ -39,9 +39,6 @@ public class User {
     @Column
     private String lastname;
 
-    @Column(nullable = false)
-    private String email;
-
     @Column
     private String orcid;
 
