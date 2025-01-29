@@ -2,7 +2,7 @@ import unittest
 
 import opensearchpy
 from dbrepo.api.dto import Database, Table, Column, ColumnType, Constraints, PrimaryKey, \
-    TableMinimal, ColumnMinimal, ConceptBrief, UnitBrief, UserBrief, ContainerBrief, ImageBrief
+    ConceptBrief, UnitBrief, UserBrief, ContainerBrief, ImageBrief, TableBrief, ColumnBrief
 from opensearchpy import NotFoundError
 
 from app import app
@@ -57,10 +57,6 @@ class OpenSearchClientTest(unittest.TestCase):
 
     def test_update_database_succeeds(self):
         with app.app_context():
-            # mock
-            OpenSearchClient().update_database(database_id=req.id, data=req)
-
-            # test
             req.tables = [Table(id=1,
                                 name="Test Table",
                                 internal_name="test_table",
@@ -71,10 +67,19 @@ class OpenSearchClientTest(unittest.TestCase):
                                 database_id=req.id,
                                 constraints=Constraints(uniques=[], foreign_keys=[], checks=[],
                                                         primary_key=[PrimaryKey(id=1,
-                                                                                table=TableMinimal(id=1,
-                                                                                                   database_id=req.id),
-                                                                                column=ColumnMinimal(id=1, table_id=1,
-                                                                                                     database_id=req.id))]),
+                                                                                table=TableBrief(id=1,
+                                                                                                 database_id=req.id,
+                                                                                                 name="Test Table",
+                                                                                                 internal_name="test_table",
+                                                                                                 is_public=True,
+                                                                                                 is_schema_public=True,
+                                                                                                 is_versioned=True),
+                                                                                column=ColumnBrief(id=1,
+                                                                                                   name="ID",
+                                                                                                   database_id=req.id,
+                                                                                                   table_id=1,
+                                                                                                   internal_name="id",
+                                                                                                   type=ColumnType.BIGINT))]),
                                 is_versioned=True,
                                 owner=UserBrief(id="c6b71ef5-2d2f-48b2-9d79-b8f23a3a0502", username="foo"),
                                 columns=[Column(id=1,
@@ -85,6 +90,10 @@ class OpenSearchClientTest(unittest.TestCase):
                                                 internal_name="id",
                                                 type=ColumnType.BIGINT,
                                                 is_null_allowed=False)])]
+            # mock
+            OpenSearchClient().update_database(database_id=req.id, data=req)
+
+            # test
             database = OpenSearchClient().update_database(database_id=req.id, data=req)
             self.assertEqual(1, database.id)
             self.assertEqual("Test", database.name)
