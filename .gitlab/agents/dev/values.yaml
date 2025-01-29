@@ -28,7 +28,7 @@ authservice:
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   setupJob:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.3rc0
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.3rc1
   persistence:
     enabled: true
 

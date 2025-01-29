@@ -46,7 +46,7 @@ def save(user_id: str) -> None:
                            database=os.getenv('METADATA_DB', 'dbrepo'))
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `email`, `mariadb_password`, `is_internal`) VALUES (?, ?, LEFT(UUID(), 20), PASSWORD(LEFT(UUID(), 20)), true)",
+        "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `mariadb_password`, `is_internal`) VALUES (?, ?, PASSWORD(LEFT(UUID(), 20)), true)",
         (user_id, system_username))
     conn.commit()
     conn.close()
