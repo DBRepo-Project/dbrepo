@@ -216,7 +216,7 @@
                 "sha256:f7f5baafcc48261359e14bcd6d9bff6d4b28d9103847c9e136694cb0501aef87",
                 "sha256:fc48c783f9c87e60831201f2cce7f3b2e4846bf4d8728eabe54d60700b318a0b"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "platform_python_implementation != 'PyPy'",
             "version": "==1.17.1"
         },
         "charset-normalizer": {
@@ -360,7 +360,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:5626cbba65f39a016c0eeff905005dd10b854f47edc09de293c62b164d65635a"
+                "sha256:ac99f4bd19961f08665abd513e4d9452fcea5554f122457840e95f90698bab4d"
             ],
             "path": "./lib/dbrepo-1.6.3.tar.gz"
         },
@@ -602,7 +602,7 @@
                 "sha256:f406b22b7c9a9b4f8aa9d2ab13d6ae0ac3e85c9a809bd590ad53fed2bf70dc79",
                 "sha256:f6ff3b14f2df4c41660a7dec01045a045653998784bf8cfcb5a525bdffffbc8f"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version < '3.14' and (platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32'))))))",
             "version": "==3.1.1"
         },
         "gunicorn": {
@@ -901,7 +901,7 @@
                 "sha256:e9e82dcb3f2ebbc8cb5ce1102d5f1c5ed236bf8a11730fb45ba82e2841ec21df",
                 "sha256:ed6906f61834d687738d25988ae117683705636936cc605be0bb208b23df4d8f"
             ],
-            "markers": "python_version >= '3.10'",
+            "markers": "python_version == '3.11'",
             "version": "==2.2.2"
         },
         "opensearch-py": {
@@ -1585,7 +1585,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "werkzeug": {
@@ -2009,7 +2009,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         }
     }

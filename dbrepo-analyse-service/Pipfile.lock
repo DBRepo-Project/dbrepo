@@ -175,20 +175,20 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:ab501f75557863e2d2c9fa731e4fe25c45f35e0d92ea0ee11a4eaa63929d3ede",
-                "sha256:ae98634efa7b47ced1b0d7342e2940b32639eee913f33ab406590b8ed55ee94b"
+                "sha256:7f61c9d0ea64f484a17c1e3115fdf90fd7b17ab6771e07cb4549f42b9fd28fb9",
+                "sha256:ac47215d320b0c2534340db58d6d5284cb1860b7bff172b4dd6eee2dee1d5779"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.7"
+            "version": "==1.36.8"
         },
         "botocore": {
             "hashes": [
-                "sha256:9abc64bde5e7d8f814ea91d6fc0a8142511fc96427c19fe9209677c20a0c9e6e",
-                "sha256:a6c6772d777af2957ac9975207fac1ccc4ce101408b85e9b5e3c5ba0bb949102"
+                "sha256:59d3fdfbae6d916b046e973bebcbeb70a102f9e570ca86d5ba512f1854b78fc2",
+                "sha256:81c88e5566cf018e1411a68304dc1fb9e4156ca2b50a3a0f0befc274299e67fa"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.7"
+            "version": "==1.36.8"
         },
         "certifi": {
             "hashes": [
@@ -412,7 +412,7 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:5626cbba65f39a016c0eeff905005dd10b854f47edc09de293c62b164d65635a"
+                "sha256:ac99f4bd19961f08665abd513e4d9452fcea5554f122457840e95f90698bab4d"
             ],
             "path": "./lib/dbrepo-1.6.3.tar.gz"
         },
@@ -838,11 +838,11 @@
         },
         "mistune": {
             "hashes": [
-                "sha256:b05198cf6d671b3deba6c87ec6cf0d4eb7b72c524636eddb6dbf13823b52cee1",
-                "sha256:dbcac2f78292b9dc066cd03b7a3a26b62d85f8159f2ea5fd28e55df79908d667"
+                "sha256:02106ac2aa4f66e769debbfa028509a275069dcffce0dfa578edd7b991ee700a",
+                "sha256:e0740d635f515119f7d1feb6f9b192ee60f0cc649f80a8f944f905706a21654c"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.1.0"
+            "version": "==3.1.1"
         },
         "multidict": {
             "hashes": [
@@ -1612,7 +1612,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "werkzeug": {
@@ -2236,7 +2236,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "wrapt": {

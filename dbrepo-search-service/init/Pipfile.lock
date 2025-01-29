@@ -254,10 +254,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:5626cbba65f39a016c0eeff905005dd10b854f47edc09de293c62b164d65635a"
+                "sha256:ac99f4bd19961f08665abd513e4d9452fcea5554f122457840e95f90698bab4d"
             ],
-            "path": "./lib/dbrepo-1.6.3.tar.gz",
-            "version": "==1.6.3"
+            "path": "./lib/dbrepo-1.6.3.tar.gz"
         },
         "docker": {
             "hashes": [
@@ -279,6 +278,7 @@
                 "sha256:f69fcd559dc907ed196ab9df0e48471709175e696d6e698dd4dbe940f96ce66b"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==2.3.3"
         },
         "frozenlist": {
@@ -643,6 +643,7 @@
                 "sha256:6598df0bc7a003294edd0ba88a331e0793acbb8c910c43edf398791e3b2eccda"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8' and python_version < '4'",
             "version": "==2.8.0"
         },
         "packaging": {
@@ -933,6 +934,7 @@
                 "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==8.3.4"
         },
         "python-dateutil": {
@@ -949,6 +951,7 @@
                 "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==1.0.1"
         },
         "pytz": {
@@ -964,6 +967,7 @@
                 "sha256:f3dcb4c106a8cd9e060d92f43d593d09ebc3d07adc244f4c7315856a12e383ee"
             ],
             "index": "pypi",
+            "markers": "python_full_version >= '3.8.1' and python_full_version < '4.0.0'",
             "version": "==7.1.3"
         },
         "requests": {
@@ -994,6 +998,7 @@
                 "sha256:0bdf270b5b7f53915832f7c31dd2bd3ffdc20b534ea6b32231cc7003049bd0e1"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==0.0.1rc1"
         },
         "tinydb": {
@@ -1285,6 +1290,7 @@
                 "sha256:fd34e7b3405f0cc7ab03d54a334c17a9e802897580d964bd8c2001f4b9fd488f"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==7.6.10"
         },
         "iniconfig": {
@@ -1317,6 +1323,7 @@
                 "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.8'",
             "version": "==8.3.4"
         }
     }
