@@ -26,6 +26,9 @@ authservice:
   client:
     id: dbrepo-client
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  setupJob:
+    image:
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.3rc0
   persistence:
     enabled: true
 
@@ -33,6 +36,7 @@ brokerservice:
   enabled: true
   ldap:
     bindpw: b8534187c9adf9618e7bd1c79c7f4639
+
 identityservice:
   enabled: true
   global:
@@ -66,9 +70,13 @@ searchdb:
 
 analyseservice:
   enabled: true
+  image:
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.3rc0
 
 metadataservice:
   enabled: true
+  image:
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.3rc0
   admin:
     email: noreply@example.com
   deletedRecord: permanent
@@ -83,6 +91,8 @@ metadataservice:
 
 dataservice:
   enabled: true
+  image:
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.3rc0
   rabbitmq:
     consumer:
       username: admin
@@ -95,9 +105,17 @@ dataservice:
 
 searchservice:
   enabled: true
+  image:
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.3rc0
+  init:
+    image:
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.3rc0
 
 storageservice:
   enabled: true
+  init:
+    image:
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.3rc0
 
 uploadservice:
   enabled: true
@@ -113,6 +131,8 @@ metricdb:
 
 ui:
   enabled: true
+  image:
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3rc0
   public:
     api:
       client: https://s155.datalab.tuwien.ac.at

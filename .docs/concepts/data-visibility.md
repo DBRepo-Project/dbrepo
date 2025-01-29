@@ -8,16 +8,23 @@ subset of a database.
 
 ## Visibility
 
-In total there are three possible scenarios:
+In total there are four possible visibility settings that can be applied on database level and then at the subsequent
+levels (table, view, subset). We give two examples for better understanding:
 
-#### Public
+!!! example "*Example*: Database that is hidden but certain views and subsets are visible"
+
+    Database Airquality has the settings to hide all data and schema by default.
+
+    * Table `sensor_measurements`
+
+#### Visible
 
 !!! info "Possible use-case: data publication supplement to an open-access publication"
 
 Where the database's data and metadata is set to be *visible*. This means everything in the database (tables, views,
 subsets) are visible by anyone from the public.
 
-#### Private
+#### Data-only
 
 !!! info "Possible use-case: private sensor measurements with timed embargo"
 
@@ -29,6 +36,8 @@ join tables and/or filter certain columns and apply a 14-day delay-embargo.
 ![Mirroring statistical properties in Metadata Database and Search Database](../images/private-embargo.svg)
 <figcaption>Figure 1: Public view that joins two private tables and applies a time-embargo</figcaption>
 </figure>
+
+#### Schema-only
 
 #### Draft
 
