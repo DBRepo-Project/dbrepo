@@ -1,6 +1,5 @@
 <template>
-  <div
-    v-if="loggedIn">
+  <div>
     <v-toolbar flat>
       <v-btn
         size="small"
@@ -75,7 +74,7 @@
                 required
                 clearable
                 :rules="[
-                  v => !!v || $t('validation.required')
+                  v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.data.label')"
                 :hint="$t('pages.database.resource.data.hint')" />
@@ -90,7 +89,7 @@
                 required
                 clearable
                 :rules="[
-                  v => !!v || $t('validation.required')
+                  v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.schema.label')"
                 :hint="$t('pages.database.resource.schema.hint', { resource: 'subset', schema: 'query' })" />
@@ -445,7 +444,7 @@ export default {
       if (this.isView) {
         return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
       }
-      return this.sql !== null && !this.sql.includes(';')
+      return this.sql !== null && this.sql !== '' && !this.sql.includes(';')
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

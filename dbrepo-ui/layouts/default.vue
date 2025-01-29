@@ -214,8 +214,14 @@ export default {
     access () {
       return this.cacheStore.getAccess
     },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     cacheUser () {
       return this.cacheStore.getUser
+    },
+    identifier () {
+      return this.cacheStore.getIdentifier
     },
     resource () {
       if (!this.$route.params.database_id) {
@@ -245,6 +251,9 @@ export default {
       return this.$config.public.commit.substr(0, 8)
     },
     error () {
+      if (this.identifier) {
+        return null
+      }
       if (this.databaseError) {
         return this.databaseError
       }
@@ -254,13 +263,13 @@ export default {
       if (!this.cacheUser) {
         return null
       }
-      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.cacheUser.uid) {
+      if (this.table && !this.table.is_public && !this.table.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
-      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.cacheUser.uid) {
+      if (this.view && !this.view.is_public && !this.view.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
-      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.cacheUser.uid) {
+      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
       return null
@@ -288,6 +297,9 @@ export default {
   watch: {
     '$route.params': {
       handler (newObj, oldObj) {
+        if (import.meta.server) {
+          return
+        }
         if (!newObj.database_id) {
           this.databaseError = null
           this.accessError = null
@@ -295,10 +307,20 @@ export default {
           this.cacheStore.setView(null)
           this.cacheStore.setSubset(null)
           this.cacheStore.setAccess(null)
+          this.cacheStore.setIdentifier(null)
           return
         }
-        if (import.meta.server) {
-          return
+        if (this.identifier) {
+          if (newObj.query_id && this.identifier.query_id !== Number(newObj.query_id)) {
+            this.cacheStore.setIdentifier(null)
+          } else if (newObj.table_id && this.identifier.table_id !== Number(newObj.table_id)) {
+            this.cacheStore.setIdentifier(null)
+          } else if (newObj.view_id && this.identifier.view_id !== Number(newObj.view_id)) {
+            this.cacheStore.setIdentifier(null)
+          }
+          if (this.$route.query.pid && this.identifier.id !== Number(this.$route.query.pid)) {
+            this.cacheStore.setIdentifier(null)
+          }
         }
         /* load database and optional access */
         this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.uid)

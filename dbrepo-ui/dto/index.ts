@@ -224,7 +224,11 @@ interface IdentifierFunderSaveDto {
 
 interface IdentifierDto {
   id: number;
-  type: string;
+  database_id: number | null;
+  query_id: number | null;
+  table_id: number | null;
+  view_id: number | null;
+  type: IdentifierTypeDto;
   titles: IdentifierTitleDto[] | [];
   descriptions: IdentifierDescriptionDto[] | [];
   funders: IdentifierFunderDto[] | [];
@@ -236,23 +240,43 @@ interface IdentifierDto {
   licenses: LicenseDto[] | [];
   creators: CreatorDto[] | [];
   created: Date;
-  database_id: number | null;
-  query_id: number | null;
-  table_id: number | null;
-  view_id: number | null;
   query_normalized: string | null;
   related_identifiers: RelatedIdentifierDto[] | [];
   query_hash: string | null;
   result_hash: string | null;
-  /**
-   * @deprecated
-   */
   result_number: number | null;
   publication_day: number | null;
   publication_month: number | null;
-  value: string | null;
   publication_year: number;
-  last_modified: Date;
+}
+
+enum IdentifierTypeDto {
+  database,
+  subset,
+  table,
+  view
+}
+
+enum IdentifierStatusTypeDto {
+  draft,
+  published
+}
+
+interface IdentifierBriefDto {
+  id: number;
+  database_id: number | null;
+  query_id: number | null;
+  table_id: number | null;
+  view_id: number | null;
+  type: IdentifierTypeDto;
+  creators: CreatorBriefDto[] | [];
+  titles: IdentifierTitleDto[] | [];
+  description: IdentifierDescriptionDto[] | [];
+  doi: string | null;
+  publisher: string;
+  publication_year: number;
+  status: IdentifierStatusTypeDto;
+  owned_by: string;
 }
 
 interface IdentifierTitleDto {
@@ -279,19 +303,35 @@ interface IdentifierFunderDto {
   award_title: string;
 }
 
+enum NameTypeDto {
+  Personal,
+  Organizational
+}
+
 interface CreatorDto {
   id: number;
   firstname: string;
   lastname: string;
   affiliation: string;
   creator_name: string;
-  name_type: string;
-  name_identifier: string;
-  name_identifier_scheme: string;
-  name_identifier_scheme_uri: string;
-  affiliation_identifier: string;
-  affiliation_identifier_scheme: string;
-  affiliation_identifier_scheme_uri: string;
+  name_type: NameTypeDto | null;
+  name_identifier: string | null;
+  name_identifier_scheme: string | null;
+  name_identifier_scheme_uri: string | null;
+  affiliation_identifier: string | null;
+  affiliation_identifier_scheme: string | null;
+  affiliation_identifier_scheme_uri: string | null;
+}
+
+interface CreatorBriefDto {
+  id: number;
+  affiliation: string;
+  creator_name: string;
+  name_type: NameTypeDto | null;
+  name_identifier: string | null;
+  name_identifier_scheme: string | null;
+  affiliation_identifier: string | null;
+  affiliation_identifier_scheme: string | null;
 }
 
 interface RelatedIdentifierDto {
@@ -342,7 +382,6 @@ interface ColumnDto {
   database_id: number;
   table_id: number;
   internal_name: string;
-  date_format: ImageDateDto;
   is_primary_key: boolean;
   index_length: number;
   length: number;

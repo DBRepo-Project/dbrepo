@@ -462,7 +462,7 @@ export default {
         .then((database) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.database.visibility'))
-          this.cacheStore.setDatabase(database)
+          this.cacheStore.reloadDatabase()
         })
         .catch(() => {
           this.loading = false

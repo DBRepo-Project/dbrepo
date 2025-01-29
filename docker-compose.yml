@@ -486,7 +486,7 @@ services:
       LDAP_ADMIN_PASSWORD: "${IDENTITY_SERVICE_ADMIN_PASSWORD:-admin}"
       LDAP_ROOT: "${IDENTITY_SERVICE_ROOT:-dc=dbrepo,dc=at}"
     healthcheck:
-      test: test -f /opt/bitnami/grafana/tmp/grafana.pid
+      test: curl -fsSL --head http://127.0.0.1:3000
       interval: 10s
       timeout: 5s
       retries: 12

@@ -92,9 +92,6 @@
                       <v-textarea
                         v-model="tableCreate.description"
                         rows="2"
-                        :rules="[
-                          v => (!!v || v.length <= 180) || ($t('validation.max-length') + 180),
-                        ]"
                         clearable
                         counter="180"
                         persistent-counter

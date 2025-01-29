@@ -52,6 +52,9 @@ export default {
       if (this.database.is_public) {
         return true
       }
+      if (!this.access) {
+        return false
+      }
       const userService = useUserService()
       return userService.hasReadAccess(this.access)
     }

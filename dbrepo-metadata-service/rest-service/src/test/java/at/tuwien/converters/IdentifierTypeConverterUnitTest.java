@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IdentifierTypeConverterUnitTest extends AbstractUnitTest {
 
     @Autowired
-    private IdentifierTypeConverter identifierTypeConverter;
+    private IdentifierTypeDtoConverter identifierTypeConverter;
 
     @BeforeEach
     public void beforeEach() {

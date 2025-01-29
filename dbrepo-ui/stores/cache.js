@@ -10,6 +10,7 @@ export const useCacheStore = defineStore('cache', {
       access: null,
       subset: null,
       locale: null,
+      identifier: null,
       ontologies: [],
       messages: [],
       user: null,
@@ -24,6 +25,7 @@ export const useCacheStore = defineStore('cache', {
     getAccess: (state) => state.access,
     getSubset: (state) => state.subset,
     getLocale: (state) => state.locale,
+    getIdentifier: (state) => state.identifier,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
     getUser: (state) => state.user,
@@ -48,6 +50,9 @@ export const useCacheStore = defineStore('cache', {
     },
     setLocale(locale) {
       this.locale = locale
+    },
+    setIdentifier(identifier) {
+      this.identifier = identifier
     },
     setOntologies(ontologies) {
       this.ontologies = ontologies

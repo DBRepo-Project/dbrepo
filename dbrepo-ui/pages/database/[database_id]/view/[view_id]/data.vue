@@ -34,12 +34,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-
-const { loggedIn, user, login, logout } = useOidcAuth()
-const cacheUser = ref(loggedIn ? user.value?.cacheUser : null)
-</script>
 <script>
 import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'

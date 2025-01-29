@@ -8,7 +8,7 @@
       :color="color(identifier)"
       :variant="listVariant"
       :href="href(identifier)"
-      :title="formatTimestampUTCLabel(identifier.created)"
+      :title="title(identifier)"
       lines="two">
       <v-list-item-subtitle>
         <Banner
@@ -59,7 +59,7 @@ export default {
     identifier: {
       type: Object,
       default () {
-        return {}
+        return null
       }
     }
   },
@@ -71,11 +71,14 @@ export default {
   },
   computed: {
     cacheUser () {
-      return this.cacheUser.getUser
+      return this.cacheStore.getUser
     },
     displayIdentifiers () {
-      if (!this.identifiers) {
-        return []
+      if (!this.identifiers || this.identifiers.length === 0) {
+        if (!this.identifier) {
+          return []
+        }
+        return [this.identifier]
       }
       if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
@@ -100,6 +103,9 @@ export default {
   },
   methods: {
     href (identifier) {
+      if (!identifier) {
+        return null
+      }
       if (identifier.status === 'published') {
         return `/pid/${identifier.id}`
       }
@@ -113,6 +119,13 @@ export default {
         case 'view':
           return `/database/${identifier.database_id}/view/${identifier.view_id}/persist/${identifier.id}`
       }
+    },
+    title (identifier) {
+      if (!identifier) {
+        return null
+      }
+      const identifierService = useIdentifierService()
+      return identifierService.identifierPreferEnglishTitle(identifier)
     },
     isActive (identifier) {
       if (!identifier) {

@@ -1,26 +1,27 @@
 <template>
   <div
-    v-if="canViewSchema">
+    v-if="identifier || canViewInfo">
     <DatabaseToolbar />
     <v-window
       v-model="tab">
       <v-window-item value="1">
         <Summary
-          v-if="hasIdentifier"
+          v-if="identifier"
           :identifier="identifier" />
         <v-card
-          v-if="hasIdentifier"
+          v-if="identifier"
           variant="flat"
           rounded="0">
           <v-card-text>
             <Select
-              :identifiers="filteredIdentifiers"
+              :identifiers="identifiers"
               :identifier="identifier" />
           </v-card-text>
         </v-card>
         <v-divider
-          v-if="hasIdentifier" />
+          v-if="identifier" />
         <v-card
+          v-if="canViewInfo"
           :title="$t('pages.database.title')"
           variant="flat"
           rounded="0">
@@ -94,7 +95,7 @@
                 <div>
                   <UserBadge
                     :user="database.owner"
-                    :other-user="user" />
+                    :other-user="cacheUser" />
                 </div>
               </v-list-item>
               <v-list-item
@@ -104,7 +105,7 @@
                 <div>
                   <UserBadge
                     :user="database.contact"
-                    :other-user="user" />
+                    :other-user="cacheUser" />
                 </div>
               </v-list-item>
             </v-list>
@@ -166,7 +167,20 @@
 <script setup>
 import { ref } from 'vue'
 
-const { loggedIn, user, login, logout } = useOidcAuth()
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&type=database&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
 </script>
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
@@ -209,7 +223,7 @@ export default {
       return 0
     },
     description () {
-      if (!this.hasIdentifier) {
+      if (!this.identifier) {
         return ''
       }
       return this.database.identifier.description
@@ -221,7 +235,7 @@ export default {
       return this.$config.public.database.image.height
     },
     publisher () {
-      if (!this.hasIdentifier) {
+      if (!this.identifier) {
         return ''
       }
       return this.database.identifier.publisher
@@ -232,32 +246,14 @@ export default {
     cacheUser () {
       return this.cacheStore.getUser
     },
-    identifiers () {
-      if (!this.database) {
-        return []
-      }
-      return this.database.identifiers
-    },
-    filteredIdentifiers () {
-      if (!this.identifiers) {
-        return []
-      }
-      if (!this.cacheUser) {
-        return this.identifiers.filter(i => i.status === 'published')
-      }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
-      }
-      return this.filteredIdentifiers[0]
-    },
     access () {
       return this.cacheStore.getAccess
+    },
+    identifiers () {
+      if (!this.database || !this.database.identifiers) {
+        return []
+      }
+      return this.database.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
     pid () {
       return this.$route.query.pid
@@ -300,9 +296,6 @@ export default {
       const databaseService = useDatabaseService()
       return databaseService.databaseToOwner(this.database)
     },
-    hasIdentifier () {
-      return this.identifier
-    },
     accessDescription () {
       if (!this.access) {
         return
@@ -335,19 +328,19 @@ export default {
       }
       return this.database.preview_image
     },
-    canViewSchema () {
-      if (this.error) {
-        return false
-      }
+    canViewInfo () {
       if (!this.database) {
         return false
       }
-      if (this.database.is_schema_public) {
+      if (this.database.is_public || this.database.is_schema_public) {
         return true
+      }
+      if (!this.access) {
+        return false
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access)
-    }
+    },
   }
 }
 </script>

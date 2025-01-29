@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 COPY ./pom.xml ./
 
-RUN mvn -fn -B -q dependency:go-offline
+RUN mvn -fn dependency:go-offline
 
 COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
 
@@ -18,7 +18,7 @@ COPY ./rest-service ./rest-service
 COPY ./services ./services
 
 # Make sure it compiles
-RUN mvn -fn -B -q clean package -DskipTests
+RUN mvn -fn clean package -DskipTests
 
 ###### THIRD STAGE ######
 FROM amazoncorretto:17-alpine3.19 AS runtime

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canPersistDatabase">
+    v-if="canPersistIdentifier">
     <Persist
       type="database"
       :database="database" />
@@ -50,14 +50,14 @@ export default {
       }
       return this.database.owner.id === this.cacheUser.uid
     },
-    canPersistDatabase () {
-      if (!this.database || !this.roles) {
+    canPersistIdentifier () {
+      if (!this.database || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
       const userService = useUserService()

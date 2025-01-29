@@ -22,9 +22,6 @@
                   <v-textarea
                     v-model="modify.description"
                     rows="2"
-                    :rules="[
-                      v => max(v, 180) || ($t('validation.max-length') + 180),
-                    ]"
                     clearable
                     counter="180"
                     persistent-counter
@@ -125,7 +122,7 @@ export default {
   data () {
     return {
       tab: 0,
-      valid: false,
+      valid: true,
       loading: false,
       modify: {
         description: null,
@@ -196,10 +193,10 @@ export default {
       if (!this.table) {
         return false
       }
-      if (this.table.is_public !== this.modify.is_public) {
+      if (this.table.is_public !== this.modify.is_public || this.table.is_schema_public !== this.modify.is_schema_public) {
         return true
       }
-      return this.table.is_schema_public !== this.modify.is_schema_public
+      return this.table.description !== this.modify.description
     },
     canUpdateTable () {
       if (!this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {

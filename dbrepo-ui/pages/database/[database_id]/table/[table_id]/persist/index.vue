@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canPersistTable">
+    v-if="canPersistIdentifier">
     <Persist
       type="table"
       :database="database"
@@ -60,14 +60,20 @@ export default {
     table () {
       return this.cacheStore.getTable
     },
-    canPersistTable () {
-      if (!this.table || !this.roles) {
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    canPersistIdentifier () {
+      if (!this.table || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
       const userService = useUserService()

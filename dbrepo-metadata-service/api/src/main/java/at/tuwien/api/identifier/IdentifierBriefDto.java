@@ -50,6 +50,9 @@ public class IdentifierBriefDto {
     @NotNull
     private List<IdentifierTitleDto> titles;
 
+    @NotNull
+    private List<IdentifierDescriptionDto> descriptions;
+
     @Schema(example = "10.1038/nphys1170")
     private String doi;
 

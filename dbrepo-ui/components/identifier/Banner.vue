@@ -24,7 +24,7 @@ export default {
       return identifierService.identifierToDisplayName(this.identifier)
     },
     href () {
-      if (!this.identifier || (this.identifier.status && this.identifier.status !== 'published')) {
+      if (!this.identifier) {
         return null
       }
       const identifierService = useIdentifierService()

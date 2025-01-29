@@ -8,6 +8,7 @@
 
 <script>
 import Builder from '@/components/subset/Builder.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -33,7 +34,8 @@ export default {
           to: `/database/${this.$route.params.database_id}/view/create`,
           disabled: true
         }
-      ]
+      ],
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -44,11 +46,11 @@ export default {
       return this.cacheStore.getRoles
     },
     canCreateView () {
-      if (!this.roles) {
+      if (!this.roles || !this.roles.includes('create-database-view')) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.roles.includes('create-database-view')
+      return userService.hasReadAccess(this.access)
     }
   }
 }

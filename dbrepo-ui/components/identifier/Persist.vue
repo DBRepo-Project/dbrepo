@@ -12,6 +12,7 @@
       <v-spacer />
       <v-btn
         v-if="canSave"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="secondary"
         variant="flat"
@@ -22,7 +23,7 @@
         @click="createOrSave"/>
       <v-btn
         v-if="canRemove"
-        class="ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
         color="error"
         variant="flat"
@@ -32,7 +33,7 @@
         @click="remove" />
       <v-btn
         v-if="canPublish"
-        class="ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
@@ -138,14 +139,6 @@
                       :color="canShiftUp(creator, i) ? 'tertiary' : ''"
                       :variant="buttonVariant"
                       @click="shiftDown(i)" />
-                    <v-btn
-                      v-if="canInsertSelf"
-                      class="mr-2"
-                      size="small"
-                      color="secondary"
-                      variant="flat"
-                      :text="$t('pages.identifier.subpages.create.creators.insert.text')"
-                      @click="insertSelf(creator)" />
                     <v-btn
                       v-if="i > 0"
                       size="small"
@@ -1042,12 +1035,6 @@ export default {
             info: this.table.name
           }
       }
-    },
-    canInsertSelf () {
-      if (!this.cacheUser) {
-        return false
-      }
-      return this.cacheUser.given_name || this.cacheUser.family_name || this.cacheUser.attributes.affiliation || this.cacheUser.attributes.orcid
     },
     isCreator () {
       if (!this.cacheUser || !this.identifier) {

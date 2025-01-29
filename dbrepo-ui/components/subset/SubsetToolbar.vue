@@ -112,9 +112,7 @@ export default {
       if (this.pid) {
         const filter = this.identifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
-          const identifier = filter[0]
-          console.debug('identifier set according to route pid', identifier)
-          return identifier
+          return filter[0]
         }
       }
       return this.identifiers[0]

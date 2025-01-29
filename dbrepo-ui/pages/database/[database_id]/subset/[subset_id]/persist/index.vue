@@ -1,10 +1,10 @@
 <template>
   <div
-    v-if="canPersistSubset">
+    v-if="canPersistIdentifier">
     <Persist
       type="subset"
       :database="database"
-      :query="query" />
+      :query="subset" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -20,8 +20,6 @@ export default {
   data () {
     return {
       loading: false,
-      loadingQuery: false,
-      query: null,
       isAuthorizationError: false,
       items: [
         {
@@ -59,43 +57,24 @@ export default {
     subset () {
       return this.cacheStore.getSubset
     },
-    canPersistSubset () {
-      if (!this.subset || !this.roles) {
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    canPersistIdentifier () {
+      if (!this.subset || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      if (!this.roles.includes('create-identifier') || !this.cacheUser || !this.access) {
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
       const userService = useUserService()
       return userService.hasReadAccess(this.access) && this.subset.owner.id === this.cacheUser.uid
-    }
-  },
-  mounted () {
-    this.loadQuery()
-  },
-  methods: {
-    loadQuery () {
-      this.loadingQuery = true
-      return new Promise((resolve, reject) => {
-        const queryService = useQueryService()
-        queryService.findOne(this.$route.params.database_id, this.$route.params.subset_id)
-          .then((query) => {
-            this.query = query
-            resolve(query)
-          })
-          .catch((error) => {
-            if (error.response.status === 405) {
-              this.isAuthorizationError = true
-            }
-            reject(error)
-          })
-          .finally(() => {
-            this.loadingQuery = false
-          })
-      })
     }
   }
 }

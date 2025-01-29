@@ -121,8 +121,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
 const { loggedIn } = useOidcAuth()
 </script>
 <script>

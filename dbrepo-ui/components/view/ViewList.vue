@@ -16,16 +16,6 @@
           <template v-slot:append>
             <ResourceStatus
               :resource="view" />
-            <v-tooltip
-              v-if="hasPublishedIdentifier(view)"
-              :text="$t('pages.identifier.pid.title')"
-              left>
-              <template v-slot:activator="{ props }">
-                <v-icon
-                  color="primary"
-                  v-bind="props">mdi-identifier</v-icon>
-              </template>
-            </v-tooltip>
           </template>
         </v-list-item>
       </v-list>

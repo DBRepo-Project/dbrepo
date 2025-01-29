@@ -81,6 +81,9 @@ export default {
     cacheUser () {
       return this.cacheStore.getUser
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
     title () {
       if (!this.table) {
         return this.$t('pages.table.import.title')

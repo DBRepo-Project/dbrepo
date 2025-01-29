@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canCreateIdentifier || canUpdateIdentifier">
+    v-if="canPersistIdentifier || canUpdateIdentifier">
     <Persist
       type="subset"
       :database="database" />
@@ -59,6 +59,12 @@ export default {
     subset () {
       return this.cacheStore.getSubset
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     identifier () {
       if (!this.subset) {
         return false
@@ -66,26 +72,30 @@ export default {
       const filter = this.subset.identifiers.filter(i => i.id === Number(this.$route.params.identifier_id))
       return filter.length === 1 ? filter[0] : null
     },
-    canCreateIdentifier () {
-      if (!this.roles) {
+    canPersistIdentifier () {
+      if (!this.subset || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      if (!this.subset) {
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
-      return this.roles.includes('create-identifier') && this.subset.owner.id === this.cacheUser.uid
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.subset.owner.id === this.cacheUser.uid
     },
     canUpdateIdentifier () {
-      if (!this.roles) {
+      if (!this.identifier || !this.roles) {
         return false
       }
-      if (!this.identifier) {
+      if (this.roles.includes('modify-identifier-metadata')) {
+        return true
+      }
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
-      return this.roles.includes('modify-identifier-metadata') && this.identifier.owner.id === this.cacheUser.uid
+      return this.identifier.owner.id === this.cacheUser.uid
     }
   }
 }

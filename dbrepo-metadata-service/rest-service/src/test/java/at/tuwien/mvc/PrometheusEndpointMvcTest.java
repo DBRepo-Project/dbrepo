@@ -6,6 +6,7 @@ import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
 import at.tuwien.test.AbstractUnitTest;
@@ -278,7 +279,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            identifierEndpoint.findAll(DATABASE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE);
+            identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE, null);
         } catch (Exception e) {
             /* ignore */
         }

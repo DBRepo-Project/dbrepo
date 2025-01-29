@@ -18,7 +18,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-btn
-        v-if="canDownload"
+        v-if="canViewSubsetData"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
         variant="flat"
         :loading="downloadLoading"
@@ -97,32 +97,20 @@ export default {
     subset () {
       return this.cacheStore.getSubset
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
     executionUTC () {
       if (!this.subset) {
         return null
       }
       return formatTimestampUTCLabel(this.subset.created)
     },
-    canDownload () {
-      if (!this.result_visibility || !this.subset.id) {
-        return false
-      }
-      return this.subset.id
-    },
-    result_visibility () {
+    canViewSubsetData () {
       if (!this.database || !this.subset) {
         return false
       }
       if (this.database.is_public) {
-        return true
-      }
-      return this.subset.owner.username === this.username
-    },
-    canViewSubsetData () {
-      if (this.error || !this.subset) {
-        return false
-      }
-      if (this.subset.is_public) {
         return true
       }
       if (!this.access) {

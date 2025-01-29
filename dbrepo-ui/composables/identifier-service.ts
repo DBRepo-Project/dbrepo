@@ -24,7 +24,7 @@ export const useIdentifierService = (): any => {
   }
 
   async function create(data: IdentifierSaveDto): Promise<IdentifierDto> {
-    const axios= useAxiosInstance()
+    const axios = useAxiosInstance()
     console.debug('create identifier')
     return new Promise<IdentifierDto>((resolve, reject) => {
       axios.post<IdentifierDto>('/api/identifier', data)
@@ -40,7 +40,7 @@ export const useIdentifierService = (): any => {
   }
 
   async function save(data: IdentifierSaveDto): Promise<IdentifierDto> {
-    const axios= useAxiosInstance()
+    const axios = useAxiosInstance()
     console.debug('save identifier', data.id)
     return new Promise<IdentifierDto>((resolve, reject) => {
       axios.put<IdentifierDto>(`/api/identifier/${data.id}`, data)
@@ -241,11 +241,26 @@ export const useIdentifierService = (): any => {
     if (!data || !data.titles || data.titles.length === 0) {
       return null
     }
-    const filtered = data.titles.filter(d => d.language && d.language === 'en')
+    const filtered = data.titles.filter((d) => d.language && d.language === 'en')
     if (filtered.length === 0) {
-      return data.titles[0].title
+      const title = data.titles[0]
+      return title.title
     }
     return filtered[0].title
+  }
+
+  function identifierToResourceUrl(identifier: IdentifierDto): string | null {
+    const config = useRuntimeConfig()
+    switch (identifier.type) {
+      case 1:
+        return `${config.public.api.client}/api/database/${identifier.database_id}/subset/${identifier.subset_id}/data`
+      case 2:
+        return `${config.public.api.client}/api/database/${identifier.database_id}/table/${identifier.table_id}/data`
+      case 3:
+        return `${config.public.api.client}/api/database/${identifier.database_id}/view/${identifier.view_id}/data`
+      default:
+        return null
+    }
   }
 
   function identifierToUrl(data: IdentifierDto): string | null {
@@ -315,132 +330,48 @@ export const useIdentifierService = (): any => {
     return jsonLd
   }
 
-  function identifierToHasPartJsonLd(identifier: IdentifierDto) {
-    return {
+  function identifiersToServerHead(identifiers: IdentifierBriefDto[]): any {
+    if (!identifiers || !identifiers[0]) {
+      return null
+    }
+    const identifier = identifiers[0]
+    /* Google Rich Results */
+    const json: any = {
+      '@context': 'https://schema.org/',
       '@type': 'Dataset',
-      name: identifierPreferEnglishTitle(identifier),
-      description: identifierPreferEnglishDescription(identifier),
-      identifier: identifierToUrl(identifier),
+      url: identifierToUrl(identifier),
       citation: identifierToUrl(identifier),
-      temporalCoverage: identifier.publication_year,
-      version: identifier.created
-    }
-  }
-
-  function databaseToServerHead(database: DatabaseDto) {
-    if (!database) {
-      return
-    }
-    const config = useRuntimeConfig()
-    /* Google Rich Results */
-    const json: any = {
-      '@context': 'https://schema.org/',
-      '@type': 'Dataset',
-      url: `${config.public.api.client}/database/${database.id}/info`,
-      citation: `${config.public.api.client}/database/${database.id}/info`,
       hasPart: [],
-      version: database.created
+      identifier: identifiers.map(i => identifierToUrl(i)),
+      creator: identifier.creators.map((c) => creatorToCreatorJsonLd(c)),
+      temporalCoverage: identifier.publication_year
     }
-    /* FAIR Signposting */
-    const meta: any [] = []
-    if (database.identifiers.length > 0) {
-      const identifier = database.identifiers[0]
-      const partIdentifiers: IdentifierDto[] = []
-      if (database.subsets.length > 0) {
-        database.subsets.forEach((s) => {
-          partIdentifiers.push(s)
-        })
-      }
-      if (database.tables.length > 0) {
-        database.tables.forEach((t) => {
-          if (t.identifiers.length > 0) {
-            t.identifiers.forEach(i => partIdentifiers.push(i))
-          }
-        })
-      }
-      if (database.views.length > 0) {
-        database.views.forEach((v) => {
-          if (v.identifiers.length > 0) {
-            v.identifiers.forEach(i => partIdentifiers.push(i))
-          }
-        })
-      }
+    if (identifier.titles.length > 0) {
       json['name'] = identifierPreferEnglishTitle(identifier)
+    }
+    if (identifier.descriptions.length > 0) {
       json['description'] = identifierPreferEnglishDescription(identifier)
-      json['identifier'] = database.identifiers.map(i => identifierToUrl(i))
-      json['license'] = identifierToPreferFirstLicenseUri(identifier)
-      json['creator'] = identifier.creators.map(c => creatorToCreatorJsonLd(c))
-      json['citation'] = identifierToUrl(identifier)
-      json['hasPart'] = partIdentifiers.map(i => identifierToHasPartJsonLd(i))
-      json['temporalCoverage'] = identifier.publication_year
-      meta.push({rel: 'cite-as', href: identifierToUrl(identifier)})
-      identifier.creators.forEach((c: CreatorDto) => {
-        if (c.name_identifier) {
-          meta.push({rel: 'author', href: c.name_identifier})
-        }
-      })
-      meta.push({rel: 'describedby', type: 'application/x-bibtex', href: identifierToUrl(identifier)})
-      meta.push({rel: 'describedby', type: 'application/vnd.datacite.datacite+json', href: identifierToUrl(identifier)})
-      if (identifier.licenses) {
-        identifier.licenses.forEach((l: LicenseDto) => meta.push({rel: 'license', href: l.uri}))
-      }
-    }
-    return {
-      script: [
-        {
-          type: 'application/ld+json',
-          innerHTML: json
-        }
-      ],
-      link: meta
-    }
-  }
-
-  function subsetToServerHead(subset: QueryDto) {
-    const config = useRuntimeConfig()
-    /* Google Rich Results */
-    const json: any = {
-      '@context': 'https://schema.org/',
-      '@type': 'Dataset',
-      description: subset.query,
-      url: `${config.public.api.client}/database/${subset.database_id}/info`,
-      citation: `${config.public.api.client}/database/${subset.database_id}/info`,
-      hasPart: [],
-      version: subset.created
     }
     /* FAIR Signposting */
     const meta: any[] = []
-    if (subset.identifiers.length > 0) {
-      const identifier = subset.identifiers[0]
-      json['name'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['identifier'] = subset.identifiers.map(i => identifierToUrl(i))
-      json['license'] = identifierToPreferFirstLicenseUri(identifier)
-      json['creator'] = identifier.creators.map(c => creatorToCreatorJsonLd(c))
-      json['citation'] = identifierToUrl(identifier)
-      json['temporalCoverage'] = identifier.publication_year
-      meta.push({rel: 'cite-as', href: identifierToUrl(identifier)})
-      identifier.creators.forEach((c: CreatorDto) => {
-        if (c.name_identifier) {
-          meta.push({rel: 'author', href: c.name_identifier})
-        }
-      })
-      meta.push({rel: 'describedby', type: 'application/x-bibtex', href: identifierToUrl(identifier)})
-      meta.push({rel: 'describedby', type: 'application/vnd.datacite.datacite+json', href: identifierToUrl(identifier)})
-      if (identifier.licenses) {
-        identifier.licenses.forEach((l: LicenseDto) => meta.push({rel: 'license', href: l.uri}))
+    meta.push({rel: 'cite-as', href: identifierToUrl(identifier)})
+    identifier.creators.forEach((c: CreatorDto) => {
+      if (c.name_identifier) {
+        meta.push({rel: 'author', href: c.name_identifier})
       }
-      meta.push({
-        rel: 'item',
-        type: 'application/json',
-        href: `${config.public.api.client}/api/database/${subset.database_id}/subset/${subset.id}/data`
-      })
-      meta.push({
-        rel: 'item',
-        type: 'text/csv',
-        href: `${config.public.api.client}/api/database/${subset.database_id}/subset/${subset.id}/data`
-      })
-    }
+    })
+    meta.push({rel: 'describedby', type: 'application/x-bibtex', href: identifierToUrl(identifier)})
+    meta.push({rel: 'describedby', type: 'application/vnd.datacite.datacite+json', href: identifierToUrl(identifier)})
+    meta.push({
+      rel: 'item',
+      type: 'application/json',
+      href: identifierToResourceUrl(identifier)
+    })
+    meta.push({
+      rel: 'item',
+      type: 'text/csv',
+      href: identifierToResourceUrl(identifier)
+    })
     return {
       script: [
         {
@@ -452,168 +383,15 @@ export const useIdentifierService = (): any => {
     }
   }
 
-  function tableToServerHead(table: TableDto) {
-    const config = useRuntimeConfig()
-    /* Google Rich Results */
+  function identifiersToServerSeoMeta(identifiers: IdentifierBriefDto[]): any | null {
+    if (!identifiers|| !identifiers[0]) {
+      return null
+    }
+    const identifier = identifiers[0]
     const json: any = {
-      '@context': 'https://schema.org/',
-      '@type': 'Dataset',
-      description: table.description,
-      url: `${config.public.api.client}/database/${table.database_id}/table/${table.id}/info`,
-      citation: `${config.public.api.client}/database/${table.database_id}/table/${table.id}/info`,
-      hasPart: [],
-      version: table.created
-    }
-    /* FAIR Signposting */
-    const meta: any[] = []
-    if (table.identifiers.length > 0) {
-      const identifier: IdentifierDto = table.identifiers[0]
-      json['name'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['identifier'] = table.identifiers.map((i: IdentifierDto) => identifierToUrl(i))
-      json['license'] = identifierToPreferFirstLicenseUri(identifier)
-      json['creator'] = identifier.creators.map((c: CreatorDto) => creatorToCreatorJsonLd(c))
-      json['citation'] = identifierToUrl(identifier)
-      json['temporalCoverage'] = identifier.publication_year
-      meta.push({rel: 'cite-as', href: identifierToUrl(identifier)})
-      identifier.creators.forEach((c: CreatorDto): void => {
-        if (c.name_identifier) {
-          meta.push({rel: 'author', href: c.name_identifier})
-        }
-      })
-      meta.push({rel: 'describedby', type: 'application/x-bibtex', href: identifierToUrl(identifier)})
-      meta.push({rel: 'describedby', type: 'application/vnd.datacite.datacite+json', href: identifierToUrl(identifier)})
-      if (identifier.licenses) {
-        identifier.licenses.forEach((l: LicenseDto) => meta.push({rel: 'license', href: l.uri}))
-      }
-      meta.push({
-        rel: 'item',
-        type: 'application/json',
-        href: `${config.public.api.client}/api/database/${table.database_id}/table/${table.id}/data`
-      })
-      meta.push({
-        rel: 'item',
-        type: 'text/csv',
-        href: `${config.public.api.client}/api/database/${table.database_id}/table/${table.id}/data`
-      })
-    }
-    return {
-      script: [
-        {
-          type: 'application/ld+json',
-          innerHTML: json
-        }
-      ],
-      link: meta
-    }
-  }
-
-  function viewToServerHead(view: ViewDto) {
-    const config = useRuntimeConfig()
-    /* Google Rich Results */
-    const json: any = {
-      '@context': 'https://schema.org/',
-      '@type': 'Dataset',
-      description: view.query,
-      url: `${config.public.api.client}/database/${view.database_id}/table/${view.id}/info`,
-      citation: `${config.public.api.client}/database/${view.database_id}/table/${view.id}/info`,
-      hasPart: [],
-      version: view.created
-    }
-    /* FAIR Signposting */
-    const meta: any[] = []
-    if (view.identifiers.length > 0) {
-      const identifier = view.identifiers[0]
-      json['name'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['identifier'] = view.identifiers.map(i => identifierToUrl(i))
-      json['license'] = identifierToPreferFirstLicenseUri(identifier)
-      json['creator'] = identifier.creators.map(c => creatorToCreatorJsonLd(c))
-      json['citation'] = identifierToUrl(identifier)
-      json['temporalCoverage'] = identifier.publication_year
-      meta.push({rel: 'cite-as', href: identifierToUrl(identifier)})
-      identifier.creators.forEach((c: CreatorDto) => {
-        if (c.name_identifier) {
-          meta.push({rel: 'author', href: c.name_identifier})
-        }
-      })
-      meta.push({rel: 'describedby', type: 'application/x-bibtex', href: identifierToUrl(identifier)})
-      meta.push({rel: 'describedby', type: 'application/vnd.datacite.datacite+json', href: identifierToUrl(identifier)})
-      if (identifier.licenses) {
-        identifier.licenses.forEach((l: LicenseDto) => meta.push({rel: 'license', href: l.uri}))
-      }
-      meta.push({
-        rel: 'item',
-        type: 'application/json',
-        href: `${config.public.api.client}/api/database/${view.database_id}/view/${view.id}/data`
-      })
-      meta.push({
-        rel: 'item',
-        type: 'text/csv',
-        href: `${config.public.api.client}/api/database/${view.database_id}/view/${view.id}/data`
-      })
-    }
-    return {
-      script: [
-        {
-          type: 'application/ld+json',
-          innerHTML: json
-        }
-      ],
-      link: meta
-    }
-  }
-
-  function databaseToServerSeoMeta(database: DatabaseDto) {
-    const json: any = {
-      ogTitle: database.name
-    }
-    if (database.identifiers.length > 0) {
-      const identifier = database.identifiers[0]
-      json['ogTitle'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['ogDescription'] = identifierPreferEnglishDescription(identifier)
-    }
-    return json
-  }
-
-  function subsetToServerSeoMeta(subset: QueryDto) {
-    const json: any = {
-      description: subset.query
-    }
-    if (subset.identifiers.length > 0) {
-      const identifier = subset.identifiers[0]
-      json['ogTitle'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['ogDescription'] = identifierPreferEnglishDescription(identifier)
-    }
-    return json
-  }
-
-  function tableToServerSeoMeta(table: TableDto) {
-    const json: any = {
-      ogTitle: table.name,
-      description: table.description
-    }
-    if (table.identifiers.length > 0) {
-      const identifier = table.identifiers[0]
-      json['ogTitle'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['ogDescription'] = identifierPreferEnglishDescription(identifier)
-    }
-    return json
-  }
-
-  function viewToServerSeoMeta(view: ViewDto) {
-    const json: any = {
-      ogTitle: view.name,
-      description: view.query
-    }
-    if (view.identifiers.length > 0) {
-      const identifier = view.identifiers[0]
-      json['ogTitle'] = identifierPreferEnglishTitle(identifier)
-      json['description'] = identifierPreferEnglishDescription(identifier)
-      json['ogDescription'] = identifierPreferEnglishDescription(identifier)
+      ogTitle: identifierPreferEnglishTitle(identifier),
+      ogDescription: identifierPreferEnglishDescription(identifier),
+      description: identifierPreferEnglishDescription(identifier)
     }
     return json
   }
@@ -633,13 +411,7 @@ export const useIdentifierService = (): any => {
     identifierToUrl,
     identifierToDisplayName,
     identifierToDisplayAcronym,
-    databaseToServerHead,
-    subsetToServerHead,
-    tableToServerHead,
-    viewToServerHead,
-    databaseToServerSeoMeta,
-    subsetToServerSeoMeta,
-    tableToServerSeoMeta,
-    viewToServerSeoMeta,
+    identifiersToServerHead,
+    identifiersToServerSeoMeta
   }
 }

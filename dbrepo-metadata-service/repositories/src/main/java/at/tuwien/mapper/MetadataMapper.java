@@ -393,6 +393,8 @@ public interface MetadataMapper {
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
+    IdentifierStatusType identifierStatusTypeDtoToIdentifierStatusType(IdentifierStatusTypeDto data);
+
     default String identifierToLocationUrl(String baseUrl, Identifier data) {
         if (data.getType().equals(IdentifierType.SUBSET)) {
             return baseUrl + "/database/" + data.getDatabase().getId() + "/subset/" + data.getQueryId() + "/info?pid=" + data.getId();
@@ -823,7 +825,8 @@ public interface MetadataMapper {
     }
 
     @Mappings({
-            @Mapping(target = "database.views", ignore = true)
+            @Mapping(target = "database.views", ignore = true),
+            @Mapping(target = "database.tables", ignore = true)
     })
     ViewDto viewToViewDto(View data);
 

@@ -1,23 +1,23 @@
 <template>
   <div
-    v-if="canViewInfo">
+    v-if="identifier || canViewInfo">
     <TableToolbar
       :selection="selection" />
     <v-card
+      v-if="identifier"
       variant="flat">
       <Summary
-        v-if="hasIdentifier"
         :identifier="identifier" />
-      <v-card-text
-        v-if="hasIdentifier">
+      <v-card-text>
         <Select
           :identifiers="identifiers"
           :identifier="identifier" />
       </v-card-text>
     </v-card>
     <v-divider
-      v-if="identifier" />
+      v-if="canViewInfo" />
     <v-card
+      v-if="canViewInfo"
       variant="flat"
       rounded="0"
       :title="$t('pages.table.title')">
@@ -118,6 +118,24 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id, table_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&tid=${table_id}&type=table&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
@@ -194,7 +212,7 @@ export default {
       return userService.hasReadAccess(this.access)
     },
     canViewInfo () {
-      if (this.error || !this.table) {
+      if (!this.table) {
         return false
       }
       if (this.table.is_public || this.table.is_schema_public) {
@@ -223,31 +241,10 @@ export default {
       return this.roles.includes('insert-table-data')
     },
     identifiers () {
-      if (!this.table || !this.table.identifiers || this.table.identifiers.length === 0) {
+      if (!this.table || !this.table.identifiers) {
         return []
       }
-      return this.table.identifiers
-    },
-    filteredIdentifiers () {
-      if (!this.identifiers) {
-        return []
-      }
-      if (!this.cacheUser) {
-        return this.identifiers.filter(i => i.status === 'published')
-      }
-      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.cacheUser.uid)
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
-      }
-      return this.filteredIdentifiers[0]
-    },
-    hasIdentifier () {
-      return this.identifier
+      return this.table.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
     brokerExtraInfo () {
       return this.$config.public.broker.extra

@@ -1,25 +1,25 @@
 <template>
   <div
-    v-if="canViewView">
+    v-if="identifier || canViewInfo">
     <ViewToolbar />
     <v-window
       v-model="tab">
-      <v-window-item
-        v-if="view">
+      <v-window-item>
         <v-card variant="flat">
           <Summary
-            v-if="hasIdentifier"
+            v-if="identifier"
             :identifier="identifier" />
           <v-card-text
-            v-if="hasIdentifier">
+            v-if="identifier">
             <Select
               :identifiers="identifiers"
               :identifier="identifier" />
           </v-card-text>
         </v-card>
         <v-divider
-          v-if="hasIdentifier" />
+          v-if="identifier" />
         <v-card
+          v-if="canViewInfo"
           :title="$t('pages.view.title')"
           variant="flat">
           <v-card-text>
@@ -39,7 +39,7 @@
                 <UserBadge
                   v-if="view"
                   :user="view.owner"
-                  :other-user="user" />
+                  :other-user="cacheUser" />
                 <v-skeleton-loader
                   v-else
                   type="subtitle"
@@ -59,6 +59,24 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id, view_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&vid=${view_id}&type=view&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
+</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
@@ -122,28 +140,10 @@ export default {
       return this.cacheStore.getUser
     },
     identifiers () {
-      if (!this.view) {
+      if (!this.view || !this.view.identifiers) {
         return []
       }
-      return this.view.identifiers
-    },
-    filteredIdentifiers () {
-      if (!this.identifiers) {
-        return []
-      }
-      if (!this.cacheUser) {
-        return this.identifiers.filter(i => i.status === 'published')
-      }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
-      }
-      return this.filteredIdentifiers[0]
+      return this.view.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
     views () {
       if (!this.database) {
@@ -154,9 +154,6 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    hasIdentifier () {
-      return this.identifier
-    },
     creator () {
       if (!this.view) {
         return null
@@ -164,7 +161,7 @@ export default {
       const userService = useUserService()
       return userService.userToFullName(this.view.creator)
     },
-    canViewView () {
+    canViewInfo () {
       if (!this.view) {
         return false
       }

@@ -6,6 +6,7 @@
       rounded="0"
       :text="$t('pages.database.subpages.subsets.empty')" />
     <v-card
+      v-if="subsets.length > 0"
       variant="flat"
       rounded="0">
       <v-list-item
@@ -14,28 +15,20 @@
         <Loading />
       </v-list-item>
       <div
-        v-for="(item, i) in subsets"
+        v-for="(subset, i) in subsets"
         :key="`q-${i}`">
         <v-divider v-if="i !== 0" class="mx-4" />
         <v-list>
           <v-list-item
             lines="two"
-            :title="title(item)"
-            :subtitle="subtitle(item)"
-            :class="clazz(item)"
-            :to="link(item)"
-            :href="link(item)">
+            :title="title(subset)"
+            :subtitle="subtitle(subset)"
+            :class="clazz(subset)"
+            :to="link(subset)"
+            :href="link(subset)">
             <template v-slot:append>
-              <v-tooltip
-                v-if="hasPublishedIdentifier(item)"
-                :text="$t('pages.identifier.pid.title')"
-                left>
-                <template v-slot:activator="{ props }">
-                  <v-icon
-                    color="primary"
-                    v-bind="props">mdi-identifier</v-icon>
-                </template>
-              </v-tooltip>
+              <ResourceStatus
+                :resource="subset" />
             </template>
           </v-list-item>
         </v-list>
