@@ -15,6 +15,8 @@ if (process.env.NODE_ENV === 'development') {
     }
   }
   process.env.NUXT_PUBLIC_API_SERVER = api
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI = api + ':3001'
 }
 
 /**

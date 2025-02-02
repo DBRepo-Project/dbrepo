@@ -15,7 +15,7 @@
       </v-card-text>
     </v-card>
     <v-divider
-      v-if="canViewInfo" />
+      v-if="identifier" />
     <v-card
       v-if="canViewInfo"
       variant="flat"
