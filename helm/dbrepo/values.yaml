@@ -585,15 +585,17 @@ dataservice:
       ## @param dataservice.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
       type: "RuntimeDefault"
   ## @param dataservice.resourcesPreset The container resource preset
-  resourcesPreset: "large"
+  resourcesPreset: ""
   ## @param dataservice.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-  resources: { }
-  ##   requests:
-  ##     cpu: 250m
-  ##     memory: 64Mi
-  ##   limits:
-  ##     cpu: 500m
-  ##     memory: 1024Mi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+      ephemeral-storage: 50Mi
+    limits:
+      cpu: 1.0
+      memory: 3072Mi
+      ephemeral-storage: 2Gi
   ## @skip dataservice.resources
   grant:
     ## @param dataservice.grant.read The default database permissions for users with read access.
@@ -1054,7 +1056,7 @@ gatewayservice:
 
 computeservice:
   ## @param computeservice.endpoint Configure the number of parallel workers with local[n]
-  endpoint: local[2]
+  endpoint: local[1]
 
 ## @section Ingress
 

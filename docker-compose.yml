@@ -335,7 +335,7 @@ services:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost:8080}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
