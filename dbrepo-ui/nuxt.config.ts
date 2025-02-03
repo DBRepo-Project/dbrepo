@@ -110,22 +110,25 @@ export default defineNuxtConfig({
   },
 
   oidc: {
+    defaultProvider: 'keycloak',
     providers: {
       keycloak: {
-        audience: 'account',
-        baseUrl: 'http://localhost/realms/dbrepo',
-        clientId: 'dbrepo-client',
+        clientId: '',
         clientSecret: '', // inject on runtime
+        authorizationUrl: '',
+        userInfoUrl: '',
+        tokenUrl: '',
+        logoutUrl: '',
         scope: ['openid', 'roles'],
         optionalClaims: ['realm_access'],
-        redirectUri: 'http://localhost/auth/keycloak/callback',
-        userNameClaim: 'preferred_username',
+        redirectUri: '',
         exposeAccessToken: true,
-        logoutRedirectUri: 'http://localhost',
+        logoutRedirectUri: '',
       },
     },
     middleware: {
-      globalMiddlewareEnabled: false
+      globalMiddlewareEnabled: false,
+      customLoginPage: false
     },
   },
 

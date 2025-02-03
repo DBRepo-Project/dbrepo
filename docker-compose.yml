@@ -335,11 +335,14 @@ services:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_BASE_URL: "${BASE_URL:-http://localhost}/realms/dbrepo"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/auth"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
       NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/logout"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/token"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL: "${BASE_URL:-http://localhost}/realms/dbrepo/protocol/openid-connect/userinfo"
     depends_on:
       dbrepo-search-service:
         condition: service_healthy

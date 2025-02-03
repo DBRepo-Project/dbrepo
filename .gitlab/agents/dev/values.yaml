@@ -132,7 +132,7 @@ metricdb:
 ui:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3rc0
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3rc3-datalab-dev
   public:
     api:
       client: https://s155.datalab.tuwien.ac.at

@@ -173,6 +173,7 @@ useServerHead({
 import JumboBox from '@/components/JumboBox.vue'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
+import {useNuxtApp} from "#app";
 
 export default {
   components: {
