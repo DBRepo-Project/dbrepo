@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "VERSION=bun-dev NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG NODE_ENV=development nuxt dev",
+    "dev": "NODE_ENV=development nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

@@ -44,6 +44,12 @@ export default {
     cacheUser () {
       return this.cacheStore.getUser
     },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    access () {
+      return this.cacheStore.getAccess
+    },
     isOwner () {
       if (!this.database || !this.cacheUser) {
         return false

@@ -4,6 +4,9 @@ kind: ConfigMap
 metadata:
   name: auth-service-config
   namespace: {{ include "common.names.namespace" . | quote }}
+binaryData:
+  create-event-listener.jar: |-
+    {{ .Files.Get "files/create-event-listener.jar" | b64enc }}
 data:
   dbrepo-realm.json: |-
     {

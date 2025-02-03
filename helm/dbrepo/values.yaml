@@ -87,6 +87,7 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+  production: true
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:
@@ -127,8 +128,8 @@ authservice:
     ##   limits:
     ##     cpu: 500m
     ##     memory: 1024Mi
-  ## @skip authservice.extraEnvVarsCM
-  extraEnvVarsCM: auth-service-config
+  ## @skip authservice.extraEnvVarsSecret
+  extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
   extraVolumes:
     - name: config-map
@@ -140,7 +141,14 @@ authservice:
   ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
     - name: config-map
-      mountPath: /opt/keycloak/data/import
+      mountPath: /opt/keycloak/data/import/dbrepo-realm.json
+      subPath: dbrepo-realm.json
+    - name: config-map
+      mountPath: /opt/keycloak/data/import/master-realm.json
+      subPath: master-realm.json
+    - name: config-map
+      mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
+      subPath: create-event-listener.jar
     - name: cache
       mountPath: /bitnami/keycloak/
   ## @skip authservice.replicaCount The number of replicas.

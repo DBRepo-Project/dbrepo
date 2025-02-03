@@ -14,9 +14,8 @@ if (process.env.NODE_ENV === 'development') {
       '^/pid': '/pid'
     }
   }
+  process.env.VERSION = 'bun-dev'
   process.env.NUXT_PUBLIC_API_SERVER = api
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
-  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI = api + ':3001'
 }
 
 /**
@@ -114,7 +113,7 @@ export default defineNuxtConfig({
     providers: {
       keycloak: {
         clientId: '',
-        clientSecret: '', // inject on runtime
+        clientSecret: '',
         authorizationUrl: '',
         userInfoUrl: '',
         tokenUrl: '',
