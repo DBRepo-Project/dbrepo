@@ -87,6 +87,7 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+  ## @param authservice.production Start Keycloak with production profile.
   production: true
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
