@@ -233,7 +233,7 @@ export default {
       return this.table.constraints.primary_key.map(pk => pk.column)
     },
     canViewTableData () {
-      if (this.error || !this.table) {
+      if (!this.table) {
         return false
       }
       if (this.table.is_public) {

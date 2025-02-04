@@ -1,10 +1,12 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <UserToolbar />
     <v-window
       v-model="tab">
       <v-window-item>
-        <v-form v-model="valid1" @submit.prevent="submit">
+        <v-form
+          v-model="valid1">
           <v-card
             :title="$t('pages.user.subpages.info.title')"
             :subtitle="$t('pages.user.subpages.info.subtitle')"
@@ -20,10 +22,12 @@
                     :label="$t('pages.user.subpages.info.id.label')" />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row
+                v-if="cacheUser"
+                dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="model.username"
+                    v-model="cacheUser.preferred_username"
                     disabled
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.username.label')"  />
@@ -123,6 +127,9 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn } = useOidcAuth()
+</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -139,15 +146,16 @@ export default {
       error: false,
       loadingUpdate: false,
       loadingTheme: false,
-      theme: null,
       orcidLoading: false,
       model: {
         id: null,
-        username: null,
+        preferred_username: null,
         firstname: null,
         lastname: null,
         theme: null,
-        language: null
+        language: null,
+        orcid: null,
+        affiliation: null
       },
       themes: [
         { name: this.$t('pages.user.subpages.theme.light'), value: 'light' },
@@ -184,6 +192,9 @@ export default {
       return this.cacheStore.getUser
     },
     canModifyInformation () {
+      if (!this.roles) {
+        return false
+      }
       return this.roles.includes('modify-user-information')
     },
     inputVariant () {
@@ -207,7 +218,7 @@ export default {
         orcid: this.model.orcid,
         affiliation: this.model.affiliation,
         theme: this.model.theme,
-        language: this.model.language,
+        language: this.model.language
       }
       const userService = useUserService()
       userService.update(this.cacheUser.uid, payload)
@@ -250,10 +261,10 @@ export default {
         username: this.cacheUser.username,
         firstname: this.cacheUser.given_name,
         lastname: this.cacheUser.family_name,
-        orcid: this.cacheUser.attributes.orcid,
-        affiliation: this.cacheUser.attributes.affiliation,
-        theme: this.cacheUser.attributes.theme,
-        language: this.cacheUser.attributes.language
+        orcid: this.cacheUser.orcid,
+        affiliation: this.cacheUser.affiliation,
+        theme: this.cacheUser.theme ? this.cacheUser.theme : 'light',
+        language: this.cacheUser.language ? this.cacheUser.language : 'en'
       }
     },
     retrieve () {

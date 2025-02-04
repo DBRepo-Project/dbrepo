@@ -20,6 +20,8 @@ import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 @Log4j2
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -42,7 +44,7 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.0")
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("admin")
             .withAdminPassword("admin")
@@ -60,13 +62,13 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
         /* mock */
         try {
-            keycloakGateway.deleteUser(keycloakGateway.findByUsername(USER_1_USERNAME).getId());
+            keycloakGateway.deleteUser(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()));
         } catch (Exception e) {
             /* ignore */
         }
         keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         final User request = User.builder()
-                .id(keycloakGateway.findByUsername(USER_1_USERNAME).getId())
+                .id(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
                 .username(USER_1_USERNAME)
                 .build();
 

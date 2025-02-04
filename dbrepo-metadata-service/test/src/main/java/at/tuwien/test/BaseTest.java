@@ -580,18 +580,6 @@ public abstract class BaseTest {
             .password(USER_1_PASSWORD)
             .build();
 
-    public final static at.tuwien.api.keycloak.UserDto USER_1_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
-            .id(USER_1_ID)
-            .username(USER_1_USERNAME)
-            .emailVerified(USER_1_VERIFIED)
-            .notBefore(USER_1_NOT_BEFORE)
-            .totp(USER_1_TOTP)
-            .attributes(at.tuwien.api.keycloak.UserAttributesDto.builder()
-                    .ldapEntryDn(new String[]{"cn=" + USER_1_USERNAME + ",dn=dbrepo,dn=at"})
-                    .ldapId(new UUID[]{USER_1_KEYCLOAK_ID})
-                    .build())
-            .build();
-
     public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -786,15 +774,6 @@ public abstract class BaseTest {
             .id(USER_3_KEYCLOAK_ID)
             .ldapId(USER_3_ID)
             .username(USER_3_USERNAME)
-            .build();
-
-    public final static at.tuwien.api.keycloak.UserDto USER_3_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
-            .id(USER_3_ID)
-            .username(USER_3_USERNAME)
-            .email(USER_3_EMAIL)
-            .emailVerified(USER_3_VERIFIED)
-            .notBefore(USER_3_NOT_BEFORE)
-            .totp(USER_3_TOTP)
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,

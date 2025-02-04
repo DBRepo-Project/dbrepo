@@ -24,7 +24,7 @@ dependencies:
     condition: searchdb.enabled
   - name: keycloak
     alias: authservice
-    version: 21.6.1  # app version: 24.0.5
+    version: 24.0.3  # app version: 26.0.4
     repository: https://charts.bitnami.com/bitnami
     condition: authservice.enabled
   - name: mariadb-galera

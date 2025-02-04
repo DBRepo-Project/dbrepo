@@ -1,74 +1,57 @@
 package at.tuwien.utils;
 
-import at.tuwien.api.auth.KeycloakErrorDto;
 import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.config.KeycloakConfig;
-import at.tuwien.exception.*;
-import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.mapper.MetadataMapper;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.UUID;
+import java.util.List;
 
 @Log4j2
 @Component
 public class KeycloakUtils {
 
-    private final RestTemplate keycloakRestTemplate;
+    private final Keycloak keycloak;
     private final KeycloakConfig keycloakConfig;
-    private final KeycloakGateway keycloakGateway;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public KeycloakUtils(@Qualifier("keycloakRestTemplate") RestTemplate keycloakRestTemplate, KeycloakConfig keycloakConfig,
-                         KeycloakGateway keycloakGateway) {
-        this.keycloakRestTemplate = keycloakRestTemplate;
+    public KeycloakUtils(Keycloak keycloak, KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
+        this.keycloak = keycloak;
         this.keycloakConfig = keycloakConfig;
-        this.keycloakGateway = keycloakGateway;
+        this.metadataMapper = metadataMapper;
     }
 
-    public void createUser(UserCreateDto data) throws AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException, UserExistsException {
-        final String path = "/admin/realms/dbrepo/users";
-        log.trace("create user at endpoint {} with path {}", keycloakConfig.getKeycloakEndpoint(), path);
-        final ResponseEntity<Void> response;
-        try {
-            response = keycloakRestTemplate.exchange(path, HttpMethod.POST, new HttpEntity<>(data), Void.class);
-        } catch (HttpServerErrorException e) {
-            log.error("Failed to create user: {}", e.getMessage());
-            throw new AuthServiceConnectionException("Service unavailable", e);
-        } catch (HttpClientErrorException.Conflict e) {
-            if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
-                final KeycloakErrorDto error = e.getResponseBodyAs(KeycloakErrorDto.class);
-                if (error != null && error.getErrorMessage().contains("same email")) {
-                    log.error("Failed to create user: email exists: {}", e.getMessage());
-                    throw new EmailExistsException("E-Mail exists", e);
-                }
+    public void createUser(UserCreateDto data) {
+        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .create(metadataMapper.userCreateDtoToUserRepresentation(data))) {
+            if (response.getStatus() != 201) {
+                log.error("Failed to create user: {}", response.getStatus());
             }
-            log.error("Failed to create user: user exists: {}", e.getMessage());
-            throw new UserExistsException("User exists", e);
-        }
-        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to create user: unexpected status: {}", response.getStatusCode().value());
-            throw new AuthServiceException("Unexpected status: " + response.getStatusCode().value());
         }
         log.debug("Created user {} at auth service", data.getUsername());
     }
 
-    public void deleteUser(String username) throws AuthServiceException, AuthServiceConnectionException {
-        try {
-            final UUID userId = keycloakGateway.findByUsername(username).getId();
-            keycloakGateway.deleteUser(userId);
-        } catch (UserNotFoundException e) {
-            /* ignore */
+    public void deleteUser(String username) {
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .search(username);
+        if (users.isEmpty()) {
+            log.error("Failed to find user");
+            return;
+        }
+        try (Response response = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .delete(users.get(0).getId())) {
+            if (response.getStatus() != 200) {
+                log.error("Failed to delete user: {}", response.getStatus());
+            }
         }
     }
 }

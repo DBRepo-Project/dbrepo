@@ -1,10 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.CreateUserDto;
-import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -98,7 +95,7 @@ public class UserEndpoint extends AbstractEndpoint {
     @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_user_create")
     @Operation(summary = "Create user",
-            description = "Creates a user in the auth service and metadata database. Requires that no credentials are sent in the request.",
+            description = "This webhook is called from the auth service to add a user to the metadata database. Requires role `system`.",
             hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -147,78 +144,6 @@ public class UserEndpoint extends AbstractEndpoint {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserBriefDto(
                         userService.create(data)));
-    }
-
-    @PostMapping("/token")
-    @Observed(name = "dbrepo_user_token")
-    @Operation(summary = "Create token",
-            description = "Creates a user token via the Auth Service.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Obtained user token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = TokenDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid login request",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not allowed to get token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "428",
-                    description = "Account is not fully setup in auth service (requires password change?)",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to auth service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
-            throws AuthServiceConnectionException, CredentialsInvalidException, AccountNotSetupException {
-        log.debug("endpoint get token, data.username={}", data.getUsername());
-        return ResponseEntity.accepted()
-                .body(authenticationService.obtainToken(data));
-    }
-
-    @PutMapping("/token")
-    @Observed(name = "dbrepo_user_refresh_token")
-    @Operation(summary = "Refresh token",
-            description = "Refreshes user token by refresh token.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Refreshed user token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = TokenDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid refresh token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to auth service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<TokenDto> refreshToken(@NotNull @Valid @RequestBody RefreshTokenRequestDto data)
-            throws AuthServiceConnectionException, CredentialsInvalidException {
-        log.debug("endpoint refresh token");
-        /* check */
-        return ResponseEntity.accepted()
-                .body(authenticationService.refreshToken(data.getRefreshToken()));
     }
 
     @GetMapping("/{userId}")
@@ -300,7 +225,8 @@ public class UserEndpoint extends AbstractEndpoint {
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                                @NotNull @Valid @RequestBody UserUpdateDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
-            UserNotFoundException, DatabaseNotFoundException {
+            UserNotFoundException, DatabaseNotFoundException, AuthServiceException,
+            AuthServiceConnectionException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);
         if (!user.getId().equals(getId(principal))) {

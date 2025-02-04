@@ -3,9 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.EmailExistsException;
-import at.tuwien.exception.UserExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -67,7 +65,8 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException {
+    public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException,
+            AuthServiceException, AuthServiceConnectionException {
 
         /* test */
         final User response = userService.create(USER_2_SIGNUP_REQUEST_DTO);
@@ -75,7 +74,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void modify_succeeds() {
+    public void modify_succeeds() throws UserNotFoundException, AuthServiceException, AuthServiceConnectionException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -97,7 +96,8 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() {
+    public void updatePassword_succeeds() throws UserNotFoundException, AuthServiceException,
+            AuthServiceConnectionException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_3_PASSWORD)
                 .build();

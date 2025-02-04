@@ -5,7 +5,8 @@
 <script>
 export default {
   mounted () {
-    if (!this.loggedIn) {
+    const { loggedIn } = useOidcAuth()
+    if (!loggedIn) {
       return
     }
     this.$router.push('/user/info')

@@ -112,17 +112,19 @@ export default defineNuxtConfig({
     defaultProvider: 'keycloak',
     providers: {
       keycloak: {
-        clientId: '',
-        clientSecret: '',
+        audience: 'account',
         authorizationUrl: '',
-        userInfoUrl: '',
-        tokenUrl: '',
-        logoutUrl: '',
-        scope: ['openid', 'roles'],
-        optionalClaims: ['realm_access'],
-        redirectUri: '',
+        baseUrl: 'http://localhost/realms/dbrepo',
+        clientId: 'dbrepo-client',
+        clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
         exposeAccessToken: true,
         logoutRedirectUri: '',
+        logoutUrl: '',
+        optionalClaims: ['realm_access'],
+        redirectUri: 'http://localhost',
+        scope: ['openid', 'roles'],
+        tokenUrl: '',
+        userInfoUrl: ''
       },
     },
     middleware: {

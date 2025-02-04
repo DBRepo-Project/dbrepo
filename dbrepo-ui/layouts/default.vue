@@ -376,10 +376,10 @@ export default {
       this.$i18n.locale = this.locale
     },
     setTheme () {
-      if (!this.cacheUser?.attributes?.theme) {
+      if (!this.cacheUser?.theme) {
         return
       }
-      switch (this.cacheUser.attributes.theme) {
+      switch (this.cacheUser.theme) {
         case 'dark':
           this.$vuetify.theme.global.name = 'tuwThemeDark'
           break

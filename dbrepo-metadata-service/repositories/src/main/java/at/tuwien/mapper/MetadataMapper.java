@@ -30,9 +30,8 @@ import at.tuwien.api.datacite.doi.*;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdCreatorDto;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
-import at.tuwien.api.keycloak.CredentialDto;
-import at.tuwien.api.keycloak.CredentialTypeDto;
-import at.tuwien.api.keycloak.UpdateCredentialsDto;
+import at.tuwien.api.keycloak.TokenDto;
+import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
@@ -48,8 +47,8 @@ import at.tuwien.api.semantics.OntologyBriefDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.api.user.external.ExternalResultType;
 import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
@@ -72,6 +71,8 @@ import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
+import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.mapstruct.*;
 
 import java.text.Normalizer;
@@ -95,6 +96,16 @@ public interface MetadataMapper {
     })
     DataTypeDto dataTypeToDataTypeDto(DataType data);
 
+    @Mappings({
+            @Mapping(target = "attributes", ignore = true)
+    })
+    UserRepresentation userCreateDtoToUserRepresentation(UserCreateDto data);
+
+    @Mappings({
+            @Mapping(target = "accessToken", source = "token")
+    })
+    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
+
     BannerMessageDto bannerMessageToBannerMessageDto(BannerMessage data);
 
     BannerMessageBriefDto bannerMessageToBannerMessageBriefDto(BannerMessage data);
@@ -109,6 +120,16 @@ public interface MetadataMapper {
             @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping")
     })
     Container containerCreateRequestDtoToContainer(CreateContainerDto data);
+
+    UserUpdateDto userToUserUpdateDto(User data);
+
+    default List<String> optionalValueToMap(String value) {
+        final List<String> attr = new LinkedList<>();
+        if (value != null) {
+            attr.add(value);
+        }
+        return attr;
+    }
 
     ContainerDto containerToContainerDto(Container data);
 
@@ -747,35 +768,12 @@ public interface MetadataMapper {
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
-    default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
-        return UpdateCredentialsDto.builder()
-                .credentials(List.of(CredentialDto.builder()
-                        .temporary(false)
-                        .type(CredentialTypeDto.PASSWORD)
-                        .value(password)
-                        .build()))
-                .build();
-    }
-
-    /* keep */
-    UserBriefDto keycloakUserDtoToUserBriefDto(at.tuwien.api.keycloak.UserDto data);
-
-    /* keep */
-    @Mappings({
-            @Mapping(target = "id", expression = "java(data.getId().toString())")
-    })
-    UserDetailsDto userDtoToUserDetailsDto(UserDto data);
-
-    User userDtoToUser(at.tuwien.api.keycloak.UserDto data);
-
     /* keep */
     @Mappings({
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserBriefDto userToUserBriefDto(User data);
-
-    UserBriefDto userDtoToUserBriefDto(UserDto data);
 
     /* keep */
     @Mappings({
@@ -788,9 +786,6 @@ public interface MetadataMapper {
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserDto userToUserDto(User data);
-
-    /* keep */
-    User userDtoToUserDto(UserDto data);
 
     /* keep */
     @Named("userToFullName")

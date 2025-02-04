@@ -1,7 +1,6 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.CreateUserDto;
-import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -213,7 +212,8 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-information"})
-    public void modify_succeeds() throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException {
+    public void modify_succeeds() throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
+            AuthServiceException, AuthServiceConnectionException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -262,99 +262,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         password_generic(USER_1_PRINCIPAL, request);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void getToken_anonymous_succeeds() throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, AccountNotSetupException, CredentialsInvalidException {
-
-        /* test */
-        getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, USER_1);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void getToken_loggedIn_succeeds() throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, AccountNotSetupException, CredentialsInvalidException {
-
-        /* test */
-        getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, USER_1);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void getToken_notExists_succeeds() throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException, AccountNotSetupException, CredentialsInvalidException {
-
-        /* mock */
-        when(authenticationService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_KEYCLOAK_DTO);
-        when(userService.create(any(CreateUserDto.class)))
-                .thenReturn(USER_1);
-
-        /* test */
-        getToken_generic(USER_1_LOGIN_REQUEST_DTO, USER_1_PRINCIPAL, null);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void refreshToken_anonymous_succeeds() throws AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* mock */
-        when(authenticationService.refreshToken(anyString()))
-                .thenReturn(TOKEN_DTO);
-
-        /* test */
-        final ResponseEntity<?> response = userEndpoint.refreshToken(REFRESH_TOKEN_REQUEST_DTO);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void refreshToken_loggedIn_succeeds() throws AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* mock */
-        when(authenticationService.refreshToken(anyString()))
-                .thenReturn(TOKEN_DTO);
-
-        /* test */
-        final ResponseEntity<?> response = userEndpoint.refreshToken(REFRESH_TOKEN_REQUEST_DTO);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void refreshToken_authServiceConnection_fails() throws AuthServiceConnectionException,
-            CredentialsInvalidException {
-
-        /* mock */
-        doThrow(AuthServiceConnectionException.class)
-                .when(authenticationService)
-                .refreshToken(anyString());
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            userEndpoint.refreshToken(REFRESH_TOKEN_REQUEST_DTO);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void refreshToken_invalidCredentials_fails() throws AuthServiceConnectionException,
-            CredentialsInvalidException {
-
-        /* mock */
-        doThrow(CredentialsInvalidException.class)
-                .when(authenticationService)
-                .refreshToken(anyString());
-
-        /* test */
-        assertThrows(CredentialsInvalidException.class, () -> {
-            userEndpoint.refreshToken(REFRESH_TOKEN_REQUEST_DTO);
-        });
     }
 
     /* ################################################################################################### */
@@ -422,7 +329,8 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void modify_generic(UUID userId, User user, Principal principal, UserUpdateDto data)
-            throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException {
+            throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException, AuthServiceException,
+            AuthServiceConnectionException {
         /* mock */
         if (user != null) {
             when(userService.findById(userId))
@@ -457,27 +365,5 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<?> response = userEndpoint.password(USER_1_ID, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-    }
-
-    protected void getToken_generic(LoginRequestDto request, Principal principal, User user)
-            throws UserNotFoundException, AuthServiceConnectionException, AccountNotSetupException,
-            CredentialsInvalidException, AuthServiceException {
-
-        /* mock */
-        when(authenticationService.obtainToken(any(LoginRequestDto.class)))
-                .thenReturn(TOKEN_DTO);
-        if (user != null) {
-            when(userService.findByUsername(principal.getName()))
-                    .thenReturn(user);
-        } else {
-            doThrow(UserNotFoundException.class)
-                    .when(userService)
-                    .findByUsername(principal.getName());
-        }
-
-        /* test */
-        final ResponseEntity<?> response = userEndpoint.getToken(request);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody());
     }
 }

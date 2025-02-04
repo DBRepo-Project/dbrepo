@@ -86,8 +86,6 @@ public class UserServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(userRepository.save(any(User.class)))
                 .thenReturn(USER_1);
-        when(keycloakGateway.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_KEYCLOAK_DTO);
 
         /* test */
         final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO);
@@ -96,7 +94,7 @@ public class UserServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void modify_succeeds() {
+    public void modify_succeeds() throws UserNotFoundException, AuthServiceException, AuthServiceConnectionException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))

@@ -4,6 +4,7 @@ import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.CredentialsInvalidException;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
@@ -62,6 +63,9 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private KeycloakGateway keycloakGateway;
 
     @Container
     private static KeycloakContainer keycloakContainer = new KeycloakContainer(KEYCLOAK_IMAGE)
@@ -124,7 +128,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
 
         /* pre condition */
         keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
-        final TokenDto jwt = authenticationService.obtainToken(USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO);
+        final TokenDto jwt = keycloakGateway.obtainUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD);
 
         /* test */
         this.mockMvc.perform(get("/api/database/1").header("Authorization", "Bearer " + jwt.getAccessToken()))
@@ -140,7 +144,7 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
 
         /* pre condition */
         keycloakUtils.createUser(USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST);
-        final TokenDto jwt = authenticationService.obtainToken(USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO);
+        final TokenDto jwt = keycloakGateway.obtainUserToken(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD);
 
 
         /* test */

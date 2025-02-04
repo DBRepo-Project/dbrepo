@@ -52,9 +52,6 @@ export default {
       return this.cacheStore.getAccess
     },
     canViewSchema () {
-      if (this.error) {
-        return false
-      }
       if (!this.database) {
         return false
       }

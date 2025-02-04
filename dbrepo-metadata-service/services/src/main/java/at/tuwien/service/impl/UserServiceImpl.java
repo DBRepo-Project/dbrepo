@@ -4,8 +4,12 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.AuthServiceConnectionException;
+import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -23,11 +27,16 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final MetadataMapper metadataMapper;
     private final UserRepository userRepository;
+    private final KeycloakGateway keycloakGateway;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(MetadataMapper metadataMapper, UserRepository userRepository,
+                           KeycloakGateway keycloakGateway) {
+        this.metadataMapper = metadataMapper;
         this.userRepository = userRepository;
+        this.keycloakGateway = keycloakGateway;
     }
 
     @Override
@@ -61,10 +70,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(CreateUserDto data) {
+    public User create(CreateUserDto data) throws UserNotFoundException, AuthServiceException {
         /* create at authentication service */
         final User entity = User.builder()
                 .id(data.getLdapId())
+                .keycloakId(data.getId())
                 .username(data.getUsername())
                 .theme("light")
                 .mariadbPassword(getMariaDbPassword(RandomStringUtils.randomAlphabetic(10))) /* user needs to set it later to access */
@@ -73,21 +83,23 @@ public class UserServiceImpl implements UserService {
                 .lastname(data.getFamilyName())
                 .isInternal(false)
                 .build();
-        /* create at metadata database */
+        /* save in metadata database */
         final User user = userRepository.save(entity);
         log.info("Created user with id: {}", user.getId());
         return user;
     }
 
     @Override
-    public User modify(User user, UserUpdateDto data) {
+    public User modify(User user, UserUpdateDto data) throws UserNotFoundException, AuthServiceException {
         user.setFirstname(data.getFirstname());
         user.setLastname(data.getLastname());
         user.setAffiliation(data.getAffiliation());
         user.setOrcid(data.getOrcid());
         user.setTheme(data.getTheme());
         user.setLanguage(data.getLanguage());
-        /* create at metadata database */
+        /* save in auth service */
+        keycloakGateway.updateUser(user.getKeycloakId(), data);
+        /* save in metadata database */
         user = userRepository.save(user);
         log.info("Modified user with id: {}", user.getId());
         return user;

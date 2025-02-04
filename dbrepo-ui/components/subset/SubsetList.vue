@@ -6,7 +6,6 @@
       rounded="0"
       :text="$t('pages.database.subpages.subsets.empty')" />
     <v-card
-      v-if="subsets.length > 0"
       variant="flat"
       rounded="0">
       <v-list-item

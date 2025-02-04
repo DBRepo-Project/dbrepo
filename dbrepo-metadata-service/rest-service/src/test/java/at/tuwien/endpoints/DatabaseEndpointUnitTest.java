@@ -353,15 +353,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
     public void visibility_hasRole_succeeds() throws NotAllowedException, UserNotFoundException,
-            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, AuthServiceException,
-            AuthServiceConnectionException {
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException{
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* mock */
-        when(keycloakGateway.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_KEYCLOAK_DTO);
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
 
@@ -509,7 +506,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws DataServiceConnectionException, DataServiceException,
             NotAllowedException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException, AuthServiceException, AuthServiceConnectionException {
+            SearchServiceConnectionException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .id(USER_4_ID)
                 .build();
@@ -517,8 +514,6 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(keycloakGateway.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_KEYCLOAK_DTO);
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         when(userService.findById(USER_4_ID))

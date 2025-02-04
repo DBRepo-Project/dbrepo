@@ -1,8 +1,9 @@
 package at.tuwien.gateway;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.keycloak.UserDto;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AuthServiceConnectionException;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.impl.KeycloakGatewayImpl;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -12,15 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.Charset;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -187,235 +189,6 @@ public class KeycloakGatewayUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(AuthServiceException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
-        });
-    }
-
-    @Test
-    public void findByUsername_notFound_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        when(keycloakRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(new UserDto[]{}));
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            keycloakGateway.findByUsername(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void findByUsername_connection_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpServerErrorException.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            keycloakGateway.findByUsername(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void findByUsername_unexpected_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpClientErrorException.Conflict.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
-
-        /* test */
-        assertThrows(AuthServiceException.class, () -> {
-            keycloakGateway.findByUsername(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void findById_succeeds() throws UserNotFoundException, AuthServiceException, AuthServiceConnectionException {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        when(keycloakRestTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(USER_1_KEYCLOAK_DTO));
-
-        /* test */
-        final UserDto response = keycloakGateway.findById(USER_1_ID);
-        assertEquals(USER_1_ID, response.getId());
-    }
-
-    @Test
-    public void findById_notFound_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpClientErrorException.NotFound.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto.class));
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            keycloakGateway.findById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void findById_connection_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpServerErrorException.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto.class));
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            keycloakGateway.findById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void findById_unexpected_fails() {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-        doThrow(HttpClientErrorException.Conflict.class)
-                .when(keycloakRestTemplate)
-                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto.class));
-
-        /* test */
-        assertThrows(AuthServiceException.class, () -> {
-            keycloakGateway.findById(USER_1_ID);
-        });
-    }
-
-    @Test
-    public void refreshUserToken_succeeds() throws AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-
-        /* test */
-        final TokenDto response = keycloakGateway.refreshUserToken(TOKEN_DTO.getRefreshToken());
-        assertNotNull(response.getAccessToken());
-    }
-
-    @Test
-    public void refreshUserToken_connection_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            keycloakGateway.refreshUserToken(TOKEN_DTO.getRefreshToken());
-        });
-    }
-
-    @Test
-    public void refreshUserToken_unauthorized_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.Unauthorized.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(CredentialsInvalidException.class, () -> {
-            keycloakGateway.refreshUserToken(TOKEN_DTO.getRefreshToken());
-        });
-    }
-
-    @Test
-    public void refreshUserToken_badRequest_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.BadRequest.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(CredentialsInvalidException.class, () -> {
-            keycloakGateway.refreshUserToken(TOKEN_DTO.getRefreshToken());
-        });
-    }
-
-    @Test
-    public void refreshUserToken_badRequestInactiveSession_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.BadRequest.create(HttpStatus.BAD_REQUEST, "Session not active", new HttpHeaders(), new byte[]{}, Charset.defaultCharset()))
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(CredentialsInvalidException.class, () -> {
-            keycloakGateway.refreshUserToken(TOKEN_DTO.getRefreshToken());
-        });
-    }
-
-    @Test
-    public void obtainUserToken_succeeds() throws AuthServiceConnectionException,
-            AccountNotSetupException, CredentialsInvalidException {
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.OK)
-                        .body(TOKEN_DTO));
-
-        /* test */
-        final TokenDto response = keycloakGateway.obtainUserToken(USER_1_USERNAME, USER_1_PASSWORD);
-        assertNotNull(response.getAccessToken());
-    }
-
-    @Test
-    public void obtainUserToken_connection_fails() {
-
-        /* mock */
-        doThrow(HttpServerErrorException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(AuthServiceConnectionException.class, () -> {
-            keycloakGateway.obtainUserToken(USER_1_USERNAME, USER_1_PASSWORD);
-        });
-    }
-
-    @Test
-    public void obtainUserToken_unauthorized_fails() {
-
-        /* mock */
-        doThrow(HttpClientErrorException.Unauthorized.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
-
-        /* test */
-        assertThrows(CredentialsInvalidException.class, () -> {
-            keycloakGateway.obtainUserToken(USER_1_USERNAME, USER_1_PASSWORD);
         });
     }
 

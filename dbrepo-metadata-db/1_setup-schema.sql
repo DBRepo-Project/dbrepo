@@ -3,6 +3,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS `mdb_users`
 (
     id               character varying(36)  NOT NULL,
+    keycloak_id      character varying(36)  NOT NULL,
     username         character varying(255) NOT NULL,
     firstname        character varying(255),
     lastname         character varying(255),
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
     theme            character varying(255) NOT NULL default ('light'),
     language         character varying(3)   NOT NULL default ('en'),
     PRIMARY KEY (id),
+    UNIQUE (keycloak_id),
     UNIQUE (username)
 ) WITH SYSTEM VERSIONING;
 

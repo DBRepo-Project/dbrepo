@@ -950,7 +950,7 @@ ui:
       ## @param ui.public.doi.endpoint The DOI proxy.
       endpoint: https://doi.org
   ## @param ui.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
   ## @skip ui.extraVolumes
   extraVolumes: [ ]
   #  - name: images-map

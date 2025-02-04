@@ -391,7 +391,7 @@ export default {
       return this.roles.includes('modify-database-image')
     },
     canViewSettings () {
-      if (this.error || !this.database || !this.cacheUser || !this.access) {
+      if (!this.database || !this.cacheUser || !this.access) {
         return false
       }
       const userService = useUserService()

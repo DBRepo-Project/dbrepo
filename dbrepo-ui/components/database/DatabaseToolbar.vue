@@ -149,13 +149,13 @@ export default {
       return this.hasReadAccess
     },
     canCreateView () {
-      if (!this.cacheUser || !this.isOwner) {
+      if (!this.cacheUser || !this.isOwner || !this.roles) {
         return false
       }
       return this.roles.includes('create-database-view')
     },
     canCreateTable () {
-      if (!this.cacheUser || !this.hasWriteAccess) {
+      if (!this.cacheUser || !this.hasWriteAccess || !this.roles) {
         return false
       }
       return this.roles.includes('create-table')

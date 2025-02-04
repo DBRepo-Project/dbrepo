@@ -1,13 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
-
-import java.util.UUID;
+import at.tuwien.exception.AuthServiceConnectionException;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.CredentialsInvalidException;
+import at.tuwien.exception.UserNotFoundException;
 
 public interface AuthenticationService {
 
@@ -20,23 +18,6 @@ public interface AuthenticationService {
      * @throws UserNotFoundException      The user was not found after creation in the auth database.
      */
     void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
-
-    /**
-     * Finds a user with given username.
-     *
-     * @param username The username.
-     * @return The user, if successful.
-     * @throws AuthServiceException           The auth service responded with unexpected behavior.
-     * @throws AuthServiceConnectionException The connection with the auth service could not be established.
-     * @throws UserNotFoundException      The user was not found in the auth database.
-     */
-    UserDto findByUsername(String username) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
-
-    UserDto findById(UUID id) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
-
-    TokenDto obtainToken(LoginRequestDto data) throws AuthServiceConnectionException, CredentialsInvalidException, AccountNotSetupException;
-
-    TokenDto refreshToken(String refreshToken) throws AuthServiceConnectionException, CredentialsInvalidException;
 
     /**
      * Updates the password of a user with given id.

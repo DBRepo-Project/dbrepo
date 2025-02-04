@@ -1,6 +1,5 @@
 package at.tuwien.mvc;
 
-import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
@@ -593,11 +592,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
-        try {
-            userEndpoint.refreshToken(RefreshTokenRequestDto.builder().build());
-        } catch (Exception e) {
-            /* ignore */
-        }
 
         /* test */
         for (String metric : List.of("dbrepo_user_refresh_token", "dbrepo_users_list",
@@ -615,11 +609,6 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         /* mock */
         try {
             userEndpoint.create(USER_1_SIGNUP_REQUEST_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            userEndpoint.getToken(USER_1_LOGIN_REQUEST_DTO);
         } catch (Exception e) {
             /* ignore */
         }
