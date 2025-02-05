@@ -546,6 +546,7 @@ public abstract class BaseTest {
 
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
+            .keycloakId(USER_1_KEYCLOAK_ID)
             .username(USER_1_USERNAME)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
@@ -646,6 +647,7 @@ public abstract class BaseTest {
 
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
+            .keycloakId(USER_2_KEYCLOAK_ID)
             .username(USER_2_USERNAME)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
@@ -734,6 +736,7 @@ public abstract class BaseTest {
 
     public final static User USER_3 = User.builder()
             .id(USER_3_ID)
+            .keycloakId(USER_3_KEYCLOAK_ID)
             .username(USER_3_USERNAME)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
@@ -813,6 +816,7 @@ public abstract class BaseTest {
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
+            .keycloakId(USER_4_KEYCLOAK_ID)
             .username(USER_4_USERNAME)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
@@ -853,7 +857,7 @@ public abstract class BaseTest {
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_5_LDAP_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public final static UUID USER_5_KEYCLOAK_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_5_USERNAME = "nobody";
     public final static String USER_5_FIRSTNAME = "No";
     public final static String USER_5_LASTNAME = "Body";
@@ -908,6 +912,7 @@ public abstract class BaseTest {
 
     public final static User USER_5 = User.builder()
             .id(USER_5_ID)
+            .keycloakId(USER_5_KEYCLOAK_ID)
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)

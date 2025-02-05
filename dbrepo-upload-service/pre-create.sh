@@ -21,7 +21,7 @@ END
   exit 0
 fi
 
-echo "[DEBUG] [pre-create hook] request has 'Authorization' header present" >&2
+echo "[DEBUG] [pre-create hook] request has 'Authorization' header p  resent" >&2
 
 BEARER="$(echo "$REQUEST_RAW" | jq -r '.Event.HTTPRequest.Header.Authorization[0]')"
 
