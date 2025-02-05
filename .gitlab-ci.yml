@@ -124,11 +124,15 @@ lint-open-api-version:
     VERSION: 4.45.1
     BINARY: yq_linux_amd64
   before_script:
+    - echo "${DOC_VERSION}" > ./doc-version.txt
+    - echo "${APP_VERSION}" > ./app-version.txt
     - 'apk --no-cache add bash wget'
     - 'wget https://github.com/mikefarah/yq/releases/download/v${VERSION}/${BINARY} -O /usr/bin/yq && chmod +x /usr/bin/yq'
   script:
-    - yq '.externalDocs.url' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
-    - yq '.info.version' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}"
+    - yq '.externalDocs.url' ./.docs/.openapi/api.base.yaml | grep "${DOC_VERSION}" > ./openapi-doc-version.txt
+    - diff ./openapi-doc-version.txt ./doc-version.txt
+    - yq '.info.version' ./.docs/.openapi/api.base.yaml | grep "${APP_VERSION}" > ./openapi-app-version.txt
+    - diff ./openapi-app-version.txt ./app-version.txt
 
 build-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
