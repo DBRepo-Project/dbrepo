@@ -569,7 +569,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
-        assertEquals(2, database.getTables().size());
+        assertEquals(4, database.getTables().size());
         assertEquals(2, database.getViews().size());
         assertNotEquals(0, database.getAccesses().size());
     }

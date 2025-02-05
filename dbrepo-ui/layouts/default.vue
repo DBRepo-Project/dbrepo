@@ -100,8 +100,9 @@
           class="mr-2"
           color="secondary"
           variant="flat"
+          :loading="loadingLogin"
           :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-login' : null"
-          @click="login()">
+          @click="loadingLogin=true;login()">
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
@@ -152,7 +153,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { useCacheStore } from '@/stores/cache.js'
 
 const { loggedIn, user, login, logout } = useOidcAuth()
@@ -160,7 +160,6 @@ const cacheStore = useCacheStore()
 cacheStore.setUser(loggedIn ? user.value?.userInfo : null)
 cacheStore.setRoles(loggedIn ? user.value?.claims?.realm_access?.roles : [])
 const runtimeConfig = useRuntimeConfig()
-const config = ref(runtimeConfig)
 useServerHead({
   title: runtimeConfig.public.title,
   meta: [
@@ -185,6 +184,7 @@ export default {
       model: null,
       query: null,
       loading: true,
+      loadingLogin: true,
       databaseError: null,
       accessError: null,
       searchResults: [],
