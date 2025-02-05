@@ -44,7 +44,7 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     }
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer(KEYCLOAK_IMAGE)
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("admin")
             .withAdminPassword("admin")
@@ -53,7 +53,9 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @DynamicPropertySource
     static void keycloakProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.endpoints.authService", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+        final String authServiceEndpoint = "http://localhost:" + keycloakContainer.getMappedPort(8080);
+        log.trace("set auth endpoint: {}", authServiceEndpoint);
+        registry.add("dbrepo.endpoints.authService", () -> authServiceEndpoint);
     }
 
     @Test
@@ -61,14 +63,10 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
             AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
-        try {
-            keycloakGateway.deleteUser(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()));
-        } catch (Exception e) {
-            /* ignore */
-        }
-        keycloakUtils.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.deleteUser(USER_1_USERNAME);
+        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
         final User request = User.builder()
-                .id(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
+                .keycloakId(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
                 .username(USER_1_USERNAME)
                 .build();
 

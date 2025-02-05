@@ -8,6 +8,7 @@ import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.MetadataMapper;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
@@ -66,27 +67,33 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void deleteUser(UUID id) throws AuthServiceException {
+    public void deleteUser(UUID id) throws UserNotFoundException {
         try (Response response = keycloak.realm(keycloakConfig.getRealm())
                 .users()
                 .delete(String.valueOf(id))) {
-            if (response.getStatus() != 200) {
-                log.error("Failed to delete user: unexpected response status: {}", response.getStatus());
-                throw new AuthServiceException("Unexpected response status: " + response.getStatus());
+            if (response.getStatus() == 404) {
+                log.error("Failed to delete user: not found");
+                throw new UserNotFoundException("Failed to delete user: not found");
             }
         }
         log.info("Deleted user {} at auth service", id);
     }
 
     @Override
-    public void updateUserCredentials(UUID id, UserPasswordDto data) {
+    public void updateUserCredentials(UUID id, UserPasswordDto data) throws UserNotFoundException {
         final CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setCredentialData(data.getPassword());
+        credential.setTemporary(false);
+        credential.setValue(data.getPassword());
         credential.setType(CredentialRepresentation.PASSWORD);
-        keycloak.realm(keycloakConfig.getRealm())
-                .users()
-                .get(String.valueOf(id))
-                .resetPassword(credential);
+        try {
+            keycloak.realm(keycloakConfig.getRealm())
+                    .users()
+                    .get(String.valueOf(id))
+                    .resetPassword(credential);
+        } catch (NotFoundException e) {
+            log.error("Failed to update user password: not found");
+            throw new UserNotFoundException("Failed to update user password: not found", e);
+        }
         log.info("Updated user {} password at auth service", id);
     }
 

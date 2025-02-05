@@ -46,7 +46,6 @@ import at.tuwien.api.orcid.person.name.OrcidNameDto;
 import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.*;
 import at.tuwien.api.user.UserAttributesDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.*;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
@@ -99,12 +98,12 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <ul>
  * <li>Table 1 (Private Data, Private Schema)</li>
  * <li>Table 2 (Private Data, Public Schema)</li>
- * <li>Table 3</li>
- * <li>Table 4</li>
+ * <li>Table 3 (Private Data, Private Schema)</li>
+ * <li>Table 4 (Public Data, Private Schema)</li>
  * <li>Query 1</li>
- * <li>View 1</li>
- * <li>View 2</li>
- * <li>View 3</li>
+ * <li>View 1 (Private Data, Private Schema)</li>
+ * <li>View 2 (Public Data, Public Schema)</li>
+ * <li>View 3 (Public Data, Private Schema)</li>
  * <li>Identifier 1 (Title=en, Description=en, type=database)</li>
  * <li>Identifier 2 (Title=en, Description=en, type=subset, queryId=1)</li>
  * <li>Identifier 3 (Title=en, Description=en, type=view, viewId=1)</li>
@@ -113,22 +112,22 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <p>
  * Database 2 (Private Data, Public Schema, User 2) -> Container 1
  * <ul>
- * <li>Table 5</li>
- * <li>Table 6</li>
- * <li>Table 7</li>
+ * <li>Table 5 (Public Data, Public Schema)</li>
+ * <li>Table 6 (Public Data, Private Schema)</li>
+ * <li>Table 7 (Public Data, Public Schema)</li>
  * <li>Query 2</li>
  * <li>Query 6</li>
- * <li>View 4</li>
+ * <li>View 4 (Public Data, Private Schema)</li>
  * <li>Identifier 5 (Title=de, Description=de)</li>
  * </ul>
  * <p>
  * Database 3 (Public Data, Private Schema, User 3) -> Container 1
  * <ul>
- * <li>Table 8</li>
+ * <li>Table 8 (Private Data, Private Schema)</li>
  * <li>Query 3</li>
  * <li>Query 4</li>
  * <li>Query 5</li>
- * <li>View 5</li>
+ * <li>View 5 (Public Data, Public Schema)</li>
  * <li>Identifier 6 (Title=en, Description=en, Query=3)</li>
  * </ul>
  * <p>
@@ -153,7 +152,7 @@ public abstract class BaseTest {
 
     public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
 
-    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:24.0";
+    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0";
 
     public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
@@ -166,7 +165,7 @@ public abstract class BaseTest {
             "update-semantic-unit", "create-ontology", "update-ontology"};
 
     public final static String[] DEFAULT_CONTAINER_HANDLING = new String[]{"default-container-handling",
-            "create-container", "list-containers", "modify-container-state", "find-container"};
+            "create-container", "list-containers", "modify-container-state"};
 
     public final static String[] ESCALATED_CONTAINER_HANDLING = new String[]{"escalated-container-handling",
             "modify-foreign-container-state", "delete-container"};
@@ -217,7 +216,7 @@ public abstract class BaseTest {
     public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtils.merge(List.of(new String[]{"default-data-steward-roles"},
             ESCALATED_IDENTIFIER_HANDLING, DEFAULT_SEMANTICS_HANDLING, ESCALATED_SEMANTICS_HANDLING, DEFAULT_VIEW_HANDLING));
 
-    public final static String[] DEFAULT_LOCAL_ADMIN_ROLES = new String[]{"admin"};
+    public final static String[] DEFAULT_LOCAL_ADMIN_ROLES = new String[]{"system"};
 
     public final static List<GrantedAuthorityDto> AUTHORITY_LOCAL_ADMIN_ROLES = Arrays.stream(DEFAULT_LOCAL_ADMIN_ROLES)
             .map(GrantedAuthorityDto::new)
@@ -440,6 +439,7 @@ public abstract class BaseTest {
     public final static String USER_BROKER_PASSWORD = "guest";
 
     public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
+    public final static UUID USER_LOCAL_ADMIN_KEYCLOAK_ID = UUID.fromString("703c2ca0-8fc3-4c03-9bc5-4dae6b211e78");
     public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
     @SuppressWarnings("java:S2068")
     public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
@@ -455,7 +455,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
-            .id(String.valueOf(USER_LOCAL_ADMIN_ID))
+            .id(USER_LOCAL_ADMIN_ID.toString())
             .username(USER_LOCAL_ADMIN_USERNAME)
             .password(USER_LOCAL_ADMIN_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
@@ -463,6 +463,7 @@ public abstract class BaseTest {
 
     public final static User USER_LOCAL = User.builder()
             .id(USER_LOCAL_ADMIN_ID)
+            .keycloakId(USER_LOCAL_ADMIN_KEYCLOAK_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
             .mariadbPassword(USER_LOCAL_ADMIN_MARIADB_PASSWORD)
             .theme(USER_LOCAL_ADMIN_THEME)
@@ -2031,7 +2032,7 @@ public abstract class BaseTest {
     public final static String TABLE_6_INTERNALNAME = "names";
     public final static Boolean TABLE_6_VERSIONED = true;
     public final static Boolean TABLE_6_IS_PUBLIC = true;
-    public final static Boolean TABLE_6_SCHEMA_PUBLIC = true;
+    public final static Boolean TABLE_6_SCHEMA_PUBLIC = false;
     public final static Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_6_DESCRIPTION = "Some names dataset";
     public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
@@ -2150,9 +2151,8 @@ public abstract class BaseTest {
     public final static String TABLE_4_NAME = "Sensor 2";
     public final static String TABLE_4_INTERNALNAME = "sensor_2";
     public final static Boolean TABLE_4_VERSIONED = true;
-    public final static Boolean TABLE_4_IS_PUBLIC = false;
+    public final static Boolean TABLE_4_IS_PUBLIC = true;
     public final static Boolean TABLE_4_SCHEMA_PUBLIC = false;
-    public final static Boolean TABLE_4_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_4_DESCRIPTION = "Hello sensor";
     public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
     public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
@@ -2330,7 +2330,6 @@ public abstract class BaseTest {
     public final static Boolean TABLE_8_VERSIONED = true;
     public final static Boolean TABLE_8_IS_PUBLIC = false;
     public final static Boolean TABLE_8_SCHEMA_PUBLIC = false;
-    public final static Boolean TABLE_8_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
     public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
     public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_8_ID;
@@ -5357,7 +5356,7 @@ public abstract class BaseTest {
     public final static String VIEW_3_INTERNAL_NAME = "junit3";
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_3_PUBLIC = false;
+    public final static Boolean VIEW_3_PUBLIC = true;
     public final static Boolean VIEW_3_SCHEMA_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
     public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
@@ -5519,7 +5518,7 @@ public abstract class BaseTest {
     public final static Long VIEW_4_TABLE_ID = TABLE_5_ID;
     public final static Table VIEW_4_TABLE = TABLE_5;
     public final static Boolean VIEW_4_PUBLIC = true;
-    public final static Boolean VIEW_4_SCHEMA_PUBLIC = true;
+    public final static Boolean VIEW_4_SCHEMA_PUBLIC = false;
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
     public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 

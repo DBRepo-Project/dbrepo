@@ -221,12 +221,16 @@ public class UserEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to modify user at auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
                                                @NotNull @Valid @RequestBody UserUpdateDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
-            UserNotFoundException, DatabaseNotFoundException, AuthServiceException,
-            AuthServiceConnectionException {
+            UserNotFoundException, AuthServiceException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);
         if (!user.getId().equals(getId(principal))) {
@@ -276,9 +280,9 @@ public class UserEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> password(@NotNull @PathVariable("userId") UUID userId,
                                          @NotNull @Valid @RequestBody UserPasswordDto data,
-                                         @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
-            AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
-            DataServiceConnectionException, CredentialsInvalidException {
+                                         @NotNull Principal principal) throws NotAllowedException,
+            UserNotFoundException, DatabaseNotFoundException, DataServiceException,
+            DataServiceConnectionException {
         log.debug("endpoint modify a user password, userId={}, principal.name={}", userId, principal.getName());
         final User user = userService.findById(userId);
         if (!user.getUsername().equals(principal.getName())) {

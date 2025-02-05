@@ -20,7 +20,7 @@ public interface KeycloakGateway {
      *
      * @param id The user id.
      */
-    void deleteUser(UUID id) throws AuthServiceException;
+    void deleteUser(UUID id) throws UserNotFoundException;
 
     /**
      * Update the credentials for a given user.
@@ -28,7 +28,7 @@ public interface KeycloakGateway {
      * @param id       The user id.
      * @param password The user credential.
      */
-    void updateUserCredentials(UUID id, UserPasswordDto password);
+    void updateUserCredentials(UUID id, UserPasswordDto password) throws UserNotFoundException;
 
     void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException;
 }

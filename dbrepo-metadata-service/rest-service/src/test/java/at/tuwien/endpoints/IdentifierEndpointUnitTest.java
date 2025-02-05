@@ -124,10 +124,19 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> findAll_anonymousFilterDatabase_parameters() {
         return Stream.of(
-                Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, 1),
-                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, 0),
-                Arguments.arguments("vid", DATABASE_1_ID, null, VIEW_1_ID, null, 0),
-                Arguments.arguments("tid", DATABASE_1_ID, null, null, TABLE_1_ID, 0)
+                Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, null, 1),
+                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 0),
+                Arguments.arguments("vid", DATABASE_1_ID, null, VIEW_1_ID, null, null, 0),
+                Arguments.arguments("tid", DATABASE_1_ID, null, null, TABLE_1_ID, null, 0),
+                Arguments.arguments("status_published", DATABASE_1_ID, null, null, null, "PUBLISHED", 1),
+                Arguments.arguments("status_draft", DATABASE_1_ID, null, null, null, "DRAFT", 0)
+        );
+    }
+
+    public static Stream<Arguments> findAll_filterSubset_parameters() {
+        return Stream.of(
+                Arguments.arguments("status_published", DATABASE_2_ID, null, null, null, "PUBLISHED", 0),
+                Arguments.arguments("status_draft", DATABASE_2_ID, null, null, null, "DRAFT", 1)
         );
     }
 
@@ -201,7 +210,8 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @ParameterizedTest
     @MethodSource("findAll_anonymousFilterDatabase_parameters")
     @WithAnonymousUser
-    public void findAll_anonymousFilterDatabase_succeeds(String name, Long databaseId, Long queryId, Long viewId, Long tableId,
+    public void findAll_anonymousFilterDatabase_succeeds(String name, Long databaseId, Long queryId, Long viewId,
+                                                         Long tableId, IdentifierStatusTypeDto status,
                                                          Integer expectedSize) throws ViewNotFoundException,
             TableNotFoundException, DatabaseNotFoundException {
 
@@ -218,7 +228,26 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, null, databaseId, queryId, viewId, tableId, "application/json", null);
+        final ResponseEntity<?> response = identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, status, databaseId, queryId, viewId, tableId, "application/json", null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        final List<IdentifierBriefDto> identifiers = (List<IdentifierBriefDto>) response.getBody();
+        assertNotNull(identifiers);
+        assertEquals(expectedSize, identifiers.size());
+    }
+
+    @ParameterizedTest
+    @MethodSource("findAll_filterSubset_parameters")
+    @WithMockUser(username = USER_2_USERNAME)
+    public void findAll_filterSubset_succeeds(String name, Long databaseId, Long queryId, Long viewId, Long tableId,
+                                              IdentifierStatusTypeDto status, Integer expectedSize) {
+
+        /* mock */
+        when(identifierService.findAll())
+                .thenReturn(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6, IDENTIFIER_7));
+
+        /* test */
+        final ResponseEntity<?> response = identifierEndpoint.findAll(IdentifierTypeDto.SUBSET, status, databaseId, queryId, viewId, tableId, "application/json", USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<IdentifierBriefDto> identifiers = (List<IdentifierBriefDto>) response.getBody();
@@ -230,7 +259,8 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     @MethodSource("findAll_anonymousFilterDatabase_parameters")
     @WithAnonymousUser
     public void findAll_wrongPrincipalFilterDatabase_succeeds(String name, Long databaseId, Long queryId, Long viewId,
-                                                              Long tableId, Integer expectedSize)
+                                                              Long tableId, IdentifierStatusTypeDto status,
+                                                              Integer expectedSize)
             throws ViewNotFoundException, TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */
@@ -246,7 +276,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, null, databaseId, queryId, viewId, tableId, "application/json", USER_2_PRINCIPAL);
+        final ResponseEntity<?> response = identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, status, databaseId, queryId, viewId, tableId, "application/json", USER_2_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<IdentifierBriefDto> identifiers = (List<IdentifierBriefDto>) response.getBody();
@@ -332,6 +362,75 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
         final List<IdentifierBriefDto> identifiers = (List<IdentifierBriefDto>) response.getBody();
         assertNotNull(identifiers);
         assertEquals(1, identifiers.size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void find_textCsvDatabase_fails() throws IdentifierNotFoundException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
+
+        /* test */
+        assertThrows(FormatNotAvailableException.class, () -> {
+            identifierEndpoint.find(IDENTIFIER_1_ID, "text/csv", null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void find_draft_fails() throws IdentifierNotFoundException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            identifierEndpoint.find(IDENTIFIER_5_ID, "application/json", null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void find_draftNotOwner_fails() throws IdentifierNotFoundException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            identifierEndpoint.find(IDENTIFIER_5_ID, "application/json", USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_draft_succeeds() throws IdentifierNotFoundException, MalformedException, NotAllowedException,
+            DataServiceException, QueryNotFoundException, DataServiceConnectionException, FormatNotAvailableException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
+
+        /* test */
+        identifierEndpoint.find(IDENTIFIER_5_ID, "application/json", USER_2_PRINCIPAL);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void find_defaultHtmlRespondsJson_succeeds() throws IdentifierNotFoundException, MalformedException,
+            NotAllowedException, DataServiceException, QueryNotFoundException, DataServiceConnectionException,
+            FormatNotAvailableException {
+
+        /* mock */
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
+
+        /* test */
+        identifierEndpoint.find(IDENTIFIER_1_ID, "text/html", null);
     }
 
     @Test

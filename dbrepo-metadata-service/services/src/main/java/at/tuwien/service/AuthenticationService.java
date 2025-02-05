@@ -24,9 +24,7 @@ public interface AuthenticationService {
      *
      * @param user The user.
      * @param data The new password.
-     * @throws AuthServiceException           The auth service responded with unexpected behavior.
-     * @throws AuthServiceConnectionException The connection with the auth service could not be established.
+     * @throws UserNotFoundException      The user was not found after creation in the auth database.
      */
-    void updatePassword(User user, UserPasswordDto data) throws AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException, UserNotFoundException;
+    void updatePassword(User user, UserPasswordDto data) throws UserNotFoundException;
 }

@@ -59,8 +59,6 @@
 | `dbrepo_user_find`                 | Get user                      |
 | `dbrepo_user_modify`               | Update user                   |
 | `dbrepo_user_password_modify`      | Update user password          |
-| `dbrepo_user_refresh_token`        | Refresh token                 |
-| `dbrepo_user_token`                | Create token                  |
 | `dbrepo_users_list`                | List users                    |
 | `dbrepo_view_create`               | Create view                   |
 | `dbrepo_view_delete`               | Delete view                   |

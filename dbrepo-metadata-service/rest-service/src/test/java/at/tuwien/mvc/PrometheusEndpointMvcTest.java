@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -594,28 +593,12 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbrepo_user_refresh_token", "dbrepo_users_list",
-                "dbrepo_user_find", "dbrepo_user_modify", "dbrepo_user_password_modify")) {
+        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify",
+                "dbrepo_user_password_modify")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
         generic_openApiDocs(UserEndpoint.class);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void prometheusUserEndpoint2_succeeds() {
-
-        /* mock */
-        try {
-            userEndpoint.create(USER_1_SIGNUP_REQUEST_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        assertThat(registry)
-                .hasObservationWithNameEqualTo("dbrepo_user_token");
     }
 
     @Test

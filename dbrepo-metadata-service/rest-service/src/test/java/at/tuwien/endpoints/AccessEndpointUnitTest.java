@@ -220,6 +220,26 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
+    public void update_ownerNoAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_update(USER_1_PRINCIPAL, USER_1, USER_1_ID, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
+    public void update_ownerNoWriteAllAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_update(USER_1_PRINCIPAL, USER_1, USER_LOCAL_ADMIN_ID, USER_LOCAL, null);
+        });
+    }
+
+    @Test
     @WithAnonymousUser
     public void revoke_anonymous_fails() {
 
@@ -246,6 +266,26 @@ public class AccessEndpointUnitTest extends AbstractUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_revoke(USER_4_PRINCIPAL, USER_4, USER_1_ID, USER_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
+    public void revoke_ownerNoAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_revoke(USER_1_PRINCIPAL, USER_1, USER_1_ID, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
+    public void revoke_ownerNoWriteAllAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_revoke(USER_1_PRINCIPAL, USER_1, USER_LOCAL_ADMIN_ID, USER_LOCAL);
         });
     }
 

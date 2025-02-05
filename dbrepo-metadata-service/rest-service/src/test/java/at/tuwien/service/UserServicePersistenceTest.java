@@ -4,6 +4,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -12,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -30,6 +33,9 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
 
     @Autowired
     private UserService userService;
+
+    @MockBean
+    private KeycloakGateway keycloakGateway;
 
     @BeforeEach
     public void beforeEach() {
@@ -74,7 +80,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void modify_succeeds() throws UserNotFoundException, AuthServiceException, AuthServiceConnectionException {
+    public void modify_succeeds() throws UserNotFoundException, AuthServiceException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -83,6 +89,11 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
                 .theme("dark")
                 .language("de")
                 .build();
+
+        /* mock */
+        doNothing()
+                .when(keycloakGateway)
+                .updateUser(USER_1_ID, request);
 
         /* test */
         final User response = userService.modify(USER_1, request);

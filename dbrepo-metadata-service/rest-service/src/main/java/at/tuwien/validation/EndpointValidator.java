@@ -2,8 +2,8 @@ package at.tuwien.validation;
 
 import at.tuwien.SortType;
 import at.tuwien.api.database.table.CreateTableDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.endpoints.AbstractEndpoint;
 import at.tuwien.entities.database.AccessType;
@@ -43,15 +43,6 @@ public class EndpointValidator extends AbstractEndpoint {
         this.accessService = accessService;
     }
 
-    public void validateOnlyPrivateDataAccess(Database database, Principal principal, boolean writeAccessOnly)
-            throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
-        if (database.getIsPublic()) {
-            log.trace("database with id {} is public: no access needed", database.getId());
-            return;
-        }
-        validateOnlyAccess(database, principal, writeAccessOnly);
-    }
-
     public void validateOnlyPrivateSchemaAccess(Database database, Principal principal, boolean writeAccessOnly)
             throws NotAllowedException, UserNotFoundException, AccessNotFoundException {
         if (database.getIsSchemaPublic()) {
@@ -59,11 +50,6 @@ public class EndpointValidator extends AbstractEndpoint {
             return;
         }
         validateOnlyAccess(database, principal, writeAccessOnly);
-    }
-
-    public void validateOnlyPrivateDataAccess(Database database, Principal principal) throws NotAllowedException,
-            UserNotFoundException, AccessNotFoundException {
-        validateOnlyPrivateDataAccess(database, principal, false);
     }
 
     public void validateOnlyPrivateSchemaAccess(Database database, Principal principal) throws NotAllowedException,
@@ -169,17 +155,6 @@ public class EndpointValidator extends AbstractEndpoint {
             log.error("Validation failed: column {} type serial demands non-null", optional4a.get().getName());
             throw new MalformedException("Validation failed: column " + optional4a.get().getName() + " type serial demands non-null");
         }
-        final Optional<CreateTableColumnDto> optional4b = data.getColumns()
-                .stream()
-                .filter(c -> c.getType().equals(ColumnTypeDto.SERIAL) && data.getConstraints()
-                        .getUniques()
-                        .stream()
-                        .noneMatch(uk -> uk.size() == 1 && uk.contains(c.getName())))
-                .findFirst();
-        if (optional4b.isPresent()) {
-            log.error("Validation failed: column {} type serial demands a unique constraint", optional4b.get().getName());
-            throw new MalformedException("Validation failed: column " + optional4b.get().getName() + " type serial demands a unique constraint");
-        }
     }
 
     public boolean validateOnlyMineOrWriteAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
@@ -198,18 +173,6 @@ public class EndpointValidator extends AbstractEndpoint {
         }
         if (access.getType().equals(AccessType.WRITE_ALL)) {
             log.debug("validation passed: user {} has write all access", principal.getName());
-            return true;
-        }
-        log.debug("validation failed: user {} has insufficient access {} or role", principal.getName(), access.getType());
-        return false;
-    }
-
-    public boolean validateOnlyMineOrReadAccessOrHasRole(User owner, Principal principal, DatabaseAccess access, String role) {
-        if (validateOnlyMineOrWriteAccessOrHasRole(owner, principal, access, role)) {
-            return true;
-        }
-        if (access.getType().equals(AccessType.READ)) {
-            log.debug("validation passed: user {} has read access", principal.getName());
             return true;
         }
         log.debug("validation failed: user {} has insufficient access {} or role", principal.getName(), access.getType());

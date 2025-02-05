@@ -8,14 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
 @SpringBootTest
-public class IdentifierTypeConverterUnitTest extends AbstractUnitTest {
+public class IdentifierTypeDtoConverterUnitTest extends AbstractUnitTest {
 
     @Autowired
-    private IdentifierTypeDtoConverter identifierTypeConverter;
+    private IdentifierTypeDtoConverter identifierTypeDtoConverter;
 
     @BeforeEach
     public void beforeEach() {
@@ -23,19 +24,19 @@ public class IdentifierTypeConverterUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void identifierTypeConverter_succeeds() {
+    public void IdentifierTypeDtoConverter_succeeds() {
 
         /* test */
-        final IdentifierTypeDto response = identifierTypeConverter.convert(IdentifierTypeDto.DATABASE.getName());
+        final IdentifierTypeDto response = identifierTypeDtoConverter.convert(IdentifierTypeDto.DATABASE.getName());
         assertEquals(IdentifierTypeDto.DATABASE, response);
     }
 
     @Test
-    public void identifierTypeConverter_fails() {
+    public void IdentifierTypeDtoConverter_fails() {
 
         /* test */
         assertThrows(IllegalArgumentException.class, () -> {
-            identifierTypeConverter.convert("i_do_not_exist");
+            identifierTypeDtoConverter.convert("i_do_not_exist");
         });
     }
 }

@@ -4,7 +4,6 @@ import at.tuwien.api.database.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.DatabaseServiceImpl;
 import at.tuwien.test.AbstractUnitTest;
@@ -41,9 +40,6 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private AccessService accessService;
-
-    @MockBean
-    private KeycloakGateway keycloakGateway;
 
     @MockBean
     private ContainerService containerService;
@@ -144,7 +140,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void refreshTableMetadata_anonymous_succeeds() {
+    public void refreshTableMetadata_anonymous_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
@@ -154,7 +150,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void refreshTableMetadata_noRole_succeeds() {
+    public void refreshTableMetadata_noRole_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
@@ -353,7 +349,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
     public void visibility_hasRole_succeeds() throws NotAllowedException, UserNotFoundException,
-            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException{
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -545,7 +541,42 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_fails() {
+    public void findById_anonymousPrivateSchemaNoAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            findById_generic(DATABASE_1_ID, DATABASE_1, null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_anonymousPublicSchemaNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException, DataServiceConnectionException {
+
+        /* test */
+        final DatabaseDto database = findById_generic(DATABASE_2_ID, DATABASE_2, null);
+        assertEquals(3, database.getTables().size());
+        assertEquals(1, database.getViews().size());
+        assertEquals(0, database.getAccesses().size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_anonymousPrivateSchemaNoAccessSystem_succeeds() throws UserNotFoundException,
+            NotAllowedException, DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException,
+            DataServiceConnectionException {
+
+        /* test */
+        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
+        assertEquals(2, database.getTables().size());
+        assertEquals(3, database.getViews().size());
+        assertEquals(3, database.getAccesses().size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_privateSchema_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -564,31 +595,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRoleForeign_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
+    @WithMockUser(username = USER_1_USERNAME)
     public void findById_ownerSeesAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
             DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
 
@@ -597,10 +604,10 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
 
         /* test */
-        final DatabaseDto response = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
-        final List<DatabaseAccessDto> accessList = response.getAccesses();
-        assertNotNull(accessList);
-        assertEquals(3, accessList.size());
+        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        assertEquals(4, database.getTables().size());
+        assertEquals(3, database.getViews().size());
+        assertEquals(3, database.getAccesses().size());
     }
 
     @Test

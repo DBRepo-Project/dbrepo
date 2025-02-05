@@ -287,7 +287,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* save identifier */
         switch (identifier.getType()) {
             case SUBSET -> {
-                log.debug("identifier type: subset with id {} and database with id {}", identifier.getQueryId(), identifier.getDatabase().getId());
+                log.debug("identifier type: subset with id {}", identifier.getQueryId());
                 final QueryDto query = dataServiceGateway.findQuery(identifier.getDatabase().getId(), identifier.getQueryId());
                 identifier.setQuery(query.getQuery());
                 identifier.setQueryId(query.getId());
@@ -298,14 +298,14 @@ public class IdentifierServiceImpl implements IdentifierService {
                 identifier.setResultHash(query.getResultHash());
             }
             case VIEW -> {
-                log.debug("identifier type: view with id {} and database with id {}", identifier.getViewId(), identifier.getDatabase().getId());
+                log.debug("identifier type: view with id {}", identifier.getViewId());
                 final View view = viewService.findById(identifier.getDatabase(), identifier.getViewId());
                 identifier.setViewId(view.getId());
                 identifier.setQuery(view.getQuery());
                 identifier.setQueryNormalized(view.getQuery());
                 identifier.setQueryHash(view.getQueryHash());
             }
-            case DATABASE -> log.debug("identifier type: database with id {}", identifier.getDatabase());
+            case DATABASE -> log.debug("identifier type: database with id {}", identifier.getDatabase().getId());
             case TABLE -> log.debug("identifier type: table with id {}", identifier.getTableId());
         }
         /* save identifier in metadata database */

@@ -94,7 +94,7 @@ public class UserServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void modify_succeeds() throws UserNotFoundException, AuthServiceException, AuthServiceConnectionException {
+    public void modify_succeeds() throws UserNotFoundException, AuthServiceException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))
@@ -109,8 +109,7 @@ public class UserServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws AuthServiceException, AuthServiceConnectionException,
-            UserNotFoundException {
+    public void updatePassword_succeeds() throws UserNotFoundException {
 
         /* mock */
         doNothing()

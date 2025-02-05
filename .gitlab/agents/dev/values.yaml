@@ -139,7 +139,7 @@ ui:
       server: https://s155.datalab.tuwien.ac.at
     title: "Database Repository"
     logo: "https://ec.tuwien.ac.at/~weise/images/DS_white_hiRes.png"
-    icon: "https://ec.tuwien.ac.at/~weise/images/DS-icon_white_hiRes.png"
+    icon: "https://ec.tuwien.ac.at/~weise/images/favicon.ico"
     touch: "https://ec.tuwien.ac.at/~weise/images/DS-icon_white_hiRes.png"
     broker:
       host: s155.datalab.tuwien.ac.at

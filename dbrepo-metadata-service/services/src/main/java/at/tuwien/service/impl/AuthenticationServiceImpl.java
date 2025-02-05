@@ -24,14 +24,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
-            CredentialsInvalidException {
+    public void delete(User user) throws AuthServiceException, UserNotFoundException {
         keycloakGateway.deleteUser(user.getKeycloakId());
     }
 
     @Override
-    public void updatePassword(User user, UserPasswordDto data) throws AuthServiceException,
-            AuthServiceConnectionException, CredentialsInvalidException, UserNotFoundException {
+    public void updatePassword(User user, UserPasswordDto data) throws UserNotFoundException {
         keycloakGateway.updateUserCredentials(user.getKeycloakId(), data);
     }
 
