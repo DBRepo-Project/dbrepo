@@ -16,6 +16,12 @@ if (process.env.NODE_ENV === 'development') {
   }
   process.env.VERSION = 'bun-dev'
   process.env.NUXT_PUBLIC_API_SERVER = api
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL = api + '/realms/dbrepo/protocol/openid-connect/auth'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI = api + ':3001'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL = api + '/realms/dbrepo/protocol/openid-connect/logout'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL = api + '/realms/dbrepo/protocol/openid-connect/token'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL = api + '/realms/dbrepo/protocol/openid-connect/userinfo'
 }
 
 /**

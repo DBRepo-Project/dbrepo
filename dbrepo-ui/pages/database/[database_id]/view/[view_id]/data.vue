@@ -22,7 +22,6 @@
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
-    <TimeDrift />
     <v-card tile>
       <QueryResults
         id="query-results"
@@ -35,13 +34,11 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
 
 export default {
   components: {
-    QueryResults,
-    TimeDrift
+    QueryResults
   },
   data () {
     return {

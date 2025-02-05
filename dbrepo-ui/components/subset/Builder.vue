@@ -31,14 +31,12 @@
           :text="$t('pages.subset.subpages.create.expert.text')" />
       </v-tabs>
     </v-toolbar>
-    <TimeDrift />
     <v-card
       rounded="0"
       variant="flat">
       <v-card-text>
         <v-form
           ref="form"
-          v-model="valid"
           @submit.prevent>
           <v-row
             v-if="isView"
@@ -304,7 +302,6 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift.vue'
 import Raw from '@/components/subset/Raw.vue'
 import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache.js'
@@ -314,7 +311,6 @@ export default {
   components: {
     Raw,
     Results,
-    TimeDrift
   },
   props: {
     mode: {
@@ -468,7 +464,7 @@ export default {
       if (!this.table) {
         return
       }
-      this.fetchTableColumns(this.table.id)
+      this.fetchTableColumns(this.table?.id)
     }
   },
   mounted () {
@@ -545,13 +541,24 @@ export default {
       this.view.query = this.sql
       const viewService = useViewService()
       viewService.create(this.$route.params.database_id, this.view)
-        .then(async (view) => {
-          this.resultId = view.id
-          this.cacheStore.reloadDatabase()
-          const toast = useToastInstance()
-          toast.success(this.$t('success.view.create'))
-          await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
-          this.loadingQuery = false
+        .then((simpleView) => {
+          this.resultId = simpleView.id
+          viewService.findOne(this.$route.params.database_id, simpleView.id)
+            .then(async (view) => {
+              this.cacheStore.setView(view)
+              const toast = useToastInstance()
+              toast.success(this.$t('success.view.create'))
+              await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
+              this.loadingQuery = false
+            })
+            .catch(({code}) => {
+              this.loadingQuery = false
+              const toast = useToastInstance()
+              if (typeof code !== 'string') {
+                return
+              }
+              toast.error(this.$t(code))
+            })
         })
         .catch(({code}) => {
           this.loadingQuery = false

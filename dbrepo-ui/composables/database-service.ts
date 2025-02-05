@@ -66,23 +66,6 @@ export const useDatabaseService = (): any => {
     });
   }
 
-  async function getServerTime(): Promise<Date> {
-    const axios = useAxiosInstance();
-    console.debug('find server time');
-    return new Promise<Date>((resolve, reject) => {
-      axios.head<Date>('/api/database')
-        .then((response) => {
-          const date: Date = new Date(response.headers['Date'])
-          console.info(`Found ${date} server time`);
-          resolve(date);
-        })
-        .catch((error) => {
-          console.error('Failed to find server time', error);
-          reject(axiosErrorToApiError(error));
-        });
-    });
-  }
-
   async function findOne(id: number, rawError: boolean = false): Promise<DatabaseDto | null> {
     const axios = useAxiosInstance();
     console.debug('find database with id', id);
@@ -239,16 +222,12 @@ export const useDatabaseService = (): any => {
     refreshTablesMetadata,
     refreshViewsMetadata,
     findOne,
-    findPreviewImage,
-    findCount,
-    getServerTime,
     updateVisibility,
     updateImage,
     updateOwner,
     create,
     databaseToOwner,
     databaseToContact,
-    databaseToJsonLd,
     isOwner
   }
 }
