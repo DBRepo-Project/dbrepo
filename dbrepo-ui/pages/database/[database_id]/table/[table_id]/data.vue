@@ -53,7 +53,6 @@
         class="ml-2 mr-2"
         @click.stop="pick" />
     </v-toolbar>
-    <TimeDrift />
     <v-card
       v-if="error"
       variant="flat">
@@ -111,7 +110,6 @@ const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import TableHistory from '@/components/table/TableHistory.vue'
-import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { formatTimestamp } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
@@ -125,8 +123,7 @@ export default {
     BlobDownload,
     EditTuple,
     TableHistory,
-    TableToolbar,
-    TimeDrift
+    TableToolbar
   },
   data () {
     return {
