@@ -184,7 +184,7 @@ export default {
       model: null,
       query: null,
       loading: true,
-      loadingLogin: true,
+      loadingLogin: false,
       databaseError: null,
       accessError: null,
       searchResults: [],
