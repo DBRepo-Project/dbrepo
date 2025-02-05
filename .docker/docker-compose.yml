@@ -78,7 +78,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: bitnami/keycloak:24.0.5-debian-12-r8
+    image: bitnami/keycloak:26.0.0-debian-12-r1
     volumes:
       - ./config/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./config/master-realm.json:/opt/keycloak/data/import/master-realm.json

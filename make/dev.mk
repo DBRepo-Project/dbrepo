@@ -31,6 +31,7 @@ package-config: ## Package the config files
 	cp ./dbrepo-metric-db/prometheus.yml ./.docker/config
 	cp ./dbrepo-storage-service/s3_config.json ./.docker/config
 	cp ./dbrepo-upload-service/pre-create.sh ./.docker/config
+	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./.docker/config
 	cd ./.docker && tar czf ./dist.tar.gz ./docker-compose.yml ./.env ./config
 
 .PHONY: install-staging
