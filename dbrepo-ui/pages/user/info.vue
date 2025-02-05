@@ -1,9 +1,12 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <UserToolbar />
-    <v-window v-model="tab">
+    <v-window
+      v-model="tab">
       <v-window-item>
-        <v-form v-model="valid1" @submit.prevent="submit">
+        <v-form
+          v-model="valid1">
           <v-card
             :title="$t('pages.user.subpages.info.title')"
             :subtitle="$t('pages.user.subpages.info.subtitle')"
@@ -19,10 +22,12 @@
                     :label="$t('pages.user.subpages.info.id.label')" />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row
+                v-if="cacheUser"
+                dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="model.username"
+                    v-model="cacheUser.preferred_username"
                     disabled
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.username.label')"  />
@@ -122,9 +127,12 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn } = useOidcAuth()
+</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -138,15 +146,16 @@ export default {
       error: false,
       loadingUpdate: false,
       loadingTheme: false,
-      theme: null,
       orcidLoading: false,
       model: {
         id: null,
-        username: null,
+        preferred_username: null,
         firstname: null,
         lastname: null,
         theme: null,
-        language: null
+        language: null,
+        orcid: null,
+        affiliation: null
       },
       themes: [
         { name: this.$t('pages.user.subpages.theme.light'), value: 'light' },
@@ -169,23 +178,23 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
+    locale () {
+      return this.cacheStore.getLocale
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
     },
-    locale () {
-      return this.userStore.getLocale
-    },
-    canModifyTheme () {
-      return this.roles.includes('modify-user-theme')
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     canModifyInformation () {
+      if (!this.roles) {
+        return false
+      }
       return this.roles.includes('modify-user-information')
     },
     inputVariant () {
@@ -201,8 +210,6 @@ export default {
     this.init()
   },
   methods: {
-    submit () {
-    },
     updateInfo () {
       this.loadingUpdate = true
       const payload = {
@@ -211,17 +218,16 @@ export default {
         orcid: this.model.orcid,
         affiliation: this.model.affiliation,
         theme: this.model.theme,
-        language: this.model.language,
+        language: this.model.language
       }
       const userService = useUserService()
-      userService.update(this.user.id, payload)
+      userService.update(this.cacheUser.uid, payload)
         .then((user) => {
           console.info('Updated user information')
           const toast = useToastInstance()
           toast.success(this.$t('success.user.info'))
-          this.userStore.setUser(user)
           /* language */
-          this.userStore.setLocale(this.model.language)
+          this.cacheStore.setLocale(this.model.language)
           this.$i18n.locale = this.locale
           /* theme */
           switch (this.model.theme) {
@@ -247,18 +253,18 @@ export default {
         })
     },
     init () {
-      if (!this.user) {
+      if (!this.cacheUser) {
         return
       }
       this.model = {
-        id: this.user.id,
-        username: this.user.username,
-        firstname: this.user.given_name,
-        lastname: this.user.family_name,
-        orcid: this.user.attributes.orcid,
-        affiliation: this.user.attributes.affiliation,
-        theme: this.user.attributes.theme,
-        language: this.user.attributes.language
+        id: this.cacheUser.uid,
+        username: this.cacheUser.username,
+        firstname: this.cacheUser.given_name,
+        lastname: this.cacheUser.family_name,
+        orcid: this.cacheUser.orcid,
+        affiliation: this.cacheUser.affiliation,
+        theme: this.cacheUser.theme ? this.cacheUser.theme : 'light',
+        language: this.cacheUser.language ? this.cacheUser.language : 'en'
       }
     },
     retrieve () {

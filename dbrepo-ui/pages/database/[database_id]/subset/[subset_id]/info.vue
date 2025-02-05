@@ -1,36 +1,29 @@
 <template>
-  <div>
+  <div
+    v-if="identifier || canViewInfo">
     <SubsetToolbar />
     <v-card
       variant="flat"
       rounded="0">
       <Summary
-        v-if="hasIdentifier"
+        v-if="identifier"
         :identifier="identifier" />
       <v-card-text
-        v-if="hasIdentifier">
+        v-if="identifier">
         <Select
           :identifiers="identifiers"
           :identifier="identifier" />
       </v-card-text>
     </v-card>
     <v-divider
-      v-if="subset && identifier" />
+      v-if="canViewInfo && identifier" />
     <v-card
+      v-if="canViewInfo"
       variant="flat"
       rounded="0"
       :title="$t('pages.subset.title')">
       <v-card-text>
         <v-list
-          v-if="!subset"
-          lines="two"
-          dense>
-          <v-skeleton-loader
-            type="list-item-three-line"
-            width="50%" />
-        </v-list>
-        <v-list
-          v-else-if="subset"
           lines="two"
           dense>
           <v-list-item
@@ -50,7 +43,9 @@
             v-if="subset.creator"
             :title="$t('pages.subset.creator.title')"
             density="compact">
-            <UserBadge :user="subset.creator" :other-user="user" />
+            <UserBadge
+              :user="subset.creator"
+              :other-user="cacheUser" />
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.query.title')"
@@ -86,13 +81,30 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id, subset_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&qid=${subset_id}&type=subset&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
+</script>
 <script>
 import Summary from '@/components/identifier/Summary.vue'
 import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -134,7 +146,6 @@ export default {
       downloadLoading: false,
       error: false,
       promises: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -145,35 +156,33 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
-    access () {
-      return this.userStore.getAccess
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     subset () {
       return this.cacheStore.getSubset
     },
-    user () {
-      return this.userStore.getUser
-    },
     identifiers () {
-      if (!this.database || !this.database.subsets || this.database.subsets.length === 0) {
+      if (!this.database || !this.database.subsets) {
         return []
       }
-      return this.database.subsets.filter(s => s.query_id === Number(this.$route.params.subset_id))
+      return this.database.subsets.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
-    hasIdentifier () {
-      return this.identifiers.length > 0
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
+    canViewInfo () {
+      if (!this.database) {
+        return false
       }
-      return this.identifiers[0]
+      if (this.database.is_public || this.database.is_schema_public) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     title () {
-      if (!this.hasIdentifier) {
+      if (!this.identifier) {
         return null
       }
       const enTitle = this.identifier.titles.filter(t => t.language).filter(t => t.language === 'en')

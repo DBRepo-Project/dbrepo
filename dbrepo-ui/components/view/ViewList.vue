@@ -16,16 +16,6 @@
           <template v-slot:append>
             <ResourceStatus
               :resource="view" />
-            <v-tooltip
-              v-if="hasPublishedIdentifier(view)"
-              :text="$t('pages.identifier.pid.title')"
-              left>
-              <template v-slot:activator="{ props }">
-                <v-icon
-                  color="primary"
-                  v-bind="props">mdi-identifier</v-icon>
-              </template>
-            </v-tooltip>
           </template>
         </v-list-item>
       </v-list>
@@ -34,7 +24,6 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -43,14 +32,10 @@ export default {
       loading: false,
       loadingDetails: false,
       error: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },

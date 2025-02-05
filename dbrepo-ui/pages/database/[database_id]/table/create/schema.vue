@@ -70,9 +70,6 @@
                     <v-textarea
                       v-model="tableCreate.description"
                       rows="2"
-                      :rules="[
-                        v => (!v || v.length <= 180) || $t('validation.max-length') + 180
-                      ]"
                       clearable
                       counter="180"
                       persistent-counter
@@ -188,7 +185,6 @@
 <script>
 import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -247,7 +243,6 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -259,14 +254,11 @@ export default {
       const tableService = useTableService()
       return tableService.tableNameToInternalName(this.tableCreate.name)
     },
-    roles () {
-      return this.userStore.getRoles
-    },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
+    },
+    roles () {
+      return this.cacheStore.getRoles
     },
     canCreateTable () {
       if (!this.roles) {

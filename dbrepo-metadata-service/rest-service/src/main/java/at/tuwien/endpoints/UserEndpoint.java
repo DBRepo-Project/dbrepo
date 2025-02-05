@@ -1,10 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -95,10 +92,11 @@ public class UserEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("!isAuthenticated()")
+    @PreAuthorize("hasAuthority('system')")
     @Observed(name = "dbrepo_user_create")
     @Operation(summary = "Create user",
-            description = "Creates a user in the auth service and metadata database. Requires that no credentials are sent in the request.")
+            description = "This webhook is called from the auth service to add a user to the metadata database. Requires role `system`.",
+            hidden = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created user",
@@ -142,114 +140,10 @@ public class UserEndpoint extends AbstractEndpoint {
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
             throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
             UserNotFoundException, CredentialsInvalidException {
-        log.debug("endpoint create user, data.username={}", data.getUsername());
-        userService.validateUsernameNotExists(data.getUsername());
-        userService.validateEmailNotExists(data.getEmail());
+        log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserBriefDto(
-                        userService.create(data, authenticationService.create(data).getAttributes().getLdapId()[0])));
-    }
-
-    @PostMapping("/token")
-    @Observed(name = "dbrepo_user_token")
-    @Operation(summary = "Create token",
-            description = "Creates a user token via the Auth Service.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Obtained user token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = TokenDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid login request",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not allowed to get token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find user in auth database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "428",
-                    description = "Account is not fully setup in auth service (requires password change?)",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to auth service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to get user in auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<TokenDto> getToken(@NotNull @Valid @RequestBody LoginRequestDto data)
-            throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException,
-            AccountNotSetupException {
-        log.debug("endpoint get token, data.username={}", data.getUsername());
-        /* check */
-        try {
-            userService.findByUsername(data.getUsername());
-        } catch (UserNotFoundException e) {
-            /* need to sync */
-            log.warn("User with username {} does not exist in metadata database yet", data.getUsername());
-            final CreateUserDto request = CreateUserDto.builder()
-                    .username(data.getUsername())
-                    .email("noreply@example.com")
-                    .password(data.getPassword())
-                    .build();
-            final at.tuwien.api.keycloak.UserDto user = authenticationService.findByUsername(data.getUsername());
-            if (user.getAttributes().getLdapId() == null || user.getAttributes().getLdapId().length != 1) {
-                log.error("Failed to map ldap id for user with username: {}", data.getUsername());
-                throw new UserNotFoundException("Failed to map ldap id");
-            }
-            userService.create(request, user.getAttributes().getLdapId()[0]);
-            log.info("Patched missing user information for user with username: {}", data.getUsername());
-        }
-        return ResponseEntity.accepted()
-                .body(authenticationService.obtainToken(data));
-    }
-
-    @PutMapping("/token")
-    @Observed(name = "dbrepo_user_refresh_token")
-    @Operation(summary = "Refresh token",
-            description = "Refreshes user token by refresh token.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Refreshed user token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = TokenDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid refresh token",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to auth service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<TokenDto> refreshToken(@NotNull @Valid @RequestBody RefreshTokenRequestDto data)
-            throws AuthServiceConnectionException, CredentialsInvalidException {
-        log.debug("endpoint refresh token");
-        /* check */
-        return ResponseEntity.accepted()
-                .body(authenticationService.refreshToken(data.getRefreshToken()));
+                        userService.create(data)));
     }
 
     @GetMapping("/{userId}")
@@ -327,11 +221,16 @@ public class UserEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to modify user at auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> modify(@NotNull @PathVariable("userId") UUID userId,
-                                          @NotNull @Valid @RequestBody UserUpdateDto data,
-                                          @NotNull Principal principal) throws NotAllowedException,
-            UserNotFoundException, DatabaseNotFoundException {
+                                               @NotNull @Valid @RequestBody UserUpdateDto data,
+                                               @NotNull Principal principal) throws NotAllowedException,
+            UserNotFoundException, AuthServiceException {
         log.debug("endpoint modify a user, userId={}, data={}", userId, data);
         final User user = userService.findById(userId);
         if (!user.getId().equals(getId(principal))) {
@@ -381,9 +280,9 @@ public class UserEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<Void> password(@NotNull @PathVariable("userId") UUID userId,
                                          @NotNull @Valid @RequestBody UserPasswordDto data,
-                                         @NotNull Principal principal) throws NotAllowedException, AuthServiceException,
-            AuthServiceConnectionException, UserNotFoundException, DatabaseNotFoundException, DataServiceException,
-            DataServiceConnectionException, CredentialsInvalidException {
+                                         @NotNull Principal principal) throws NotAllowedException,
+            UserNotFoundException, DatabaseNotFoundException, DataServiceException,
+            DataServiceConnectionException {
         log.debug("endpoint modify a user password, userId={}, principal.name={}", userId, principal.getName());
         final User user = userService.findById(userId);
         if (!user.getUsername().equals(principal.getName())) {

@@ -1,25 +1,25 @@
 <template>
   <div
-    v-if="canViewView">
+    v-if="identifier || canViewInfo">
     <ViewToolbar />
     <v-window
       v-model="tab">
-      <v-window-item
-        v-if="view">
+      <v-window-item>
         <v-card variant="flat">
           <Summary
-            v-if="hasIdentifier"
+            v-if="identifier"
             :identifier="identifier" />
           <v-card-text
-            v-if="hasIdentifier">
+            v-if="identifier">
             <Select
               :identifiers="identifiers"
               :identifier="identifier" />
           </v-card-text>
         </v-card>
         <v-divider
-          v-if="hasIdentifier" />
+          v-if="identifier" />
         <v-card
+          v-if="canViewInfo"
           :title="$t('pages.view.title')"
           variant="flat">
           <v-card-text>
@@ -39,7 +39,7 @@
                 <UserBadge
                   v-if="view"
                   :user="view.owner"
-                  :other-user="user" />
+                  :other-user="cacheUser" />
                 <v-skeleton-loader
                   v-else
                   type="subtitle"
@@ -59,13 +59,30 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id, view_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&vid=${view_id}&type=view&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
+</script>
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -103,55 +120,30 @@ export default {
         }
       ],
       error: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     view () {
       return this.cacheStore.getView
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     identifiers () {
-      if (!this.view) {
+      if (!this.view || !this.view.identifiers) {
         return []
       }
-      return this.view.identifiers
-    },
-    filteredIdentifiers () {
-      if (!this.identifiers) {
-        return []
-      }
-      if (!this.user) {
-        return this.identifiers.filter(i => i.status === 'published')
-      }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
-      }
-      return this.filteredIdentifiers[0]
+      return this.view.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
     views () {
       if (!this.database) {
@@ -162,9 +154,6 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    hasIdentifier () {
-      return this.identifier
-    },
     creator () {
       if (!this.view) {
         return null
@@ -172,17 +161,18 @@ export default {
       const userService = useUserService()
       return userService.userToFullName(this.view.creator)
     },
-    canViewView () {
+    canViewInfo () {
       if (!this.view) {
         return false
       }
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.access) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   },
   methods: {

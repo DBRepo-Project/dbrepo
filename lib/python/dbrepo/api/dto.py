@@ -124,7 +124,7 @@ class TableBrief(BaseModel):
     id: int
     database_id: int
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
     internal_name: str
     is_versioned: bool
     is_public: bool

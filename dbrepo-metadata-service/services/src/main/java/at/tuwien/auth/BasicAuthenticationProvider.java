@@ -1,7 +1,6 @@
 package at.tuwien.auth;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import jakarta.servlet.ServletException;
 import lombok.extern.log4j.Log4j2;
@@ -34,8 +33,7 @@ public class BasicAuthenticationProvider implements AuthenticationManager {
             final UserDetails userDetails = authTokenFilter.verifyJwt(tokenDto.getAccessToken());
             log.debug("set basic auth principal: {}", userDetails);
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        } catch (ServletException | CredentialsInvalidException | AccountNotSetupException |
-                 AuthServiceConnectionException e) {
+        } catch (ServletException e) {
             throw new BadCredentialsException("Failed to authenticate with authentication service", e);
         }
     }

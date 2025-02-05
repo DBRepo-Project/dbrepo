@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canCreateIdentifier || canUpdateIdentifier">
+    v-if="canPersistIdentifier">
     <Persist
       type="database"
       :database="database" />
@@ -9,9 +9,8 @@
 </template>
 
 <script>
-import Persist from '~/components/identifier/Persist.vue'
-import { useUserStore } from '~/stores/user.js'
-import { useCacheStore } from '~/stores/cache.js'
+import Persist from '@/components/identifier/Persist.vue'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -35,46 +34,40 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
-    hasIdentifier () {
-      if (this.database && 'identifier' in this.database && this.database.identifier) {
-        return 'id' in this.database.identifier
-      }
-      return false
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    access () {
+      return this.cacheStore.getAccess
     },
     isOwner () {
-      if (!this.database || !this.user) {
+      if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.username === this.user.username
+      return this.database.owner.id === this.cacheUser.uid
     },
-    canCreateIdentifier () {
-      if (!this.roles || this.hasIdentifier) {
+    canPersistIdentifier () {
+      if (!this.database || !this.roles || !this.cacheUser || !this.access) {
         return false
       }
       if (this.roles.includes('create-foreign-identifier')) {
         return true
       }
-      return this.roles.includes('create-identifier') && this.isOwner
-    },
-    canUpdateIdentifier () {
-      if (!this.roles) {
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
-      return this.hasIdentifier && this.roles.includes('modify-identifier-metadata')
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.database.owner.id === this.cacheUser.uid
     }
   }
 }

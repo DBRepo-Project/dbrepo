@@ -1,15 +1,14 @@
 <template>
   <div
-    v-if="canViewSchema">
+    v-if="identifier || canViewInfo">
     <TableToolbar
       :selection="selection" />
     <v-card
+      v-if="identifier"
       variant="flat">
       <Summary
-        v-if="hasIdentifier"
         :identifier="identifier" />
-      <v-card-text
-        v-if="hasIdentifier">
+      <v-card-text>
         <Select
           :identifiers="identifiers"
           :identifier="identifier" />
@@ -18,6 +17,7 @@
     <v-divider
       v-if="identifier" />
     <v-card
+      v-if="canViewInfo"
       variant="flat"
       rounded="0"
       :title="$t('pages.table.title')">
@@ -64,7 +64,7 @@
             :title="$t('pages.table.owner.title')">
             <UserBadge
               :user="table.owner"
-              :other-user="user" />
+              :other-user="cacheUser" />
           </v-list-item>
         </v-list>
       </v-card-text>
@@ -118,12 +118,29 @@
   </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+
+const config = useRuntimeConfig()
+const { pid } = useRoute().query
+const { database_id, table_id } = useRoute().params
+const { data } = await useFetch(`${config.public.api.client}/api/identifier?dbid=${database_id}&tid=${table_id}&type=table&status=published`)
+
+if (data.value && data.value.length > 0) {
+  const identifierService = useIdentifierService()
+  useServerHead(identifierService.identifiersToServerHead(data.value))
+  useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
+}
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+
+const cacheStore = useCacheStore()
+cacheStore.setIdentifier(identifier)
+</script>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select.vue'
 import Summary from '@/components/identifier/Summary.vue'
 import UserBadge from '@/components/user/UserBadge.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -165,7 +182,6 @@ export default {
       loading: false,
       exchange: null,
       queue: null,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -173,50 +189,47 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     table () {
       return this.cacheStore.getTable
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
     },
     canRead () {
       if (this.database && this.database.is_public) {
         return true
       }
-      if (!this.user || !this.access) {
+      if (!this.access) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
-    canViewSchema () {
-      if (this.error) {
-        return false
-      }
+    canViewInfo () {
       if (!this.table) {
         return false
       }
-      if (this.table.is_schema_public || this.table.is_public) {
+      if (this.table.is_public || this.table.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.access) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     canWrite () {
-      if (!this.table || !this.user || !this.access) {
-        return false
-      }
-      return (this.access.type === 'write_own' && this.table.owned_by === this.user.id) || this.access.type === 'write_all'
+      const userService = useUserService()
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser)
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     hasDescription () {
       return this.table && this.table.description
@@ -228,31 +241,10 @@ export default {
       return this.roles.includes('insert-table-data')
     },
     identifiers () {
-      if (!this.table || !this.table.identifiers || this.table.identifiers.length === 0) {
+      if (!this.table || !this.table.identifiers) {
         return []
       }
-      return this.table.identifiers
-    },
-    filteredIdentifiers () {
-      if (!this.identifiers) {
-        return []
-      }
-      if (!this.user) {
-        return this.identifiers.filter(i => i.status === 'published')
-      }
-      return this.identifiers.filter(i => i.status === 'published' || i.owned_by === this.user.id)
-    },
-    identifier () {
-      if (this.pid) {
-        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
-        if (filter.length > 0) {
-          return filter[0]
-        }
-      }
-      return this.filteredIdentifiers[0]
-    },
-    hasIdentifier () {
-      return this.identifier
+      return this.table.identifiers.filter(i => i.query_id === Number(this.$route.params.subset_id))
     },
     brokerExtraInfo () {
       return this.$config.public.broker.extra

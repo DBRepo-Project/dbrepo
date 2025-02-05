@@ -31,14 +31,12 @@
           :text="$t('pages.subset.subpages.create.expert.text')" />
       </v-tabs>
     </v-toolbar>
-    <TimeDrift />
     <v-card
       rounded="0"
       variant="flat">
       <v-card-text>
         <v-form
           ref="form"
-          v-model="valid"
           @submit.prevent>
           <v-row
             v-if="isView"
@@ -74,7 +72,7 @@
                 required
                 clearable
                 :rules="[
-                  v => !!v || $t('validation.required')
+                  v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.data.label')"
                 :hint="$t('pages.database.resource.data.hint')" />
@@ -89,7 +87,7 @@
                 required
                 clearable
                 :rules="[
-                  v => !!v || $t('validation.required')
+                  v => v !== null || $t('validation.required')
                 ]"
                 :label="$t('pages.database.resource.schema.label')"
                 :hint="$t('pages.database.resource.schema.hint', { resource: 'subset', schema: 'query' })" />
@@ -304,18 +302,15 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift.vue'
 import Raw from '@/components/subset/Raw.vue'
 import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import { format } from 'sql-formatter'
 
 export default {
   components: {
     Raw,
     Results,
-    TimeDrift
   },
   props: {
     mode: {
@@ -359,8 +354,7 @@ export default {
       tabs: 0,
       loadingQuery: false,
       loadingColumns: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -387,9 +381,6 @@ export default {
         return []
       }
       return this.database.container.image.data_types
-    },
-    user () {
-      return this.userStore.getUser
     },
     viewNames () {
       if (!this.database) {
@@ -449,7 +440,7 @@ export default {
       if (this.isView) {
         return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
       }
-      return this.sql !== null && !this.sql.includes(';')
+      return this.sql !== null && this.sql !== '' && !this.sql.includes(';')
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -473,7 +464,7 @@ export default {
       if (!this.table) {
         return
       }
-      this.fetchTableColumns(this.table.id)
+      this.fetchTableColumns(this.table?.id)
     }
   },
   mounted () {
@@ -550,13 +541,24 @@ export default {
       this.view.query = this.sql
       const viewService = useViewService()
       viewService.create(this.$route.params.database_id, this.view)
-        .then(async (view) => {
-          this.resultId = view.id
-          this.cacheStore.reloadDatabase()
-          const toast = useToastInstance()
-          toast.success(this.$t('success.view.create'))
-          await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
-          this.loadingQuery = false
+        .then((simpleView) => {
+          this.resultId = simpleView.id
+          viewService.findOne(this.$route.params.database_id, simpleView.id)
+            .then(async (view) => {
+              this.cacheStore.setView(view)
+              const toast = useToastInstance()
+              toast.success(this.$t('success.view.create'))
+              await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
+              this.loadingQuery = false
+            })
+            .catch(({code}) => {
+              this.loadingQuery = false
+              const toast = useToastInstance()
+              if (typeof code !== 'string') {
+                return
+              }
+              toast.error(this.$t(code))
+            })
         })
         .catch(({code}) => {
           this.loadingQuery = false

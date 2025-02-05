@@ -606,10 +606,10 @@
       },
       "status": {
         "title": "Status",
-        "public": "Public",
+        "public": "Visible",
         "data": "Data-only",
         "schema": "Schema-only",
-        "draft": "Draft"
+        "draft": "Hidden"
       },
       "resource": {
         "data": {

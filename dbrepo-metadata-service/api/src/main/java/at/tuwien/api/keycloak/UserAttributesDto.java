@@ -16,12 +16,20 @@ import java.util.UUID;
 @ToString
 public class UserAttributesDto {
 
-    @Schema(example = "s3cr3t")
-    @JsonProperty("LDAP_ENTRY_DN")
-    private String[] ldapEntryDn;
+    @Schema(example = "dark")
+    @JsonProperty("THEME")
+    private String[] theme;
 
-    @Schema(example = "false")
-    @JsonProperty("LDAP_ID")
-    private UUID[] ldapId;
+    @Schema(example = "en")
+    @JsonProperty("LANGUAGE")
+    private String[] language;
+
+    @Schema(example = "https://ror.org/04d836q62")
+    @JsonProperty("AFFILIATION")
+    private String[] affiliation;
+
+    @Schema(example = "https://orcid.org/0000-0003-4216-302X")
+    @JsonProperty("ORCID")
+    private String[] orcid;
 
 }

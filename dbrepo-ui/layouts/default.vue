@@ -96,29 +96,22 @@
           @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
-          v-if="!user"
+          v-if="!loggedIn"
           class="mr-2"
           color="secondary"
           variant="flat"
+          :loading="loadingLogin"
           :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-login' : null"
-          to="/login">
+          @click="loadingLogin=true;login()">
           {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
-          v-if="!user"
-          color="primary"
-          variant="flat"
-          :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-account-plus' : null"
-          to="/signup">
-          {{ $t('navigation.signup') }}
-        </v-btn>
-        <v-btn
-          v-if="user"
+          v-if="cacheUser"
           to="/user"
           variant="plain"
-          :text="user.username" />
+          :text="cacheUser.preferred_username" />
         <v-menu
-          v-if="user"
+          v-if="loggedIn"
           location="bottom">
           <template v-slot:activator="{ props }">
             <v-btn
@@ -127,20 +120,19 @@
           </template>
           <v-list>
             <v-list-item
-              v-if="user"
+              v-if="cacheUser"
               exact
-              :to="`/search?type=database&owner.username=${user.username}`">
+              :to="`/search?type=database&owner.username=${cacheUser.username}`">
               {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
             </v-list-item>
             <v-list-item
-              v-if="user"
+              v-if="cacheUser"
               exact
-              :to="`/search?type=identifier&identifiers.creator.username=${user.username}`">
+              :to="`/search?type=identifier&identifiers.creator.username=${cacheUser.username}`">
               {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
             </v-list-item>
             <v-list-item
-              v-if="user"
-              @click="logout">
+              @click="logout()">
               {{ $t('navigation.logout') }}
             </v-list-item>
           </v-list>
@@ -161,10 +153,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { useCacheStore } from '@/stores/cache.js'
 
+const { loggedIn, user, login, logout } = useOidcAuth()
+const cacheStore = useCacheStore()
+cacheStore.setUser(loggedIn ? user.value?.userInfo : null)
+cacheStore.setRoles(loggedIn ? user.value?.claims?.realm_access?.roles : [])
 const runtimeConfig = useRuntimeConfig()
-const config = ref(runtimeConfig)
 useServerHead({
   title: runtimeConfig.public.title,
   meta: [
@@ -175,9 +170,9 @@ useServerHead({
 </script>
 <script>
 import JumboBox from '@/components/JumboBox.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import { errorCodeKey, makeError } from '@/utils'
+import {useNuxtApp} from "#app";
 
 export default {
   components: {
@@ -189,6 +184,7 @@ export default {
       model: null,
       query: null,
       loading: true,
+      loadingLogin: false,
       databaseError: null,
       accessError: null,
       searchResults: [],
@@ -197,25 +193,12 @@ export default {
       loadingSearch: false,
       loadingDatabases: false,
       search: null,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.userStore.getToken
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    locale () {
-      return this.userStore.getLocale
-    },
     messages () {
       return this.cacheStore.getMessages
-    },
-    access () {
-      return this.userStore.getAccess
     },
     table () {
       return this.cacheStore.getTable
@@ -228,6 +211,18 @@ export default {
     },
     database () {
       return this.cacheStore.getDatabase
+    },
+    access () {
+      return this.cacheStore.getAccess
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    identifier () {
+      return this.cacheStore.getIdentifier
     },
     resource () {
       if (!this.$route.params.database_id) {
@@ -244,9 +239,6 @@ export default {
       }
       return 'database'
     },
-    roles () {
-      return this.userStore.getRoles
-    },
     version () {
       return this.$config.public.version
     },
@@ -260,22 +252,25 @@ export default {
       return this.$config.public.commit.substr(0, 8)
     },
     error () {
+      if (this.identifier) {
+        return null
+      }
       if (this.databaseError) {
         return this.databaseError
       }
       if (this.accessError) {
         return this.accessError
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return null
       }
-      if (this.table && !this.table.is_public && !this.table.is_schema_public && this.table.owner.id !== this.user.id) {
+      if (this.table && !this.table.is_public && !this.table.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
-      if (this.view && !this.view.is_public && !this.view.is_schema_public && this.view.owner.id !== this.user.id) {
+      if (this.view && !this.view.is_public && !this.view.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
-      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && this.subset.owner.id !== this.user.id) {
+      if (this.subset && !this.subset.is_public && !this.subset.is_schema_public && !this.access) {
         return makeError(403, null, null)
       }
       return null
@@ -287,41 +282,53 @@ export default {
       return this.roles.includes('list-ontologies')
     },
     canListContainers () {
-      if (!this.roles) {
-        return false
-      }
-      return this.roles.includes('list-containers')
+      return this.cacheUser
     },
     logo () {
       return this.$config.public.logo
     },
+    locale () {
+      return this.cacheStore.getLocale
+    },
     searchVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
-    },
+    }
   },
   watch: {
     '$route.params': {
       handler (newObj, oldObj) {
+        if (import.meta.server) {
+          return
+        }
         if (!newObj.database_id) {
           this.databaseError = null
           this.accessError = null
           this.cacheStore.setTable(null)
           this.cacheStore.setView(null)
           this.cacheStore.setSubset(null)
+          this.cacheStore.setAccess(null)
+          this.cacheStore.setIdentifier(null)
           return
         }
-        if (import.meta.server) {
-          return
+        if (this.identifier) {
+          if (newObj.query_id && this.identifier.query_id !== Number(newObj.query_id)) {
+            this.cacheStore.setIdentifier(null)
+          } else if (newObj.table_id && this.identifier.table_id !== Number(newObj.table_id)) {
+            this.cacheStore.setIdentifier(null)
+          } else if (newObj.view_id && this.identifier.view_id !== Number(newObj.view_id)) {
+            this.cacheStore.setIdentifier(null)
+          }
+          if (this.$route.query.pid && this.identifier.id !== Number(this.$route.query.pid)) {
+            this.cacheStore.setIdentifier(null)
+          }
         }
         /* load database and optional access */
+        this.cacheStore.setRouteAccess(newObj.database_id, this.cacheUser?.uid)
         this.cacheStore.setRouteDatabase(newObj.database_id)
           .catch((error) => {
             this.databaseError = error
           })
-        if (this.user) {
-          this.userStore.setRouteAccess(newObj.database_id)
-        }
         /* load table */
         if (newObj.table_id) {
           this.cacheStore.setRouteTable(newObj.database_id, newObj.table_id)
@@ -346,43 +353,33 @@ export default {
     }
   },
   mounted () {
-    this.initEnvironment()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
-    if (!this.user) {
+    if (!this.cacheUser) {
       return
     }
     this.setTheme()
+    this.setLocale()
     this.cacheStore.reloadMessages()
   },
   methods: {
-    errorCodeKey,
-    login () {
-      const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
-      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
-    },
-    logout () {
-      this.$vuetify.theme.global.name = 'tuwThemeLight'
-      this.userStore.logout()
-      this.$router.push('/database')
-    },
     retrieve () {
       console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
-    initEnvironment () {
-      if (this.token && !this.user) {
-        console.error('Something went wrong with loading the user: reset user cache')
-        this.userStore.logout()
-      }
+    setLocale () {
       if (!this.locale) {
-        this.userStore.setLocale('en')
+        this.cacheStore.setLocale('en')
+        return
       }
       this.$i18n.locale = this.locale
     },
     setTheme () {
-      switch (this.user.attributes.theme) {
+      if (!this.cacheUser?.theme) {
+        return
+      }
+      switch (this.cacheUser.theme) {
         case 'dark':
           this.$vuetify.theme.global.name = 'tuwThemeDark'
           break
@@ -396,10 +393,6 @@ export default {
           this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
           break
       }
-    },
-    setLocale (code) {
-      this.userStore.setLocale(code)
-      this.$i18n.locale = this.locale
     }
   }
 }

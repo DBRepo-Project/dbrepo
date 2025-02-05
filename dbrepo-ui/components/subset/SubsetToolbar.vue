@@ -58,7 +58,6 @@
 <script>
 import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -71,7 +70,6 @@ export default {
       loading: false,
       loadingSave: false,
       downloadLoading: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -86,16 +84,13 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getAccess
     },
     subset () {
       return this.cacheStore.getSubset
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     identifiers () {
       if (!this.subset) {
@@ -117,9 +112,7 @@ export default {
       if (this.pid) {
         const filter = this.identifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
-          const identifier = filter[0]
-          console.debug('identifier set according to route pid', identifier)
-          return identifier
+          return filter[0]
         }
       }
       return this.identifiers[0]
@@ -154,10 +147,10 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     canGetPid () {
-      if (!this.user || !this.subset || !this.database) {
+      if (!this.cacheUser || !this.subset || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || (this.subset.owner.id === this.user.id && this.hasReadAccess)
+      return this.database.owner.id === this.cacheUser.uid || (this.subset.owner.id === this.cacheUser.uid && this.hasReadAccess)
     },
     title () {
       if (!this.identifier) {

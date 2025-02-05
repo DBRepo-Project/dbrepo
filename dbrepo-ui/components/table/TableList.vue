@@ -21,16 +21,6 @@
           <template v-slot:append>
             <ResourceStatus
               :resource="table" />
-            <v-tooltip
-              v-if="hasPublishedIdentifier(table)"
-              :text="$t('pages.identifier.pid.title')"
-              left>
-              <template v-slot:activator="{ props }">
-                <v-icon
-                  color="primary"
-                  v-bind="props">mdi-identifier</v-icon>
-              </template>
-            </v-tooltip>
           </template>
         </v-list-item>
       </v-list>
@@ -40,7 +30,6 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -74,19 +63,15 @@ export default {
         { value: 'string', title: 'Character Varying' },
         { value: 'text', title: 'Text' }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
     tables () {
       if (!this.database) {

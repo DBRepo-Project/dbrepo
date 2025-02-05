@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "39898ff53a7a701c750b2fc2bfe2d7f72704100e41a183feceb1d8bd09c71a00"
+            "sha256": "dac534d1eb6a0942c0e296c8a58491847c65d3ca23315039a3725591c86f694f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -124,11 +124,11 @@
         },
         "attrs": {
             "hashes": [
-                "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff",
-                "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"
+                "sha256:1c97078a80c814273a76b2a298a932eb681c87415c11dee0a6921de7f1b02c3e",
+                "sha256:c75a69e28a550a7e93789579c22aa26b0f5b83b75dc4e08fe092980051e1090a"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==24.3.0"
+            "version": "==25.1.0"
         },
         "blinker": {
             "hashes": [
@@ -254,9 +254,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:a41ca60353510cbecf8fb647cf2483acb100258743794a16bc8ad6f8e9ea4481"
+                "sha256:ac99f4bd19961f08665abd513e4d9452fcea5554f122457840e95f90698bab4d"
             ],
-            "path": "./lib/dbrepo-1.6.2.tar.gz"
+            "path": "./lib/dbrepo-1.6.3.tar.gz"
         },
         "docker": {
             "hashes": [
@@ -808,11 +808,11 @@
         },
         "pydantic": {
             "hashes": [
-                "sha256:278b38dbbaec562011d659ee05f63346951b3a248a6f3642e1bc68894ea2b4ff",
-                "sha256:4dd4e322dbe55472cb7ca7e73f4b63574eecccf2835ffa2af9021ce113c83c53"
+                "sha256:427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584",
+                "sha256:ca5daa827cce33de7a42be142548b0096bf05a7e7b365aebfa5f8eeec7128236"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.10.5"
+            "version": "==2.10.6"
         },
         "pydantic-core": {
             "hashes": [

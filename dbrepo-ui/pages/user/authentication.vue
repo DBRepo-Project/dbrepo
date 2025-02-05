@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div
+    v-if="loggedIn">
     <UserToolbar />
     <v-window v-model="tab">
       <v-window-item>
@@ -10,8 +11,7 @@
           rounded="0">
           <v-card-text>
             <v-form
-              v-model="valid2"
-              @submit.prevent="submit">
+              v-model="valid2">
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
@@ -60,9 +60,12 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn } = useOidcAuth()
+</script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -88,12 +91,12 @@ export default {
       email: null,
       password: null,
       password2: null,
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -104,15 +107,11 @@ export default {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
-  mounted () {
-  },
   methods: {
-    submit () {
-    },
     changePassword () {
       this.loadingUpdate = true
       const userService = useUserService()
-      userService.updatePassword(this.user.id, {'password': this.password})
+      userService.updatePassword(this.cacheUser.uid, {'password': this.password})
         .then(() => {
           const toast = useToastInstance()
           toast.success(this.$t('success.user.password'))

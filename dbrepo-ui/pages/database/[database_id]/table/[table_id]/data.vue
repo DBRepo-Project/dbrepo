@@ -53,7 +53,6 @@
         class="ml-2 mr-2"
         @click.stop="pick" />
     </v-toolbar>
-    <TimeDrift />
     <v-card
       v-if="error"
       variant="flat">
@@ -81,6 +80,7 @@
         @close="pickVersion" />
     </v-dialog>
     <v-dialog
+      v-if="loggedIn"
       v-model="addTupleDialog"
       persistent
       max-width="640">
@@ -91,6 +91,7 @@
         @close="close" />
     </v-dialog>
     <v-dialog
+      v-if="loggedIn"
       v-model="editTupleDialog"
       persistent
       max-width="640">
@@ -104,12 +105,13 @@
   </div>
 </template>
 
+<script setup>
+const { loggedIn } = useOidcAuth()
+</script>
 <script>
 import TableHistory from '@/components/table/TableHistory.vue'
-import TimeDrift from '@/components/TimeDrift.vue'
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import { formatTimestamp } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import BlobDownload from '@/components/table/BlobDownload.vue'
@@ -121,8 +123,7 @@ export default {
     BlobDownload,
     EditTuple,
     TableHistory,
-    TableToolbar,
-    TimeDrift
+    TableToolbar
   },
   data () {
     return {
@@ -179,31 +180,24 @@ export default {
       ],
       headers: [],
       rows: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     table () {
       return this.cacheStore.getTable
     },
-    user () {
-      return this.userStore.getUser
+    roles () {
+      return this.cacheStore.getRoles
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     title () {
       return (this.version ? this.$t('toolbars.database.history') : this.$t('toolbars.database.current')) + ' ' + this.versionFormatted
@@ -229,15 +223,6 @@ export default {
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
-    canModify () {
-      if (!this.user || !this.access || !this.table) {
-        return false
-      }
-      if (this.access.type === 'write_own' && this.table.owner.id === this.user.id) {
-        return true
-      }
-      return this.access.type === 'write_all'
-    },
     primaryKeyColumns () {
       if (!this.table) {
         return []
@@ -245,47 +230,45 @@ export default {
       return this.table.constraints.primary_key.map(pk => pk.column)
     },
     canViewTableData () {
-      if (this.error) {
-        return false
-      }
       if (!this.table) {
         return false
       }
       if (this.table.is_public) {
         return true
       }
-      if (!this.roles || !this.roles.includes('view-table-data')) {
+      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
         return false
       }
-      return this.hasReadAccess
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     canAddTuple () {
       if (!this.roles) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canSelectTuples () {
       if (!this.roles) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
       if (!this.roles || this.selection === null || this.selection.length !== 1) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
       if (!this.roles || this.selection === null || this.selection.length < 1) {
         return false
       }
       const userService = useUserService()
-      return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('delete-table-data')
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser) && this.roles.includes('delete-table-data')
     }
   },
   watch: {

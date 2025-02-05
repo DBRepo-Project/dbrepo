@@ -3,7 +3,6 @@
     v-if="canUpdateTable">
     <TableToolbar />
     <v-window
-      v-if="user"
       v-model="tab">
       <v-window-item>
         <v-form
@@ -23,9 +22,6 @@
                   <v-textarea
                     v-model="modify.description"
                     rows="2"
-                    :rules="[
-                      v => max(v, 180) || ($t('validation.max-length') + 180),
-                    ]"
                     clearable
                     counter="180"
                     persistent-counter
@@ -116,7 +112,6 @@
 
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import { max } from '@/utils'
 
@@ -127,7 +122,7 @@ export default {
   data () {
     return {
       tab: 0,
-      valid: false,
+      valid: true,
       loading: false,
       modify: {
         description: null,
@@ -175,14 +170,10 @@ export default {
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -190,47 +181,39 @@ export default {
       return this.cacheStore.getTable
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
     },
     isChange () {
       if (!this.table) {
         return false
       }
-      if (this.table.is_public !== this.modify.is_public) {
+      if (this.table.is_public !== this.modify.is_public || this.table.is_schema_public !== this.modify.is_schema_public) {
         return true
       }
-      return this.table.is_schema_public !== this.modify.is_schema_public
+      return this.table.description !== this.modify.description
     },
     canUpdateTable () {
-      if (!this.roles || !this.user || !this.table) {
+      if (!this.cacheUser || !this.table || !this.access || !this.roles || !this.roles.includes('update-table')) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
-    },
-    canModifyVisibility () {
-      if (!this.roles || !this.user || !this.table) {
-        return false
-      }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.table.owner.id === this.cacheUser.uid
     },
     canDropTable () {
-      if (!this.roles || !this.table || !this.user) {
+      if (!this.roles || !this.table || !this.cacheUser) {
         return false
       }
       if (this.roles.includes('delete-foreign-table')) {
         return true
       }
       const tableService = useTableService()
-      return tableService.isOwner(this.table, this.user) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
+      return tableService.isOwner(this.table, this.cacheUser) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

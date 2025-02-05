@@ -7,7 +7,7 @@ endpoint = os.getenv('AUTH_SERVICE_ENDPOINT', 'http://localhost:8080')
 system_username = os.getenv('SYSTEM_USERNAME', 'admin')
 
 
-def fetch() -> str:
+def fetch() -> (str, str):
     print(f'Fetching user id of internal user with username: {system_username}')
     response = post(url=f'{endpoint}/realms/master/protocol/openid-connect/token', data=dict({
         'username': os.getenv('AUTH_SERVICE_ADMIN', 'admin'),
@@ -25,7 +25,8 @@ def fetch() -> str:
     if response.status_code != 200 or len(response.json()) != 1:
         raise FileNotFoundError(f'Failed to obtain user')
     ldap_user = response.json()[0]
-    print(f'Successfully fetched user id: {ldap_user["id"]}')
+    user_id = ldap_user["id"]
+    print(f'Successfully fetched user id: {user_id}')
     if 'attributes' not in ldap_user or ldap_user['attributes'] is None:
         raise ModuleNotFoundError(f'Failed to obtain user attributes: {ldap_user}')
     ldap_user_attrs = ldap_user['attributes']
@@ -35,10 +36,10 @@ def fetch() -> str:
         raise EnvironmentError(f'Failed to obtain ldap id: wrong length {len(ldap_user_attrs["LDAP_ID"])} != 1')
     ldap_user_id = ldap_user_attrs['LDAP_ID'][0]
     print(f'Successfully fetched ldap user id: {ldap_user_id}')
-    return ldap_user_id
+    return (ldap_user_id, user_id)
 
 
-def save(user_id: str) -> None:
+def save(user_id: str, keycloak_id: str) -> None:
     conn = mariadb.connect(user=os.getenv('METADATA_USERNAME', 'root'),
                            password=os.getenv('METADATA_DB_PASSWORD', 'dbrepo'),
                            host="metadata-db",
@@ -46,12 +47,13 @@ def save(user_id: str) -> None:
                            database=os.getenv('METADATA_DB', 'dbrepo'))
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT IGNORE INTO `mdb_users` (`id`, `username`, `email`, `mariadb_password`, `is_internal`) VALUES (?, ?, LEFT(UUID(), 20), PASSWORD(LEFT(UUID(), 20)), true)",
-        (user_id, system_username))
+        "INSERT IGNORE INTO `mdb_users` (`id`, `keycloak_id`, `username`, `mariadb_password`, `is_internal`) VALUES (?, ?, ?, PASSWORD(LEFT(UUID(), 20)), true)",
+        (user_id, keycloak_id, system_username))
     conn.commit()
     conn.close()
 
 
 if __name__ == '__main__':
-    save(fetch())
+    user_id, keycloak_id = fetch()
+    save(user_id, keycloak_id)
     print(f'Successfully inserted user')

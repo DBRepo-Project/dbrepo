@@ -12,6 +12,7 @@
       <v-spacer />
       <v-btn
         v-if="canSave"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="secondary"
         variant="flat"
@@ -22,7 +23,7 @@
         @click="createOrSave"/>
       <v-btn
         v-if="canRemove"
-        class="ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
         color="error"
         variant="flat"
@@ -32,7 +33,7 @@
         @click="remove" />
       <v-btn
         v-if="canPublish"
-        class="ml-2"
+        class="mr-2"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
@@ -138,14 +139,6 @@
                       :color="canShiftUp(creator, i) ? 'tertiary' : ''"
                       :variant="buttonVariant"
                       @click="shiftDown(i)" />
-                    <v-btn
-                      v-if="canInsertSelf"
-                      class="mr-2"
-                      size="small"
-                      color="secondary"
-                      variant="flat"
-                      :text="$t('pages.identifier.subpages.create.creators.insert.text')"
-                      @click="insertSelf(creator)" />
                     <v-btn
                       v-if="i > 0"
                       size="small"
@@ -830,7 +823,6 @@
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import { MerkleJson } from 'merkle-json'
 
 export default {
@@ -962,16 +954,15 @@ export default {
         { value: 'IsObsoletedBy' },
         { value: 'Obsoletes' }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
     },
     isSubset () {
       return this.type === 'subset'
@@ -1045,23 +1036,14 @@ export default {
           }
       }
     },
-    isUpdate () {
-      return 'id' in this.identifier && this.identifier.id
-    },
-    canInsertSelf () {
-      if (!this.user) {
-        return false
-      }
-      return this.user.given_name || this.user.family_name || this.user.attributes.affiliation || this.user.attributes.orcid
-    },
     isCreator () {
-      if (!this.user || !this.identifier) {
+      if (!this.cacheUser || !this.identifier) {
         return false
       }
-      if (!this.identifier.creator) {
+      if (!this.identifier.owner) {
         return true
       }
-      return this.identifier.creator.id === this.user.id
+      return this.identifier.owner.id === this.cacheUser.uid
     },
     formValid () {
       /* somehow Vue3/Vuetify3 validation form is broken for arrays */
@@ -1123,10 +1105,10 @@ export default {
       return this.roles.includes('create-identifier') && !this.isPublished
     },
     canRemove () {
-      if (!this.roles || !this.identifier || !this.identifier.creator || !this.user) {
+      if (!this.roles || !this.identifier || !this.identifier.owner || !this.cacheUser) {
         return false
       }
-      return this.roles.includes('delete-identifier') && this.identifier.creator.id === this.user.id && !this.isPublished
+      return this.roles.includes('delete-identifier') && this.identifier.owner.id === this.cacheUser.uid && !this.isPublished
     },
     canPublish () {
       if (!this.roles || !this.identifier || !this.roles.includes('publish-identifier') || this.isPublished || !this.identifier.id) {
@@ -1494,15 +1476,15 @@ export default {
       if (this.isPublished) {
         return false
       }
-      if (this.user.attributes.orcid) {
-        creator.name_identifier = this.user.attributes.orcid
+      if (this.cacheUser.attributes.orcid) {
+        creator.name_identifier = this.cacheUser.attributes.orcid
         this.retrieveCreator(creator)
         return
       }
-      creator.firstname = this.user.given_name
-      creator.lastname = this.user.family_name
+      creator.firstname = this.cacheUser.given_name
+      creator.lastname = this.cacheUser.family_name
       creator.creator_name = (creator.lastname ? creator.lastname + ', ' : '') + creator.firstname
-      creator.affiliation = this.user.attributes.affiliation
+      creator.affiliation = this.cacheUser.attributes.affiliation
     },
     canShiftUp (creator, idx) {
       if (this.isPublished) {

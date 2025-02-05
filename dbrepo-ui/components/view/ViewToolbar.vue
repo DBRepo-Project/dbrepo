@@ -57,7 +57,6 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 import CreateOntology from '@/components/dialogs/CreateOntology.vue'
 import ViewVisibility from '@/components/dialogs/ViewVisibility.vue'
@@ -73,7 +72,6 @@ export default {
       loading: false,
       loadingDelete: false,
       updateViewDialog: false,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
@@ -91,6 +89,12 @@ export default {
     view () {
       return this.cacheStore.getView
     },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
     canViewData () {
       if (!this.view) {
         return false
@@ -98,10 +102,10 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canViewSchema () {
       if (!this.view) {
@@ -110,32 +114,26 @@ export default {
       if (this.view.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.view.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.view.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canViewSettings () {
-      if (!this.user || !this.view) {
+      if (!this.cacheUser || !this.view) {
         return false
       }
-      return this.view.owner.id === this.user.id
+      return this.view.owner.id === this.cacheUser.uid
     },
     canCreatePid () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      const userService = useUserService()
-      return this.roles.includes('create-identifier') && userService.hasReadAccess(this.access)
+      const cacheUserService = useUserService()
+      return cacheUserService.hasReadAccess(this.access) && this.roles.includes('create-identifier')
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getAccess
     },
     hasReadAccess () {
       if (!this.access) {

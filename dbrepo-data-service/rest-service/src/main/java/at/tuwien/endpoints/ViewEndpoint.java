@@ -214,7 +214,7 @@ public class ViewEndpoint extends RestEndpoint {
     @RequestMapping(value = "/{viewId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Observed(name = "dbrepo_view_data")
     @Operation(summary = "Get view data",
-            description = "Gets data from a view of a database. For private databases, the user needs at least *READ* access to the associated database. Requires role `view-database-view-data`.",
+            description = "Gets data from a view of a database. For private databases, the user needs at least *READ* access to the associated database.",
             security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

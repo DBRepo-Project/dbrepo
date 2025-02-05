@@ -80,7 +80,6 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple.vue'
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -93,8 +92,7 @@ export default {
       error: false,
       edit: false,
       dropTableDialog: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -105,39 +103,42 @@ export default {
       return this.cacheStore.getTable
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    roles () {
+      return this.cacheStore.getRoles
     },
     hasReadAccess () {
       if (!this.access) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
     canUpdateTable () {
-      if (!this.roles || !this.user || !this.table) {
+      if (!this.roles || !this.cacheUser || !this.table) {
         return false
       }
-      return this.roles.includes('update-table') && this.table.owner.id === this.user.id
+      return this.roles.includes('update-table') && this.table.owner.id === this.cacheUser.uid
     },
     canExecuteQuery () {
-      if (!this.roles || !this.table || !this.user) {
+      if (!this.roles || !this.table || !this.cacheUser) {
         return false
       }
-      const userService = useUserService()
-      return userService.hasReadAccess(this.access) && this.roles.includes('execute-query')
+      return this.hasReadAccess && this.roles.includes('execute-query')
+    },
+    isOwner () {
+      const databaseService = useDatabaseService()
+      return databaseService.isOwner(this.database, this.cacheUser)
     },
     canCreateView () {
-      if (!this.roles || !this.table || !this.user) {
+      if (!this.roles || !this.table || !this.cacheUser) {
         return false
       }
-      const databaseService = useDatabaseService()
-      return databaseService.isOwner(this.database, this.user) && this.roles.includes('create-database-view')
+      return this.isOwner && this.roles.includes('create-database-view')
     },
     canViewData () {
       if (!this.table) {
@@ -146,10 +147,10 @@ export default {
       if (this.table.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canViewSchema () {
       if (!this.table) {
@@ -158,22 +159,22 @@ export default {
       if (this.table.is_schema_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return false
       }
-      return this.hasReadAccess || this.table.owner.id === this.user.id || this.database.owner.id === this.user.id
+      return this.hasReadAccess || this.table.owner.id === this.cacheUser.uid || this.database.owner.id === this.cacheUser.uid
     },
     canImportCsv () {
-      if (!this.roles || !this.table || !this.user) {
+      if (!this.roles || !this.table || !this.cacheUser) {
         return false
       }
       return this.roles.includes('insert-table-data')
     },
     canGetPid () {
-      if (!this.user || !this.table || !this.database) {
+      if (!this.cacheUser || !this.table || !this.database) {
         return false
       }
-      return this.database.owner.id === this.user.id || this.table.owner.id === this.user.id
+      return this.hasReadAccess && this.database.owner.id === this.cacheUser.uid || this.table.owner.id === this.cacheUser.uid
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()

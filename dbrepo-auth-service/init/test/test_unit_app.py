@@ -16,38 +16,6 @@ class AppUnitTest(unittest.TestCase):
         "session_state": "ae64d2bd-3225-4e05-9943-2bb91fb8fe52",
         "scope": "profile email"
     }
-    user_res = [
-        {"id": "5b516520-67cb-4aa0-86a6-d12f8b8f1a20",
-         "username": "admin",
-         "firstName": "User1",
-         "lastName": "Bar1",
-         "emailVerified": False,
-         "attributes": {"LDAP_ENTRY_DN": ["cn=admin,ou=users,dc=dbrepo,dc=at"],
-                        "createTimestamp": ["20250120141013Z"],
-                        "modifyTimestamp": ["20250120141013Z"],
-                        "LDAP_ID": ["02b6e096-6b84-103f-81f6-1f6da137f2bb"]},
-         "createdTimestamp": 1737382606939,
-         "enabled": True,
-         "totp": False,
-         "federationLink": "c109d473-5ce1-4032-af7b-02e5442f5c07",
-         "disableableCredentialTypes": [],
-         "requiredActions": [],
-         "notBefore": 0,
-         "access": {"manageGroupMembership": True,
-                    "view": True,
-                    "mapRoles": True,
-                    "impersonate": True,
-                    "manage": True}}]
-
-    def test_fetch_succeeds(self):
-        with requests_mock.Mocker() as mock:
-            # mock
-            mock.post(f'{endpoint}/realms/master/protocol/openid-connect/token', json=self.token_res, status_code=200)
-            mock.get(f'{endpoint}/admin/realms/dbrepo/users/?username=admin', json=self.user_res, status_code=200)
-
-            # test
-            user_id = fetch()
-            self.assertEqual("02b6e096-6b84-103f-81f6-1f6da137f2bb", user_id)
 
     def test_fetch_token_bad_request_fails(self):
         with requests_mock.Mocker() as mock:

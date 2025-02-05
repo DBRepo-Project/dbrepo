@@ -30,7 +30,6 @@
 
 <script>
 import TableImport from '@/components/table/TableImport.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -69,19 +68,21 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     table () {
       return this.cacheStore.getTable
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    access () {
+      return this.cacheStore.getAccess
     },
     title () {
       if (!this.table) {
@@ -90,10 +91,11 @@ export default {
       return this.$t('pages.table.import.title') + ' ' + this.table.name
     },
     canInsertTableData () {
-      if (!this.roles) {
+      if (!this.table || !this.access || !this.cacheUser || !this.roles || !this.roles.includes('insert-table-data')) {
         return false
       }
-      return this.roles.includes('insert-table-data')
+      const userService = useUserService()
+      return userService.hasWriteAccess(this.table, this.access, this.cacheUser)
     }
   }
 }

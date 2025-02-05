@@ -8,7 +8,7 @@
 
 <script>
 import Builder from '@/components/subset/Builder.vue'
-import { useUserStore } from '@/stores/user.js'
+import { useCacheStore } from '@/stores/cache.js'
 
 export default {
   components: {
@@ -35,21 +35,22 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
+    access () {
+      return this.cacheStore.getAccess
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
     },
     canCreateView () {
-      if (!this.roles) {
+      if (!this.roles || !this.roles.includes('create-database-view')) {
         return false
       }
-      return this.roles.includes('create-database-view')
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   }
 }

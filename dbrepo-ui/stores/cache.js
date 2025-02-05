@@ -7,9 +7,14 @@ export const useCacheStore = defineStore('cache', {
       database: null,
       table: null,
       view: null,
+      access: null,
       subset: null,
+      locale: null,
+      identifier: null,
       ontologies: [],
       messages: [],
+      user: null,
+      roles: [],
       uploadProgress: null
     }
   },
@@ -17,9 +22,14 @@ export const useCacheStore = defineStore('cache', {
     getDatabase: (state) => state.database,
     getTable: (state) => state.table,
     getView: (state) => state.view,
+    getAccess: (state) => state.access,
     getSubset: (state) => state.subset,
+    getLocale: (state) => state.locale,
+    getIdentifier: (state) => state.identifier,
     getOntologies: (state) => state.ontologies,
     getMessages: (state) => state.messages,
+    getUser: (state) => state.user,
+    getRoles: (state) => state.roles,
     getUploadProgress: (state) => state.uploadProgress,
   },
   actions: {
@@ -32,11 +42,26 @@ export const useCacheStore = defineStore('cache', {
     setView(view) {
       this.view = view
     },
+    setAccess(access) {
+      this.access = access
+    },
     setSubset(subset) {
       this.subset = subset
     },
+    setLocale(locale) {
+      this.locale = locale
+    },
+    setIdentifier(identifier) {
+      this.identifier = identifier
+    },
     setOntologies(ontologies) {
       this.ontologies = ontologies
+    },
+    setUser(user) {
+      this.user = user
+    },
+    setRoles(roles) {
+      this.roles = roles
     },
     setUploadProgress(uploadProgress) {
       this.uploadProgress = uploadProgress
@@ -110,17 +135,24 @@ export const useCacheStore = defineStore('cache', {
     setRouteTable(databaseId, tableId) {
       if (!databaseId || !tableId) {
         this.table = null
-        console.error('Cannot set route table: missing database id', databaseId, 'or table id', tableId)
         return
       }
       const tableService = useTableService()
       tableService.findOne(databaseId, tableId)
         .then(table => this.table = table)
     },
+    setRouteAccess(databaseId, userId) {
+      if (!databaseId || !userId) {
+        this.access = null
+        return
+      }
+      const accessService = useAccessService()
+      accessService.findOne(databaseId, userId)
+        .then(access => this.access = access)
+    },
     setRouteView(databaseId, viewId) {
       if (!databaseId || !viewId) {
         this.view = null
-        console.error('Cannot set route view: database view id', databaseId, 'or view id', viewId)
         return
       }
       const viewService = useViewService()
@@ -130,7 +162,6 @@ export const useCacheStore = defineStore('cache', {
     setRouteSubset(databaseId, subsetId) {
       if (!databaseId || !subsetId) {
         this.subset = null
-        console.error('Cannot set route subset: missing database id', databaseId, 'or subset id', subsetId)
         return
       }
       const subsetService = useQueryService()

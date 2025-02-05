@@ -1,12 +1,14 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.CreateContainerDto;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ContainerAlreadyExistsException;
+import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.service.impl.ContainerServiceImpl;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -52,19 +55,23 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-container"})
-    public void findById_hasRole_succeeds() throws ContainerNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findById_succeeds() throws ContainerNotFoundException {
 
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void findById_noRole_succeeds() throws ContainerNotFoundException {
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME)
+    public void findById_system_succeeds() throws ContainerNotFoundException {
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
+        final ResponseEntity<ContainerDto> response = findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_LOCAL_ADMIN_PRINCIPAL);
+        final HttpHeaders headers = response.getHeaders() ;
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
+        assertEquals(List.of("X-Username X-Password"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test
@@ -171,7 +178,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void findById_generic(Long containerId, Container container, Principal principal)
+    public ResponseEntity<ContainerDto> findById_generic(Long containerId, Container container, Principal principal)
             throws ContainerNotFoundException {
 
         /* mock */
@@ -182,6 +189,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         final ResponseEntity<ContainerDto> response = containerEndpoint.findById(containerId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+        return response;
     }
 
     public void delete_generic(Long containerId, Container container) throws ContainerNotFoundException {

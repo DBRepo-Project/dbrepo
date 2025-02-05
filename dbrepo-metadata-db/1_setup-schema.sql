@@ -3,10 +3,10 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS `mdb_users`
 (
     id               character varying(36)  NOT NULL,
+    keycloak_id      character varying(36)  NOT NULL,
     username         character varying(255) NOT NULL,
     firstname        character varying(255),
     lastname         character varying(255),
-    email            character varying(255) NOT NULL,
     orcid            character varying(255),
     affiliation      character varying(255),
     is_internal      BOOLEAN                NOT NULL DEFAULT FALSE,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
     theme            character varying(255) NOT NULL default ('light'),
     language         character varying(3)   NOT NULL default ('en'),
     PRIMARY KEY (id),
-    UNIQUE (username),
-    UNIQUE (email)
+    UNIQUE (keycloak_id),
+    UNIQUE (username)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_images`

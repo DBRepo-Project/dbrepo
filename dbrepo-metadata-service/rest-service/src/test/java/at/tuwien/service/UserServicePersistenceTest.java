@@ -1,12 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.EmailExistsException;
-import at.tuwien.exception.UserExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
@@ -15,12 +13,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -33,6 +33,9 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
 
     @Autowired
     private UserService userService;
+
+    @MockBean
+    private KeycloakGateway keycloakGateway;
 
     @BeforeEach
     public void beforeEach() {
@@ -68,20 +71,16 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException {
-        final CreateUserDto request = CreateUserDto.builder()
-                .username(USER_2_USERNAME)
-                .password(USER_2_PASSWORD)
-                .email(USER_2_EMAIL)
-                .build();
+    public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException,
+            AuthServiceException, AuthServiceConnectionException {
 
         /* test */
-        final User response = userService.create(request, USER_2_ID);
+        final User response = userService.create(USER_2_SIGNUP_REQUEST_DTO);
         assertEquals(USER_2_USERNAME, response.getUsername());
     }
 
     @Test
-    public void modify_succeeds() {
+    public void modify_succeeds() throws UserNotFoundException, AuthServiceException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -90,6 +89,11 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
                 .theme("dark")
                 .language("de")
                 .build();
+
+        /* mock */
+        doNothing()
+                .when(keycloakGateway)
+                .updateUser(USER_1_ID, request);
 
         /* test */
         final User response = userService.modify(USER_1, request);
@@ -103,17 +107,14 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() {
+    public void updatePassword_succeeds() throws UserNotFoundException, AuthServiceException,
+            AuthServiceConnectionException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_3_PASSWORD)
                 .build();
 
         /* mock */
-        final User user = userService.create(CreateUserDto.builder()
-                .username(USER_3_USERNAME)
-                .password(USER_3_PASSWORD)
-                .email(USER_3_EMAIL)
-                .build(), USER_3_ID);
+        final User user = userService.create(USER_3_SIGNUP_REQUEST_DTO);
 
         /* test */
         userService.updatePassword(user, request);
@@ -149,22 +150,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
         /* test */
         assertThrows(UserExistsException.class, () -> {
             userService.validateUsernameNotExists(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void validateEmailNotExists_succeeds() throws EmailExistsException {
-
-        /* test */
-        userService.validateEmailNotExists(USER_2_EMAIL);
-    }
-
-    @Test
-    public void validateEmailNotExists_fails() {
-
-        /* test */
-        assertThrows(EmailExistsException.class, () -> {
-            userService.validateEmailNotExists(USER_1_EMAIL);
         });
     }
 }

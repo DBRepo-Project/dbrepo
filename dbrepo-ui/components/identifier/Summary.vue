@@ -170,10 +170,10 @@ export default {
   },
   computed: {
     access () {
-      return this.userStore.getAccess.value
+      return this.cacheStore.getAccess
     },
     database () {
-      return this.cacheStore.getDatabase.value
+      return this.cacheStore.getDatabase
     },
     pid () {
       return `/pid/${this.database.identifier.id}`

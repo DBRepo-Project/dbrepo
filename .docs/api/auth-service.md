@@ -88,10 +88,6 @@ which is imported into Keycloak on startup.
 
 ## Limitations
 
-* No support for sending e-mails through Keycloak by default.
-* No support for temporary passwords.
-* No support for multi-factor authentication.
-
 !!! question "Do you miss functionality? Do these limitations affect you?"
 
     We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get

@@ -1,9 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.test.AbstractUnitTest;
+import at.tuwien.utils.KeycloakUtils;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,8 @@ import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 @Log4j2
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -32,13 +35,16 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
     @Autowired
     private KeycloakGateway keycloakGateway;
 
+    @Autowired
+    private KeycloakUtils keycloakUtils;
+
     @BeforeEach
     public void beforeEach() {
         genesis();
     }
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer(KEYCLOAK_IMAGE)
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withAdminUsername("admin")
             .withAdminPassword("admin")
@@ -47,7 +53,9 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
 
     @DynamicPropertySource
     static void keycloakProperties(DynamicPropertyRegistry registry) {
-        registry.add("dbrepo.endpoints.authService", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+        final String authServiceEndpoint = "http://localhost:" + keycloakContainer.getMappedPort(8080);
+        log.trace("set auth endpoint: {}", authServiceEndpoint);
+        registry.add("dbrepo.endpoints.authService", () -> authServiceEndpoint);
     }
 
     @Test
@@ -55,35 +63,15 @@ public class AuthenticationServiceIntegrationTest extends AbstractUnitTest {
             AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
 
         /* mock */
-        try {
-            keycloakGateway.deleteUser(keycloakGateway.findByUsername(USER_1_USERNAME).getId());
-        } catch (Exception e) {
-            /* ignore */
-        }
-        keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
+        keycloakUtils.deleteUser(USER_1_USERNAME);
+        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
         final User request = User.builder()
-                .id(keycloakGateway.findByUsername(USER_1_USERNAME).getId())
+                .keycloakId(UUID.fromString(keycloakGateway.findByUsername(USER_1_USERNAME).getId()))
                 .username(USER_1_USERNAME)
                 .build();
 
         /* test */
         authenticationService.delete(request);
-    }
-
-    @Test
-    public void create_succeeds() throws EmailExistsException, UserExistsException,
-            DataServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
-
-        /* mock */
-        try {
-            keycloakGateway.deleteUser(keycloakGateway.findByUsername(USER_1_USERNAME).getId());
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        authenticationService.create(USER_1_SIGNUP_REQUEST_DTO);
     }
 
 }

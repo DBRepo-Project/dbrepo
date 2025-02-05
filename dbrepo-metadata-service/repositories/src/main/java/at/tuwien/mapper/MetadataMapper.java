@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.CreateContainerDto;
@@ -13,14 +12,14 @@ import at.tuwien.api.database.*;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
-import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
+import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyReferenceDto;
@@ -31,9 +30,7 @@ import at.tuwien.api.datacite.doi.*;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdCreatorDto;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
-import at.tuwien.api.keycloak.CredentialDto;
-import at.tuwien.api.keycloak.CredentialTypeDto;
-import at.tuwien.api.keycloak.UpdateCredentialsDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
@@ -50,8 +47,8 @@ import at.tuwien.api.semantics.OntologyBriefDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.api.user.external.ExternalResultType;
 import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
@@ -74,6 +71,8 @@ import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
+import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.mapstruct.*;
 
 import java.text.Normalizer;
@@ -97,6 +96,16 @@ public interface MetadataMapper {
     })
     DataTypeDto dataTypeToDataTypeDto(DataType data);
 
+    @Mappings({
+            @Mapping(target = "attributes", ignore = true)
+    })
+    UserRepresentation userCreateDtoToUserRepresentation(UserCreateDto data);
+
+    @Mappings({
+            @Mapping(target = "accessToken", source = "token")
+    })
+    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
+
     BannerMessageDto bannerMessageToBannerMessageDto(BannerMessage data);
 
     BannerMessageBriefDto bannerMessageToBannerMessageBriefDto(BannerMessage data);
@@ -111,6 +120,16 @@ public interface MetadataMapper {
             @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping")
     })
     Container containerCreateRequestDtoToContainer(CreateContainerDto data);
+
+    UserUpdateDto userToUserUpdateDto(User data);
+
+    default List<String> optionalValueToMap(String value) {
+        final List<String> attr = new LinkedList<>();
+        if (value != null) {
+            attr.add(value);
+        }
+        return attr;
+    }
 
     ContainerDto containerToContainerDto(Container data);
 
@@ -395,6 +414,8 @@ public interface MetadataMapper {
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
+    IdentifierStatusType identifierStatusTypeDtoToIdentifierStatusType(IdentifierStatusTypeDto data);
+
     default String identifierToLocationUrl(String baseUrl, Identifier data) {
         if (data.getType().equals(IdentifierType.SUBSET)) {
             return baseUrl + "/database/" + data.getDatabase().getId() + "/subset/" + data.getQueryId() + "/info?pid=" + data.getId();
@@ -536,8 +557,6 @@ public interface MetadataMapper {
     }
 
     default TableDto tableToTableDto(Table data) {
-        data.getDatabase()
-                .setTables(null);
         final TableDto table = TableDto.builder()
                 .id(data.getId())
                 .name(data.getName())
@@ -550,7 +569,10 @@ public interface MetadataMapper {
                 .description(data.getDescription())
                 .identifiers(new LinkedList<>())
                 .columns(new LinkedList<>())
-                .database(databaseToDatabaseDto(data.getDatabase()))
+                .database(databaseToDatabaseDto(data.getDatabase()
+                        .toBuilder()
+                        .tables(null)
+                        .build()))
                 .constraints(constraintsToConstraintsDto(data.getConstraints()))
                 .build();
         if (data.getIdentifiers() != null) {
@@ -746,48 +768,12 @@ public interface MetadataMapper {
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 
-    default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
-        return UpdateCredentialsDto.builder()
-                .credentials(List.of(CredentialDto.builder()
-                        .temporary(false)
-                        .type(CredentialTypeDto.PASSWORD)
-                        .value(password)
-                        .build()))
-                .build();
-    }
-
-    default UserCreateDto signupRequestDtoToUserCreateDto(CreateUserDto data) {
-        return UserCreateDto.builder()
-                .username(data.getUsername())
-                .email(data.getEmail())
-                .credentials(List.of(CredentialDto.builder()
-                        .type(CredentialTypeDto.PASSWORD)
-                        .temporary(false)
-                        .value(data.getPassword())
-                        .build()))
-                .enabled(true)
-                .build();
-    }
-
-    /* keep */
-    UserBriefDto keycloakUserDtoToUserBriefDto(at.tuwien.api.keycloak.UserDto data);
-
-    /* keep */
-    @Mappings({
-            @Mapping(target = "id", expression = "java(data.getId().toString())")
-    })
-    UserDetailsDto userDtoToUserDetailsDto(UserDto data);
-
-    User userDtoToUser(at.tuwien.api.keycloak.UserDto data);
-
     /* keep */
     @Mappings({
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserBriefDto userToUserBriefDto(User data);
-
-    UserBriefDto userDtoToUserBriefDto(UserDto data);
 
     /* keep */
     @Mappings({
@@ -800,9 +786,6 @@ public interface MetadataMapper {
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserDto userToUserDto(User data);
-
-    /* keep */
-    User userDtoToUserDto(UserDto data);
 
     /* keep */
     @Named("userToFullName")
@@ -837,7 +820,8 @@ public interface MetadataMapper {
     }
 
     @Mappings({
-            @Mapping(target = "database.views", ignore = true)
+            @Mapping(target = "database.views", ignore = true),
+            @Mapping(target = "database.tables", ignore = true)
     })
     ViewDto viewToViewDto(View data);
 

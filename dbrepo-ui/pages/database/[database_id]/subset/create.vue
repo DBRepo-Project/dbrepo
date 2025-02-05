@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import { useUserStore } from '@/stores/user.js'
 import Builder from '@/components/subset/Builder.vue'
 import {useCacheStore} from '@/stores/cache.js'
 
@@ -36,28 +35,15 @@ export default {
           disabled: true
         }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+      return this.cacheStore.getAccess
     },
     canCreateSubset () {
       if (!this.database) {
@@ -66,7 +52,11 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      return this.hasReadAccess
+      if (!this.access) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   }
 }

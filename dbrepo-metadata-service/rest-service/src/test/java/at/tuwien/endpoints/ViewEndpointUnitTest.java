@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.CreateViewDto;
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.ViewUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -171,6 +172,25 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         find_generic(DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL, USER_2_ID, USER_2, DATABASE_2_USER_1_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_publicSystem_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, ViewNotFoundException {
+
+        /* test */
+        final ResponseEntity<ViewDto> response = find_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL,
+                USER_LOCAL_ADMIN_ID, null, null);
+        final HttpHeaders headers = response.getHeaders();
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
+        assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
+        assertEquals(List.of(CONTAINER_1_HOST), headers.get("X-Host"));
+        assertEquals(List.of("" + CONTAINER_1_PORT), headers.get("X-Port"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Type"));
+        assertEquals(List.of(DATABASE_3_INTERNALNAME), headers.get("X-Database"));
+        assertEquals(List.of(VIEW_5_INTERNAL_NAME), headers.get("X-View"));
+        assertEquals(List.of("X-Username X-Password X-Host X-Port X-Type X-Database X-View"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test
@@ -494,9 +514,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         assertEquals(VIEW_1_NAME, response.getBody().getName());
     }
 
-    protected void find_generic(Long databaseId, Database database, Principal principal, UUID userId, User user,
-                                DatabaseAccess access) throws DatabaseNotFoundException, UserNotFoundException,
-            AccessNotFoundException, ViewNotFoundException {
+    protected ResponseEntity<ViewDto> find_generic(Long databaseId, Database database, Principal principal,
+                                                   UUID userId, User user, DatabaseAccess access)
+            throws DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.findById(databaseId))
@@ -514,18 +534,18 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             when(userService.findById(userId))
                     .thenReturn(user);
             when(viewService.findById(any(Database.class), anyLong()))
-                    .thenReturn(VIEW_1);
+                    .thenReturn(VIEW_5);
         } else {
             when(viewService.findById(any(Database.class), anyLong()))
-                    .thenReturn(VIEW_1);
+                    .thenReturn(VIEW_5);
         }
 
         /* test */
-        final ResponseEntity<ViewDto> response = viewEndpoint.find(databaseId, VIEW_1_ID, USER_1_PRINCIPAL);
+        final ResponseEntity<ViewDto> response = viewEndpoint.find(databaseId, VIEW_5_ID, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(VIEW_1_ID, response.getBody().getId());
-        assertEquals(VIEW_1_NAME, response.getBody().getName());
+        assertEquals(VIEW_5_ID, response.getBody().getId());
+        return response;
     }
 
     protected void delete_generic(Long databaseId, Database database, Long viewId, View view, Principal principal,

@@ -216,6 +216,8 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
             log.debug("fetched unknown table from data service: {}.{}", database.getInternalName(), table.getInternalName());
             final Table tableEntity = metadataMapper.tableDtoToTable(table);
+            tableEntity.setIsPublic(database.getIsPublic());
+            tableEntity.setIsSchemaPublic(database.getIsSchemaPublic());
             tableEntity.setDatabase(database);
             tableEntity.getColumns()
                     .forEach(column -> {

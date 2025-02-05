@@ -8,7 +8,7 @@
       :color="color(identifier)"
       :variant="listVariant"
       :href="href(identifier)"
-      :title="formatTimestampUTCLabel(identifier.created)"
+      :title="title(identifier)"
       lines="two">
       <v-list-item-subtitle>
         <Banner
@@ -43,8 +43,6 @@
 
 <script>
 import Banner from '@/components/identifier/Banner.vue'
-import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -61,32 +59,31 @@ export default {
     identifier: {
       type: Object,
       default () {
-        return {}
+        return null
       }
     }
   },
   data () {
     return {
       idx: null,
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
-    roles () {
-      return this.userStore.getRoles
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     displayIdentifiers () {
-      if (!this.identifiers) {
-        return []
+      if (!this.identifiers || this.identifiers.length === 0) {
+        if (!this.identifier) {
+          return []
+        }
+        return [this.identifier]
       }
-      if (!this.user) {
+      if (!this.cacheUser) {
         return this.identifiers.filter(i => i.status === 'published')
       }
-      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.user.id)
+      return this.identifiers.filter(i => i.status === 'published' || i.owner.id === this.cacheUser.uid)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -105,8 +102,10 @@ export default {
     this.init()
   },
   methods: {
-    formatTimestampUTCLabel,
     href (identifier) {
+      if (!identifier) {
+        return null
+      }
       if (identifier.status === 'published') {
         return `/pid/${identifier.id}`
       }
@@ -120,6 +119,13 @@ export default {
         case 'view':
           return `/database/${identifier.database_id}/view/${identifier.view_id}/persist/${identifier.id}`
       }
+    },
+    title (identifier) {
+      if (!identifier) {
+        return null
+      }
+      const identifierService = useIdentifierService()
+      return identifierService.identifierPreferEnglishTitle(identifier)
     },
     isActive (identifier) {
       if (!identifier) {

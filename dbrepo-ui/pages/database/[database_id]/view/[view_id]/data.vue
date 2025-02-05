@@ -22,7 +22,6 @@
         :loading="loadingData"
         @click="reload" />
     </v-toolbar>
-    <TimeDrift />
     <v-card tile>
       <QueryResults
         id="query-results"
@@ -35,14 +34,11 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift.vue'
 import QueryResults from '@/components/subset/Results.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
-    QueryResults,
-    TimeDrift
+    QueryResults
   },
   data () {
     return {
@@ -70,14 +66,10 @@ export default {
           disabled: true
         }
       ],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -85,13 +77,10 @@ export default {
       return this.cacheStore.getView
     },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' ||  this.access.type === 'write_own' ||  this.access.type === 'write_all'
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     canReadData () {
       if (!this.view) {
@@ -100,10 +89,11 @@ export default {
       if (this.view.is_public) {
         return true
       }
-      if (!this.user) {
+      if (!this.access) {
         return false
       }
-      return this.view.owner.id === this.user.id || this.hasReadAccess
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     },
   },
   mounted () {

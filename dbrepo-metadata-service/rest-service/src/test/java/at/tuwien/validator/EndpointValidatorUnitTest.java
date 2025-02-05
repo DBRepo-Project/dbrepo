@@ -2,8 +2,8 @@ package at.tuwien.validator;
 
 import at.tuwien.SortType;
 import at.tuwien.api.database.table.CreateTableDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
@@ -68,6 +68,14 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
         /* test */
         endpointValidator.validateDataParams(0L, 1L);
+    }
+
+    @Test
+    public void validateOnlyAccess_system_succeeds() throws UserNotFoundException, NotAllowedException,
+            AccessNotFoundException {
+
+        /* test */
+        endpointValidator.validateOnlyAccess(DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL, false);
     }
 
     @Test
@@ -223,6 +231,20 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    public void validateOnlyWriteOwnOrWriteAllAccess_succeeds() throws DatabaseNotFoundException,
+            TableNotFoundException, AccessNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+        when(accessService.find(eq(DATABASE_1), any(User.class)))
+                .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+
+        /* test */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+    }
+
+    @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasReadAccess_fails() throws DatabaseNotFoundException,
             TableNotFoundException, AccessNotFoundException {
 
@@ -321,6 +343,20 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         assertThrows(NotAllowedException.class, () -> {
             endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1);
         });
+    }
+
+    @Test
+    public void validateOnlyPrivateDataHasRole_publicDatabase_succeeds() throws NotAllowedException {
+
+        /* test */
+        endpointValidator.validateOnlyPrivateDataHasRole(DATABASE_4, null, "nobody-role");
+    }
+
+    @Test
+    public void validateOnlyPrivateDataHasRole_privateDatabaseHasRole_succeeds() throws NotAllowedException {
+
+        /* test */
+        endpointValidator.validateOnlyPrivateDataHasRole(DATABASE_1, USER_1_PRINCIPAL, "find-database");
     }
 
     @Test
@@ -489,6 +525,13 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
         /* test */
         assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_succeeds() {
+
+        /* test */
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, null, "find-database"));
     }
 
     @Test

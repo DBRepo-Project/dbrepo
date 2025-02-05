@@ -3,19 +3,26 @@ import vuetify from 'vite-plugin-vuetify'
 
 const proxy: any = {}
 
-// /* proxies the backend calls, >>NOT<< the frontend calls (clicking) */
-// if (process.env.NODE_ENV === 'development') {
-//   const api = 'http://localhost'
-//   proxy['/api'] = api
-//   proxy['/pid'] = {
-//     target: api + '/api',
-//     changeOrigin: true,
-//     pathRewrite: {
-//       '^/pid': '/pid'
-//     }
-//   }
-//   process.env.NUXT_PUBLIC_API_SERVER = api
-// }
+/* proxies the backend calls, >>NOT<< the frontend calls */
+if (process.env.NODE_ENV === 'development') {
+  const api = 'http://localhost'
+  proxy['/api'] = api
+  proxy['/pid'] = {
+    target: api + '/api',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/pid': '/pid'
+    }
+  }
+  process.env.VERSION = 'bun-dev'
+  process.env.NUXT_PUBLIC_API_SERVER = api
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_AUTHORIZATION_URL = api + '/realms/dbrepo/protocol/openid-connect/auth'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI = api + ':3001'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_URL = api + '/realms/dbrepo/protocol/openid-connect/logout'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI = api + ':3001/auth/keycloak/callback'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_TOKEN_URL = api + '/realms/dbrepo/protocol/openid-connect/token'
+  process.env.NUXT_OIDC_PROVIDERS_KEYCLOAK_USER_INFO_URL = api + '/realms/dbrepo/protocol/openid-connect/userinfo'
+}
 
 /**
  * https://nuxt.com/docs/guide/concepts/rendering#hybrid-rendering
@@ -107,11 +114,37 @@ export default defineNuxtConfig({
     port: 3001
   },
 
+  oidc: {
+    defaultProvider: 'keycloak',
+    providers: {
+      keycloak: {
+        audience: 'account',
+        authorizationUrl: '',
+        baseUrl: 'http://localhost/realms/dbrepo',
+        clientId: 'dbrepo-client',
+        clientSecret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG',
+        exposeAccessToken: true,
+        logoutRedirectUri: '',
+        logoutUrl: '',
+        optionalClaims: ['realm_access'],
+        redirectUri: 'http://localhost',
+        scope: ['openid', 'roles'],
+        tokenUrl: '',
+        userInfoUrl: ''
+      },
+    },
+    middleware: {
+      globalMiddlewareEnabled: false,
+      customLoginPage: false
+    },
+  },
+
   modules: [
-    '@artmizu/nuxt-prometheus',
+    ['@artmizu/nuxt-prometheus', {verbose: false}],
     '@nuxtjs/i18n',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
+    'nuxt-oidc-auth',
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
         vuetify()
@@ -160,6 +193,8 @@ export default defineNuxtConfig({
     },
   },
 
-  devtools: {enabled: true},
-  compatibilityDate: '2024-07-24'
+  devtools: {
+    enabled: false
+  },
+  compatibilityDate: '2025-01-25'
 })

@@ -39,11 +39,21 @@ export default {
     database () {
       return this.cacheStore.getDatabase
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
     canViewSchema () {
-      if (this.error) {
+      if (!this.database) {
         return false
       }
-      return this.database
+      if (this.database.is_schema_public) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access)
     }
   }
 }

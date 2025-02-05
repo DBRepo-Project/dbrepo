@@ -92,7 +92,6 @@
 
 <script>
 import ViewToolbar from '@/components/view/ViewToolbar.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -148,14 +147,10 @@ export default {
         { value: 'description', title: this.$t('pages.table.subpages.schema.description.title') },
       ],
       dateColumns: [],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -163,16 +158,13 @@ export default {
       return this.cacheStore.getView
     },
     access () {
-      return this.userStore.getAccess
-    },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+      return this.cacheStore.getAccess
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     isChange () {
       if (!this.view) {
@@ -184,22 +176,23 @@ export default {
       return this.view.is_schema_public !== this.modify.is_schema_public
     },
     canUpdateVisibility () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.user.id
+      return this.roles.includes('modify-view-visibility') && this.view.owner.id === this.cacheUser.uid
     },
     canDeleteView () {
-      if (!this.roles || !this.user || !this.view) {
+      if (!this.roles || !this.cacheUser || !this.view) {
         return false
       }
-      return this.roles.includes('delete-database-view') && this.view.owner.id === this.user.id
+      return this.roles.includes('delete-database-view') && this.view.owner.id === this.cacheUser.uid
     },
     canViewSettings () {
-      if (!this.user || !this.view) {
+      if (!this.view || !this.access || !this.cacheUser) {
         return false
       }
-      return this.view.owner.id === this.user.id
+      const userService = useUserService()
+      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()

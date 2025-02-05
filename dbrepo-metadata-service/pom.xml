@@ -11,7 +11,7 @@
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-metadata-service</artifactId>
     <name>dbrepo-metadata-service</name>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 
     <description>Service that manages the metadata</description>
 
@@ -27,7 +27,7 @@
         <module>report</module>
     </modules>
 
-    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.5/</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -52,7 +52,7 @@
         <apache-jena.version>4.10.0</apache-jena.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
-        <keycloak.version>21.0.2</keycloak.version>
+        <keycloak.version>26.0.4</keycloak.version>
         <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <testcontainers.version>1.19.1</testcontainers.version>
         <jackson.version>2.15.2</jackson.version>
@@ -185,6 +185,11 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
         <dependency>

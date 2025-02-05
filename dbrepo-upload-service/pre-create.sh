@@ -1,6 +1,6 @@
 #!/bin/bash
 REQUEST_RAW=$(cat /dev/stdin)
-AUTH_SERVICE_ENDPOINT="${AUTH_SERVICE_ENDPOINT:-http://auth-service:8080}"
+METADATA_SERVICE_ENDPOINT="${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
 
 echo "[DEBUG] [pre-create hook] request started" >&2
 if [ "$(echo "$REQUEST_RAW" | jq '.Event.HTTPRequest.Header | has("Authorization")')" == "false" ]; then
@@ -21,11 +21,11 @@ END
   exit 0
 fi
 
-echo "[DEBUG] [pre-create hook] request has 'Authorization' header present" >&2
+echo "[DEBUG] [pre-create hook] request has 'Authorization' header p  resent" >&2
 
 BEARER="$(echo "$REQUEST_RAW" | jq -r '.Event.HTTPRequest.Header.Authorization[0]')"
-echo "[DEBUG] [pre-create hook] attempting to contact ${AUTH_SERVICE_ENDPOINT}" >&2
-if [ ! "$(wget -O- --quiet --header "Authorization: ${BEARER}" ${AUTH_SERVICE_ENDPOINT}/realms/dbrepo/protocol/openid-connect/userinfo)" ]; then
+
+if [ ! "$(wget -O- --quiet --header='Authorization: ${BEARER}' ${METADATA_SERVICE_ENDPOINT}/api/license)" ]; then
   echo "[ERROR] [pre-create hook] Unauthorized" >&2
   cat <<END
   {

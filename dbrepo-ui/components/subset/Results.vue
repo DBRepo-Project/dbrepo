@@ -80,23 +80,6 @@ export default {
     }
   },
   methods: {
-    executeFirstTime (parent, sql, timestamp) {
-      this.loading++
-      const payload = {
-        statement: sql,
-        timestamp
-      }
-      const queryService = useQueryService()
-      queryService.execute(this.$route.params.database_id, payload, this.options.page - 1, this.options.itemsPerPage)
-        .then((result) => {
-          this.mapResults(result)
-          parent.resultId = result.id
-          this.id = result.id
-        })
-        .finally(() => {
-          this.loading--
-        })
-    },
     reExecute (id) {
       if (id === null) {
         return

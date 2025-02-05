@@ -87,6 +87,8 @@ authservice:
     fullnameOverride: auth-db
     auth:
       postgresPassword: postgres
+  ## @param authservice.production Start Keycloak with production profile.
+  production: true
   ## @param authservice.resourcesPreset The container resource presets
   resourcesPreset: "small"
   jwt:
@@ -116,7 +118,7 @@ authservice:
   setupJob:
     image:
       ## @skip authservice.setupJob.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.3
     ## @param authservice.setupJob.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param authservice.setupJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -127,8 +129,8 @@ authservice:
     ##   limits:
     ##     cpu: 500m
     ##     memory: 1024Mi
-  ## @skip authservice.extraEnvVarsCM
-  extraEnvVarsCM: auth-service-config
+  ## @skip authservice.extraEnvVarsSecret
+  extraEnvVarsSecret: auth-service-secret
   ## @skip authservice.extraVolumes
   extraVolumes:
     - name: config-map
@@ -140,7 +142,14 @@ authservice:
   ## @skip authservice.extraVolumeMounts
   extraVolumeMounts:
     - name: config-map
-      mountPath: /opt/keycloak/data/import
+      mountPath: /opt/keycloak/data/import/dbrepo-realm.json
+      subPath: dbrepo-realm.json
+    - name: config-map
+      mountPath: /opt/keycloak/data/import/master-realm.json
+      subPath: master-realm.json
+    - name: config-map
+      mountPath: /opt/bitnami/keycloak/providers/create-event-listener.jar
+      subPath: create-event-listener.jar
     - name: cache
       mountPath: /bitnami/keycloak/
   ## @skip authservice.replicaCount The number of replicas.
@@ -392,7 +401,7 @@ analyseservice:
   enabled: true
   image:
     ## @skip analyseservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param analyseservice.podSecurityContext.enabled Enable pods' Security Context
@@ -453,7 +462,7 @@ metadataservice:
   enabled: true
   image:
     ## @skip metadataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param metadataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -550,7 +559,7 @@ dataservice:
   endpoint: http://data-service
   image:
     ## @skip dataservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param dataservice.podSecurityContext.enabled Enable pods' Security Context
@@ -636,7 +645,7 @@ searchservice:
   endpoint: http://search-service
   image:
     ## @skip searchservice.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param searchservice.podSecurityContext.enabled Enable pods' Security Context
@@ -683,7 +692,7 @@ searchservice:
   init:
     image:
       ## @skip searchservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.3
     ## @param searchservice.init.resourcesPreset The container resource preset
     resourcesPreset: "nano"
     ## @param searchservice.init.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -744,7 +753,7 @@ storageservice:
   init:
     image:
       ## @skip storageservice.init.image.name
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.2
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.3
     s3:
       ## @param storageservice.init.s3.endpoint The S3-capable endpoint the microservice connects to.
       endpoint: http://storage-service-s3:8333
@@ -853,7 +862,7 @@ ui:
   enabled: true
   image:
     ## @skip ui.image.name
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.2
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext:
     ## @param ui.podSecurityContext.enabled Enable pods' Security Context
@@ -941,7 +950,7 @@ ui:
       ## @param ui.public.doi.endpoint The DOI proxy.
       endpoint: https://doi.org
   ## @param ui.replicaCount The number of replicas.
-  replicaCount: 2
+  replicaCount: 1
   ## @skip ui.extraVolumes
   extraVolumes: [ ]
   #  - name: images-map

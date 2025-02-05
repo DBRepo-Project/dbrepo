@@ -30,6 +30,10 @@ public class User {
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "keycloak_id", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID keycloakId;
+
     @Column(nullable = false)
     private String username;
 
@@ -38,9 +42,6 @@ public class User {
 
     @Column
     private String lastname;
-
-    @Column(nullable = false)
-    private String email;
 
     @Column
     private String orcid;

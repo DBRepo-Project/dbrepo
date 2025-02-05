@@ -161,12 +161,12 @@ export const useQueryService = (): any => {
           }
         }
         sql += ` \`${clause.params[0]}\` ${clause.params[1]} `
-        const filteredType = types.filter(t => t.value === filteredColumn[0].column_type)
+        const filteredType = types.filter(t => t.value === filteredColumn[0].type)
         if (filteredType.length === 0) {
           return {
             error: true,
             reason: 'exists',
-            column: filteredColumn[0].column_type,
+            column: filteredColumn[0].type,
             raw: null,
             formatted: null
           }
@@ -175,7 +175,7 @@ export const useQueryService = (): any => {
           return {
             error: true,
             reason: 'build',
-            column: filteredColumn[0].column_type,
+            column: filteredColumn[0].type,
             raw: null,
             formatted: null
           }

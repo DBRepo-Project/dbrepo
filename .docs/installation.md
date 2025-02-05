@@ -31,11 +31,11 @@ settings.
 - min. 200GB free SSD storage
 
 Since DBRepo is intended to be a publicly available repository, an optional fixed/static IP-address with optional
-SSL/TLS certificate is recommended. Follow the [secure install](#secure-install) guide.
+SSL/TLS certificate is recommended. Follow the [secure installation](#secure-installation) guide.
 
 ## Secure Installation
 
-Execute the install script to download only the environment and save it to `dist`.
+Execute the installation script to download only the environment and save it to `dist`.
 
 ```shell
 curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-1.6/install.sh | DOWNLOAD_ONLY=1 bash
@@ -49,6 +49,8 @@ Call the helper script to regenerate the client secret of the `dbrepo-client` an
 Update the rest of the default secrets in the `.env` file to secure passwords. You can use `openssl` for that, e.g. 
 `openssl rand -hex 16`. Set `auth_ldap.dn_lookup_bind.password` in `dist/rabbitmq.conf` to the value of
 `SYSTEM_PASSWORD`.
+
+Only set the `BASE_URL` environment variable in `.env` when your hostname is **not** `localhost`.
 
 ### Runtime Configuration
 

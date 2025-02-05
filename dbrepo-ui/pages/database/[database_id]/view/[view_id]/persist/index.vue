@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="canPersistView">
+    v-if="canPersistIdentifier">
     <Persist
       type="view"
       :database="database"
@@ -11,7 +11,6 @@
 
 <script>
 import Persist from '@/components/identifier/Persist.vue'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -45,32 +44,37 @@ export default {
           disabled: true
         }
       ],
-      userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     database () {
       return this.cacheStore.getDatabase
     },
-    view () {
-      if (!this.database) {
-        return null
-      }
-      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
-    },
     access () {
-      return this.userStore.getAccess
+      return this.cacheStore.getAccess
     },
-    canPersistView () {
-      if (!this.view) {
+    cacheUser () {
+      return this.cacheStore.getUser
+    },
+    view () {
+      return this.cacheStore.getView
+    },
+    roles () {
+      return this.cacheStore.getRoles
+    },
+    canPersistIdentifier () {
+      if (!this.view || !this.roles || !this.cacheUser || !this.access) {
+        return false
+      }
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
+      }
+      if (!this.roles.includes('create-identifier')) {
         return false
       }
       const userService = useUserService()
-      return userService.hasReadAccess(this.access)
+      return userService.hasReadAccess(this.access) && this.view.owner.id === this.cacheUser.uid
     }
   }
 }

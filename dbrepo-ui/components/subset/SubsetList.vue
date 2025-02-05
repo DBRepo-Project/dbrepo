@@ -14,28 +14,20 @@
         <Loading />
       </v-list-item>
       <div
-        v-for="(item, i) in subsets"
+        v-for="(subset, i) in subsets"
         :key="`q-${i}`">
         <v-divider v-if="i !== 0" class="mx-4" />
         <v-list>
           <v-list-item
             lines="two"
-            :title="title(item)"
-            :subtitle="subtitle(item)"
-            :class="clazz(item)"
-            :to="link(item)"
-            :href="link(item)">
+            :title="title(subset)"
+            :subtitle="subtitle(subset)"
+            :class="clazz(subset)"
+            :to="link(subset)"
+            :href="link(subset)">
             <template v-slot:append>
-              <v-tooltip
-                v-if="hasPublishedIdentifier(item)"
-                :text="$t('pages.identifier.pid.title')"
-                left>
-                <template v-slot:activator="{ props }">
-                  <v-icon
-                    color="primary"
-                    v-bind="props">mdi-identifier</v-icon>
-                </template>
-              </v-tooltip>
+              <ResourceStatus
+                :resource="subset" />
             </template>
           </v-list-item>
         </v-list>
@@ -45,8 +37,6 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
-import { useUserStore } from '@/stores/user.js'
 import { useCacheStore } from '@/stores/cache.js'
 
 export default {
@@ -55,14 +45,10 @@ export default {
       loadingSubsets: false,
       loadingIdentifiers: false,
       subsets: [],
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    user () {
-      return this.userStore.getUser
-    },
     database () {
       return this.cacheStore.getDatabase
     },
@@ -130,7 +116,6 @@ export default {
   }
 }
 </script>
-
 <style lang="scss" scoped>
 .pid-icon {
   flex: 0 !important;

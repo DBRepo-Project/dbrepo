@@ -1,12 +1,14 @@
 package at.tuwien.mvc;
 
-import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.CreateContainerDto;
-import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.*;
+import at.tuwien.api.database.DatabaseModifyImageDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
+import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
+import at.tuwien.test.AbstractUnitTest;
 import io.micrometer.observation.annotation.Observed;
 import io.micrometer.observation.tck.TestObservationRegistry;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +26,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +33,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static io.micrometer.observation.tck.TestObservationRegistryAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -273,7 +277,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
             /* ignore */
         }
         try {
-            identifierEndpoint.findAll(DATABASE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE);
+            identifierEndpoint.findAll(IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, MediaType.APPLICATION_JSON_VALUE, null);
         } catch (Exception e) {
             /* ignore */
         }
@@ -587,43 +591,14 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
-        try {
-            userEndpoint.refreshToken(RefreshTokenRequestDto.builder().build());
-        } catch (Exception e) {
-            /* ignore */
-        }
 
         /* test */
-        for (String metric : List.of("dbrepo_user_refresh_token", "dbrepo_users_list",
-                "dbrepo_user_find", "dbrepo_user_modify", "dbrepo_user_password_modify")) {
+        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify",
+                "dbrepo_user_password_modify")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
         generic_openApiDocs(UserEndpoint.class);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void prometheusUserEndpoint2_succeeds() {
-
-        /* mock */
-        try {
-            userEndpoint.create(USER_1_SIGNUP_REQUEST_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            userEndpoint.getToken(USER_1_LOGIN_REQUEST_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-
-        /* test */
-        for (String metric : List.of("dbrepo_user_create", "dbrepo_user_token")) {
-            assertThat(registry)
-                    .hasObservationWithNameEqualTo(metric);
-        }
-        // already done above
     }
 
     @Test

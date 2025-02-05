@@ -194,7 +194,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Failed to fin user/database in metadata database",
+                    description = "Failed to find database in metadata database",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -211,7 +211,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
                                                                  @NotNull Principal principal) throws DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, UserNotFoundException,
+            DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException,
             TableNotFoundException {
         log.debug("endpoint refresh database metadata, databaseId={}", databaseId);
@@ -513,7 +513,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .findFirst();
             if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty() && !isSystem(principal)) {
                 log.error("Failed to find database: not public and no access found");
-                throw new DatabaseNotFoundException("Failed to find database: not public and no access found");
+                throw new NotAllowedException("Failed to find database: not public and no access found");
             }
             /* reduce metadata */
             database.setTables(database.getTables()
@@ -534,14 +534,16 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 throw new NotAllowedException("Failed to find database: not public and not authenticated");
             }
             /* reduce metadata */
-            database.setTables(database.getTables()
-                    .stream()
-                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
-                    .toList());
-            database.setViews(database.getViews()
-                    .stream()
-                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic())
-                    .toList());
+            database.getTables()
+                    .removeAll(database.getTables()
+                            .stream()
+                            .filter(t -> !t.getIsPublic() && !t.getIsSchemaPublic())
+                            .toList());
+            database.getViews()
+                    .removeAll(database.getViews()
+                            .stream()
+                            .filter(v -> !v.getIsPublic() && !v.getIsSchemaPublic())
+                            .toList());
             database.setAccesses(List.of());
         }
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);

@@ -7,11 +7,9 @@ import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.config.TusdConfig;
 import at.tuwien.config.TusdContainerConfig;
-import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
-import at.tuwien.exception.EmailExistsException;
-import at.tuwien.exception.UserExistsException;
 import at.tuwien.interceptor.KeycloakInterceptor;
+import at.tuwien.util.KeycloakUtil;
 import com.github.dockerjava.api.model.ExposedPort;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
@@ -20,7 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -33,7 +34,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
@@ -49,13 +49,16 @@ public class UploadServiceIntegrationTest {
     private TusdConfig tusdConfig;
 
     @Autowired
+    private KeycloakUtil keycloakUtil;
+
+    @Autowired
     private KeycloakConfig keycloakConfig;
 
     @Container
     private static TusdContainerConfig.TusdContainer tusdContainer = TusdContainerConfig.TusdContainer.getInstance();
 
     @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:24.0")
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:26.0")
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withRealmImportFile("init/dbrepo-realm.json")
             .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false")
@@ -69,9 +72,8 @@ public class UploadServiceIntegrationTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws UserExistsException, AuthServiceException, AuthServiceConnectionException,
-            EmailExistsException {
-        if (keycloakConfig.existsByUsername(keycloakContainer.getAdminUsername())) {
+    public void beforeEach() throws AuthServiceException {
+        if (keycloakUtil.existsByUsername(keycloakContainer.getAdminUsername())) {
             return;
         }
         final UserCreateDto payload = UserCreateDto.builder()
@@ -82,7 +84,7 @@ public class UploadServiceIntegrationTest {
                         .value(keycloakContainer.getAdminPassword())
                         .build()))
                 .build();
-        keycloakConfig.createUser(payload);
+        keycloakUtil.createUser(payload);
     }
 
     @Test

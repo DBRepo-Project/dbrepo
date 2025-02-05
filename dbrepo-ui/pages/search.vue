@@ -65,7 +65,6 @@
 
 <script>
 import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
-import { useUserStore } from '@/stores/user.js'
 
 export default {
   components: {
@@ -75,14 +74,10 @@ export default {
     return {
       results: [],
       type: 'database',
-      loading: false,
-      userStore: useUserStore()
+      loading: false
     }
   },
   computed: {
-    roles () {
-      return this.userStore.getRoles
-    },
     q () {
       if (!this.$route.query || !this.$route.query.q) {
         return null
@@ -91,12 +86,6 @@ export default {
     },
     header () {
       return `${this.results.length} ${this.results.length !== 1 ? this.$t('toolbars.search.results') : this.$t('toolbars.search.result')}`
-    },
-    canCreateDatabase () {
-      if (!this.roles) {
-        return false
-      }
-      return this.roles.includes('create-database')
     },
     isDatabaseSearch () {
       return this.type === 'database'

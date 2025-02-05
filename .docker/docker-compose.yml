@@ -78,11 +78,12 @@ services:
     restart: "no"
     container_name: dbrepo-auth-service
     hostname: auth-service
-    image: bitnami/keycloak:26.0.0-debian-12-r1
+    image: bitnami/keycloak:24.0.5-debian-12-r8
     volumes:
       - ./config/import-realms.sh:/docker-entrypoint-initdb.d/import-realms.sh
       - ./config/master-realm.json:/opt/keycloak/data/import/master-realm.json
       - ./config/dbrepo-realm.json:/opt/keycloak/data/import/dbrepo-realm.json
+      - ./config/create-event-listener.jar:/opt/bitnami/keycloak/providers/create-event-listener.jar
     ports:
       - "8080:8080"
     environment:
@@ -92,6 +93,9 @@ services:
       KEYCLOAK_DATABASE_NAME: "${AUTH_DB_NAME:-keycloak}"
       KEYCLOAK_DATABASE_USER: "${AUTH_DB_USERNAME:-keycloak}"
       KEYCLOAK_DATABASE_PASSWORD: "${AUTH_DB_PASSWORD:-dbrepo}"
+      METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}/api/user"
+      SYSTEM_USERNAME: "${SYSTEM_USERNAME:-admin}"
+      SYSTEM_PASSWORD: "${SYSTEM_PASSWORD:-admin}"
     healthcheck:
       test: curl -fsS http://localhost:8080/realms/master
       interval: 10s
@@ -109,7 +113,7 @@ services:
     init: true
     restart: "no"
     container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.3
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -130,7 +134,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.3
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -193,7 +197,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.3
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -248,7 +252,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.6.3
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -272,7 +276,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.3
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -296,11 +300,15 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
-      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://localhost}"
+      NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
       NUXT_PUBLIC_UPLOAD_CLIENT: "${BASE_URL:-http://localhost}/api/upload/files"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_ID: "${AUTH_SERVICE_CLIENT:-dbrepo-client}"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_CLIENT_SECRET: "${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_REDIRECT_URI: "${BASE_URL:-http://localhost}/auth/keycloak/callback"
+      NUXT_OIDC_PROVIDERS_KEYCLOAK_LOGOUT_REDIRECT_URI: "${BASE_URL:-http://localhost}"
     depends_on:
       dbrepo-search-service:
         condition: service_healthy
@@ -311,6 +319,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    extra_hosts:
+      - "localhost:host-gateway"
     logging:
       driver: json-file
 
@@ -365,7 +375,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.3
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -422,7 +432,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.6.3
     ports:
       - "3000:3000"
     volumes:
@@ -449,7 +459,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.3
     environment:
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -479,6 +489,7 @@ services:
       AWS_ACCESS_KEY_ID: "${S3_ACCESS_KEY_ID:-seaweedfsadmin}"
       AWS_SECRET_ACCESS_KEY: "${S3_SECRET_ACCESS_KEY:-seaweedfsadmin}"
       AWS_REGION: "${STORAGE_REGION_NAME:-default}"
+      METADATA_SERVICE_ENDPOINT: "${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}"
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy
@@ -494,7 +505,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.2
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.3
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:

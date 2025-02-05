@@ -73,7 +73,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
         this.identifierService = identifierService;
     }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json"})
+    @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbrepo_identifier_list")
     @Operation(summary = "List identifiers",
@@ -87,48 +87,41 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             @Content(mediaType = "application/ld+json",
                                     array = @ArraySchema(schema = @Schema(implementation = LdDatasetDto.class)))
                     }),
-            @ApiResponse(responseCode = "406",
-                    description = "Identifier could not be exported, the requested style is not known",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> findAll(@Valid @RequestParam(value = "dbid", required = false) Long dbid,
+    public ResponseEntity<?> findAll(@Valid @RequestParam(value = "type", required = false) IdentifierTypeDto type,
+                                     @Valid @RequestParam(value = "status", required = false) IdentifierStatusTypeDto status,
+                                     @Valid @RequestParam(value = "dbid", required = false) Long dbid,
                                      @Valid @RequestParam(value = "qid", required = false) Long qid,
                                      @Valid @RequestParam(value = "vid", required = false) Long vid,
                                      @Valid @RequestParam(value = "tid", required = false) Long tid,
-                                     @RequestHeader(HttpHeaders.ACCEPT) String accept)
-            throws FormatNotAvailableException {
-        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, accept={}", dbid, qid, vid, tid, accept);
+                                     @RequestHeader(HttpHeaders.ACCEPT) String accept,
+                                     Principal principal) {
+        log.debug("endpoint find identifiers, type={}, status={}, dbid={}, qid={}, vid={}, tid={}, accept={}", type,
+                status, dbid, qid, vid, tid, accept);
         final List<Identifier> identifiers = identifierService.findAll()
                 .stream()
+                .filter(i -> !Objects.nonNull(type) || metadataMapper.identifierTypeDtoToIdentifierType(type).equals(i.getType()))
+                .filter(i -> !Objects.nonNull(status) || metadataMapper.identifierStatusTypeDtoToIdentifierStatusType(status).equals(i.getStatus()))
                 .filter(i -> !Objects.nonNull(dbid) || dbid.equals(i.getDatabase().getId()))
                 .filter(i -> !Objects.nonNull(qid) || qid.equals(i.getQueryId()))
                 .filter(i -> !Objects.nonNull(vid) || vid.equals(i.getViewId()))
                 .filter(i -> !Objects.nonNull(tid) || tid.equals(i.getTableId()))
+                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(getId(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
                 .toList();
         if (identifiers.isEmpty()) {
             return ResponseEntity.ok(List.of());
         }
         log.trace("found persistent identifiers {}", identifiers);
-        return switch (accept) {
-            case "application/json" -> {
-                log.trace("accept header matches json");
-                yield ResponseEntity.ok(identifiers.stream()
-                        .map(metadataMapper::identifierToIdentifierBriefDto)
-                        .toList());
-            }
-            case "application/ld+json" -> {
-                log.trace("accept header matches json-ld");
-                yield ResponseEntity.ok(identifiers.stream()
-                        .map(i -> metadataMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
-                        .toList());
-            }
-            default -> {
-                log.error("accept header {} is not supported", accept);
-                throw new FormatNotAvailableException("Must provide either application/json or application/ld+json headers");
-            }
-        };
+        if (accept.equals("application/ld+json")) {
+            log.trace("accept header matches json-ld");
+            return ResponseEntity.ok(identifiers.stream()
+                    .map(i -> metadataMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
+                    .toList());
+        }
+        log.trace("default to json");
+        return ResponseEntity.ok(identifiers.stream()
+                .map(metadataMapper::identifierToIdentifierBriefDto)
+                .toList());
     }
 
     @GetMapping(value = "/{identifierId}", produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json",
@@ -153,6 +146,11 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                     }),
             @ApiResponse(responseCode = "400",
                     description = "Identifier could not be exported, the requested style is not known",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to view identifier",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -188,14 +186,23 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> find(@Valid @PathVariable("identifierId") Long identifierId,
-                                  @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
+                                  @RequestHeader(HttpHeaders.ACCEPT) String accept,
+                                  Principal principal) throws IdentifierNotFoundException,
             DataServiceException, DataServiceConnectionException, MalformedException, FormatNotAvailableException,
-            QueryNotFoundException {
+            QueryNotFoundException, NotAllowedException {
         log.debug("endpoint find identifier, identifierId={}, accept={}", identifierId, accept);
         if (accept == null) {
             accept = "";
         }
         final Identifier identifier = identifierService.find(identifierId);
+        if (identifier.getStatus().equals(IdentifierStatusType.DRAFT)) {
+            if (principal == null) {
+                throw new NotAllowedException("Draft identifier: authentication required");
+            }
+            if (!identifier.getOwnedBy().equals(getId(principal))) {
+                throw new NotAllowedException("Draft identifier: not authorized");
+            }
+        }
         log.info("Found persistent identifier with id: {}", identifier.getId());
         switch (accept) {
             case "application/json":

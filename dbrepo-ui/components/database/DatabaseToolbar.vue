@@ -83,7 +83,6 @@
 
 <script>
 import { useCacheStore } from '@/stores/cache.js'
-import { useUserStore } from '@/stores/user.js'
 import ResourceStatus from '@/components/ResourceStatus.vue'
 
 export default {
@@ -94,8 +93,7 @@ export default {
     return {
       tab: null,
       error: false,
-      cacheStore: useCacheStore(),
-      userStore: useUserStore()
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -103,13 +101,13 @@ export default {
       return this.cacheStore.getDatabase
     },
     access () {
-      return this.userStore.getAccess
-    },
-    user () {
-      return this.userStore.getUser
+      return this.cacheStore.getAccess
     },
     roles () {
-      return this.userStore.getRoles
+      return this.cacheStore.getRoles
+    },
+    cacheUser () {
+      return this.cacheStore.getUser
     },
     isContrastTheme () {
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
@@ -141,12 +139,6 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
-    canImportCsv () {
-      if (!this.user || !this.hasWriteAccess) {
-        return false
-      }
-      return this.roles.includes('insert-table-data')
-    },
     canCreateSubset () {
       if (!this.database) {
         return false
@@ -157,22 +149,22 @@ export default {
       return this.hasReadAccess
     },
     canCreateView () {
-      if (!this.user || !this.isOwner) {
+      if (!this.cacheUser || !this.isOwner || !this.roles) {
         return false
       }
       return this.roles.includes('create-database-view')
     },
     canCreateTable () {
-      if (!this.user || !this.hasWriteAccess) {
+      if (!this.cacheUser || !this.hasWriteAccess || !this.roles) {
         return false
       }
       return this.roles.includes('create-table')
     },
     isOwner () {
-      if (!this.database || !this.user) {
+      if (!this.database || !this.cacheUser) {
         return false
       }
-      return this.database.owner.username === this.user.username
+      return this.database.owner.id === this.cacheUser.uid
     },
     buttonVariant () {
       const runtimeConfig = useRuntimeConfig()
