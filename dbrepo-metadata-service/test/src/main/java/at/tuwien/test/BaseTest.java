@@ -5034,8 +5034,8 @@ public abstract class BaseTest {
     public final static String VIEW_1_INTERNAL_NAME = "junit";
     public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_1_PUBLIC = true;
-    public final static Boolean VIEW_1_SCHEMA_PUBLIC = true;
+    public final static Boolean VIEW_1_PUBLIC = false;
+    public final static Boolean VIEW_1_SCHEMA_PUBLIC = false;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
     public final static String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 

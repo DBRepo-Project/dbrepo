@@ -330,17 +330,17 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_PRIVILEGED_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_1_ID);
+                .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, USER_1_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
         });
     }
 
@@ -366,15 +366,15 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_3_ID);
+                .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.getData(DATABASE_1_ID, VIEW_3_ID, null, null, null, httpServletRequest, USER_3_PRINCIPAL);
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, USER_4_PRINCIPAL);
         });
     }
 
@@ -384,15 +384,15 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_3_ID);
+                .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_3_ID, null, USER_3_PRINCIPAL);
+            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, null, USER_4_PRINCIPAL);
         });
     }
 
@@ -418,15 +418,15 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
             NotAllowedException, MetadataServiceException {
 
         /* mock */
-        when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_PRIVILEGED_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
-                .getAccess(DATABASE_1_ID, USER_1_ID);
+                .getAccess(DATABASE_1_ID, USER_4_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_3_ID, null, USER_1_PRINCIPAL);
+            viewEndpoint.exportDataset(DATABASE_1_ID, VIEW_1_ID, null, USER_4_PRINCIPAL);
         });
     }
 
