@@ -5,7 +5,7 @@
       v-if="!inline"
       :size="size"
       :color="color"
-      :variant="chipVariant">
+      variant="outlined">
       {{ status }}
     </v-chip>
     <span
@@ -39,9 +39,6 @@ export default {
       if (!this.resource) {
         return null
       }
-      if (this.hasIdentifier) {
-        return 'pid'
-      }
       if (!this.resource.is_public && !this.resource.is_schema_public) {
         return 'draft'
       } else if(!this.resource.is_public && this.resource.is_schema_public) {
@@ -59,12 +56,6 @@ export default {
     },
     hasIdentifier () {
       return this.resource.identifiers?.length > 0
-    },
-    chipVariant () {
-      if (this.hasIdentifier) {
-        return 'tonal'
-      }
-      return 'outlined'
     },
     color () {
       if (this.hasIdentifier) {
