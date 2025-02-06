@@ -353,6 +353,7 @@ export default {
     }
   },
   mounted () {
+    this.cacheStore.reloadMessages()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
@@ -361,7 +362,6 @@ export default {
     }
     this.setTheme()
     this.setLocale()
-    this.cacheStore.reloadMessages()
   },
   methods: {
     retrieve () {
