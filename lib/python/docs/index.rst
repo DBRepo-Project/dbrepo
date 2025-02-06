@@ -6,13 +6,13 @@ Pandas `DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame
 provides an object-oriented API as well as low-level access to DBRepo services.
 
 .. note::
-   The SDK has been implemented and documented for DBRepo version 1.6.3, earlier versions may be supported but are not tested for compatibility.
+   The SDK has been implemented and documented for DBRepo version 1.7.0, earlier versions may be supported but are not tested for compatibility.
 
 Quickstart
 ----------
 
 Find numerous quickstart examples on
-the `DBRepo website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/api/>`_.
+the `DBRepo website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/api/>`_.
 
 AMQP API Client
 -----------

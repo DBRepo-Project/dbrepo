@@ -7,14 +7,14 @@ description: Helm Chart for installing DBRepo
 sources:
   - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
-version: "1.6.3"
-appVersion: "1.6.3"
+version: "1.7.0"
+appVersion: "1.7.0"
 keywords:
   - dbrepo
 maintainers:
   - name: Martin Weise
     email: martin.weise@tuwien.ac.at
-home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
 icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
 dependencies:
   - name: opensearch
