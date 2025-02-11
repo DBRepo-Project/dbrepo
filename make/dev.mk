@@ -1,7 +1,7 @@
 ##@ Development
 
 .PHONY: start-dev
-start-dev: build-images build-auth-event-listener ## Start the development deployment.
+start-dev: build-images ## Start the development deployment.
 	docker container stop dbrepo-gateway-service || true
 	docker container rm dbrepo-gateway-service || true
 	docker compose up -d

@@ -1,9 +1,10 @@
 package at.tuwien.service;
 
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.UserExistsException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
@@ -71,15 +72,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserExistsException, UserNotFoundException, EmailExistsException,
-            AuthServiceException, AuthServiceConnectionException {
-
-        /* test */
-        final User response = userService.create(USER_2_SIGNUP_REQUEST_DTO);
-        assertEquals(USER_2_USERNAME, response.getUsername());
-    }
-
-    @Test
     public void modify_succeeds() throws UserNotFoundException, AuthServiceException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
@@ -104,20 +96,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
         assertEquals("de", response.getLanguage());
         assertEquals("NASA", response.getAffiliation());
         assertNull(response.getOrcid());
-    }
-
-    @Test
-    public void updatePassword_succeeds() throws UserNotFoundException, AuthServiceException,
-            AuthServiceConnectionException {
-        final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_3_PASSWORD)
-                .build();
-
-        /* mock */
-        final User user = userService.create(USER_3_SIGNUP_REQUEST_DTO);
-
-        /* test */
-        userService.updatePassword(user, request);
     }
 
     @Test

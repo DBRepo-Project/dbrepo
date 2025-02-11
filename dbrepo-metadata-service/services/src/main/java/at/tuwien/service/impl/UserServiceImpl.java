@@ -1,10 +1,8 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
@@ -14,7 +12,6 @@ import at.tuwien.repository.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -67,26 +64,6 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("Failed to find user with id: " + id);
         }
         return optional.get();
-    }
-
-    @Override
-    public User create(CreateUserDto data) throws UserNotFoundException, AuthServiceException {
-        /* create at authentication service */
-        final User entity = User.builder()
-                .id(data.getLdapId())
-                .keycloakId(data.getId())
-                .username(data.getUsername())
-                .theme("light")
-                .mariadbPassword(getMariaDbPassword(RandomStringUtils.randomAlphabetic(10))) /* user needs to set it later to access */
-                .language("en")
-                .firstname(data.getGivenName())
-                .lastname(data.getFamilyName())
-                .isInternal(false)
-                .build();
-        /* save in metadata database */
-        final User user = userRepository.save(entity);
-        log.info("Created user with id: {}", user.getId());
-        return user;
     }
 
     @Override

@@ -14,10 +14,6 @@ build-data-service: ## Build the Data Service.
 build-metadata-service: ## Build the Metadata Service.
 	mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests
 
-.PHONY: build-auth-event-listener
-build-auth-event-listener: ## Build the Auth Service Event Listener.
-	mvn -f ./dbrepo-auth-service/listeners/pom.xml clean package -DskipTests
-
 .PHONY: build-ui
 build-ui: ## Build the UI.
 	bun --cwd ./dbrepo-ui build

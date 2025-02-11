@@ -1,12 +1,16 @@
 package at.tuwien.config;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+@Log4j2
 @Getter
 @Configuration
 public class KeycloakConfig {
@@ -35,6 +39,14 @@ public class KeycloakConfig {
 
     @Bean
     public Keycloak keycloak() {
-        return Keycloak.getInstance(keycloakEndpoint, "master", keycloakUsername, keycloakPassword, "admin-cli");
+        return KeycloakBuilder.builder()
+                .serverUrl(keycloakEndpoint)
+                .realm("master")
+                .clientId("admin-cli")
+                .grantType(OAuth2Constants.PASSWORD)
+                .scope(OAuth2Constants.SCOPE_OPENID)
+                .username(keycloakUsername)
+                .password(keycloakPassword)
+                .build();
     }
 }

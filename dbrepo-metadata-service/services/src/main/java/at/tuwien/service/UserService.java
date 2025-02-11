@@ -1,10 +1,8 @@
 package at.tuwien.service;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
@@ -40,14 +38,6 @@ public interface UserService {
      * @throws UserNotFoundException The user was not found.
      */
     User findById(UUID id) throws UserNotFoundException;
-
-    /**
-     * Creates a user in the metadata database managed by Keycloak in the given realm.
-     *
-     * @param data The user data.
-     * @return The user, if successful.
-     */
-    User create(CreateUserDto data) throws UserNotFoundException, AuthServiceException;
 
     /**
      * Updates the user information for a user with given id in the metadata database.

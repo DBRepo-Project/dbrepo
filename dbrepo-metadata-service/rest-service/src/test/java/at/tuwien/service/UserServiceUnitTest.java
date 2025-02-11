@@ -1,7 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
@@ -74,23 +75,6 @@ public class UserServiceUnitTest extends AbstractUnitTest {
         /* test */
         final List<User> response = userService.findAll();
         assertEquals(2, response.size());
-    }
-
-    @Test
-    public void create_succeeds() throws UserNotFoundException, UserExistsException, EmailExistsException,
-            DataServiceException, DataServiceConnectionException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
-
-        /* mock */
-        when(userRepository.findById(USER_1_ID))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(USER_1);
-
-        /* test */
-        final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO);
-        assertEquals(USER_1_ID, response.getId());
-        assertEquals(USER_1_USERNAME, response.getUsername());
     }
 
     @Test

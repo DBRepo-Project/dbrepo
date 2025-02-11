@@ -9,6 +9,8 @@ import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +23,13 @@ public class KeycloakUtils {
     private final Keycloak keycloak;
     private final KeycloakConfig keycloakConfig;
     private final MetadataMapper metadataMapper;
+
+    @Bean
+    @Primary
+    public Keycloak keycloak() {
+        return Keycloak.getInstance(keycloakConfig.getKeycloakEndpoint(), "master",
+                keycloakConfig.getKeycloakUsername(), keycloakConfig.getKeycloakPassword(), "admin-cli");
+    }
 
     @Autowired
     public KeycloakUtils(Keycloak keycloak, KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {

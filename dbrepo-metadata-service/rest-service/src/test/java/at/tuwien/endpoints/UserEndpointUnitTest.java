@@ -1,13 +1,11 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.test.AbstractUnitTest;
@@ -40,9 +38,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private AuthenticationService authenticationService;
 
     @MockBean
     private DatabaseService databaseService;
@@ -88,25 +83,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final List<UserBriefDto> response = findAll_generic(USER_5_USERNAME, null);
         assertEquals(0, response.size());
-    }
-
-    @Test
-    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void create_succeeds() throws UserExistsException, EmailExistsException, UserNotFoundException,
-            AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* test */
-        create_generic(USER_1_SIGNUP_REQUEST_DTO, USER_1);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void create_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(USER_1_SIGNUP_REQUEST_DTO, null);
-        });
     }
 
     @Test
@@ -212,8 +188,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-information"})
-    public void modify_succeeds() throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
-            AuthServiceException, AuthServiceConnectionException {
+    public void modify_succeeds() throws NotAllowedException, UserNotFoundException, AuthServiceException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -254,8 +229,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void password_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
-            UserNotFoundException, DatabaseNotFoundException, AuthServiceException, AuthServiceConnectionException,
-            CredentialsInvalidException {
+            UserNotFoundException, DatabaseNotFoundException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();
@@ -293,20 +267,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         return response.getBody();
     }
 
-    protected void create_generic(CreateUserDto data, User user) throws UserExistsException, EmailExistsException,
-            UserNotFoundException, AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
-
-        /* mock */
-        when(userService.create(any(CreateUserDto.class)))
-                .thenReturn(user);
-
-        /* test */
-        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        final UserBriefDto body = response.getBody();
-        assertNotNull(body);
-    }
-
     protected ResponseEntity<UserDto> find_generic(UUID id, User user, Principal principal) throws NotAllowedException,
             UserNotFoundException {
 
@@ -329,8 +289,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void modify_generic(UUID userId, User user, Principal principal, UserUpdateDto data)
-            throws NotAllowedException, UserNotFoundException, DatabaseNotFoundException, AuthServiceException,
-            AuthServiceConnectionException {
+            throws NotAllowedException, UserNotFoundException, AuthServiceException {
         /* mock */
         if (user != null) {
             when(userService.findById(userId))
@@ -347,8 +306,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void password_generic(Principal principal, UserPasswordDto data) throws NotAllowedException,
-            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
-            AuthServiceException, AuthServiceConnectionException, CredentialsInvalidException {
+            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException {
 
         /* mock */
         when(userService.findById(USER_1_ID))

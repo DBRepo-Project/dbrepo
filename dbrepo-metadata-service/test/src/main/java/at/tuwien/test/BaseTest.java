@@ -5,7 +5,6 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
-import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
@@ -602,12 +601,6 @@ public abstract class BaseTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-    public final static CreateUserDto USER_1_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
-            .id(USER_1_KEYCLOAK_ID)
-            .ldapId(USER_1_ID)
-            .username(USER_1_USERNAME)
-            .build();
-
     public final static LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
@@ -678,15 +671,6 @@ public abstract class BaseTest {
             .name(USER_2_NAME)
             .orcid(USER_2_ORCID_URL)
             .qualifiedName(USER_2_QUALIFIED_NAME)
-            .build();
-
-    public final static CreateUserDto USER_2_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
-            .id(USER_2_KEYCLOAK_ID)
-            .ldapId(USER_2_ID)
-            .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
-            .givenName(USER_2_FIRSTNAME)
-            .familyName(USER_2_LASTNAME)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -772,12 +756,6 @@ public abstract class BaseTest {
             .username(USER_3_USERNAME)
             .password(USER_3_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
-            .build();
-
-    public final static CreateUserDto USER_3_SIGNUP_REQUEST_DTO = CreateUserDto.builder()
-            .id(USER_3_KEYCLOAK_ID)
-            .ldapId(USER_3_ID)
-            .username(USER_3_USERNAME)
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
