@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
@@ -87,6 +88,62 @@ public class UserEndpoint extends AbstractEndpoint {
             log.trace("filter by username {} failed: return empty list", username);
             return ResponseEntity.ok(List.of());
         }
+    }
+
+    @PostMapping
+    @Transactional(rollbackFor = {Exception.class})
+    @PreAuthorize("hasAuthority('system')")
+    @Observed(name = "dbrepo_user_create")
+    @Operation(summary = "Create user",
+            description = "This webhook is called from the auth service to add a user to the metadata database. Requires role `system`.",
+            hidden = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created user",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Parameters are not well-formed (likely email)",
+                    content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403",
+                    description = "Internal authentication to the auth service is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Default role not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "User with username already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "User with e-mail already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Failed to create in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Failed to create in auth service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
+            throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
+            UserNotFoundException, CredentialsInvalidException {
+        log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userMapper.userToUserBriefDto(
+                        userService.create(data)));
     }
 
     @GetMapping("/{userId}")

@@ -222,7 +222,7 @@ export default {
       }
       const userService = useUserService()
       userService.update(this.cacheUser.uid, payload)
-        .then((user) => {
+        .then(() => {
           console.info('Updated user information')
           const toast = useToastInstance()
           toast.success(this.$t('success.user.info'))
@@ -245,8 +245,12 @@ export default {
               break
           }
         })
-        .catch(() => {
-          this.loadingUpdate = false
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
         })
         .finally(() => {
           this.loadingUpdate = false

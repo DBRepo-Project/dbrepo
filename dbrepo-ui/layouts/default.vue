@@ -357,9 +357,6 @@ export default {
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
-    if (!this.cacheUser) {
-      return
-    }
     this.setTheme()
     this.setLocale()
   },
