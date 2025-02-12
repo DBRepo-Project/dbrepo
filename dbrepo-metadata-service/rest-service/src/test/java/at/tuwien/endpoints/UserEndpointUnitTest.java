@@ -6,6 +6,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.test.AbstractUnitTest;
@@ -41,6 +42,9 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private DatabaseService databaseService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @Autowired
     private UserEndpoint userEndpoint;
@@ -311,6 +315,9 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
+        doNothing()
+                .when(authenticationService)
+                .updatePassword(USER_1, data);
         doNothing()
                 .when(userService)
                 .updatePassword(USER_1, data);
