@@ -511,19 +511,26 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .stream()
                     .filter(a -> a.getUser().getId().equals(getId(principal)))
                     .findFirst();
+            optional.ifPresentOrElse(access -> log.trace("user has access: {}", access), () -> log.trace("user has no access"));
             if (!database.getIsPublic() && !database.getIsSchemaPublic() && optional.isEmpty() && !isSystem(principal)) {
                 log.error("Failed to find database: not public and no access found");
                 throw new NotAllowedException("Failed to find database: not public and no access found");
             }
             /* reduce metadata */
+            final int tables = database.getTables()
+                    .size();
             database.setTables(database.getTables()
                     .stream()
                     .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
                     .toList());
+            log.trace("filtered database tables from {} to {}", tables, database.getTables().size());
+            final int views = database.getViews()
+                    .size();
             database.setViews(database.getViews()
                     .stream()
                     .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
                     .toList());
+            log.trace("filtered database views from {} to {}", views, database.getViews().size());
             if (!isSystem(principal) && !database.getOwner().getId().equals(getId(principal))) {
                 log.trace("authenticated user {} is not owner: remove access list", principal.getName());
                 database.setAccesses(List.of());

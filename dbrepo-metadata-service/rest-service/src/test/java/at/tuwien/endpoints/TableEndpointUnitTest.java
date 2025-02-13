@@ -1258,12 +1258,12 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                     .findById(any(UUID.class));
         }
         if (access != null) {
-            when(accessService.find(any(Database.class), eq(user)))
+            when(accessService.find(any(Database.class), any(User.class)))
                     .thenReturn(access);
         } else {
             doThrow(AccessNotFoundException.class)
                     .when(accessService)
-                    .find(any(Database.class), eq(user));
+                    .find(any(Database.class), any(User.class));
         }
 
         /* test */

@@ -574,8 +574,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void findById_anonymousPrivateSchemaNoAccessSystem_succeeds() throws UserNotFoundException,
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void findById_privateSchemaNoAccessInternalUser_succeeds() throws UserNotFoundException,
             NotAllowedException, DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException,
             DataServiceConnectionException {
 
