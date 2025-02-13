@@ -65,14 +65,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(CreateUserDto data) throws UserNotFoundException, AuthServiceException {
+    public User create(CreateUserDto data) {
         /* create at authentication service */
         final User entity = User.builder()
                 .id(data.getLdapId())
                 .keycloakId(data.getId())
                 .username(data.getUsername())
                 .theme("light")
-                .mariadbPassword(getMariaDbPassword(RandomStringUtils.randomAlphabetic(10))) /* user needs to set it later to access */
+                .mariadbPassword(getMariaDbPassword(RandomStringUtils.randomAlphabetic(10)))
                 .language("en")
                 .firstname(data.getGivenName())
                 .lastname(data.getFamilyName())

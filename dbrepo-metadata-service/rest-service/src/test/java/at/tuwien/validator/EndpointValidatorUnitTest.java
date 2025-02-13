@@ -52,9 +52,27 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> needSize_parameters() {
         return Stream.of(
-                Arguments.arguments(ColumnTypeDto.VARCHAR),
-                Arguments.arguments(ColumnTypeDto.BINARY),
-                Arguments.arguments(ColumnTypeDto.VARBINARY)
+                Arguments.arguments("varchar", ColumnTypeDto.VARCHAR),
+                Arguments.arguments("binary", ColumnTypeDto.BINARY),
+                Arguments.arguments("varbinary", ColumnTypeDto.VARBINARY)
+        );
+    }
+
+    public static Stream<Arguments> needSizeAndD_parameters() {
+        return Stream.of(
+                Arguments.arguments("double_size", ColumnTypeDto.DOUBLE, 40L, null),
+                Arguments.arguments("double_d", ColumnTypeDto.DOUBLE, null, 10L),
+                Arguments.arguments("decimal_size", ColumnTypeDto.DECIMAL, 40L, null),
+                Arguments.arguments("decimal_d", ColumnTypeDto.DECIMAL, null, 10L)
+        );
+    }
+
+    public static Stream<Arguments> enums_parameters() {
+        return Stream.of(
+                Arguments.arguments("enums_null", ColumnTypeDto.ENUM, null),
+                Arguments.arguments("enums_empty", ColumnTypeDto.ENUM, List.of()),
+                Arguments.arguments("sets_null", ColumnTypeDto.SET, null),
+                Arguments.arguments("sets_empty", ColumnTypeDto.SET, List.of())
         );
     }
 
@@ -245,6 +263,20 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    public void validateOnlyWriteOwnOrWriteAllAccess_writeOwnAccess_succeeds() throws DatabaseNotFoundException,
+            TableNotFoundException, AccessNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+        when(accessService.find(eq(DATABASE_1), any(User.class)))
+                .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+
+        /* test */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(TABLE_1, USER_1);
+    }
+
+    @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasReadAccess_fails() throws DatabaseNotFoundException,
             TableNotFoundException, AccessNotFoundException {
 
@@ -285,7 +317,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
     @ParameterizedTest
     @MethodSource("needSize_parameters")
-    public void validateColumnCreateConstraints_needSize_fails(ColumnTypeDto type) {
+    public void validateColumnCreateConstraints_needSize_fails(String name, ColumnTypeDto type) {
         final CreateTableDto request = CreateTableDto.builder()
                 .columns(List.of(CreateTableColumnDto.builder()
                         .type(type)
@@ -299,12 +331,13 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         });
     }
 
-    @Test
-    public void validateColumnCreateConstraints_needEnum_fails() {
+    @ParameterizedTest
+    @MethodSource("enums_parameters")
+    public void validateColumnCreateConstraints_needEnum_fails(String name, ColumnTypeDto type, List<String> enums) {
         final CreateTableDto request = CreateTableDto.builder()
                 .columns(List.of(CreateTableColumnDto.builder()
-                        .type(ColumnTypeDto.ENUM)
-                        .enums(null) // <<<<<<<
+                        .type(type)
+                        .enums(enums)
                         .build()))
                 .build();
 
@@ -314,12 +347,14 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         });
     }
 
-    @Test
-    public void validateColumnCreateConstraints_needSet_fails() {
+    @ParameterizedTest
+    @MethodSource("needSizeAndD_parameters")
+    public void validateColumnCreateConstraints_needSizeAndD_fails(String name, ColumnTypeDto type, Long size, Long d) {
         final CreateTableDto request = CreateTableDto.builder()
                 .columns(List.of(CreateTableColumnDto.builder()
-                        .type(ColumnTypeDto.SET)
-                        .sets(null) // <<<<<<<
+                        .type(type)
+                        .size(size)
+                        .d(d)
                         .build()))
                 .build();
 
@@ -343,6 +378,34 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
         assertThrows(NotAllowedException.class, () -> {
             endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1);
         });
+    }
+
+    @Test
+    public void validateOnlyOwnerOrWriteAll_writeOwnAccess_succeeds() throws DatabaseNotFoundException,
+            TableNotFoundException, AccessNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+        when(accessService.find(DATABASE_1, USER_1))
+                .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+
+        /* test */
+        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_1);
+    }
+
+    @Test
+    public void validateOnlyOwnerOrWriteAll_writeAllAccess_succeeds() throws DatabaseNotFoundException,
+            TableNotFoundException, AccessNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(tableService.findById(DATABASE_1, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+        when(accessService.find(DATABASE_1, USER_2))
+                .thenReturn(DATABASE_1_USER_2_WRITE_ALL_ACCESS);
+
+        /* test */
+        endpointValidator.validateOnlyOwnerOrWriteAll(TABLE_1, USER_2);
     }
 
     @Test
@@ -553,6 +616,13 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
 
         /* test */
         assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_ownerOnlyWriteAll_succeeds() {
+
+        /* test */
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
     }
 
     @Test

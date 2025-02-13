@@ -74,24 +74,24 @@
                 <v-col md="6">
                   <v-text-field
                     v-model="model.firstname"
-                    :disabled="!canModifyInformation"
+                    :disabled="!canModifyInformation || identityProvider"
                     clearable
                     persistent-hint
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.firstname.label')"
-                    :hint="$t('pages.user.subpages.info.firstname.hint')" />
+                    :hint="identityProvider ? $t('pages.user.subpages.info.firstname.hint', { provider: identityProvider }) : ''" />
                 </v-col>
               </v-row>
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
                     v-model="model.lastname"
-                    :disabled="!canModifyInformation"
+                    :disabled="!canModifyInformation || identityProvider"
                     clearable
                     persistent-hint
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.lastname.label')"
-                    :hint="$t('pages.user.subpages.info.lastname.hint')" />
+                    :hint="identityProvider ? $t('pages.user.subpages.info.lastname.hint', { provider: identityProvider }) : ''" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -190,6 +190,12 @@ export default {
     },
     cacheUser () {
       return this.cacheStore.getUser
+    },
+    identityProvider () {
+      if (!this.cacheUser || !('identity_provider' in this.cacheUser)) {
+        return false
+      }
+      return this.cacheUser.identity_provider
     },
     canModifyInformation () {
       if (!this.roles) {
