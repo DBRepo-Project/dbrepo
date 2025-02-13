@@ -3,6 +3,7 @@ package at.tuwien.handlers;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.test.AbstractUnitTest;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +58,19 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
     }
 
     @Test
+    public void handle_tokenExpiredException_succeeds() {
+
+        /* test */
+        final ResponseEntity<ApiErrorDto> response = apiExceptionHandler.handle(new TokenExpiredException("msg", Instant.now()));
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        final ApiErrorDto body = response.getBody();
+        assertNotNull(body);
+        assertNotNull(body.getMessage());
+        assertEquals(HttpStatus.UNAUTHORIZED, body.getStatus());
+        assertEquals("error.token.expired", body.getCode());
+    }
+
+    @Test
     public void handle_accessNotFoundException_succeeds() {
 
         /* test */
@@ -67,7 +82,6 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
         assertEquals(HttpStatus.NOT_FOUND, body.getStatus());
         assertEquals("error.access.missing", body.getCode());
     }
-
 
     @Test
     public void handle_accountNotSetupException_succeeds() {
@@ -82,7 +96,6 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
         assertEquals("error.user.setup", body.getCode());
     }
 
-
     @Test
     public void handle_analyseServiceException_succeeds() {
 
@@ -96,7 +109,6 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
         assertEquals("error.analyse.invalid", body.getCode());
     }
 
-
     @Test
     public void handle_authServiceConnectionException_succeeds() {
 
@@ -109,7 +121,6 @@ public class ApiExceptionHandlerTest extends AbstractUnitTest {
         assertEquals(HttpStatus.BAD_GATEWAY, body.getStatus());
         assertEquals("error.auth.connection", body.getCode());
     }
-
 
     @Test
     public void handle_authServiceException_succeeds() {

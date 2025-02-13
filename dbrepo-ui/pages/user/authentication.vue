@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-const { loggedIn, user } = useOidcAuth()
+const { loggedIn } = useOidcAuth()
 </script>
 <script>
 import UserToolbar from '@/components/user/UserToolbar.vue'
@@ -113,10 +113,6 @@ export default {
       const userService = useUserService()
       userService.updatePassword(this.cacheUser.uid, {'password': this.password})
         .then(() => {
-          const user = Object.assign({}, this.cacheUser)
-          user.setup_finished = true
-          this.cacheStore.setUser(user)
-          // fixme [mweise]: currently nuxt-oidc-auth cannot refresh the session correctly
           const toast = useToastInstance()
           toast.success(this.$t('success.user.password'))
           this.loadingUpdate = false

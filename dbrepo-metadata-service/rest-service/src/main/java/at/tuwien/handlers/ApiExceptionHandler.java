@@ -2,6 +2,7 @@ package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Log4j2
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ApiErrorDto> handle(TokenExpiredException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage(), "error.token.expired");
+    }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
@@ -465,13 +473,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message) {
+        return generic_handle(exceptionClass, message, exceptionClass.getAnnotation(ResponseStatus.class).reason());
+    }
+
+    private ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message, String code) {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/problem+json");
         final ResponseStatus annotation = exceptionClass.getAnnotation(ResponseStatus.class);
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(annotation.code())
                 .message(message)
-                .code(annotation.reason())
+                .code(code)
                 .build();
         return new ResponseEntity<>(response, headers, response.getStatus());
     }

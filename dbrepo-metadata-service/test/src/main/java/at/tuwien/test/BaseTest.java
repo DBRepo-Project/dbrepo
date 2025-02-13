@@ -146,173 +146,173 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  */
 public abstract class BaseTest {
 
-    public final static String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
+    public static final String MINIO_IMAGE = "minio/minio:RELEASE.2024-06-06T09-36-42Z";
 
-    public final static String MARIADB_IMAGE = "mariadb:11.3.2";
+    public static final String MARIADB_IMAGE = "mariadb:11.3.2";
 
-    public final static String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
+    public static final String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
 
-    public final static String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0";
+    public static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0";
 
-    public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
+    public static final String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
 
-    public final static String[] DEFAULT_VIEW_HANDLING = new String[]{"update-database-view", "create-database-view",
+    public static final String[] DEFAULT_VIEW_HANDLING = new String[]{"update-database-view", "create-database-view",
             "delete-database-view", "list-database-views", "modify-view-visibility", "find-database-view"};
 
-    public final static String[] ESCALATED_SEMANTICS_HANDLING = new String[]{"escalated-semantics-handling",
+    public static final String[] ESCALATED_SEMANTICS_HANDLING = new String[]{"escalated-semantics-handling",
             "update-semantic-concept", "modify-foreign-table-column-semantics", "delete-ontology", "list-ontologies",
             "update-semantic-unit", "create-ontology", "update-ontology"};
 
-    public final static String[] DEFAULT_CONTAINER_HANDLING = new String[]{"default-container-handling",
+    public static final String[] DEFAULT_CONTAINER_HANDLING = new String[]{"default-container-handling",
             "create-container", "list-containers", "modify-container-state"};
 
-    public final static String[] ESCALATED_CONTAINER_HANDLING = new String[]{"escalated-container-handling",
+    public static final String[] ESCALATED_CONTAINER_HANDLING = new String[]{"escalated-container-handling",
             "modify-foreign-container-state", "delete-container"};
 
-    public final static String[] DEFAULT_DATABASE_HANDLING = new String[]{"default-database-handling",
+    public static final String[] DEFAULT_DATABASE_HANDLING = new String[]{"default-database-handling",
             "update-database-access", "modify-database-visibility", "create-database", "modify-database-owner",
             "delete-database-access", "check-database-access", "list-databases", "modify-database-image",
             "create-database-access", "find-database", "import-database-data"};
 
-    public final static String[] ESCALATED_DATABASE_HANDLING = new String[]{"escalated-database-handling",
+    public static final String[] ESCALATED_DATABASE_HANDLING = new String[]{"escalated-database-handling",
             "delete-database"};
 
-    public final static String[] DEFAULT_IDENTIFIER_HANDLING = new String[]{"default-identifier-handling",
+    public static final String[] DEFAULT_IDENTIFIER_HANDLING = new String[]{"default-identifier-handling",
             "create-identifier", "find-identifier", "list-identifiers", "publish-identifier", "delete-identifier"};
 
-    public final static String[] ESCALATED_IDENTIFIER_HANDLING = new String[]{"escalated-identifier-handling",
+    public static final String[] ESCALATED_IDENTIFIER_HANDLING = new String[]{"escalated-identifier-handling",
             "modify-identifier-metadata", "update-foreign-identifier", "create-foreign-identifier"};
 
-    public final static String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
+    public static final String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
             "execute-query", "view-table-history", "list-database-views", "export-query-data", "create-database-view",
             "delete-database-view", "delete-table-data", "export-table-data", "persist-query", "re-execute-query",
             "insert-table-data", "find-database-view"};
 
-    public final static String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};
+    public static final String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};
 
-    public final static String[] DEFAULT_TABLE_HANDLING = new String[]{"default-table-handling",
+    public static final String[] DEFAULT_TABLE_HANDLING = new String[]{"default-table-handling",
             "list-tables", "create-table", "modify-table-column-semantics", "find-table", "delete-table",
             "update-table-statistic", "update-table"};
 
-    public final static String[] ESCALATED_TABLE_HANDLING = new String[]{"escalated-table-handling",
+    public static final String[] ESCALATED_TABLE_HANDLING = new String[]{"escalated-table-handling",
             "delete-foreign-table"};
 
-    public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
+    public static final String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
             "modify-user-information"};
 
-    public final static String[] ESCALATED_USER_HANDLING = new String[]{"escalated-user-handling", "find-user"};
+    public static final String[] ESCALATED_USER_HANDLING = new String[]{"escalated-user-handling", "find-user"};
 
-    public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-researcher-roles"},
+    public static final String[] DEFAULT_RESEARCHER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-researcher-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, DEFAULT_SEMANTICS_HANDLING, DEFAULT_VIEW_HANDLING));
 
-    public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-developer-roles"},
+    public static final String[] DEFAULT_DEVELOPER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-developer-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_USER_HANDLING, ESCALATED_CONTAINER_HANDLING,
             ESCALATED_DATABASE_HANDLING, ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING,
             ESCALATED_TABLE_HANDLING, DEFAULT_VIEW_HANDLING));
 
-    public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtils.merge(List.of(new String[]{"default-data-steward-roles"},
+    public static final String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtils.merge(List.of(new String[]{"default-data-steward-roles"},
             ESCALATED_IDENTIFIER_HANDLING, DEFAULT_SEMANTICS_HANDLING, ESCALATED_SEMANTICS_HANDLING, DEFAULT_VIEW_HANDLING));
 
-    public final static String[] DEFAULT_LOCAL_ADMIN_ROLES = new String[]{"system"};
+    public static final String[] DEFAULT_LOCAL_ADMIN_ROLES = new String[]{"system"};
 
-    public final static List<GrantedAuthorityDto> AUTHORITY_LOCAL_ADMIN_ROLES = Arrays.stream(DEFAULT_LOCAL_ADMIN_ROLES)
+    public static final List<GrantedAuthorityDto> AUTHORITY_LOCAL_ADMIN_ROLES = Arrays.stream(DEFAULT_LOCAL_ADMIN_ROLES)
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
+    public static final List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DEVELOPER_ROLES = Arrays.stream(DEFAULT_DEVELOPER_ROLES)
+    public static final List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DEVELOPER_ROLES = Arrays.stream(DEFAULT_DEVELOPER_ROLES)
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DATA_STEWARD_ROLES = Arrays.stream(DEFAULT_DATA_STEWARD_ROLES)
+    public static final List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DATA_STEWARD_ROLES = Arrays.stream(DEFAULT_DATA_STEWARD_ROLES)
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES = AUTHORITY_LOCAL_ADMIN_ROLES.stream()
+    public static final List<GrantedAuthority> AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES = AUTHORITY_LOCAL_ADMIN_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES = AUTHORITY_DEFAULT_RESEARCHER_ROLES.stream()
+    public static final List<GrantedAuthority> AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES = AUTHORITY_DEFAULT_RESEARCHER_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES = AUTHORITY_DEFAULT_DEVELOPER_ROLES.stream()
+    public static final List<GrantedAuthority> AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES = AUTHORITY_DEFAULT_DEVELOPER_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
-    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES = AUTHORITY_DEFAULT_DATA_STEWARD_ROLES.stream()
+    public static final List<GrantedAuthority> AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES = AUTHORITY_DEFAULT_DATA_STEWARD_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
-    public final static UUID REALM_DBREPO_ID = UUID.fromString("6264bf7b-d1d3-4562-9c07-ce4364a8f9d3");
-    public final static String REALM_DBREPO_NAME = "dbrepo";
-    public final static Boolean REALM_DBREPO_ENABLED = true;
+    public static final UUID REALM_DBREPO_ID = UUID.fromString("6264bf7b-d1d3-4562-9c07-ce4364a8f9d3");
+    public static final String REALM_DBREPO_NAME = "dbrepo";
+    public static final Boolean REALM_DBREPO_ENABLED = true;
 
-    public final static UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc904567268");
-    public final static String ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME = "default-dbrepo-roles";
-    public final static UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID = REALM_DBREPO_ID;
+    public static final UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc904567268");
+    public static final String ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME = "default-dbrepo-roles";
+    public static final UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID = REALM_DBREPO_ID;
 
-    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
-    public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
-    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
+    public static final UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
+    public static final String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
+    public static final UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
 
-    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_READ_DTO = CreateAccessDto.builder()
+    public static final CreateAccessDto UPDATE_DATABASE_ACCESS_READ_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.READ)
             .build();
 
-    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_OWN_DTO = CreateAccessDto.builder()
+    public static final CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_OWN_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .build();
 
-    public final static CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_ALL_DTO = CreateAccessDto.builder()
+    public static final CreateAccessDto UPDATE_DATABASE_ACCESS_WRITE_ALL_DTO = CreateAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .build();
 
-    public final static String TOKEN_ACCESS_TOKEN = "ey.yee.skrr";
-    public final static String TOKEN_ACCESS_SCOPE = "openid";
+    public static final String TOKEN_ACCESS_TOKEN = "ey.yee.skrr";
+    public static final String TOKEN_ACCESS_SCOPE = "openid";
 
-    public final static TokenDto TOKEN_DTO = TokenDto.builder()
+    public static final TokenDto TOKEN_DTO = TokenDto.builder()
             .accessToken(TOKEN_ACCESS_TOKEN)
             .scope(TOKEN_ACCESS_SCOPE)
             .build();
 
-    public final static RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()
+    public static final RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()
             .refreshToken("ey.yee.skrr")
             .build();
 
-    public final static Long CONCEPT_1_ID = 1L;
-    public final static String CONCEPT_1_NAME = "precipitation";
-    public final static String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
-    public final static String CONCEPT_1_DESCRIPTION = null;
-    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 (UTC) */;
+    public static final Long CONCEPT_1_ID = 1L;
+    public static final String CONCEPT_1_NAME = "precipitation";
+    public static final String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
+    public static final String CONCEPT_1_DESCRIPTION = null;
+    public static final Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 (UTC) */;
 
-    public final static ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
+    public static final ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
             .uri(CONCEPT_1_URI)
             .name(CONCEPT_1_NAME)
             .description(CONCEPT_1_DESCRIPTION)
             .build();
 
-    public final static ConceptDto CONCEPT_1_DTO = ConceptDto.builder()
+    public static final ConceptDto CONCEPT_1_DTO = ConceptDto.builder()
             .id(CONCEPT_1_ID)
             .uri(CONCEPT_1_URI)
             .name(CONCEPT_1_NAME)
             .description(CONCEPT_1_DESCRIPTION)
             .build();
 
-    public final static ConceptBriefDto CONCEPT_1_BRIEF_DTO = ConceptBriefDto.builder()
+    public static final ConceptBriefDto CONCEPT_1_BRIEF_DTO = ConceptBriefDto.builder()
             .id(CONCEPT_1_ID)
             .uri(CONCEPT_1_URI)
             .name(CONCEPT_1_NAME)
             .description(CONCEPT_1_DESCRIPTION)
             .build();
 
-    public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
+    public static final TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
             .id(CONCEPT_1_ID)
             .uri(CONCEPT_1_URI)
             .name(CONCEPT_1_NAME)
@@ -320,39 +320,39 @@ public abstract class BaseTest {
             .created(CONCEPT_1_CREATED)
             .build();
 
-    public final static EntityDto CONCEPT_1_ENTITY_DTO = EntityDto.builder()
+    public static final EntityDto CONCEPT_1_ENTITY_DTO = EntityDto.builder()
             .uri(CONCEPT_1_URI)
             .description(CONCEPT_1_DESCRIPTION)
             .label(CONCEPT_1_NAME)
             .build();
 
-    public final static Long CONCEPT_2_ID = 2L;
-    public final static String CONCEPT_2_NAME = "FAIR data";
-    public final static String CONCEPT_2_URI = "http://www.wikidata.org/entity/Q29032648";
-    public final static String CONCEPT_2_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
-    public final static Instant CONCEPT_2_CREATED = Instant.now();
+    public static final Long CONCEPT_2_ID = 2L;
+    public static final String CONCEPT_2_NAME = "FAIR data";
+    public static final String CONCEPT_2_URI = "http://www.wikidata.org/entity/Q29032648";
+    public static final String CONCEPT_2_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
+    public static final Instant CONCEPT_2_CREATED = Instant.now();
 
-    public final static ConceptSaveDto CONCEPT_2_SAVE_DTO = ConceptSaveDto.builder()
+    public static final ConceptSaveDto CONCEPT_2_SAVE_DTO = ConceptSaveDto.builder()
             .uri(CONCEPT_2_URI)
             .name(CONCEPT_2_NAME)
             .description(CONCEPT_2_DESCRIPTION)
             .build();
 
-    public final static ConceptDto CONCEPT_2_DTO = ConceptDto.builder()
+    public static final ConceptDto CONCEPT_2_DTO = ConceptDto.builder()
             .id(CONCEPT_2_ID)
             .uri(CONCEPT_2_URI)
             .name(CONCEPT_2_NAME)
             .description(CONCEPT_2_DESCRIPTION)
             .build();
 
-    public final static ConceptBriefDto CONCEPT_2_BRIEF_DTO = ConceptBriefDto.builder()
+    public static final ConceptBriefDto CONCEPT_2_BRIEF_DTO = ConceptBriefDto.builder()
             .id(CONCEPT_2_ID)
             .uri(CONCEPT_2_URI)
             .name(CONCEPT_2_NAME)
             .description(CONCEPT_2_DESCRIPTION)
             .build();
 
-    public final static TableColumnConcept CONCEPT_2 = TableColumnConcept.builder()
+    public static final TableColumnConcept CONCEPT_2 = TableColumnConcept.builder()
             .id(CONCEPT_2_ID)
             .uri(CONCEPT_2_URI)
             .name(CONCEPT_2_NAME)
@@ -360,33 +360,33 @@ public abstract class BaseTest {
             .created(CONCEPT_2_CREATED)
             .build();
 
-    public final static Long UNIT_1_ID = 1L;
-    public final static String UNIT_1_NAME = "millimetre";
-    public final static String UNIT_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/millimetre";
-    public final static String UNIT_1_DESCRIPTION = "The millimetre is a unit of length defined as 1.0e-3 metre.";
-    public final static Instant UNIT_1_CREATED = Instant.ofEpochSecond(1701976282L) /* 2023-12-07 19:11:22 */;
+    public static final Long UNIT_1_ID = 1L;
+    public static final String UNIT_1_NAME = "millimetre";
+    public static final String UNIT_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/millimetre";
+    public static final String UNIT_1_DESCRIPTION = "The millimetre is a unit of length defined as 1.0e-3 metre.";
+    public static final Instant UNIT_1_CREATED = Instant.ofEpochSecond(1701976282L) /* 2023-12-07 19:11:22 */;
 
-    public final static UnitSaveDto UNIT_1_SAVE_DTO = UnitSaveDto.builder()
+    public static final UnitSaveDto UNIT_1_SAVE_DTO = UnitSaveDto.builder()
             .uri(UNIT_1_URI)
             .name(UNIT_1_NAME)
             .description(UNIT_1_DESCRIPTION)
             .build();
 
-    public final static UnitDto UNIT_1_DTO = UnitDto.builder()
+    public static final UnitDto UNIT_1_DTO = UnitDto.builder()
             .id(UNIT_1_ID)
             .uri(UNIT_1_URI)
             .name(UNIT_1_NAME)
             .description(UNIT_1_DESCRIPTION)
             .build();
 
-    public final static UnitBriefDto UNIT_1_BRIEF_DTO = UnitBriefDto.builder()
+    public static final UnitBriefDto UNIT_1_BRIEF_DTO = UnitBriefDto.builder()
             .id(UNIT_1_ID)
             .uri(UNIT_1_URI)
             .name(UNIT_1_NAME)
             .description(UNIT_1_DESCRIPTION)
             .build();
 
-    public final static TableColumnUnit UNIT_1 = TableColumnUnit.builder()
+    public static final TableColumnUnit UNIT_1 = TableColumnUnit.builder()
             .id(UNIT_1_ID)
             .uri(UNIT_1_URI)
             .name(UNIT_1_NAME)
@@ -394,39 +394,39 @@ public abstract class BaseTest {
             .created(UNIT_1_CREATED)
             .build();
 
-    public final static EntityDto UNIT_1_ENTITY_DTO = EntityDto.builder()
+    public static final EntityDto UNIT_1_ENTITY_DTO = EntityDto.builder()
             .uri(UNIT_1_URI)
             .description(UNIT_1_DESCRIPTION)
             .label(UNIT_1_NAME)
             .build();
 
-    public final static Long UNIT_2_ID = 2L;
-    public final static String UNIT_2_NAME = "tonne";
-    public final static String UNIT_2_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
-    public final static String UNIT_2_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
-    public final static Instant UNIT_2_CREATED = Instant.ofEpochSecond(1701976462L) /* 2023-12-07 19:14:22 */;
+    public static final Long UNIT_2_ID = 2L;
+    public static final String UNIT_2_NAME = "tonne";
+    public static final String UNIT_2_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
+    public static final String UNIT_2_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
+    public static final Instant UNIT_2_CREATED = Instant.ofEpochSecond(1701976462L) /* 2023-12-07 19:14:22 */;
 
-    public final static UnitSaveDto UNIT_2_SAVE_DTO = UnitSaveDto.builder()
+    public static final UnitSaveDto UNIT_2_SAVE_DTO = UnitSaveDto.builder()
             .uri(UNIT_2_URI)
             .name(UNIT_2_NAME)
             .description(UNIT_2_DESCRIPTION)
             .build();
 
-    public final static UnitDto UNIT_2_DTO = UnitDto.builder()
+    public static final UnitDto UNIT_2_DTO = UnitDto.builder()
             .id(UNIT_2_ID)
             .uri(UNIT_2_URI)
             .name(UNIT_2_NAME)
             .description(UNIT_2_DESCRIPTION)
             .build();
 
-    public final static UnitBriefDto UNIT_2_BRIEF_DTO = UnitBriefDto.builder()
+    public static final UnitBriefDto UNIT_2_BRIEF_DTO = UnitBriefDto.builder()
             .id(UNIT_2_ID)
             .uri(UNIT_2_URI)
             .name(UNIT_2_NAME)
             .description(UNIT_2_DESCRIPTION)
             .build();
 
-    public final static TableColumnUnit UNIT_2 = TableColumnUnit.builder()
+    public static final TableColumnUnit UNIT_2 = TableColumnUnit.builder()
             .id(UNIT_2_ID)
             .uri(UNIT_2_URI)
             .name(UNIT_2_NAME)
@@ -434,34 +434,34 @@ public abstract class BaseTest {
             .created(UNIT_2_CREATED)
             .build();
 
-    public final static String USER_BROKER_USERNAME = "guest";
+    public static final String USER_BROKER_USERNAME = "guest";
     @SuppressWarnings("java:S2068")
-    public final static String USER_BROKER_PASSWORD = "guest";
+    public static final String USER_BROKER_PASSWORD = "guest";
 
-    public final static UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
-    public final static UUID USER_LOCAL_ADMIN_KEYCLOAK_ID = UUID.fromString("703c2ca0-8fc3-4c03-9bc5-4dae6b211e78");
-    public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
+    public static final UUID USER_LOCAL_ADMIN_ID = UUID.fromString("a54dcb2e-a644-4e82-87e7-05a96413983d");
+    public static final UUID USER_LOCAL_ADMIN_KEYCLOAK_ID = UUID.fromString("703c2ca0-8fc3-4c03-9bc5-4dae6b211e78");
+    public static final String USER_LOCAL_ADMIN_USERNAME = "admin";
     @SuppressWarnings("java:S2068")
-    public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
-    public final static String USER_LOCAL_ADMIN_THEME = "dark";
-    public final static Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
-    public final static Boolean USER_LOCAL_ADMIN_ENABLED = true;
+    public static final String USER_LOCAL_ADMIN_PASSWORD = "admin";
+    public static final String USER_LOCAL_ADMIN_THEME = "dark";
+    public static final Boolean USER_LOCAL_ADMIN_IS_INTERNAL = true;
+    public static final Boolean USER_LOCAL_ADMIN_ENABLED = true;
     @SuppressWarnings("java:S2068")
-    public final static String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
+    public static final String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
-    public final static LoginRequestDto USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
+    public static final LoginRequestDto USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
             .username(USER_LOCAL_ADMIN_USERNAME)
             .password(USER_LOCAL_ADMIN_PASSWORD)
             .build();
 
-    public final static UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
             .id(USER_LOCAL_ADMIN_ID.toString())
             .username(USER_LOCAL_ADMIN_USERNAME)
             .password(USER_LOCAL_ADMIN_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
             .build();
 
-    public final static User USER_LOCAL = User.builder()
+    public static final User USER_LOCAL = User.builder()
             .id(USER_LOCAL_ADMIN_ID)
             .keycloakId(USER_LOCAL_ADMIN_KEYCLOAK_ID)
             .username(USER_LOCAL_ADMIN_USERNAME)
@@ -470,34 +470,34 @@ public abstract class BaseTest {
             .isInternal(USER_LOCAL_ADMIN_IS_INTERNAL)
             .build();
 
-    public final static Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS,
+    public static final Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS,
             USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
-    public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static UUID USER_1_KEYCLOAK_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
-    public final static String USER_1_USERNAME = "junit1";
+    public static final UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
+    public static final UUID USER_1_KEYCLOAK_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
+    public static final String USER_1_USERNAME = "junit1";
     @SuppressWarnings("java:S2068")
-    public final static String USER_1_PASSWORD = "junit1";
+    public static final String USER_1_PASSWORD = "junit1";
     @SuppressWarnings("java:S2068")
-    public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
-    public final static String USER_1_FIRSTNAME = "John";
-    public final static String USER_1_LASTNAME = "Doe";
-    public final static String USER_1_QUALIFIED_NAME = USER_1_FIRSTNAME + " " + USER_1_LASTNAME + " — @" + USER_1_USERNAME;
-    public final static String USER_1_NAME = "John Doe";
-    public final static String USER_1_AFFILIATION = "TU Graz";
-    public final static String USER_1_ORCID_URL = "https://orcid.org/0000-0003-4216-302X";
-    public final static Boolean USER_1_ENABLED = true;
-    public final static Boolean USER_1_IS_INTERNAL = false;
-    public final static String USER_1_THEME = "light";
-    public final static String USER_1_LANGUAGE = "en";
-    public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
+    public static final String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
+    public static final String USER_1_FIRSTNAME = "John";
+    public static final String USER_1_LASTNAME = "Doe";
+    public static final String USER_1_QUALIFIED_NAME = USER_1_FIRSTNAME + " " + USER_1_LASTNAME + " — @" + USER_1_USERNAME;
+    public static final String USER_1_NAME = "John Doe";
+    public static final String USER_1_AFFILIATION = "TU Graz";
+    public static final String USER_1_ORCID_URL = "https://orcid.org/0000-0003-4216-302X";
+    public static final Boolean USER_1_ENABLED = true;
+    public static final Boolean USER_1_IS_INTERNAL = false;
+    public static final String USER_1_THEME = "light";
+    public static final String USER_1_LANGUAGE = "en";
+    public static final Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
 
-    public final static UpdateUserPasswordDto USER_1_UPDATE_PASSWORD_DTO = UpdateUserPasswordDto.builder()
+    public static final UpdateUserPasswordDto USER_1_UPDATE_PASSWORD_DTO = UpdateUserPasswordDto.builder()
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .build();
 
-    public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
+    public static final UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_1_THEME)
             .orcid(USER_1_ORCID_URL)
             .affiliation(USER_1_AFFILIATION)
@@ -505,19 +505,19 @@ public abstract class BaseTest {
             .language(USER_1_LANGUAGE)
             .build();
 
-    public final static CredentialDto USER_1_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
+    public static final CredentialDto USER_1_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
             .type(CredentialTypeDto.PASSWORD)
             .temporary(false)
             .value(USER_1_PASSWORD)
             .build();
 
-    public final static CredentialDto USER_LOCAL_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
+    public static final CredentialDto USER_LOCAL_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
             .type(CredentialTypeDto.PASSWORD)
             .temporary(false)
             .value(USER_LOCAL_ADMIN_PASSWORD)
             .build();
 
-    public final static UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
+    public static final UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
             .username(USER_1_USERNAME)
             .enabled(USER_1_ENABLED)
             .credentials(new LinkedList<>(List.of(USER_1_KEYCLOAK_CREDENTIAL_1)))
@@ -526,7 +526,7 @@ public abstract class BaseTest {
                     .build())
             .build();
 
-    public final static UserCreateDto USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
+    public static final UserCreateDto USER_LOCAL_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
             .username(USER_LOCAL_ADMIN_USERNAME)
             .enabled(USER_LOCAL_ADMIN_ENABLED)
             .credentials(new LinkedList<>(List.of(USER_LOCAL_KEYCLOAK_CREDENTIAL_1)))
@@ -536,7 +536,7 @@ public abstract class BaseTest {
                     .build())
             .build();
 
-    public final static User USER_1 = User.builder()
+    public static final User USER_1 = User.builder()
             .id(USER_1_ID)
             .keycloakId(USER_1_KEYCLOAK_ID)
             .username(USER_1_USERNAME)
@@ -550,7 +550,7 @@ public abstract class BaseTest {
             .isInternal(USER_1_IS_INTERNAL)
             .build();
 
-    public final static UserDto USER_1_DTO = UserDto.builder()
+    public static final UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .firstname(USER_1_FIRSTNAME)
@@ -560,7 +560,7 @@ public abstract class BaseTest {
             .qualifiedName(USER_1_QUALIFIED_NAME)
             .build();
 
-    public final static CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
+    public static final CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
             .id(USER_1_KEYCLOAK_ID)
             .ldapId(USER_1_ID)
             .givenName(USER_1_FIRSTNAME)
@@ -568,7 +568,7 @@ public abstract class BaseTest {
             .username(USER_1_USERNAME)
             .build();
 
-    public final static UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
+    public static final UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
@@ -577,11 +577,11 @@ public abstract class BaseTest {
             .language(USER_1_LANGUAGE)
             .build();
 
-    public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
+    public static final UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
             .password(USER_1_PASSWORD)
             .build();
 
-    public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
+    public static final UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .firstname(USER_1_FIRSTNAME)
@@ -591,39 +591,39 @@ public abstract class BaseTest {
             .orcid(USER_1_ORCID_URL)
             .build();
 
-    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_1_DETAILS = UserDetailsDto.builder()
             .id(USER_1_ID.toString())
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
-    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+    public static final Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-    public final static LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
+    public static final LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .build();
 
-    public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static String USER_2_USERNAME = "junit2";
-    public final static String USER_2_FIRSTNAME = "Jane";
-    public final static String USER_2_LASTNAME = "Doe";
-    public final static String USER_2_NAME = "Jane Doe";
-    public final static String USER_2_AFFILIATION = "TU Wien";
-    public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
+    public static final UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
+    public static final UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
+    public static final String USER_2_USERNAME = "junit2";
+    public static final String USER_2_FIRSTNAME = "Jane";
+    public static final String USER_2_LASTNAME = "Doe";
+    public static final String USER_2_NAME = "Jane Doe";
+    public static final String USER_2_AFFILIATION = "TU Wien";
+    public static final String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
     @SuppressWarnings("java:S2068")
-    public final static String USER_2_PASSWORD = "junit2";
+    public static final String USER_2_PASSWORD = "junit2";
     @SuppressWarnings("java:S2068")
-    public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
-    public final static String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
-    public final static Boolean USER_2_IS_INTERNAL = false;
-    public final static String USER_2_THEME = "light";
-    public final static String USER_2_LANGUAGE = "de";
+    public static final String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
+    public static final String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
+    public static final Boolean USER_2_IS_INTERNAL = false;
+    public static final String USER_2_THEME = "light";
+    public static final String USER_2_LANGUAGE = "de";
 
-    public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
+    public static final UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_2_THEME)
             .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
@@ -631,7 +631,7 @@ public abstract class BaseTest {
             .language(USER_2_LANGUAGE)
             .build();
 
-    public final static User USER_2 = User.builder()
+    public static final User USER_2 = User.builder()
             .id(USER_2_ID)
             .keycloakId(USER_2_KEYCLOAK_ID)
             .username(USER_2_USERNAME)
@@ -645,7 +645,7 @@ public abstract class BaseTest {
             .isInternal(USER_2_IS_INTERNAL)
             .build();
 
-    public final static UserDto USER_2_DTO = UserDto.builder()
+    public static final UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .firstname(USER_2_FIRSTNAME)
@@ -655,7 +655,7 @@ public abstract class BaseTest {
             .attributes(USER_2_ATTRIBUTES_DTO)
             .build();
 
-    public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
+    public static final UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .firstname(USER_2_FIRSTNAME)
@@ -665,46 +665,46 @@ public abstract class BaseTest {
             .qualifiedName(USER_2_QUALIFIED_NAME)
             .build();
 
-    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_2_DETAILS = UserDetailsDto.builder()
             .id(USER_2_ID.toString())
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
-    public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+    public static final at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_2_USERNAME)
             .tags(new String[]{})
             .build();
 
-    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+    public static final Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
-    public final static UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
-    public final static UUID USER_3_KEYCLOAK_ID = UUID.fromString("b0108bc3-95aa-4a3f-8868-dc301286aeca");
-    public final static String USER_3_USERNAME = "junit3";
-    public final static String USER_3_FIRSTNAME = "System";
-    public final static String USER_3_LASTNAME = "System";
-    public final static String USER_3_NAME = "System System";
-    public final static String USER_3_AFFILIATION = "TU Wien";
-    public final static String USER_3_ORCID_URL = null;
-    public final static String USER_3_ORCID_UNCOMPRESSED = null;
+    public static final UUID USER_3_ID = UUID.fromString("7b080e33-d8db-4276-9d53-47208e657006");
+    public static final UUID USER_3_KEYCLOAK_ID = UUID.fromString("b0108bc3-95aa-4a3f-8868-dc301286aeca");
+    public static final String USER_3_USERNAME = "junit3";
+    public static final String USER_3_FIRSTNAME = "System";
+    public static final String USER_3_LASTNAME = "System";
+    public static final String USER_3_NAME = "System System";
+    public static final String USER_3_AFFILIATION = "TU Wien";
+    public static final String USER_3_ORCID_URL = null;
+    public static final String USER_3_ORCID_UNCOMPRESSED = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_3_PASSWORD = "password";
+    public static final String USER_3_PASSWORD = "password";
     @SuppressWarnings("java:S2068")
-    public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
-    public final static String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
-    public final static Boolean USER_3_IS_INTERNAL = false;
-    public final static String USER_3_THEME = "light";
+    public static final String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
+    public static final String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
+    public static final Boolean USER_3_IS_INTERNAL = false;
+    public static final String USER_3_THEME = "light";
 
-    public final static UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
+    public static final UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_3_THEME)
             .orcid(USER_3_ORCID_UNCOMPRESSED)
             .affiliation(USER_3_AFFILIATION)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
-    public final static User USER_3 = User.builder()
+    public static final User USER_3 = User.builder()
             .id(USER_3_ID)
             .keycloakId(USER_3_KEYCLOAK_ID)
             .username(USER_3_USERNAME)
@@ -717,7 +717,7 @@ public abstract class BaseTest {
             .isInternal(USER_3_IS_INTERNAL)
             .build();
 
-    public final static UserDto USER_3_DTO = UserDto.builder()
+    public static final UserDto USER_3_DTO = UserDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .firstname(USER_3_FIRSTNAME)
@@ -727,7 +727,7 @@ public abstract class BaseTest {
             .attributes(USER_3_ATTRIBUTES_DTO)
             .build();
 
-    public final static UserBriefDto USER_3_BRIEF_DTO = UserBriefDto.builder()
+    public static final UserBriefDto USER_3_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .firstname(USER_3_FIRSTNAME)
@@ -736,45 +736,45 @@ public abstract class BaseTest {
             .qualifiedName(USER_3_QUALIFIED_NAME)
             .build();
 
-    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_3_DETAILS = UserDetailsDto.builder()
             .id(USER_3_ID.toString())
             .username(USER_3_USERNAME)
             .password(USER_3_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
-    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+    public static final Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
-    public final static at.tuwien.api.amqp.UserDetailsDto USER_3_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+    public static final at.tuwien.api.amqp.UserDetailsDto USER_3_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_3_USERNAME)
             .tags(new String[]{})
             .build();
 
-    public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
-    public final static UUID USER_4_KEYCLOAK_ID = UUID.fromString("25040ad3-6d57-4052-b357-6b4c8a6e7f4d");
-    public final static String USER_4_USERNAME = "junit4";
-    public final static String USER_4_FIRSTNAME = "JUnit";
-    public final static String USER_4_LASTNAME = "4";
-    public final static String USER_4_NAME = "JUnit 4";
-    public final static String USER_4_AFFILIATION = "TU Wien";
-    public final static String USER_4_ORCID_URL = null;
+    public static final UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
+    public static final UUID USER_4_KEYCLOAK_ID = UUID.fromString("25040ad3-6d57-4052-b357-6b4c8a6e7f4d");
+    public static final String USER_4_USERNAME = "junit4";
+    public static final String USER_4_FIRSTNAME = "JUnit";
+    public static final String USER_4_LASTNAME = "4";
+    public static final String USER_4_NAME = "JUnit 4";
+    public static final String USER_4_AFFILIATION = "TU Wien";
+    public static final String USER_4_ORCID_URL = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_4_PASSWORD = "junit4";
+    public static final String USER_4_PASSWORD = "junit4";
     @SuppressWarnings("java:S2068")
-    public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
-    public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
-    public final static Boolean USER_4_IS_INTERNAL = false;
-    public final static String USER_4_THEME = "light";
+    public static final String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
+    public static final String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
+    public static final Boolean USER_4_IS_INTERNAL = false;
+    public static final String USER_4_THEME = "light";
 
-    public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
+    public static final UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_4_THEME)
             .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
-    public final static User USER_4 = User.builder()
+    public static final User USER_4 = User.builder()
             .id(USER_4_ID)
             .keycloakId(USER_4_KEYCLOAK_ID)
             .username(USER_4_USERNAME)
@@ -787,7 +787,7 @@ public abstract class BaseTest {
             .isInternal(USER_4_IS_INTERNAL)
             .build();
 
-    public final static UserDto USER_4_DTO = UserDto.builder()
+    public static final UserDto USER_4_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .firstname(USER_4_FIRSTNAME)
@@ -797,7 +797,7 @@ public abstract class BaseTest {
             .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
-    public final static UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
+    public static final UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .firstname(USER_4_FIRSTNAME)
@@ -806,38 +806,38 @@ public abstract class BaseTest {
             .qualifiedName(USER_4_QUALIFIED_NAME)
             .build();
 
-    public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_4_DETAILS = UserDetailsDto.builder()
             .id(USER_4_ID.toString())
             .username(USER_4_USERNAME)
             .password(USER_4_PASSWORD)
             .authorities(new LinkedList<>())
             .build();
 
-    public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
+    public static final Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
-    public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static UUID USER_5_KEYCLOAK_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static String USER_5_USERNAME = "nobody";
-    public final static String USER_5_FIRSTNAME = "No";
-    public final static String USER_5_LASTNAME = "Body";
-    public final static String USER_5_NAME = "No Body";
-    public final static String USER_5_AFFILIATION = "TU Wien";
+    public static final UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public static final UUID USER_5_KEYCLOAK_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public static final String USER_5_USERNAME = "nobody";
+    public static final String USER_5_FIRSTNAME = "No";
+    public static final String USER_5_LASTNAME = "Body";
+    public static final String USER_5_NAME = "No Body";
+    public static final String USER_5_AFFILIATION = "TU Wien";
     @SuppressWarnings("java:S2068")
-    public final static String USER_5_PASSWORD = "junit5";
+    public static final String USER_5_PASSWORD = "junit5";
     @SuppressWarnings("java:S2068")
-    public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
-    public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
-    public final static Boolean USER_5_IS_INTERNAL = false;
-    public final static String USER_5_THEME = "dark";
+    public static final String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public static final String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
+    public static final Boolean USER_5_IS_INTERNAL = false;
+    public static final String USER_5_THEME = "dark";
 
-    public final static UserAttributesDto USER_5_ATTRIBUTES_DTO = UserAttributesDto.builder()
+    public static final UserAttributesDto USER_5_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_5_THEME)
             .affiliation(USER_5_AFFILIATION)
             .mariadbPassword(USER_5_DATABASE_PASSWORD)
             .build();
 
-    public final static UserDto USER_5_DTO = UserDto.builder()
+    public static final UserDto USER_5_DTO = UserDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
@@ -847,7 +847,7 @@ public abstract class BaseTest {
             .attributes(USER_5_ATTRIBUTES_DTO)
             .build();
 
-    public final static UserBriefDto USER_5_BRIEF_DTO = UserBriefDto.builder()
+    public static final UserBriefDto USER_5_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
             .firstname(USER_5_FIRSTNAME)
@@ -855,17 +855,17 @@ public abstract class BaseTest {
             .qualifiedName(USER_5_QUALIFIED_NAME)
             .build();
 
-    public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_5_DETAILS = UserDetailsDto.builder()
             .id(USER_5_ID.toString())
             .username(USER_5_USERNAME)
             .password(USER_5_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
 
-    public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
+    public static final Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
-    public final static User USER_5 = User.builder()
+    public static final User USER_5 = User.builder()
             .id(USER_5_ID)
             .keycloakId(USER_5_KEYCLOAK_ID)
             .username(USER_5_USERNAME)
@@ -877,52 +877,52 @@ public abstract class BaseTest {
             .isInternal(USER_5_IS_INTERNAL)
             .build();
 
-    public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
-    public final static String USER_6_USERNAME = "system";
-    public final static String USER_6_FIRSTNAME = "System";
-    public final static String USER_6_LASTNAME = "System";
-    public final static String USER_6_NAME = "System System";
-    public final static String USER_6_AFFILIATION = "TU Wien";
-    public final static String USER_6_ORCID = null;
+    public static final UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public static final String USER_6_USERNAME = "system";
+    public static final String USER_6_FIRSTNAME = "System";
+    public static final String USER_6_LASTNAME = "System";
+    public static final String USER_6_NAME = "System System";
+    public static final String USER_6_AFFILIATION = "TU Wien";
+    public static final String USER_6_ORCID = null;
     @SuppressWarnings("java:S2068")
-    public final static String USER_6_PASSWORD = "junit5";
+    public static final String USER_6_PASSWORD = "junit5";
     @SuppressWarnings("java:S2068")
-    public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
-    public final static Boolean USER_6_VERIFIED = true;
-    public final static Boolean USER_6_ENABLED = true;
-    public final static Boolean USER_6_IS_INTERNAL = false;
-    public final static Boolean USER_6_THEME_DARK = false;
-    public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
-    public final static UUID USER_6_REALM_ID = REALM_DBREPO_ID;
+    public static final String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public static final Boolean USER_6_VERIFIED = true;
+    public static final Boolean USER_6_ENABLED = true;
+    public static final Boolean USER_6_IS_INTERNAL = false;
+    public static final Boolean USER_6_THEME_DARK = false;
+    public static final Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
+    public static final UUID USER_6_REALM_ID = REALM_DBREPO_ID;
 
-    public final static UserDto USER_6_DTO = UserDto.builder()
+    public static final UserDto USER_6_DTO = UserDto.builder()
             .id(USER_6_ID)
             .username(USER_6_USERNAME)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
             .build();
 
-    public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
+    public static final UserDetails USER_6_DETAILS = UserDetailsDto.builder()
             .id(USER_6_ID.toString())
             .username(USER_6_USERNAME)
             .password(USER_6_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
             .build();
 
-    public final static Principal USER_6_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_6_DETAILS,
+    public static final Principal USER_6_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_6_DETAILS,
             USER_6_PASSWORD, USER_6_DETAILS.getAuthorities());
 
-    public final static Long IMAGE_1_ID = 1L;
-    public final static String IMAGE_1_REGISTRY = "docker.io";
-    public final static String IMAGE_1_NAME = "mariadb";
-    public final static String IMAGE_1_VERSION = "11.1.3";
-    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_1_JDBC = "mariadb";
-    public final static Integer IMAGE_1_PORT = 3306;
-    public final static Boolean IMAGE_1_IS_DEFAULT = true;
+    public static final Long IMAGE_1_ID = 1L;
+    public static final String IMAGE_1_REGISTRY = "docker.io";
+    public static final String IMAGE_1_NAME = "mariadb";
+    public static final String IMAGE_1_VERSION = "11.1.3";
+    public static final String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public static final String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
+    public static final String IMAGE_1_JDBC = "mariadb";
+    public static final Integer IMAGE_1_PORT = 3306;
+    public static final Boolean IMAGE_1_IS_DEFAULT = true;
 
-    public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
+    public static final ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
             .registry(IMAGE_1_REGISTRY)
             .name(IMAGE_1_NAME)
             .version(IMAGE_1_VERSION)
@@ -932,7 +932,7 @@ public abstract class BaseTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
-    public final static ImageChangeDto IMAGE_1_CHANGE_DTO = ImageChangeDto.builder()
+    public static final ImageChangeDto IMAGE_1_CHANGE_DTO = ImageChangeDto.builder()
             .registry(IMAGE_1_REGISTRY)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
@@ -940,7 +940,7 @@ public abstract class BaseTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
-    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
+    public static final ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
             .registry(IMAGE_1_REGISTRY)
@@ -953,7 +953,7 @@ public abstract class BaseTest {
             .operators(new LinkedList<>()) /* IMAGE_1_OPERATORS */
             .build();
 
-    public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
+    public static final ImageDto IMAGE_1_DTO = ImageDto.builder()
             .id(IMAGE_1_ID)
             .registry(IMAGE_1_REGISTRY)
             .name(IMAGE_1_NAME)
@@ -966,7 +966,7 @@ public abstract class BaseTest {
             .operators(null)
             .build();
 
-    public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
+    public static final ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
             .version(IMAGE_1_VERSION)
@@ -974,12 +974,12 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .build();
 
-    public final static Long IMAGE_1_OPERATORS_1_ID = 1L;
-    public final static String IMAGE_1_OPERATORS_1_DISPLAY_NAME = "XOR";
-    public final static String IMAGE_1_OPERATORS_1_VALUE = "XOR";
-    public final static String IMAGE_1_OPERATORS_1_DOCUMENTATION = "https://mariadb.com/kb/en/xor/";
+    public static final Long IMAGE_1_OPERATORS_1_ID = 1L;
+    public static final String IMAGE_1_OPERATORS_1_DISPLAY_NAME = "XOR";
+    public static final String IMAGE_1_OPERATORS_1_VALUE = "XOR";
+    public static final String IMAGE_1_OPERATORS_1_DOCUMENTATION = "https://mariadb.com/kb/en/xor/";
 
-    public final static List<Operator> IMAGE_1_OPERATORS = new LinkedList<>(List.of(
+    public static final List<Operator> IMAGE_1_OPERATORS = new LinkedList<>(List.of(
             Operator.builder()
                     .id(IMAGE_1_OPERATORS_1_ID)
                     .image(IMAGE_1)
@@ -988,7 +988,7 @@ public abstract class BaseTest {
                     .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
                     .build()));
 
-    public final static List<OperatorDto> IMAGE_1_OPERATORS_DTO = new LinkedList<>(List.of(
+    public static final List<OperatorDto> IMAGE_1_OPERATORS_DTO = new LinkedList<>(List.of(
             OperatorDto.builder()
                     .id(IMAGE_1_OPERATORS_1_ID)
                     .displayName(IMAGE_1_OPERATORS_1_DISPLAY_NAME)
@@ -996,22 +996,22 @@ public abstract class BaseTest {
                     .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
                     .build()));
 
-    public final static Long CONTAINER_1_ID = 1L;
-    public final static String CONTAINER_1_NAME = "u01";
-    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
-    public final static String CONTAINER_1_UI_HOST = "localhost";
-    public final static Integer CONTAINER_1_UI_PORT = 3306;
-    public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
-    public final static Integer CONTAINER_1_QUOTA = 4;
-    public final static Integer CONTAINER_1_COUNT = 3;
-    public final static String CONTAINER_1_HOST = "localhost";
-    public final static Integer CONTAINER_1_PORT = 3308;
-    public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
+    public static final Long CONTAINER_1_ID = 1L;
+    public static final String CONTAINER_1_NAME = "u01";
+    public static final String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
+    public static final String CONTAINER_1_UI_HOST = "localhost";
+    public static final Integer CONTAINER_1_UI_PORT = 3306;
+    public static final String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
+    public static final Integer CONTAINER_1_QUOTA = 4;
+    public static final Integer CONTAINER_1_COUNT = 3;
+    public static final String CONTAINER_1_HOST = "localhost";
+    public static final Integer CONTAINER_1_PORT = 3308;
+    public static final String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
-    public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
-    public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629L) /* 2023-02-26 08:20:29 (UTC) */;
+    public static final String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
+    public static final Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629L) /* 2023-02-26 08:20:29 (UTC) */;
 
-    public final static Container CONTAINER_1 = Container.builder()
+    public static final Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
@@ -1027,7 +1027,7 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
+    public static final ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
@@ -1036,7 +1036,7 @@ public abstract class BaseTest {
             .port(CONTAINER_1_PORT)
             .build();
 
-    public final static ContainerBriefDto CONTAINER_1_BRIEF_DTO = ContainerBriefDto.builder()
+    public static final ContainerBriefDto CONTAINER_1_BRIEF_DTO = ContainerBriefDto.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
@@ -1045,7 +1045,7 @@ public abstract class BaseTest {
             .image(IMAGE_1_BRIEF_DTO)
             .build();
 
-    public final static ContainerDto CONTAINER_1_PRIVILEGED_DTO = ContainerDto.builder()
+    public static final ContainerDto CONTAINER_1_PRIVILEGED_DTO = ContainerDto.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
@@ -1057,21 +1057,21 @@ public abstract class BaseTest {
             .password(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
-    public final static ImageDto CONTAINER_2_IMAGE_DTO = IMAGE_1_DTO;
-    public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
-    public final static String CONTAINER_2_HOST = "localhost";
-    public final static Integer CONTAINER_2_PORT = 3309;
-    public final static Integer CONTAINER_2_QUOTA = 3;
-    public final static Integer CONTAINER_2_COUNT = 3;
-    public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
+    public static final Long CONTAINER_2_ID = 2L;
+    public static final ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public static final ImageDto CONTAINER_2_IMAGE_DTO = IMAGE_1_DTO;
+    public static final String CONTAINER_2_NAME = "u02";
+    public static final String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
+    public static final String CONTAINER_2_HOST = "localhost";
+    public static final Integer CONTAINER_2_PORT = 3309;
+    public static final Integer CONTAINER_2_QUOTA = 3;
+    public static final Integer CONTAINER_2_COUNT = 3;
+    public static final String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
-    public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
-    public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655L) /* 2023-02-26 08:20:55 (UTC) */;
+    public static final String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
+    public static final Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655L) /* 2023-02-26 08:20:55 (UTC) */;
 
-    public final static Container CONTAINER_2 = Container.builder()
+    public static final Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
@@ -1085,7 +1085,7 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
+    public static final ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
@@ -1094,14 +1094,14 @@ public abstract class BaseTest {
             .port(CONTAINER_2_PORT)
             .build();
 
-    public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
+    public static final ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .quota(CONTAINER_2_QUOTA)
             .build();
 
-    public final static ContainerDto CONTAINER_2_PRIVILEGED_DTO = ContainerDto.builder()
+    public static final ContainerDto CONTAINER_2_PRIVILEGED_DTO = ContainerDto.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
@@ -1113,19 +1113,19 @@ public abstract class BaseTest {
             .password(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
-    public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
-    public final static String CONTAINER_3_HOST = "localhost";
-    public final static Integer CONTAINER_3_PORT = 3310;
-    public final static Integer CONTAINER_3_QUOTA = 20;
-    public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
+    public static final Long CONTAINER_3_ID = 3L;
+    public static final ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
+    public static final String CONTAINER_3_NAME = "u03";
+    public static final String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
+    public static final String CONTAINER_3_HOST = "localhost";
+    public static final Integer CONTAINER_3_PORT = 3310;
+    public static final Integer CONTAINER_3_QUOTA = 20;
+    public static final String CONTAINER_3_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
-    public final static String CONTAINER_3_PRIVILEGED_PASSWORD = "dbrepo";
-    public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672L) /* 2023-02-26 08:21:12 (UTC) */;
+    public static final String CONTAINER_3_PRIVILEGED_PASSWORD = "dbrepo";
+    public static final Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672L) /* 2023-02-26 08:21:12 (UTC) */;
 
-    public final static Container CONTAINER_3 = Container.builder()
+    public static final Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
             .internalName(CONTAINER_3_INTERNALNAME)
@@ -1139,19 +1139,19 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static Long CONTAINER_4_ID = 4L;
-    public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
-    public final static String CONTAINER_4_NAME = "u04";
-    public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
-    public final static String CONTAINER_4_HOST = "localhost";
-    public final static Integer CONTAINER_4_PORT = 3311;
-    public final static Integer CONTAINER_4_QUOTA = 0;
-    public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
+    public static final Long CONTAINER_4_ID = 4L;
+    public static final ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
+    public static final String CONTAINER_4_NAME = "u04";
+    public static final String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
+    public static final String CONTAINER_4_HOST = "localhost";
+    public static final Integer CONTAINER_4_PORT = 3311;
+    public static final Integer CONTAINER_4_QUOTA = 0;
+    public static final String CONTAINER_4_PRIVILEGED_USERNAME = "root";
     @SuppressWarnings("java:S2068")
-    public final static String CONTAINER_4_PRIVILEGED_PASSWORD = "dbrepo";
-    public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688L) /* 2023-02-26 08:21:28 (UTC) */;
+    public static final String CONTAINER_4_PRIVILEGED_PASSWORD = "dbrepo";
+    public static final Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688L) /* 2023-02-26 08:21:28 (UTC) */;
 
-    public final static Container CONTAINER_4 = Container.builder()
+    public static final Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
             .name(CONTAINER_4_NAME)
             .internalName(CONTAINER_4_INTERNALNAME)
@@ -1164,14 +1164,14 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static String EXCHANGE_DBREPO_NAME = "dbrepo";
-    public final static Boolean EXCHANGE_DBREPO_AUTO_DELETE = true;
-    public final static Boolean EXCHANGE_DBREPO_DURABLE = true;
-    public final static Boolean EXCHANGE_DBREPO_INTERNAL = true;
-    public final static String EXCHANGE_DBREPO_TYPE = "topic";
-    public final static String EXCHANGE_DBREPO_VHOST = "dbrepo";
+    public static final String EXCHANGE_DBREPO_NAME = "dbrepo";
+    public static final Boolean EXCHANGE_DBREPO_AUTO_DELETE = true;
+    public static final Boolean EXCHANGE_DBREPO_DURABLE = true;
+    public static final Boolean EXCHANGE_DBREPO_INTERNAL = true;
+    public static final String EXCHANGE_DBREPO_TYPE = "topic";
+    public static final String EXCHANGE_DBREPO_VHOST = "dbrepo";
 
-    public final static ExchangeDto EXCHANGE_DBREPO_DTO = ExchangeDto.builder()
+    public static final ExchangeDto EXCHANGE_DBREPO_DTO = ExchangeDto.builder()
             .autoDelete(EXCHANGE_DBREPO_AUTO_DELETE)
             .type(EXCHANGE_DBREPO_TYPE)
             .name(EXCHANGE_DBREPO_NAME)
@@ -1180,24 +1180,24 @@ public abstract class BaseTest {
             .internal(EXCHANGE_DBREPO_INTERNAL)
             .build();
 
-    public final static Long DATABASE_1_ID = 1L;
-    public final static String DATABASE_1_NAME = "Weather";
-    public final static String DATABASE_1_DESCRIPTION = "Weather in Australia";
-    public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static Boolean DATABASE_1_PUBLIC = false;
-    public final static Boolean DATABASE_1_SCHEMA_PUBLIC = false;
-    public final static String DATABASE_1_EXCHANGE = "dbrepo";
-    public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
-    public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
-    public final static UUID DATABASE_1_CREATED_BY = USER_1_ID;
+    public static final Long DATABASE_1_ID = 1L;
+    public static final String DATABASE_1_NAME = "Weather";
+    public static final String DATABASE_1_DESCRIPTION = "Weather in Australia";
+    public static final String DATABASE_1_INTERNALNAME = "weather";
+    public static final Boolean DATABASE_1_PUBLIC = false;
+    public static final Boolean DATABASE_1_SCHEMA_PUBLIC = false;
+    public static final String DATABASE_1_EXCHANGE = "dbrepo";
+    public static final Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
+    public static final Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
+    public static final UUID DATABASE_1_CREATED_BY = USER_1_ID;
 
-    public final static CreateDatabaseDto DATABASE_1_CREATE = CreateDatabaseDto.builder()
+    public static final CreateDatabaseDto DATABASE_1_CREATE = CreateDatabaseDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
             .cid(CONTAINER_1_ID)
             .build();
 
-    public final static at.tuwien.api.database.internal.CreateDatabaseDto DATABASE_1_CREATE_INTERNAL = at.tuwien.api.database.internal.CreateDatabaseDto.builder()
+    public static final at.tuwien.api.database.internal.CreateDatabaseDto DATABASE_1_CREATE_INTERNAL = at.tuwien.api.database.internal.CreateDatabaseDto.builder()
             .internalName(DATABASE_1_INTERNALNAME)
             .containerId(CONTAINER_1_ID)
             .username(USER_1_USERNAME)
@@ -1207,36 +1207,36 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
-    public final static Long DATABASE_2_ID = 2L;
-    public final static String DATABASE_2_NAME = "Zoo";
-    public final static String DATABASE_2_DESCRIPTION = "Zoo data";
-    public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static Boolean DATABASE_2_PUBLIC = false;
-    public final static Boolean DATABASE_2_SCHEMA_PUBLIC = true;
-    public final static String DATABASE_2_EXCHANGE = "dbrepo";
-    public final static Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
-    public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
-    public final static UUID DATABASE_2_OWNER = USER_2_ID;
-    public final static UUID DATABASE_2_CREATOR = USER_2_ID;
+    public static final Long DATABASE_2_ID = 2L;
+    public static final String DATABASE_2_NAME = "Zoo";
+    public static final String DATABASE_2_DESCRIPTION = "Zoo data";
+    public static final String DATABASE_2_INTERNALNAME = "zoo";
+    public static final Boolean DATABASE_2_PUBLIC = false;
+    public static final Boolean DATABASE_2_SCHEMA_PUBLIC = true;
+    public static final String DATABASE_2_EXCHANGE = "dbrepo";
+    public static final Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
+    public static final Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
+    public static final UUID DATABASE_2_OWNER = USER_2_ID;
+    public static final UUID DATABASE_2_CREATOR = USER_2_ID;
 
-    public final static CreateDatabaseDto DATABASE_2_CREATE = CreateDatabaseDto.builder()
+    public static final CreateDatabaseDto DATABASE_2_CREATE = CreateDatabaseDto.builder()
             .name(DATABASE_2_NAME)
             .isPublic(DATABASE_2_PUBLIC)
             .cid(CONTAINER_1_ID)
             .build();
 
-    public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "Musicology";
-    public final static String DATABASE_3_DESCRIPTION = "Musicology data";
-    public final static String DATABASE_3_INTERNALNAME = "musicology";
-    public final static Boolean DATABASE_3_PUBLIC = true;
-    public final static Boolean DATABASE_3_SCHEMA_PUBLIC = false;
-    public final static String DATABASE_3_EXCHANGE = "dbrepo";
-    public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
-    public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
-    public final static UUID DATABASE_3_OWNER = USER_3_ID;
+    public static final Long DATABASE_3_ID = 3L;
+    public static final String DATABASE_3_NAME = "Musicology";
+    public static final String DATABASE_3_DESCRIPTION = "Musicology data";
+    public static final String DATABASE_3_INTERNALNAME = "musicology";
+    public static final Boolean DATABASE_3_PUBLIC = true;
+    public static final Boolean DATABASE_3_SCHEMA_PUBLIC = false;
+    public static final String DATABASE_3_EXCHANGE = "dbrepo";
+    public static final Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
+    public static final Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
+    public static final UUID DATABASE_3_OWNER = USER_3_ID;
 
-    public final static DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
@@ -1250,7 +1250,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
             .build();
 
-    public final static DatabaseDto DATABASE_3_PRIVILEGED_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_3_PRIVILEGED_DTO = DatabaseDto.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
@@ -1265,7 +1265,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static DatabaseBriefDto DATABASE_3_BRIEF_DTO = DatabaseBriefDto.builder()
+    public static final DatabaseBriefDto DATABASE_3_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
             .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
@@ -1275,25 +1275,25 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static CreateDatabaseDto DATABASE_3_CREATE = CreateDatabaseDto.builder()
+    public static final CreateDatabaseDto DATABASE_3_CREATE = CreateDatabaseDto.builder()
             .name(DATABASE_3_NAME)
             .isPublic(DATABASE_3_PUBLIC)
             .cid(CONTAINER_1_ID)
             .build();
 
-    public final static Long DATABASE_4_ID = 4L;
-    public final static String DATABASE_4_NAME = "Weather AT";
-    public final static String DATABASE_4_DESCRIPTION = "Weather data";
-    public final static Boolean DATABASE_4_PUBLIC = true;
-    public final static Boolean DATABASE_4_SCHEMA_PUBLIC = true;
-    public final static String DATABASE_4_INTERNALNAME = "weather_at";
-    public final static String DATABASE_4_EXCHANGE = "dbrepo";
-    public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813L) /* 2023-02-26 08:23:33 (UTC) */;
-    public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813L) /* 2023-02-26 08:23:33 (UTC) */;
-    public final static UUID DATABASE_4_OWNER = USER_4_ID;
-    public final static UUID DATABASE_4_CREATOR = USER_4_ID;
+    public static final Long DATABASE_4_ID = 4L;
+    public static final String DATABASE_4_NAME = "Weather AT";
+    public static final String DATABASE_4_DESCRIPTION = "Weather data";
+    public static final Boolean DATABASE_4_PUBLIC = true;
+    public static final Boolean DATABASE_4_SCHEMA_PUBLIC = true;
+    public static final String DATABASE_4_INTERNALNAME = "weather_at";
+    public static final String DATABASE_4_EXCHANGE = "dbrepo";
+    public static final Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813L) /* 2023-02-26 08:23:33 (UTC) */;
+    public static final Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813L) /* 2023-02-26 08:23:33 (UTC) */;
+    public static final UUID DATABASE_4_OWNER = USER_4_ID;
+    public static final UUID DATABASE_4_CREATOR = USER_4_ID;
 
-    public final static DatabaseBriefDto DATABASE_4_BRIEF_DTO = DatabaseBriefDto.builder()
+    public static final DatabaseBriefDto DATABASE_4_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
             .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
@@ -1304,7 +1304,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static DatabaseDto DATABASE_4_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_4_DTO = DatabaseDto.builder()
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
             .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
@@ -1319,7 +1319,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>()) /* IDENTIFIER_7_DTO */
             .build();
 
-    public final static DatabaseDto DATABASE_4_PRIVILEGED_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_4_PRIVILEGED_DTO = DatabaseDto.builder()
             .id(DATABASE_4_ID)
             .isPublic(DATABASE_4_PUBLIC)
             .isSchemaPublic(DATABASE_4_SCHEMA_PUBLIC)
@@ -1335,7 +1335,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static CreateTableDto TABLE_0_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_0_CREATE_DTO = CreateTableDto.builder()
             .name("full")
             .description("full example")
             .constraints(CreateTableConstraintsDto.builder()
@@ -1504,25 +1504,25 @@ public abstract class BaseTest {
                             .build()))
             .build();
 
-    public final static Long TABLE_1_ID = 1L;
-    public final static String TABLE_1_NAME = "Weather AUS";
-    public final static String TABLE_1_INTERNAL_NAME = "weather_aus";
-    public final static Boolean TABLE_1_VERSIONED = true;
-    public final static Boolean TABLE_1_IS_PUBLIC = false;
-    public final static Boolean TABLE_1_SCHEMA_PUBLIC = false;
-    public final static Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_1_DESCRIPTION = "Weather in Australia";
-    public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNAL_NAME;
-    public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
-    public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
-    public final static Long TABLE_1_AVG_ROW_LENGTH = 3L;
-    public final static Long TABLE_1_NUM_ROWS = 3L;
-    public final static Long TABLE_1_DATA_LENGTH = 2000L;
-    public final static Long TABLE_1_MAX_DATA_LENGTH = Long.MAX_VALUE;
-    public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
-    public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
+    public static final Long TABLE_1_ID = 1L;
+    public static final String TABLE_1_NAME = "Weather AUS";
+    public static final String TABLE_1_INTERNAL_NAME = "weather_aus";
+    public static final Boolean TABLE_1_VERSIONED = true;
+    public static final Boolean TABLE_1_IS_PUBLIC = false;
+    public static final Boolean TABLE_1_SCHEMA_PUBLIC = false;
+    public static final Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_1_DESCRIPTION = "Weather in Australia";
+    public static final String TABLE_1_QUEUE_NAME = TABLE_1_INTERNAL_NAME;
+    public static final String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
+    public static final Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
+    public static final Long TABLE_1_AVG_ROW_LENGTH = 3L;
+    public static final Long TABLE_1_NUM_ROWS = 3L;
+    public static final Long TABLE_1_DATA_LENGTH = 2000L;
+    public static final Long TABLE_1_MAX_DATA_LENGTH = Long.MAX_VALUE;
+    public static final Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
+    public static final Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
-    public final static TableDto TABLE_1_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_1_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
@@ -1545,7 +1545,7 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
-    public final static Table TABLE_1 = Table.builder()
+    public static final Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
             .database(null /* DATABASE_1 */)
@@ -1569,7 +1569,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableDto TABLE_1_DTO = TableDto.builder()
+    public static final TableDto TABLE_1_DTO = TableDto.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
@@ -1590,7 +1590,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
             .build();
 
-    public final static List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(1L)
                     .tableId(TABLE_1_ID)
                     .databaseId(DATABASE_1_ID)
@@ -1658,7 +1658,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
-    public final static TableBriefDto TABLE_1_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_1_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_1_ID)
             .databaseId(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
@@ -1670,9 +1670,9 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long TABLE_1_DATA_COUNT = 3L;
+    public static final Long TABLE_1_DATA_COUNT = 3L;
     @SuppressWarnings("java:S3599")
-    public final static List<Map<String, Object>> TABLE_1_DATA_DTO = new LinkedList<>(List.of(
+    public static final List<Map<String, Object>> TABLE_1_DATA_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
                 put("date", LocalDate.of(2008, 12, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
@@ -1696,24 +1696,24 @@ public abstract class BaseTest {
             }}
     ));
 
-    public final static Long TABLE_2_ID = 2L;
-    public final static String TABLE_2_NAME = "Weather Location";
-    public final static String TABLE_2_INTERNALNAME = "weather_location";
-    public final static Boolean TABLE_2_VERSIONED = true;
-    public final static Boolean TABLE_2_IS_PUBLIC = false;
-    public final static Boolean TABLE_2_SCHEMA_PUBLIC = true;
-    public final static Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
-    public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_2_ID;
-    public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
-    public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
-    public final static Long TABLE_2_AVG_ROW_LENGTH = 3L;
-    public final static Long TABLE_2_NUM_ROWS = 3L;
-    public final static Long TABLE_2_DATA_LENGTH = 2000L;
-    public final static Long TABLE_2_MAX_DATA_LENGTH = Long.MAX_VALUE;
+    public static final Long TABLE_2_ID = 2L;
+    public static final String TABLE_2_NAME = "Weather Location";
+    public static final String TABLE_2_INTERNALNAME = "weather_location";
+    public static final Boolean TABLE_2_VERSIONED = true;
+    public static final Boolean TABLE_2_IS_PUBLIC = false;
+    public static final Boolean TABLE_2_SCHEMA_PUBLIC = true;
+    public static final Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_2_DESCRIPTION = "Weather location";
+    public static final String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
+    public static final String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_2_ID;
+    public static final Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
+    public static final Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
+    public static final Long TABLE_2_AVG_ROW_LENGTH = 3L;
+    public static final Long TABLE_2_NUM_ROWS = 3L;
+    public static final Long TABLE_2_DATA_LENGTH = 2000L;
+    public static final Long TABLE_2_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
-    public final static Table TABLE_2 = Table.builder()
+    public static final Table TABLE_2 = Table.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
             .database(null /* DATABASE_1 */)
@@ -1736,7 +1736,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableDto TABLE_2_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_2_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNALNAME)
@@ -1759,7 +1759,7 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
-    public final static TableDto TABLE_2_DTO = TableDto.builder()
+    public static final TableDto TABLE_2_DTO = TableDto.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNALNAME)
@@ -1779,7 +1779,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableBriefDto TABLE_2_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_2_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_2_ID)
             .databaseId(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNALNAME)
@@ -1791,24 +1791,24 @@ public abstract class BaseTest {
             .ownedBy(USER_2_ID)
             .build();
 
-    public final static Long TABLE_3_ID = 3L;
-    public final static String TABLE_3_NAME = "Sensor";
-    public final static String TABLE_3_INTERNALNAME = "sensor";
-    public final static Boolean TABLE_3_VERSIONED = true;
-    public final static Boolean TABLE_3_IS_PUBLIC = false;
-    public final static Boolean TABLE_3_SCHEMA_PUBLIC = false;
-    public final static Boolean TABLE_3_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_3_DESCRIPTION = "Some sensor data";
-    public final static String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
-    public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_3_ID;
-    public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
-    public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
-    public final static Long TABLE_3_AVG_ROW_LENGTH = 6L;
-    public final static Long TABLE_3_NUM_ROWS = 6L;
-    public final static Long TABLE_3_DATA_LENGTH = 1800L;
-    public final static Long TABLE_3_MAX_DATA_LENGTH = Long.MAX_VALUE;
+    public static final Long TABLE_3_ID = 3L;
+    public static final String TABLE_3_NAME = "Sensor";
+    public static final String TABLE_3_INTERNALNAME = "sensor";
+    public static final Boolean TABLE_3_VERSIONED = true;
+    public static final Boolean TABLE_3_IS_PUBLIC = false;
+    public static final Boolean TABLE_3_SCHEMA_PUBLIC = false;
+    public static final Boolean TABLE_3_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_3_DESCRIPTION = "Some sensor data";
+    public static final String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
+    public static final String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_3_ID;
+    public static final Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
+    public static final Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
+    public static final Long TABLE_3_AVG_ROW_LENGTH = 6L;
+    public static final Long TABLE_3_NUM_ROWS = 6L;
+    public static final Long TABLE_3_DATA_LENGTH = 1800L;
+    public static final Long TABLE_3_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
-    public final static Table TABLE_3 = Table.builder()
+    public static final Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
             .tdbid(DATABASE_1_ID)
             .database(null /* DATABASE_1 */)
@@ -1831,7 +1831,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableDto TABLE_3_DTO = TableDto.builder()
+    public static final TableDto TABLE_3_DTO = TableDto.builder()
             .id(TABLE_3_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_3_INTERNALNAME)
@@ -1851,7 +1851,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_3_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableBriefDto TABLE_3_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_3_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_3_ID)
             .databaseId(DATABASE_1_ID)
             .internalName(TABLE_3_INTERNALNAME)
@@ -1863,14 +1863,14 @@ public abstract class BaseTest {
             .ownedBy(USER_3_ID)
             .build();
 
-    public final static CreateTableConstraintsDto TABLE_3_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
             .build();
 
-    public final static CreateTableConstraintsDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>()) // <<<<
             .uniques(new LinkedList<>())
@@ -1881,38 +1881,38 @@ public abstract class BaseTest {
                     .build()))
             .build();
 
-    public final static CreateTableDto TABLE_3_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_3_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_3_NAME)
             .description(TABLE_3_DESCRIPTION)
             .columns(new LinkedList<>())
             .constraints(TABLE_3_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final static CreateTableDto TABLE_3_INVALID_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_3_INVALID_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_3_NAME)
             .description(TABLE_3_DESCRIPTION)
             .columns(new LinkedList<>())
             .constraints(TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO)
             .build();
 
-    public final static Long TABLE_5_ID = 5L;
-    public final static String TABLE_5_NAME = "zoo";
-    public final static String TABLE_5_INTERNALNAME = "zoo";
-    public final static Boolean TABLE_5_VERSIONED = true;
-    public final static Boolean TABLE_5_IS_PUBLIC = true;
-    public final static Boolean TABLE_5_SCHEMA_PUBLIC = true;
-    public final static Boolean TABLE_5_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_5_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
-    public final static String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_5_ID;
-    public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
-    public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
-    public final static Long TABLE_5_AVG_ROW_LENGTH = 1080L;
-    public final static Long TABLE_5_NUM_ROWS = 101L;
-    public final static Long TABLE_5_DATA_LENGTH = 15200L;
-    public final static Long TABLE_5_MAX_DATA_LENGTH = Long.MAX_VALUE;
+    public static final Long TABLE_5_ID = 5L;
+    public static final String TABLE_5_NAME = "zoo";
+    public static final String TABLE_5_INTERNALNAME = "zoo";
+    public static final Boolean TABLE_5_VERSIONED = true;
+    public static final Boolean TABLE_5_IS_PUBLIC = true;
+    public static final Boolean TABLE_5_SCHEMA_PUBLIC = true;
+    public static final Boolean TABLE_5_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_5_DESCRIPTION = "Some Kaggle dataset";
+    public static final String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
+    public static final String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_5_ID;
+    public static final Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
+    public static final Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
+    public static final Long TABLE_5_AVG_ROW_LENGTH = 1080L;
+    public static final Long TABLE_5_NUM_ROWS = 101L;
+    public static final Long TABLE_5_DATA_LENGTH = 15200L;
+    public static final Long TABLE_5_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
-    public final static Table TABLE_5 = Table.builder()
+    public static final Table TABLE_5 = Table.builder()
             .id(TABLE_5_ID)
             .tdbid(DATABASE_2_ID)
             .created(Instant.now())
@@ -1930,7 +1930,7 @@ public abstract class BaseTest {
             .owner(USER_1)
             .build();
 
-    public final static TableDto TABLE_5_DTO = TableDto.builder()
+    public static final TableDto TABLE_5_DTO = TableDto.builder()
             .id(TABLE_5_ID)
             .tdbid(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNALNAME)
@@ -1946,7 +1946,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static TableDto TABLE_5_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_5_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_5_ID)
             .tdbid(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNALNAME)
@@ -1969,7 +1969,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_5_ID)
             .databaseId(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNALNAME)
@@ -1981,20 +1981,20 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long TABLE_6_ID = 6L;
-    public final static String TABLE_6_NAME = "names";
-    public final static String TABLE_6_INTERNALNAME = "names";
-    public final static Boolean TABLE_6_VERSIONED = true;
-    public final static Boolean TABLE_6_IS_PUBLIC = true;
-    public final static Boolean TABLE_6_SCHEMA_PUBLIC = false;
-    public final static Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_6_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
-    public final static String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_6_ID;
-    public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
-    public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
+    public static final Long TABLE_6_ID = 6L;
+    public static final String TABLE_6_NAME = "names";
+    public static final String TABLE_6_INTERNALNAME = "names";
+    public static final Boolean TABLE_6_VERSIONED = true;
+    public static final Boolean TABLE_6_IS_PUBLIC = true;
+    public static final Boolean TABLE_6_SCHEMA_PUBLIC = false;
+    public static final Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_6_DESCRIPTION = "Some names dataset";
+    public static final String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
+    public static final String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_6_ID;
+    public static final Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
+    public static final Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
 
-    public final static Table TABLE_6 = Table.builder()
+    public static final Table TABLE_6 = Table.builder()
             .id(TABLE_6_ID)
             .tdbid(DATABASE_2_ID)
             .created(TABLE_6_CREATED)
@@ -2013,7 +2013,7 @@ public abstract class BaseTest {
             .created(TABLE_6_CREATED)
             .build();
 
-    public final static TableDto TABLE_6_DTO = TableDto.builder()
+    public static final TableDto TABLE_6_DTO = TableDto.builder()
             .id(TABLE_6_ID)
             .tdbid(DATABASE_2_ID)
             .internalName(TABLE_6_INTERNALNAME)
@@ -2029,7 +2029,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static TableBriefDto TABLE_6_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_6_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_6_ID)
             .databaseId(DATABASE_2_ID)
             .internalName(TABLE_6_INTERNALNAME)
@@ -2041,20 +2041,20 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long TABLE_7_ID = 7L;
-    public final static String TABLE_7_NAME = "likes";
-    public final static String TABLE_7_INTERNAL_NAME = "likes";
-    public final static Boolean TABLE_7_VERSIONED = true;
-    public final static Boolean TABLE_7_IS_PUBLIC = true;
-    public final static Boolean TABLE_7_SCHEMA_PUBLIC = true;
-    public final static Boolean TABLE_7_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_7_DESCRIPTION = "Some likes dataset";
-    public final static String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
-    public final static String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_7_ID;
-    public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
-    public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
+    public static final Long TABLE_7_ID = 7L;
+    public static final String TABLE_7_NAME = "likes";
+    public static final String TABLE_7_INTERNAL_NAME = "likes";
+    public static final Boolean TABLE_7_VERSIONED = true;
+    public static final Boolean TABLE_7_IS_PUBLIC = true;
+    public static final Boolean TABLE_7_SCHEMA_PUBLIC = true;
+    public static final Boolean TABLE_7_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_7_DESCRIPTION = "Some likes dataset";
+    public static final String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
+    public static final String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_7_ID;
+    public static final Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
+    public static final Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
 
-    public final static Table TABLE_7 = Table.builder()
+    public static final Table TABLE_7 = Table.builder()
             .id(TABLE_7_ID)
             .tdbid(DATABASE_2_ID)
             .created(TABLE_7_CREATED)
@@ -2073,7 +2073,7 @@ public abstract class BaseTest {
             .created(TABLE_7_CREATED)
             .build();
 
-    public final static TableDto TABLE_7_DTO = TableDto.builder()
+    public static final TableDto TABLE_7_DTO = TableDto.builder()
             .id(TABLE_7_ID)
             .tdbid(DATABASE_2_ID)
             .internalName(TABLE_7_INTERNAL_NAME)
@@ -2089,7 +2089,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static TableBriefDto TABLE_7_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_7_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_7_ID)
             .databaseId(DATABASE_2_ID)
             .internalName(TABLE_7_INTERNAL_NAME)
@@ -2101,23 +2101,23 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long TABLE_4_ID = 4L;
-    public final static String TABLE_4_NAME = "Sensor 2";
-    public final static String TABLE_4_INTERNALNAME = "sensor_2";
-    public final static Boolean TABLE_4_VERSIONED = true;
-    public final static Boolean TABLE_4_IS_PUBLIC = true;
-    public final static Boolean TABLE_4_SCHEMA_PUBLIC = false;
-    public final static String TABLE_4_DESCRIPTION = "Hello sensor";
-    public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
-    public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
-    public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
-    public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
-    public final static Long TABLE_4_AVG_ROW_LENGTH = 0L;
-    public final static Long TABLE_4_NUM_ROWS = 0L;
-    public final static Long TABLE_4_DATA_LENGTH = 1000L;
-    public final static Long TABLE_4_MAX_DATA_LENGTH = Long.MAX_VALUE;
+    public static final Long TABLE_4_ID = 4L;
+    public static final String TABLE_4_NAME = "Sensor 2";
+    public static final String TABLE_4_INTERNALNAME = "sensor_2";
+    public static final Boolean TABLE_4_VERSIONED = true;
+    public static final Boolean TABLE_4_IS_PUBLIC = true;
+    public static final Boolean TABLE_4_SCHEMA_PUBLIC = false;
+    public static final String TABLE_4_DESCRIPTION = "Hello sensor";
+    public static final String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
+    public static final String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
+    public static final Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Long TABLE_4_AVG_ROW_LENGTH = 0L;
+    public static final Long TABLE_4_NUM_ROWS = 0L;
+    public static final Long TABLE_4_DATA_LENGTH = 1000L;
+    public static final Long TABLE_4_MAX_DATA_LENGTH = Long.MAX_VALUE;
 
-    public final static Table TABLE_4 = Table.builder()
+    public static final Table TABLE_4 = Table.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
@@ -2140,7 +2140,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableDto TABLE_4_DTO = TableDto.builder()
+    public static final TableDto TABLE_4_DTO = TableDto.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
@@ -2160,7 +2160,7 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
             .build();
 
-    public final static TableDto TABLE_4_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_4_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
@@ -2182,7 +2182,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_4_ID)
             .databaseId(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
@@ -2194,18 +2194,18 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static ColumnBriefDto TABLE_4_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_4_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(44L)
             .name("Timestamp")
             .internalName("timestamp")
             .columnType(ColumnTypeDto.TIMESTAMP)
             .build();
 
-    public final static Long COLUMN_4_1_ID = 44L;
+    public static final Long COLUMN_4_1_ID = 44L;
 
-    public final static Long COLUMN_4_2_ID = 45L;
+    public static final Long COLUMN_4_2_ID = 45L;
 
-    public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_4)
@@ -2224,7 +2224,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<CreateTableColumnDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(CreateTableColumnDto.builder()
+    public static final List<CreateTableColumnDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(CreateTableColumnDto.builder()
                     .name("Timestamp")
                     .type(ColumnTypeDto.TIMESTAMP)
                     .nullAllowed(false)
@@ -2237,28 +2237,28 @@ public abstract class BaseTest {
                     .d(10L)
                     .build());
 
-    public final static CreateTableConstraintsDto TABLE_4_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_4_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>(Set.of("Timestamp")))
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>(List.of(List.of("Timestamp"))))
             .build();
 
-    public final static CreateTableDto TABLE_4_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_4_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_4_NAME)
             .description(TABLE_4_DESCRIPTION)
             .columns(TABLE_4_COLUMNS_CREATE_DTO)
             .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_4_CREATE_INTERNAL_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+    public static final at.tuwien.api.database.table.internal.TableCreateDto TABLE_4_CREATE_INTERNAL_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
             .name(TABLE_4_NAME)
             .description(TABLE_4_DESCRIPTION)
             .columns(TABLE_4_COLUMNS_CREATE_DTO)
             .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final static List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_4_1_ID)
                     .databaseId(DATABASE_1_ID)
                     .tableId(TABLE_4_ID)
@@ -2277,20 +2277,20 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static Long TABLE_8_ID = 8L;
-    public final static Long TABLE_8_DATABASE_ID = DATABASE_3_ID;
-    public final static String TABLE_8_NAME = "location";
-    public final static String TABLE_8_INTERNAL_NAME = "mfcc";
-    public final static Boolean TABLE_8_VERSIONED = true;
-    public final static Boolean TABLE_8_IS_PUBLIC = false;
-    public final static Boolean TABLE_8_SCHEMA_PUBLIC = false;
-    public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
-    public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
-    public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_8_ID;
-    public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
-    public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Long TABLE_8_ID = 8L;
+    public static final Long TABLE_8_DATABASE_ID = DATABASE_3_ID;
+    public static final String TABLE_8_NAME = "location";
+    public static final String TABLE_8_INTERNAL_NAME = "mfcc";
+    public static final Boolean TABLE_8_VERSIONED = true;
+    public static final Boolean TABLE_8_IS_PUBLIC = false;
+    public static final Boolean TABLE_8_SCHEMA_PUBLIC = false;
+    public static final String TABLE_8_DESCRIPTION = "Hello mfcc";
+    public static final String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
+    public static final String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_8_ID;
+    public static final Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 
-    public final static Table TABLE_8 = Table.builder()
+    public static final Table TABLE_8 = Table.builder()
             .id(TABLE_8_ID)
             .tdbid(TABLE_8_DATABASE_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
@@ -2309,7 +2309,7 @@ public abstract class BaseTest {
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
 
-    public final static TableDto TABLE_8_DTO = TableDto.builder()
+    public static final TableDto TABLE_8_DTO = TableDto.builder()
             .id(TABLE_8_ID)
             .tdbid(TABLE_8_DATABASE_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
@@ -2324,7 +2324,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static TableBriefDto TABLE_8_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_8_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_8_ID)
             .databaseId(DATABASE_3_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
@@ -2336,7 +2336,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static TableDto TABLE_8_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_8_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_8_ID)
             .tdbid(TABLE_8_DATABASE_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
@@ -2352,21 +2352,21 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static Long TABLE_9_ID = 9L;
-    public final static Long TABLE_9_DATABASE_ID = DATABASE_4_ID;
-    public final static String TABLE_9_NAME = "mfcc";
-    public final static String TABLE_9_INTERNAL_NAME = "mfcc";
-    public final static Boolean TABLE_9_VERSIONED = true;
-    public final static Boolean TABLE_9_IS_PUBLIC = false;
-    public final static Boolean TABLE_9_SCHEMA_PUBLIC = true;
-    public final static Boolean TABLE_9_PROCESSED_CONSTRAINTS = true;
-    public final static String TABLE_9_DESCRIPTION = "Hello mfcc";
-    public final static String TABLE_9_QUEUE_NAME = TABLE_9_INTERNAL_NAME;
-    public final static String TABLE_9_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_9_ID;
-    public final static Instant TABLE_9_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
-    public final static Instant TABLE_9_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Long TABLE_9_ID = 9L;
+    public static final Long TABLE_9_DATABASE_ID = DATABASE_4_ID;
+    public static final String TABLE_9_NAME = "mfcc";
+    public static final String TABLE_9_INTERNAL_NAME = "mfcc";
+    public static final Boolean TABLE_9_VERSIONED = true;
+    public static final Boolean TABLE_9_IS_PUBLIC = false;
+    public static final Boolean TABLE_9_SCHEMA_PUBLIC = true;
+    public static final Boolean TABLE_9_PROCESSED_CONSTRAINTS = true;
+    public static final String TABLE_9_DESCRIPTION = "Hello mfcc";
+    public static final String TABLE_9_QUEUE_NAME = TABLE_9_INTERNAL_NAME;
+    public static final String TABLE_9_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_9_ID;
+    public static final Instant TABLE_9_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
+    public static final Instant TABLE_9_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 
-    public final static Table TABLE_9 = Table.builder()
+    public static final Table TABLE_9 = Table.builder()
             .id(TABLE_9_ID)
             .tdbid(TABLE_9_DATABASE_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
@@ -2385,7 +2385,7 @@ public abstract class BaseTest {
             .lastModified(TABLE_9_LAST_MODIFIED)
             .build();
 
-    public final static TableDto TABLE_9_DTO = TableDto.builder()
+    public static final TableDto TABLE_9_DTO = TableDto.builder()
             .id(TABLE_9_ID)
             .tdbid(TABLE_9_DATABASE_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
@@ -2400,7 +2400,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static TableBriefDto TABLE_9_BRIEF_DTO = TableBriefDto.builder()
+    public static final TableBriefDto TABLE_9_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_9_ID)
             .databaseId(DATABASE_4_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
@@ -2412,7 +2412,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static TableDto TABLE_9_PRIVILEGED_DTO = TableDto.builder()
+    public static final TableDto TABLE_9_PRIVILEGED_DTO = TableDto.builder()
             .id(TABLE_9_ID)
             .tdbid(TABLE_9_DATABASE_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
@@ -2428,22 +2428,22 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static Long COLUMN_9_1_ID = 78L;
-    public final static String COLUMN_9_1_NAME = "location";
-    public final static String COLUMN_9_1_INTERNAL_NAME = "location";
+    public static final Long COLUMN_9_1_ID = 78L;
+    public static final String COLUMN_9_1_NAME = "location";
+    public static final String COLUMN_9_1_INTERNAL_NAME = "location";
 
-    public final static ColumnBriefDto TABLE_9_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_9_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_9_1_ID)
             .name(COLUMN_9_1_NAME)
             .internalName(COLUMN_9_1_INTERNAL_NAME)
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static Long COLUMN_9_2_ID = 79L;
+    public static final Long COLUMN_9_2_ID = 79L;
 
-    public final static Long COLUMN_9_3_ID = 80L;
+    public static final Long COLUMN_9_3_ID = 80L;
 
-    public final static List<TableColumn> TABLE_9_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_9_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_9_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_9)
@@ -2482,7 +2482,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
-    public final static List<ColumnDto> TABLE_9_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_9_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_9_1_ID)
                     .ordinalPosition(0)
                     .name(COLUMN_9_1_NAME)
@@ -2518,7 +2518,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
-    public final static Constraints TABLE_9_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_9_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -2529,7 +2529,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_9_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_9_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -2540,14 +2540,14 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static String QUEUE_NAME = "dbrepo";
-    public final static String QUEUE_VHOST = "dbrepo";
-    public final static Boolean QUEUE_AUTO_DELETE = false;
-    public final static Boolean QUEUE_DURABLE = true;
-    public final static Boolean QUEUE_EXCLUSIVE = false;
-    public final static String QUEUE_TYPE = "quorum";
+    public static final String QUEUE_NAME = "dbrepo";
+    public static final String QUEUE_VHOST = "dbrepo";
+    public static final Boolean QUEUE_AUTO_DELETE = false;
+    public static final Boolean QUEUE_DURABLE = true;
+    public static final Boolean QUEUE_EXCLUSIVE = false;
+    public static final String QUEUE_TYPE = "quorum";
 
-    public final static QueueDto QUEUE_DTO = QueueDto.builder()
+    public static final QueueDto QUEUE_DTO = QueueDto.builder()
             .name(QUEUE_NAME)
             .vhost(QUEUE_VHOST)
             .autoDelete(QUEUE_AUTO_DELETE)
@@ -2556,18 +2556,18 @@ public abstract class BaseTest {
             .type(QUEUE_TYPE)
             .build();
 
-    public final static Long ONTOLOGY_1_ID = 1L;
-    public final static String ONTOLOGY_1_PREFIX = "om2";
-    public final static String ONTOLOGY_1_NEW_PREFIX = "om-2";
-    public final static String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
-    public final static String ONTOLOGY_1_URI_PATTERN = "http://www.ontology-of-units-of-measure.org/resource/om-2/.*";
-    public final static String ONTOLOGY_1_SPARQL_ENDPOINT = null;
-    public final static Boolean ONTOLOGY_1_SPARQL = false;
-    public final static String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
-    public final static Boolean ONTOLOGY_1_RDF = true;
-    public final static UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
+    public static final Long ONTOLOGY_1_ID = 1L;
+    public static final String ONTOLOGY_1_PREFIX = "om2";
+    public static final String ONTOLOGY_1_NEW_PREFIX = "om-2";
+    public static final String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
+    public static final String ONTOLOGY_1_URI_PATTERN = "http://www.ontology-of-units-of-measure.org/resource/om-2/.*";
+    public static final String ONTOLOGY_1_SPARQL_ENDPOINT = null;
+    public static final Boolean ONTOLOGY_1_SPARQL = false;
+    public static final String ONTOLOGY_1_RDF_PATH = "rdf/om-2.0.rdf";
+    public static final Boolean ONTOLOGY_1_RDF = true;
+    public static final UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
 
-    public final static Ontology ONTOLOGY_1 = Ontology.builder()
+    public static final Ontology ONTOLOGY_1 = Ontology.builder()
             .id(ONTOLOGY_1_ID)
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
@@ -2576,7 +2576,7 @@ public abstract class BaseTest {
             .rdfPath(ONTOLOGY_1_RDF_PATH)
             .build();
 
-    public final static OntologyDto ONTOLOGY_1_DTO = OntologyDto.builder()
+    public static final OntologyDto ONTOLOGY_1_DTO = OntologyDto.builder()
             .id(ONTOLOGY_1_ID)
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
@@ -2587,7 +2587,7 @@ public abstract class BaseTest {
             .rdf(ONTOLOGY_1_RDF)
             .build();
 
-    public final static OntologyBriefDto ONTOLOGY_1_BRIEF_DTO = OntologyBriefDto.builder()
+    public static final OntologyBriefDto ONTOLOGY_1_BRIEF_DTO = OntologyBriefDto.builder()
             .id(ONTOLOGY_1_ID)
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
@@ -2596,131 +2596,131 @@ public abstract class BaseTest {
             .rdf(ONTOLOGY_1_RDF)
             .build();
 
-    public final static OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
+    public static final OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
             .build();
 
-    public final static OntologyModifyDto ONTOLOGY_1_MODIFY_DTO = OntologyModifyDto.builder()
+    public static final OntologyModifyDto ONTOLOGY_1_MODIFY_DTO = OntologyModifyDto.builder()
             .prefix(ONTOLOGY_1_NEW_PREFIX)
             .uri(ONTOLOGY_1_URI)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long ONTOLOGY_2_ID = 2L;
-    public final static String ONTOLOGY_2_PREFIX = "wd";
-    public final static String ONTOLOGY_2_URI = "http://www.wikidata.org/";
-    public final static String ONTOLOGY_2_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
-    public final static UUID ONTOLOGY_2_CREATED_BY = USER_1_ID;
+    public static final Long ONTOLOGY_2_ID = 2L;
+    public static final String ONTOLOGY_2_PREFIX = "wd";
+    public static final String ONTOLOGY_2_URI = "http://www.wikidata.org/";
+    public static final String ONTOLOGY_2_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
+    public static final UUID ONTOLOGY_2_CREATED_BY = USER_1_ID;
 
-    public final static Ontology ONTOLOGY_2 = Ontology.builder()
+    public static final Ontology ONTOLOGY_2 = Ontology.builder()
             .id(ONTOLOGY_2_ID)
             .prefix(ONTOLOGY_2_PREFIX)
             .uri(ONTOLOGY_2_URI)
             .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
             .build();
 
-    public final static OntologyCreateDto ONTOLOGY_2_CREATE_DTO = OntologyCreateDto.builder()
+    public static final OntologyCreateDto ONTOLOGY_2_CREATE_DTO = OntologyCreateDto.builder()
             .prefix(ONTOLOGY_2_PREFIX)
             .uri(ONTOLOGY_2_URI)
             .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long ONTOLOGY_3_ID = 3L;
-    public final static String ONTOLOGY_3_PREFIX = "rdfs";
-    public final static String ONTOLOGY_3_URI = "http://www.w3.org/2000/01/rdf-schema#";
-    public final static String ONTOLOGY_3_SPARQL_ENDPOINT = null;
-    public final static UUID ONTOLOGY_3_CREATED_BY = USER_1_ID;
+    public static final Long ONTOLOGY_3_ID = 3L;
+    public static final String ONTOLOGY_3_PREFIX = "rdfs";
+    public static final String ONTOLOGY_3_URI = "http://www.w3.org/2000/01/rdf-schema#";
+    public static final String ONTOLOGY_3_SPARQL_ENDPOINT = null;
+    public static final UUID ONTOLOGY_3_CREATED_BY = USER_1_ID;
 
-    public final static Ontology ONTOLOGY_3 = Ontology.builder()
+    public static final Ontology ONTOLOGY_3 = Ontology.builder()
             .id(ONTOLOGY_3_ID)
             .prefix(ONTOLOGY_3_PREFIX)
             .uri(ONTOLOGY_3_URI)
             .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
             .build();
 
-    public final static OntologyCreateDto ONTOLOGY_3_CREATE_DTO = OntologyCreateDto.builder()
+    public static final OntologyCreateDto ONTOLOGY_3_CREATE_DTO = OntologyCreateDto.builder()
             .prefix(ONTOLOGY_3_PREFIX)
             .uri(ONTOLOGY_3_URI)
             .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long ONTOLOGY_4_ID = 4L;
-    public final static String ONTOLOGY_4_PREFIX = "schema";
-    public final static String ONTOLOGY_4_URI = "http://schema.org/";
-    public final static String ONTOLOGY_4_SPARQL_ENDPOINT = null;
-    public final static UUID ONTOLOGY_4_CREATED_BY = USER_1_ID;
+    public static final Long ONTOLOGY_4_ID = 4L;
+    public static final String ONTOLOGY_4_PREFIX = "schema";
+    public static final String ONTOLOGY_4_URI = "http://schema.org/";
+    public static final String ONTOLOGY_4_SPARQL_ENDPOINT = null;
+    public static final UUID ONTOLOGY_4_CREATED_BY = USER_1_ID;
 
-    public final static Ontology ONTOLOGY_4 = Ontology.builder()
+    public static final Ontology ONTOLOGY_4 = Ontology.builder()
             .id(ONTOLOGY_4_ID)
             .prefix(ONTOLOGY_4_PREFIX)
             .uri(ONTOLOGY_4_URI)
             .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
             .build();
 
-    public final static OntologyCreateDto ONTOLOGY_4_CREATE_DTO = OntologyCreateDto.builder()
+    public static final OntologyCreateDto ONTOLOGY_4_CREATE_DTO = OntologyCreateDto.builder()
             .prefix(ONTOLOGY_4_PREFIX)
             .uri(ONTOLOGY_4_URI)
             .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long ONTOLOGY_5_ID = 5L;
-    public final static String ONTOLOGY_5_PREFIX = "db";
-    public final static String ONTOLOGY_5_URI = "http://dbpedia.org";
-    public final static String ONTOLOGY_5_SPARQL_ENDPOINT = "http://dbpedia.org/sparql";
-    public final static UUID ONTOLOGY_5_CREATED_BY = USER_1_ID;
+    public static final Long ONTOLOGY_5_ID = 5L;
+    public static final String ONTOLOGY_5_PREFIX = "db";
+    public static final String ONTOLOGY_5_URI = "http://dbpedia.org";
+    public static final String ONTOLOGY_5_SPARQL_ENDPOINT = "http://dbpedia.org/sparql";
+    public static final UUID ONTOLOGY_5_CREATED_BY = USER_1_ID;
 
-    public final static Ontology ONTOLOGY_5 = Ontology.builder()
+    public static final Ontology ONTOLOGY_5 = Ontology.builder()
             .id(ONTOLOGY_5_ID)
             .prefix(ONTOLOGY_5_PREFIX)
             .uri(ONTOLOGY_5_URI)
             .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
             .build();
 
-    public final static OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()
+    public static final OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()
             .prefix(ONTOLOGY_5_PREFIX)
             .uri(ONTOLOGY_5_URI)
             .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long COLUMN_8_1_ID = 75L;
-    public final static Integer COLUMN_8_1_ORDINALPOS = 0;
-    public final static String COLUMN_8_1_NAME = "ID";
-    public final static String COLUMN_8_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
-    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
-    public final static Boolean COLUMN_8_1_NULL = false;
-    public final static Boolean COLUMN_8_1_AUTO_GENERATED = true;
+    public static final Long COLUMN_8_1_ID = 75L;
+    public static final Integer COLUMN_8_1_ORDINALPOS = 0;
+    public static final String COLUMN_8_1_NAME = "ID";
+    public static final String COLUMN_8_1_INTERNAL_NAME = "id";
+    public static final TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
+    public static final ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
+    public static final Boolean COLUMN_8_1_NULL = false;
+    public static final Boolean COLUMN_8_1_AUTO_GENERATED = true;
 
-    public final static Long COLUMN_8_2_ID = 76L;
-    public final static Integer COLUMN_8_2_ORDINALPOS = 1;
-    public final static String COLUMN_8_2_NAME = "Value";
-    public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.DECIMAL;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
-    public final static Long COLUMN_8_2_SIZE = 10L;
-    public final static Long COLUMN_8_2_D = 10L;
-    public final static Boolean COLUMN_8_2_NULL = false;
-    public final static Boolean COLUMN_8_2_AUTO_GENERATED = false;
+    public static final Long COLUMN_8_2_ID = 76L;
+    public static final Integer COLUMN_8_2_ORDINALPOS = 1;
+    public static final String COLUMN_8_2_NAME = "Value";
+    public static final String COLUMN_8_2_INTERNAL_NAME = "value";
+    public static final TableColumnType COLUMN_8_2_TYPE = TableColumnType.DECIMAL;
+    public static final ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
+    public static final Long COLUMN_8_2_SIZE = 10L;
+    public static final Long COLUMN_8_2_D = 10L;
+    public static final Boolean COLUMN_8_2_NULL = false;
+    public static final Boolean COLUMN_8_2_AUTO_GENERATED = false;
 
-    public final static Long COLUMN_8_3_ID = 77L;
-    public final static Integer COLUMN_8_3_ORDINALPOS = 2;
-    public final static String COLUMN_8_3_NAME = "raw";
-    public final static String COLUMN_8_3_INTERNAL_NAME = "raw";
-    public final static TableColumnType COLUMN_8_3_TYPE = TableColumnType.LONGBLOB;
-    public final static ColumnTypeDto COLUMN_8_3_TYPE_DTO = ColumnTypeDto.LONGBLOB;
-    public final static Boolean COLUMN_8_3_NULL = true;
-    public final static Boolean COLUMN_8_3_AUTO_GENERATED = false;
+    public static final Long COLUMN_8_3_ID = 77L;
+    public static final Integer COLUMN_8_3_ORDINALPOS = 2;
+    public static final String COLUMN_8_3_NAME = "raw";
+    public static final String COLUMN_8_3_INTERNAL_NAME = "raw";
+    public static final TableColumnType COLUMN_8_3_TYPE = TableColumnType.LONGBLOB;
+    public static final ColumnTypeDto COLUMN_8_3_TYPE_DTO = ColumnTypeDto.LONGBLOB;
+    public static final Boolean COLUMN_8_3_NULL = true;
+    public static final Boolean COLUMN_8_3_AUTO_GENERATED = false;
 
-    public final static ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_8_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_8_1_ID)
             .name(COLUMN_8_1_NAME)
             .internalName(COLUMN_8_1_INTERNAL_NAME)
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static List<TableColumn> TABLE_8_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_8_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_8_1_ID)
                     .ordinalPosition(COLUMN_8_1_ORDINALPOS)
                     .table(TABLE_8)
@@ -2750,7 +2750,7 @@ public abstract class BaseTest {
                     .isNullAllowed(COLUMN_8_3_NULL)
                     .build());
 
-    public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_8_1_ID)
                     .ordinalPosition(COLUMN_8_1_ORDINALPOS)
                     .name(COLUMN_8_1_NAME)
@@ -2775,9 +2775,9 @@ public abstract class BaseTest {
                     .isNullAllowed(COLUMN_8_3_NULL)
                     .build());
 
-    public final static Long TABLE_8_DATA_COUNT = 6L;
+    public static final Long TABLE_8_DATA_COUNT = 6L;
     @SuppressWarnings("java:S3599")
-    public final static List<Map<String, Object>> TABLE_8_DATA_DTO = new LinkedList<>(List.of(
+    public static final List<Map<String, Object>> TABLE_8_DATA_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L));
                 put(COLUMN_8_2_INTERNAL_NAME, 11.2);
@@ -2811,7 +2811,7 @@ public abstract class BaseTest {
     ));
 
     @SuppressWarnings("java:S3599")
-    public final static TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
+    public static final TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
             .columns(new HashMap<>() {{
                 put(COLUMN_8_1_INTERNAL_NAME, ColumnStatisticDto.builder()
                         .min(BigDecimal.valueOf(11.2))
@@ -2823,19 +2823,19 @@ public abstract class BaseTest {
             }})
             .build();
 
-    public final static Long QUERY_1_ID = 1L;
-    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
-    public final static String QUERY_1_DOI = null;
-    public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
-    public final static Long QUERY_1_RESULT_NUMBER = 2L;
-    public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
-    public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
-    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L);
-    public final static Instant QUERY_1_EXECUTION = Instant.now();
-    public final static Boolean QUERY_1_PERSISTED = true;
+    public static final Long QUERY_1_ID = 1L;
+    public static final String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
+    public static final String QUERY_1_DOI = null;
+    public static final Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
+    public static final Long QUERY_1_RESULT_NUMBER = 2L;
+    public static final String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
+    public static final String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
+    public static final Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L);
+    public static final Instant QUERY_1_EXECUTION = Instant.now();
+    public static final Boolean QUERY_1_PERSISTED = true;
 
-    public final static QueryDto QUERY_1_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
             .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
@@ -2847,7 +2847,7 @@ public abstract class BaseTest {
             .resultNumber(3L)
             .build();
 
-    public final static ViewDto QUERY_1_VIEW_DTO = ViewDto.builder()
+    public static final ViewDto QUERY_1_VIEW_DTO = ViewDto.builder()
             .vdbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .queryHash(QUERY_1_QUERY_HASH)
@@ -2874,7 +2874,7 @@ public abstract class BaseTest {
                             .build())))
             .build();
 
-    public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
+    public static final QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
             .id(QUERY_1_ID)
             .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
@@ -2886,17 +2886,17 @@ public abstract class BaseTest {
             .resultNumber(3L)
             .build();
 
-    public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
-    public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_2_RESULT_NUMBER = 2L;
-    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
-    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
-    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_2_LAST_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Boolean QUERY_2_PERSISTED = false;
+    public static final Long QUERY_2_ID = 2L;
+    public static final String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
+    public static final String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
+    public static final Long QUERY_2_RESULT_NUMBER = 2L;
+    public static final String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
+    public static final Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
+    public static final Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_2_LAST_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Boolean QUERY_2_PERSISTED = false;
 
-    public final static QueryDto QUERY_2_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
             .databaseId(DATABASE_2_ID)
             .query(QUERY_2_STATEMENT)
@@ -2910,19 +2910,19 @@ public abstract class BaseTest {
             .resultNumber(3L)
             .build();
 
-    public final static Long QUERY_3_ID = 3L;
-    public final static String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
-    public final static String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_3_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long QUERY_3_DATABASE_ID = DATABASE_1_ID;
-    public final static String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
-    public final static Instant QUERY_3_CREATED = Instant.now().minus(3, MINUTES);
-    public final static Instant QUERY_3_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_3_LAST_MODIFIED = Instant.ofEpochSecond(1541588353L);
-    public final static Long QUERY_3_RESULT_NUMBER = 2L;
-    public final static Boolean QUERY_3_PERSISTED = true;
+    public static final Long QUERY_3_ID = 3L;
+    public static final String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
+    public static final String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
+    public static final Long QUERY_3_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long QUERY_3_DATABASE_ID = DATABASE_1_ID;
+    public static final String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
+    public static final Instant QUERY_3_CREATED = Instant.now().minus(3, MINUTES);
+    public static final Instant QUERY_3_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_3_LAST_MODIFIED = Instant.ofEpochSecond(1541588353L);
+    public static final Long QUERY_3_RESULT_NUMBER = 2L;
+    public static final Boolean QUERY_3_PERSISTED = true;
 
-    public final static QueryDto QUERY_3_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_3_DTO = QueryDto.builder()
             .id(QUERY_3_ID)
             .databaseId(QUERY_3_DATABASE_ID)
             .query(QUERY_3_STATEMENT)
@@ -2936,18 +2936,18 @@ public abstract class BaseTest {
             .resultNumber(2L)
             .build();
 
-    public final static Long QUERY_7_ID = 7L;
-    public final static String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
-    public final static String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
-    public final static String QUERY_7_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
-    public final static Instant QUERY_7_CREATED = Instant.now().minus(4, MINUTES);
-    public final static Instant QUERY_7_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_7_LAST_MODIFIED = Instant.ofEpochSecond(1541588454L);
-    public final static Long QUERY_7_RESULT_NUMBER = 6L;
-    public final static Long QUERY_7_RESULT_ID = 4L;
-    public final static Boolean QUERY_7_PERSISTED = false;
+    public static final Long QUERY_7_ID = 7L;
+    public static final String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
+    public static final String QUERY_7_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
+    public static final String QUERY_7_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
+    public static final Instant QUERY_7_CREATED = Instant.now().minus(4, MINUTES);
+    public static final Instant QUERY_7_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_7_LAST_MODIFIED = Instant.ofEpochSecond(1541588454L);
+    public static final Long QUERY_7_RESULT_NUMBER = 6L;
+    public static final Long QUERY_7_RESULT_ID = 4L;
+    public static final Boolean QUERY_7_PERSISTED = false;
 
-    public final static QueryDto QUERY_7_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_7_DTO = QueryDto.builder()
             .id(QUERY_7_ID)
             .databaseId(DATABASE_4_ID)
             .query(QUERY_7_STATEMENT)
@@ -2961,20 +2961,20 @@ public abstract class BaseTest {
             .resultNumber(2L)
             .build();
 
-    public final static Long QUERY_4_ID = 4L;
-    public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
-    public final static String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
-    public final static Long QUERY_4_CONTAINER_ID = CONTAINER_3_ID;
-    public final static Long QUERY_4_DATABASE_ID = DATABASE_3_ID;
-    public final static String QUERY_4_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
-    public final static Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
-    public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454L);
-    public final static Long QUERY_4_RESULT_NUMBER = 6L;
-    public final static Long QUERY_4_RESULT_ID = 4L;
-    public final static Boolean QUERY_4_PERSISTED = false;
+    public static final Long QUERY_4_ID = 4L;
+    public static final String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
+    public static final String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
+    public static final Long QUERY_4_CONTAINER_ID = CONTAINER_3_ID;
+    public static final Long QUERY_4_DATABASE_ID = DATABASE_3_ID;
+    public static final String QUERY_4_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
+    public static final Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
+    public static final Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454L);
+    public static final Long QUERY_4_RESULT_NUMBER = 6L;
+    public static final Long QUERY_4_RESULT_ID = 4L;
+    public static final Boolean QUERY_4_PERSISTED = false;
 
-    public final static QueryDto QUERY_4 = QueryDto.builder()
+    public static final QueryDto QUERY_4 = QueryDto.builder()
             .id(QUERY_4_ID)
             .query(QUERY_4_STATEMENT)
             .queryHash(QUERY_4_QUERY_HASH)
@@ -2986,7 +2986,7 @@ public abstract class BaseTest {
             .isPersisted(QUERY_4_PERSISTED)
             .build();
 
-    public final static List<Map<String, Object>> QUERY_4_RESULT_DTO = new LinkedList<>(List.of(
+    public static final List<Map<String, Object>> QUERY_4_RESULT_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
                 put("value", 11.2);
@@ -3007,7 +3007,7 @@ public abstract class BaseTest {
                 put("value", 23.1);
             }}));
 
-    public final static QueryDto QUERY_4_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_4_DTO = QueryDto.builder()
             .id(QUERY_4_ID)
             .databaseId(QUERY_4_DATABASE_ID)
             .query(QUERY_4_STATEMENT)
@@ -3020,19 +3020,19 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static Long QUERY_5_ID = 5L;
-    public final static String QUERY_5_STATEMENT = "SELECT `id`, `value` FROM `mfcc` WHERE `value` > 0";
-    public final static String QUERY_5_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
-    public final static Long QUERY_5_CONTAINER_ID = CONTAINER_3_ID;
-    public final static Long QUERY_5_DATABASE_ID = DATABASE_3_ID;
-    public final static String QUERY_5_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
-    public final static Instant QUERY_5_CREATED = Instant.now().minus(5, MINUTES);
-    public final static Instant QUERY_5_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_5_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
-    public final static Long QUERY_5_RESULT_NUMBER = 6L;
-    public final static Boolean QUERY_5_PERSISTED = true;
+    public static final Long QUERY_5_ID = 5L;
+    public static final String QUERY_5_STATEMENT = "SELECT `id`, `value` FROM `mfcc` WHERE `value` > 0";
+    public static final String QUERY_5_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
+    public static final Long QUERY_5_CONTAINER_ID = CONTAINER_3_ID;
+    public static final Long QUERY_5_DATABASE_ID = DATABASE_3_ID;
+    public static final String QUERY_5_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
+    public static final Instant QUERY_5_CREATED = Instant.now().minus(5, MINUTES);
+    public static final Instant QUERY_5_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_5_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
+    public static final Long QUERY_5_RESULT_NUMBER = 6L;
+    public static final Boolean QUERY_5_PERSISTED = true;
 
-    public final static QueryDto QUERY_5_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_5_DTO = QueryDto.builder()
             .id(QUERY_5_ID)
             .databaseId(QUERY_5_DATABASE_ID)
             .query(QUERY_5_STATEMENT)
@@ -3045,7 +3045,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static ViewDto QUERY_5_VIEW_DTO = ViewDto.builder()
+    public static final ViewDto QUERY_5_VIEW_DTO = ViewDto.builder()
             .vdbid(DATABASE_3_ID)
             .query(QUERY_5_STATEMENT)
             .queryHash(QUERY_5_QUERY_HASH)
@@ -3060,7 +3060,7 @@ public abstract class BaseTest {
                             .build())))
             .build();
 
-    public final static List<Map<String, Object>> QUERY_5_RESULT_DTO = new LinkedList<>(List.of(
+    public static final List<Map<String, Object>> QUERY_5_RESULT_DTO = new LinkedList<>(List.of(
             Map.of("id", BigInteger.valueOf(1L), "value", 11.2),
             Map.of("id", BigInteger.valueOf(2L), "value", 11.3),
             Map.of("id", BigInteger.valueOf(3L), "value", 11.4),
@@ -3069,17 +3069,17 @@ public abstract class BaseTest {
             Map.of("id", BigInteger.valueOf(6L), "value", 23.1)
     ));
 
-    public final static Long QUERY_6_ID = 6L;
-    public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
-    public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
-    public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
-    public final static Instant QUERY_6_CREATED = Instant.now().minus(5, MINUTES);
-    public final static Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Instant QUERY_6_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
-    public final static Long QUERY_6_RESULT_NUMBER = 1L;
-    public final static Boolean QUERY_6_PERSISTED = true;
+    public static final Long QUERY_6_ID = 6L;
+    public static final String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
+    public static final String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
+    public static final String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
+    public static final Instant QUERY_6_CREATED = Instant.now().minus(5, MINUTES);
+    public static final Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_6_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
+    public static final Long QUERY_6_RESULT_NUMBER = 1L;
+    public static final Boolean QUERY_6_PERSISTED = true;
 
-    public final static QueryDto QUERY_6_DTO = QueryDto.builder()
+    public static final QueryDto QUERY_6_DTO = QueryDto.builder()
             .id(QUERY_6_ID)
             .databaseId(DATABASE_2_ID)
             .query(QUERY_6_STATEMENT)
@@ -3092,24 +3092,24 @@ public abstract class BaseTest {
             .isPersisted(QUERY_6_PERSISTED)
             .build();
 
-    public final static ColumnBriefDto TABLE_1_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_1_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(1L)
             .name("id")
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static Long COLUMN_1_1_ID = 1L;
+    public static final Long COLUMN_1_1_ID = 1L;
 
-    public final static Long COLUMN_1_2_ID = 2L;
+    public static final Long COLUMN_1_2_ID = 2L;
 
-    public final static Long COLUMN_1_3_ID = 3L;
+    public static final Long COLUMN_1_3_ID = 3L;
 
-    public final static Long COLUMN_1_4_ID = 4L;
+    public static final Long COLUMN_1_4_ID = 4L;
 
-    public final static Long COLUMN_1_5_ID = 5L;
+    public static final Long COLUMN_1_5_ID = 5L;
 
-    public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_1)
@@ -3162,7 +3162,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<CreateTableColumnDto> TABLE_1_COLUMNS_CREATE_DTO = List.of(CreateTableColumnDto.builder()
+    public static final List<CreateTableColumnDto> TABLE_1_COLUMNS_CREATE_DTO = List.of(CreateTableColumnDto.builder()
                     .name("id")
                     .type(ColumnTypeDto.BIGINT)
                     .nullAllowed(false)
@@ -3197,48 +3197,48 @@ public abstract class BaseTest {
                     .unitUri(UNIT_1_URI)
                     .build());
 
-    public final static CreateTableConstraintsDto TABLE_1_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_1_CONSTRAINTS_CREATE_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>(List.of("id")))
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>(List.of(List.of("date"))))
             .build();
 
-    public final static CreateTableConstraintsDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO = CreateTableConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .primaryKey(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>(List.of(List.of("date"))))
             .build();
 
-    public final static CreateTableDto TABLE_1_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_1_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_1_NAME)
             .description(TABLE_1_DESCRIPTION)
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+    public static final at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
             .name(TABLE_1_NAME)
             .description(TABLE_1_DESCRIPTION)
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CONSTRAINTS_CREATE_DTO)
             .build();
 
-    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+    public static final at.tuwien.api.database.table.internal.TableCreateDto TABLE_1_CREATE_INTERNAL_INVALID_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
             .name(TABLE_1_NAME)
             .description(TABLE_1_DESCRIPTION)
             .columns(TABLE_1_COLUMNS_CREATE_DTO)
             .constraints(TABLE_1_CONSTRAINTS_CREATE_INVALID_DTO)
             .build();
 
-    public final static Long COLUMN_2_1_ID = 6L;
+    public static final Long COLUMN_2_1_ID = 6L;
 
-    public final static Long COLUMN_2_2_ID = 7L;
+    public static final Long COLUMN_2_2_ID = 7L;
 
-    public final static Long COLUMN_2_3_ID = 8L;
+    public static final Long COLUMN_2_3_ID = 8L;
 
-    public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_2)
@@ -3277,21 +3277,21 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
-    public final static ColumnBriefDto TABLE_2_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_2_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_2_1_ID)
             .name("location")
             .internalName("location")
             .columnType(ColumnTypeDto.VARCHAR)
             .build();
 
-    public final static ColumnBriefDto TABLE_2_COLUMNS_BRIEF_2_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_2_COLUMNS_BRIEF_2_DTO = ColumnBriefDto.builder()
             .id(COLUMN_2_3_ID)
             .name("lng")
             .internalName("lng")
             .columnType(ColumnTypeDto.DECIMAL)
             .build();
 
-    public final static List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_2_1_ID)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
@@ -3331,7 +3331,7 @@ public abstract class BaseTest {
                     .sets(null)
                     .build());
 
-    public final static List<ColumnBriefDto> TABLE_2_COLUMNS_BRIEF_DTO = List.of(ColumnBriefDto.builder()
+    public static final List<ColumnBriefDto> TABLE_2_COLUMNS_BRIEF_DTO = List.of(ColumnBriefDto.builder()
                     .id(COLUMN_2_1_ID)
                     .tableId(TABLE_2_ID)
                     .databaseId(DATABASE_1_ID)
@@ -3356,84 +3356,84 @@ public abstract class BaseTest {
                     .columnType(ColumnTypeDto.DOUBLE)
                     .build());
 
-    public final static Long COLUMN_3_1_ID = 9L;
+    public static final Long COLUMN_3_1_ID = 9L;
 
-    public final static Long COLUMN_3_2_ID = 10L;
+    public static final Long COLUMN_3_2_ID = 10L;
 
-    public final static Long COLUMN_3_3_ID = 11L;
+    public static final Long COLUMN_3_3_ID = 11L;
 
-    public final static Long COLUMN_3_4_ID = 12L;
+    public static final Long COLUMN_3_4_ID = 12L;
 
-    public final static Long COLUMN_3_5_ID = 13L;
+    public static final Long COLUMN_3_5_ID = 13L;
 
-    public final static Long COLUMN_3_6_ID = 14L;
+    public static final Long COLUMN_3_6_ID = 14L;
 
-    public final static Long COLUMN_3_7_ID = 15L;
+    public static final Long COLUMN_3_7_ID = 15L;
 
-    public final static Long COLUMN_3_8_ID = 16L;
+    public static final Long COLUMN_3_8_ID = 16L;
 
-    public final static Long COLUMN_3_9_ID = 17L;
+    public static final Long COLUMN_3_9_ID = 17L;
 
-    public final static Long COLUMN_3_10_ID = 18L;
+    public static final Long COLUMN_3_10_ID = 18L;
 
-    public final static Long COLUMN_3_11_ID = 19L;
+    public static final Long COLUMN_3_11_ID = 19L;
 
-    public final static Long COLUMN_3_12_ID = 20L;
+    public static final Long COLUMN_3_12_ID = 20L;
 
-    public final static Long COLUMN_3_13_ID = 21L;
+    public static final Long COLUMN_3_13_ID = 21L;
 
-    public final static Long COLUMN_3_14_ID = 22L;
+    public static final Long COLUMN_3_14_ID = 22L;
 
-    public final static Long COLUMN_3_15_ID = 23L;
+    public static final Long COLUMN_3_15_ID = 23L;
 
-    public final static Long COLUMN_3_16_ID = 24L;
+    public static final Long COLUMN_3_16_ID = 24L;
 
-    public final static Long COLUMN_3_17_ID = 25L;
+    public static final Long COLUMN_3_17_ID = 25L;
 
-    public final static Long COLUMN_3_18_ID = 26L;
+    public static final Long COLUMN_3_18_ID = 26L;
 
-    public final static Long COLUMN_3_19_ID = 27L;
+    public static final Long COLUMN_3_19_ID = 27L;
 
-    public final static Long COLUMN_3_20_ID = 28L;
+    public static final Long COLUMN_3_20_ID = 28L;
 
-    public final static Long COLUMN_3_21_ID = 29L;
+    public static final Long COLUMN_3_21_ID = 29L;
 
-    public final static Long COLUMN_3_22_ID = 30L;
+    public static final Long COLUMN_3_22_ID = 30L;
 
-    public final static Long COLUMN_3_23_ID = 31L;
+    public static final Long COLUMN_3_23_ID = 31L;
 
-    public final static Long COLUMN_3_24_ID = 32L;
+    public static final Long COLUMN_3_24_ID = 32L;
 
-    public final static Long COLUMN_3_25_ID = 33L;
+    public static final Long COLUMN_3_25_ID = 33L;
 
-    public final static Long COLUMN_3_26_ID = 34L;
+    public static final Long COLUMN_3_26_ID = 34L;
 
-    public final static Long COLUMN_3_27_ID = 35L;
+    public static final Long COLUMN_3_27_ID = 35L;
 
-    public final static Long COLUMN_3_28_ID = 36L;
+    public static final Long COLUMN_3_28_ID = 36L;
 
-    public final static Long COLUMN_3_29_ID = 37L;
+    public static final Long COLUMN_3_29_ID = 37L;
 
-    public final static Long COLUMN_3_30_ID = 38L;
+    public static final Long COLUMN_3_30_ID = 38L;
 
-    public final static Long COLUMN_3_31_ID = 39L;
+    public static final Long COLUMN_3_31_ID = 39L;
 
-    public final static Long COLUMN_3_32_ID = 40L;
+    public static final Long COLUMN_3_32_ID = 40L;
 
-    public final static Long COLUMN_3_33_ID = 41L;
+    public static final Long COLUMN_3_33_ID = 41L;
 
-    public final static Long COLUMN_3_34_ID = 42L;
+    public static final Long COLUMN_3_34_ID = 42L;
 
-    public final static Long COLUMN_3_35_ID = 43L;
+    public static final Long COLUMN_3_35_ID = 43L;
 
-    public final static ColumnBriefDto TABLE_3_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_3_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_3_1_ID)
             .columnType(ColumnTypeDto.BIGINT)
             .name("id")
             .internalName("id")
             .build();
 
-    public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_3_1_ID)
                     .table(TABLE_3)
                     .ordinalPosition(0)
@@ -3819,7 +3819,7 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build());
 
-    public final static List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_3_1_ID)
                     .tableId(TABLE_3_ID)
                     .databaseId(DATABASE_1_ID)
@@ -4205,56 +4205,56 @@ public abstract class BaseTest {
                     .sets(new LinkedList<>())
                     .build());
 
-    public final static Long COLUMN_5_1_ID = 46L;
+    public static final Long COLUMN_5_1_ID = 46L;
 
-    public final static Long COLUMN_5_2_ID = 47L;
+    public static final Long COLUMN_5_2_ID = 47L;
 
-    public final static Long COLUMN_5_3_ID = 48L;
+    public static final Long COLUMN_5_3_ID = 48L;
 
-    public final static Long COLUMN_5_4_ID = 49L;
+    public static final Long COLUMN_5_4_ID = 49L;
 
-    public final static Long COLUMN_5_5_ID = 50L;
+    public static final Long COLUMN_5_5_ID = 50L;
 
-    public final static Long COLUMN_5_6_ID = 51L;
+    public static final Long COLUMN_5_6_ID = 51L;
 
-    public final static Long COLUMN_5_7_ID = 52L;
+    public static final Long COLUMN_5_7_ID = 52L;
 
-    public final static Long COLUMN_5_8_ID = 53L;
+    public static final Long COLUMN_5_8_ID = 53L;
 
-    public final static Long COLUMN_5_9_ID = 54L;
+    public static final Long COLUMN_5_9_ID = 54L;
 
-    public final static Long COLUMN_5_10_ID = 55L;
+    public static final Long COLUMN_5_10_ID = 55L;
 
-    public final static Long COLUMN_5_11_ID = 56L;
+    public static final Long COLUMN_5_11_ID = 56L;
 
-    public final static Long COLUMN_5_12_ID = 57L;
+    public static final Long COLUMN_5_12_ID = 57L;
 
-    public final static Long COLUMN_5_13_ID = 58L;
+    public static final Long COLUMN_5_13_ID = 58L;
 
-    public final static Long COLUMN_5_14_ID = 59L;
+    public static final Long COLUMN_5_14_ID = 59L;
 
-    public final static Long COLUMN_5_15_ID = 60L;
+    public static final Long COLUMN_5_15_ID = 60L;
 
-    public final static Long COLUMN_5_16_ID = 61L;
+    public static final Long COLUMN_5_16_ID = 61L;
 
-    public final static Long COLUMN_5_17_ID = 62L;
+    public static final Long COLUMN_5_17_ID = 62L;
 
-    public final static Long COLUMN_5_18_ID = 63L;
+    public static final Long COLUMN_5_18_ID = 63L;
 
-    public final static Long COLUMN_5_19_ID = 64L;
+    public static final Long COLUMN_5_19_ID = 64L;
 
-    public final static Long COLUMN_5_20_ID = 65L;
+    public static final Long COLUMN_5_20_ID = 65L;
 
-    public final static Long COLUMN_5_21_ID = 66L;
+    public static final Long COLUMN_5_21_ID = 66L;
 
-    public final static ColumnBriefDto TABLE_5_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_5_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_5_1_ID)
             .name("id")
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_5)
@@ -4444,7 +4444,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_5_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_5_ID)
@@ -4634,17 +4634,17 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<CreateForeignKeyDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(CreateForeignKeyDto.builder()
+    public static final List<CreateForeignKeyDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(CreateForeignKeyDto.builder()
             .columns(new LinkedList<>(List.of("somecolumn")))
             .referencedTable("sometable")
             .referencedColumns(new LinkedList<>(List.of("someothercolumn")))
             .build());
 
-    public final static CreateTableConstraintsDto TABLE_5_CONSTRAINTS_INVALID_CREATE = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_5_CONSTRAINTS_INVALID_CREATE = CreateTableConstraintsDto.builder()
             .foreignKeys(TABLE_5_FOREIGN_KEYS_INVALID_CREATE)
             .build();
 
-    public final static List<CreateTableColumnDto> TABLE_5_COLUMNS_CREATE = List.of(CreateTableColumnDto.builder()
+    public static final List<CreateTableColumnDto> TABLE_5_COLUMNS_CREATE = List.of(CreateTableColumnDto.builder()
                     .name("id")
                     .type(ColumnTypeDto.BIGINT)
                     .nullAllowed(false)
@@ -4750,28 +4750,28 @@ public abstract class BaseTest {
                     .nullAllowed(true)
                     .build());
 
-    public final static CreateTableConstraintsDto TABLE_5_CREATE_CONSTRAINTS_DTO = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_5_CREATE_CONSTRAINTS_DTO = CreateTableConstraintsDto.builder()
             .primaryKey(Set.of("id"))
             .uniques(new LinkedList<>(List.of(List.of("id"))))
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .build();
 
-    public final static CreateTableDto TABLE_5_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_5_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_5_NAME)
             .description(TABLE_5_DESCRIPTION)
             .columns(TABLE_5_COLUMNS_CREATE)
             .constraints(TABLE_5_CREATE_CONSTRAINTS_DTO)
             .build();
 
-    public final static CreateTableDto TABLE_5_INVALID_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_5_INVALID_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_5_NAME)
             .description(TABLE_5_DESCRIPTION)
             .columns(TABLE_5_COLUMNS_CREATE)
             .constraints(TABLE_5_CONSTRAINTS_INVALID_CREATE)
             .build();
 
-    public final static List<TableColumn> TABLE_6_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_6_COLUMNS = List.of(TableColumn.builder()
                     .id(67L)
                     .ordinalPosition(0)
                     .table(TABLE_6)
@@ -4826,14 +4826,14 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_6_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(67L)
             .name("id")
             .internalName("id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static List<ColumnDto> TABLE_6_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_6_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(67L)
                     .ordinalPosition(0)
                     .tableId(TABLE_6_ID)
@@ -4888,25 +4888,25 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static List<List<String>> TABLE_6_UNIQUES_CREATE = List.of(
+    public static final List<List<String>> TABLE_6_UNIQUES_CREATE = List.of(
             List.of("firstname", "lastname"));
 
-    public final static List<CreateForeignKeyDto> TABLE_6_FOREIGN_KEYS_CREATE = List.of(CreateForeignKeyDto.builder()
+    public static final List<CreateForeignKeyDto> TABLE_6_FOREIGN_KEYS_CREATE = List.of(CreateForeignKeyDto.builder()
             .columns(new LinkedList<>(List.of("ref_id")))
             .referencedTable("zoo")
             .referencedColumns(new LinkedList<>(List.of("id")))
             .build());
 
-    public final static Set<String> TABLE_6_CHECKS_CREATE = Set.of("firstname != lastname");
+    public static final Set<String> TABLE_6_CHECKS_CREATE = Set.of("firstname != lastname");
 
-    public final static CreateTableConstraintsDto TABLE_6_CONSTRAINTS_CREATE = CreateTableConstraintsDto.builder()
+    public static final CreateTableConstraintsDto TABLE_6_CONSTRAINTS_CREATE = CreateTableConstraintsDto.builder()
             .uniques(TABLE_6_UNIQUES_CREATE)
             .foreignKeys(TABLE_6_FOREIGN_KEYS_CREATE)
             .checks(TABLE_6_CHECKS_CREATE)
             .primaryKey(Set.of("id"))
             .build();
 
-    public final static List<CreateTableColumnDto> TABLE_6_COLUMNS_CREATE = List.of(
+    public static final List<CreateTableColumnDto> TABLE_6_COLUMNS_CREATE = List.of(
             CreateTableColumnDto.builder()
                     .name("name_id")
                     .type(ColumnTypeDto.BIGINT)
@@ -4919,32 +4919,32 @@ public abstract class BaseTest {
                     .nullAllowed(false)
                     .build());
 
-    public final static CreateTableDto TABLE_6_CREATE_DTO = CreateTableDto.builder()
+    public static final CreateTableDto TABLE_6_CREATE_DTO = CreateTableDto.builder()
             .name(TABLE_6_NAME)
             .description(TABLE_6_DESCRIPTION)
             .columns(TABLE_6_COLUMNS_CREATE)
             .constraints(TABLE_6_CONSTRAINTS_CREATE)
             .build();
 
-    public final static Long COLUMN_7_1_ID = 73L;
+    public static final Long COLUMN_7_1_ID = 73L;
 
-    public final static Long COLUMN_7_2_ID = 74L;
+    public static final Long COLUMN_7_2_ID = 74L;
 
-    public final static ColumnBriefDto TABLE_7_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_7_COLUMNS_BRIEF_0_DTO = ColumnBriefDto.builder()
             .id(COLUMN_7_1_ID)
             .name("name_id")
             .internalName("name_id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static ColumnBriefDto TABLE_7_COLUMNS_BRIEF_1_DTO = ColumnBriefDto.builder()
+    public static final ColumnBriefDto TABLE_7_COLUMNS_BRIEF_1_DTO = ColumnBriefDto.builder()
             .id(COLUMN_7_2_ID)
             .name("zoo_id")
             .internalName("zoo_id")
             .columnType(ColumnTypeDto.BIGINT)
             .build();
 
-    public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
+    public static final List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_7_1_ID)
                     .ordinalPosition(0)
                     .table(TABLE_7)
@@ -4963,7 +4963,7 @@ public abstract class BaseTest {
                     .isNullAllowed(false)
                     .build());
 
-    public final static List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
+    public static final List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(COLUMN_7_1_ID)
                     .ordinalPosition(0)
                     .tableId(TABLE_7_ID)
@@ -4982,18 +4982,18 @@ public abstract class BaseTest {
                     .isNullAllowed(false)
                     .build());
 
-    public final static Long VIEW_1_ID = 1L;
-    public final static Boolean VIEW_1_INITIAL_VIEW = false;
-    public final static String VIEW_1_NAME = "JUnit";
-    public final static String VIEW_1_INTERNAL_NAME = "junit";
-    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_1_PUBLIC = false;
-    public final static Boolean VIEW_1_SCHEMA_PUBLIC = false;
-    public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
-    public final static String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
+    public static final Long VIEW_1_ID = 1L;
+    public static final Boolean VIEW_1_INITIAL_VIEW = false;
+    public static final String VIEW_1_NAME = "JUnit";
+    public static final String VIEW_1_INTERNAL_NAME = "junit";
+    public static final Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
+    public static final Boolean VIEW_1_PUBLIC = false;
+    public static final Boolean VIEW_1_SCHEMA_PUBLIC = false;
+    public static final String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
+    public static final String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
-    public final static List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(
+    public static final List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(1L)
                     .ordinalPosition(0)
@@ -5028,7 +5028,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static View VIEW_1 = View.builder()
+    public static final View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
@@ -5044,8 +5044,8 @@ public abstract class BaseTest {
             .columns(null) /* VIEW_1_COLUMNS */
             .build();
 
-    public final static Long VIEW_1_DATA_COUNT = 3L;
-    public final static List<Map<String, Object>> VIEW_1_DATA_DTO = new LinkedList<>(List.of(
+    public static final Long VIEW_1_DATA_COUNT = 3L;
+    public static final List<Map<String, Object>> VIEW_1_DATA_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put("location", "Albury");
                 put("lat", -36.0653583);
@@ -5063,7 +5063,7 @@ public abstract class BaseTest {
             }}
     ));
 
-    public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
+    public static final List<ViewColumn> VIEW_1_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(1L)
                     .ordinalPosition(0)
@@ -5098,7 +5098,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static ViewDto VIEW_1_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_1_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
@@ -5113,7 +5113,7 @@ public abstract class BaseTest {
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
-    public final static ViewDto VIEW_1_PRIVILEGED_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_1_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
@@ -5128,7 +5128,7 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
-    public final static ViewBriefDto VIEW_1_BRIEF_DTO = ViewBriefDto.builder()
+    public static final ViewBriefDto VIEW_1_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
@@ -5141,24 +5141,24 @@ public abstract class BaseTest {
             .queryHash(VIEW_1_QUERY_HASH)
             .build();
 
-    public final static CreateViewDto VIEW_1_CREATE_DTO = CreateViewDto.builder()
+    public static final CreateViewDto VIEW_1_CREATE_DTO = CreateViewDto.builder()
             .isPublic(VIEW_1_PUBLIC)
             .name(VIEW_1_NAME)
             .query(VIEW_1_QUERY)
             .build();
 
-    public final static Long VIEW_2_ID = 2L;
-    public final static Boolean VIEW_2_INITIAL_VIEW = false;
-    public final static String VIEW_2_NAME = "JUnit2";
-    public final static String VIEW_2_INTERNAL_NAME = "junit2";
-    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_2_PUBLIC = true;
-    public final static Boolean VIEW_2_SCHEMA_PUBLIC = true;
-    public final static String VIEW_2_QUERY = "select `date`, `location` as loc, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
-    public final static String VIEW_2_QUERY_HASH = "987fc946772ffb6d85060262dcb5df419692a1f6772ea995e3dedb53c191e984";
+    public static final Long VIEW_2_ID = 2L;
+    public static final Boolean VIEW_2_INITIAL_VIEW = false;
+    public static final String VIEW_2_NAME = "JUnit2";
+    public static final String VIEW_2_INTERNAL_NAME = "junit2";
+    public static final Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
+    public static final Boolean VIEW_2_PUBLIC = true;
+    public static final Boolean VIEW_2_SCHEMA_PUBLIC = true;
+    public static final String VIEW_2_QUERY = "select `date`, `location` as loc, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
+    public static final String VIEW_2_QUERY_HASH = "987fc946772ffb6d85060262dcb5df419692a1f6772ea995e3dedb53c191e984";
 
-    public final static List<ViewColumnDto> VIEW_2_COLUMNS_DTO = List.of(
+    public static final List<ViewColumnDto> VIEW_2_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(4L)
                     .databaseId(DATABASE_1_ID)
@@ -5202,7 +5202,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static View VIEW_2 = View.builder()
+    public static final View VIEW_2 = View.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
@@ -5217,7 +5217,7 @@ public abstract class BaseTest {
             .owner(USER_1)
             .build();
 
-    public final static List<ViewColumn> VIEW_2_COLUMNS = List.of(
+    public static final List<ViewColumn> VIEW_2_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(4L)
                     .ordinalPosition(0)
@@ -5261,7 +5261,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static ViewDto VIEW_2_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_2_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
@@ -5275,7 +5275,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static ViewDto VIEW_2_PRIVILEGED_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_2_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
@@ -5291,7 +5291,7 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
-    public final static ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
+    public static final ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
@@ -5304,20 +5304,20 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long VIEW_3_ID = 3L;
-    public final static Boolean VIEW_3_INITIAL_VIEW = false;
-    public final static String VIEW_3_NAME = "JUnit3";
-    public final static String VIEW_3_INTERNAL_NAME = "junit3";
-    public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_3_PUBLIC = true;
-    public final static Boolean VIEW_3_SCHEMA_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
-    public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
+    public static final Long VIEW_3_ID = 3L;
+    public static final Boolean VIEW_3_INITIAL_VIEW = false;
+    public static final String VIEW_3_NAME = "JUnit3";
+    public static final String VIEW_3_INTERNAL_NAME = "junit3";
+    public static final Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
+    public static final Boolean VIEW_3_PUBLIC = true;
+    public static final Boolean VIEW_3_SCHEMA_PUBLIC = false;
+    public static final String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
+    public static final String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
-    public final static Long VIEW_3_DATA_COUNT = 3L;
+    public static final Long VIEW_3_DATA_COUNT = 3L;
 
-    public final static List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
+    public static final List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(8L)
                     .databaseId(DATABASE_1_ID)
@@ -5361,7 +5361,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static View VIEW_3 = View.builder()
+    public static final View VIEW_3 = View.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
@@ -5376,7 +5376,7 @@ public abstract class BaseTest {
             .owner(USER_1)
             .build();
 
-    public final static ViewDto VIEW_3_PRIVILEGED_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_3_PRIVILEGED_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
@@ -5392,7 +5392,7 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
-    public final static List<ViewColumn> VIEW_3_COLUMNS = List.of(
+    public static final List<ViewColumn> VIEW_3_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(8L)
                     .ordinalPosition(0)
@@ -5436,7 +5436,7 @@ public abstract class BaseTest {
                     .build()
     );
 
-    public final static ViewDto VIEW_3_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_3_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
@@ -5450,7 +5450,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static ViewBriefDto VIEW_3_BRIEF_DTO = ViewBriefDto.builder()
+    public static final ViewBriefDto VIEW_3_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_3_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
@@ -5463,20 +5463,20 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static Long VIEW_4_ID = 4L;
-    public final static Boolean VIEW_4_INITIAL_VIEW = false;
-    public final static String VIEW_4_NAME = "Mock View";
-    public final static String VIEW_4_INTERNAL_NAME = "mock_view";
-    public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
-    public final static Long VIEW_4_TABLE_ID = TABLE_5_ID;
-    public final static Table VIEW_4_TABLE = TABLE_5;
-    public final static Boolean VIEW_4_PUBLIC = true;
-    public final static Boolean VIEW_4_SCHEMA_PUBLIC = false;
-    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
-    public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
+    public static final Long VIEW_4_ID = 4L;
+    public static final Boolean VIEW_4_INITIAL_VIEW = false;
+    public static final String VIEW_4_NAME = "Mock View";
+    public static final String VIEW_4_INTERNAL_NAME = "mock_view";
+    public static final Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
+    public static final Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
+    public static final Long VIEW_4_TABLE_ID = TABLE_5_ID;
+    public static final Table VIEW_4_TABLE = TABLE_5;
+    public static final Boolean VIEW_4_PUBLIC = true;
+    public static final Boolean VIEW_4_SCHEMA_PUBLIC = false;
+    public static final String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
+    public static final String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 
-    public final static List<ViewColumnDto> VIEW_4_COLUMNS_DTO = List.of(
+    public static final List<ViewColumnDto> VIEW_4_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(12L)
                     .databaseId(DATABASE_2_ID)
@@ -5631,7 +5631,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static View VIEW_4 = View.builder()
+    public static final View VIEW_4 = View.builder()
             .id(VIEW_4_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
@@ -5646,7 +5646,7 @@ public abstract class BaseTest {
             .columns(null) /* VIEW_4_COLUMNS */
             .build();
 
-    public final static ViewDto VIEW_4_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_4_DTO = ViewDto.builder()
             .id(VIEW_4_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
@@ -5660,7 +5660,7 @@ public abstract class BaseTest {
             .columns(VIEW_4_COLUMNS_DTO)
             .build();
 
-    public final static ViewBriefDto VIEW_4_BRIEF_DTO = ViewBriefDto.builder()
+    public static final ViewBriefDto VIEW_4_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_4_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
@@ -5673,7 +5673,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public final static List<ViewColumn> VIEW_4_COLUMNS = List.of(
+    public static final List<ViewColumn> VIEW_4_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(12L)
                     .ordinalPosition(0)
@@ -5828,18 +5828,18 @@ public abstract class BaseTest {
                     .view(VIEW_4)
                     .build());
 
-    public final static Long VIEW_5_ID = 5L;
-    public final static Boolean VIEW_5_INITIAL_VIEW = false;
-    public final static String VIEW_5_NAME = "Mock View";
-    public final static String VIEW_5_INTERNAL_NAME = "mock_view";
-    public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long VIEW_5_DATABASE_ID = DATABASE_3_ID;
-    public final static Boolean VIEW_5_PUBLIC = true;
-    public final static Boolean VIEW_5_SCHEMA_PUBLIC = true;
-    public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
-    public final static String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
+    public static final Long VIEW_5_ID = 5L;
+    public static final Boolean VIEW_5_INITIAL_VIEW = false;
+    public static final String VIEW_5_NAME = "Mock View";
+    public static final String VIEW_5_INTERNAL_NAME = "mock_view";
+    public static final Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
+    public static final Long VIEW_5_DATABASE_ID = DATABASE_3_ID;
+    public static final Boolean VIEW_5_PUBLIC = true;
+    public static final Boolean VIEW_5_SCHEMA_PUBLIC = true;
+    public static final String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
+    public static final String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
 
-    public final static View VIEW_5 = View.builder()
+    public static final View VIEW_5 = View.builder()
             .id(VIEW_5_ID)
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
@@ -5854,7 +5854,7 @@ public abstract class BaseTest {
             .columns(null)
             .build();
 
-    public final static ViewDto VIEW_5_DTO = ViewDto.builder()
+    public static final ViewDto VIEW_5_DTO = ViewDto.builder()
             .id(VIEW_5_ID)
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
@@ -5868,7 +5868,7 @@ public abstract class BaseTest {
             .columns(new LinkedList<>())
             .build();
 
-    public final static ViewBriefDto VIEW_5_BRIEF_DTO = ViewBriefDto.builder()
+    public static final ViewBriefDto VIEW_5_BRIEF_DTO = ViewBriefDto.builder()
             .id(VIEW_5_ID)
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
@@ -5880,7 +5880,7 @@ public abstract class BaseTest {
             .queryHash(VIEW_5_QUERY_HASH)
             .build();
 
-    public final static List<ViewColumn> VIEW_5_COLUMNS = List.of(
+    public static final List<ViewColumn> VIEW_5_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(29L)
                     .ordinalPosition(0)
@@ -5914,7 +5914,7 @@ public abstract class BaseTest {
                     .view(VIEW_5)
                     .build());
 
-    public final static List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(
+    public static final List<ViewColumnDto> VIEW_5_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
                     .id(29L)
                     .databaseId(DATABASE_3_ID)
@@ -5948,8 +5948,8 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build());
 
-    public final static Long QUERY_1_RESULT_ID = 1L;
-    public final static List<Map<String, Object>> QUERY_1_RESULT_DTO = new LinkedList<>(List.of(
+    public static final Long QUERY_1_RESULT_ID = 1L;
+    public static final List<Map<String, Object>> QUERY_1_RESULT_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
                 put("location", "Albury");
                 put("lat", -36.0653583);
@@ -5960,34 +5960,34 @@ public abstract class BaseTest {
                 put("lng", 150.6517942);
             }}));
 
-    public final static String LICENSE_1_IDENTIFIER = "MIT";
-    public final static String LICENSE_1_URI = "https://opensource.org/license/mit/";
+    public static final String LICENSE_1_IDENTIFIER = "MIT";
+    public static final String LICENSE_1_URI = "https://opensource.org/license/mit/";
 
-    public final static License LICENSE_1 = License.builder()
+    public static final License LICENSE_1 = License.builder()
             .identifier(LICENSE_1_IDENTIFIER)
             .uri(LICENSE_1_URI)
             .build();
 
-    public final static LicenseDto LICENSE_1_DTO = LicenseDto.builder()
+    public static final LicenseDto LICENSE_1_DTO = LicenseDto.builder()
             .identifier(LICENSE_1_IDENTIFIER)
             .uri(LICENSE_1_URI)
             .build();
 
-    public final static Long CREATOR_1_ID = 1L;
-    public final static Long CREATOR_1_QUERY_ID = 1L;
-    public final static String CREATOR_1_ORCID = "00000-00000-00000";
-    public final static String CREATOR_1_AFFIL = "TU Graz";
-    public final static String CREATOR_1_AFFIL_ROR = "https://ror.org/04wn28048";
-    public final static String CREATOR_1_AFFIL_URI = "https://ror.org/";
-    public final static AffiliationIdentifierSchemeType CREATOR_1_AFFIL_TYPE = AffiliationIdentifierSchemeType.ROR;
-    public final static AffiliationIdentifierSchemeTypeDto CREATOR_1_AFFIL_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
-    public final static String CREATOR_1_FIRSTNAME = "Max";
-    public final static String CREATOR_1_LASTNAME = "Mustermann";
-    public final static String CREATOR_1_NAME = CREATOR_1_LASTNAME + ", " + CREATOR_1_FIRSTNAME;
-    public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Long CREATOR_1_ID = 1L;
+    public static final Long CREATOR_1_QUERY_ID = 1L;
+    public static final String CREATOR_1_ORCID = "00000-00000-00000";
+    public static final String CREATOR_1_AFFIL = "TU Graz";
+    public static final String CREATOR_1_AFFIL_ROR = "https://ror.org/04wn28048";
+    public static final String CREATOR_1_AFFIL_URI = "https://ror.org/";
+    public static final AffiliationIdentifierSchemeType CREATOR_1_AFFIL_TYPE = AffiliationIdentifierSchemeType.ROR;
+    public static final AffiliationIdentifierSchemeTypeDto CREATOR_1_AFFIL_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
+    public static final String CREATOR_1_FIRSTNAME = "Max";
+    public static final String CREATOR_1_LASTNAME = "Mustermann";
+    public static final String CREATOR_1_NAME = CREATOR_1_LASTNAME + ", " + CREATOR_1_FIRSTNAME;
+    public static final Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352L);
 
-    public final static OrcidDto ORCID_1_DTO = OrcidDto.builder()
+    public static final OrcidDto ORCID_1_DTO = OrcidDto.builder()
             .person(OrcidPersonDto.builder()
                     .name(OrcidNameDto.builder()
                             .givenNames(OrcidValueDto.builder()
@@ -6017,201 +6017,201 @@ public abstract class BaseTest {
                     .build())
             .build();
 
-    public final static Long CREATOR_2_ID = 2L;
-    public final static Long CREATOR_2_QUERY_ID = 1L;
-    public final static String CREATOR_2_ORCID = "00000-00000-00000";
-    public final static String CREATOR_2_AFFIL = "TU Wien";
-    public final static String CREATOR_2_FIRSTNAME = "Martina";
-    public final static String CREATOR_2_LASTNAME = "Mustermann";
-    public final static String CREATOR_2_NAME = CREATOR_2_LASTNAME + ", " + CREATOR_2_FIRSTNAME;
-    public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Long CREATOR_2_ID = 2L;
+    public static final Long CREATOR_2_QUERY_ID = 1L;
+    public static final String CREATOR_2_ORCID = "00000-00000-00000";
+    public static final String CREATOR_2_AFFIL = "TU Wien";
+    public static final String CREATOR_2_FIRSTNAME = "Martina";
+    public static final String CREATOR_2_LASTNAME = "Mustermann";
+    public static final String CREATOR_2_NAME = CREATOR_2_LASTNAME + ", " + CREATOR_2_FIRSTNAME;
+    public static final Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352L);
 
-    public final static Long CREATOR_3_ID = 3L;
-    public final static Long CREATOR_3_QUERY_ID = 1L;
-    public final static String CREATOR_3_ORCID = "00000-00000-00000";
-    public final static String CREATOR_3_AFFIL = "TU Graz";
-    public final static String CREATOR_3_AFFIL_ROR = "https://ror.org/04wn28048";
-    public final static AffiliationIdentifierSchemeType CREATOR_3_AFFIL_SCHEME_TYPE = AffiliationIdentifierSchemeType.ROR;
-    public final static AffiliationIdentifierSchemeTypeDto CREATOR_3_AFFIL_SCHEME_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
-    public final static String CREATOR_3_AFFIL_URI = "https://ror.org/";
-    public final static String CREATOR_3_FIRSTNAME = "Max";
-    public final static String CREATOR_3_LASTNAME = "Mustermann";
-    public final static String CREATOR_3_NAME = CREATOR_3_LASTNAME + ", " + CREATOR_3_FIRSTNAME;
-    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Long CREATOR_3_ID = 3L;
+    public static final Long CREATOR_3_QUERY_ID = 1L;
+    public static final String CREATOR_3_ORCID = "00000-00000-00000";
+    public static final String CREATOR_3_AFFIL = "TU Graz";
+    public static final String CREATOR_3_AFFIL_ROR = "https://ror.org/04wn28048";
+    public static final AffiliationIdentifierSchemeType CREATOR_3_AFFIL_SCHEME_TYPE = AffiliationIdentifierSchemeType.ROR;
+    public static final AffiliationIdentifierSchemeTypeDto CREATOR_3_AFFIL_SCHEME_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
+    public static final String CREATOR_3_AFFIL_URI = "https://ror.org/";
+    public static final String CREATOR_3_FIRSTNAME = "Max";
+    public static final String CREATOR_3_LASTNAME = "Mustermann";
+    public static final String CREATOR_3_NAME = CREATOR_3_LASTNAME + ", " + CREATOR_3_FIRSTNAME;
+    public static final Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352L);
 
-    public final static Long CREATOR_4_ID = 4L;
-    public final static Long CREATOR_4_QUERY_ID = 1L;
-    public final static String CREATOR_4_ORCID = "00000-00000-00000";
-    public final static String CREATOR_4_AFFIL = "TU Wien";
-    public final static String CREATOR_4_AFFIL_ROR = "https://ror.org/04d836q62";
-    public final static String CREATOR_4_AFFIL_URI = "https://ror.org/";
-    public final static AffiliationIdentifierSchemeType CREATOR_4_AFFIL_TYPE = AffiliationIdentifierSchemeType.ROR;
-    public final static AffiliationIdentifierSchemeTypeDto CREATOR_4_AFFIL_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
-    public final static String CREATOR_4_FIRSTNAME = "Martina";
-    public final static String CREATOR_4_LASTNAME = "Mustermann";
-    public final static String CREATOR_4_NAME = CREATOR_4_LASTNAME + ", " + CREATOR_4_FIRSTNAME;
-    public final static Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Long CREATOR_4_ID = 4L;
+    public static final Long CREATOR_4_QUERY_ID = 1L;
+    public static final String CREATOR_4_ORCID = "00000-00000-00000";
+    public static final String CREATOR_4_AFFIL = "TU Wien";
+    public static final String CREATOR_4_AFFIL_ROR = "https://ror.org/04d836q62";
+    public static final String CREATOR_4_AFFIL_URI = "https://ror.org/";
+    public static final AffiliationIdentifierSchemeType CREATOR_4_AFFIL_TYPE = AffiliationIdentifierSchemeType.ROR;
+    public static final AffiliationIdentifierSchemeTypeDto CREATOR_4_AFFIL_TYPE_DTO = AffiliationIdentifierSchemeTypeDto.ROR;
+    public static final String CREATOR_4_FIRSTNAME = "Martina";
+    public static final String CREATOR_4_LASTNAME = "Mustermann";
+    public static final String CREATOR_4_NAME = CREATOR_4_LASTNAME + ", " + CREATOR_4_FIRSTNAME;
+    public static final Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352L);
 
-    public final static Long IDENTIFIER_1_ID = 1L;
-    public final static Long IDENTIFIER_1_QUERY_ID = null;
-    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
-    public final static String IDENTIFIER_1_DOI = "10.12345/183";
-    public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352L) /* 2022-01-07 20:45:52 */;
-    public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
-    public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
-    public final static Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
-    public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
-    public final static Integer IDENTIFIER_1_PUBLICATION_DAY = null;
-    public final static String IDENTIFIER_1_QUERY_HASH = QUERY_1_QUERY_HASH;
-    public final static String IDENTIFIER_1_RESULT_HASH = QUERY_1_RESULT_HASH;
-    public final static String IDENTIFIER_1_QUERY = QUERY_1_STATEMENT;
-    public final static String IDENTIFIER_1_NORMALIZED = QUERY_1_STATEMENT;
-    public final static Long IDENTIFIER_1_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
-    public final static String IDENTIFIER_1_PUBLISHER = "Austrian Government";
-    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
-    public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
-    public final static IdentifierStatusType IDENTIFIER_1_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_1_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public static final Long IDENTIFIER_1_ID = 1L;
+    public static final Long IDENTIFIER_1_QUERY_ID = null;
+    public static final Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
+    public static final Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
+    public static final String IDENTIFIER_1_DOI = "10.12345/183";
+    public static final Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352L) /* 2022-01-07 20:45:52 */;
+    public static final Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
+    public static final Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
+    public static final Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
+    public static final Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
+    public static final Integer IDENTIFIER_1_PUBLICATION_DAY = null;
+    public static final String IDENTIFIER_1_QUERY_HASH = QUERY_1_QUERY_HASH;
+    public static final String IDENTIFIER_1_RESULT_HASH = QUERY_1_RESULT_HASH;
+    public static final String IDENTIFIER_1_QUERY = QUERY_1_STATEMENT;
+    public static final String IDENTIFIER_1_NORMALIZED = QUERY_1_STATEMENT;
+    public static final Long IDENTIFIER_1_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
+    public static final String IDENTIFIER_1_PUBLISHER = "Austrian Government";
+    public static final IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
+    public static final IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
+    public static final IdentifierStatusType IDENTIFIER_1_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public static final IdentifierStatusTypeDto IDENTIFIER_1_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
 
-    public final static Long IDENTIFIER_1_TITLE_1_ID = 1L;
-    public final static Long IDENTIFIER_1_TITLE_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
-    public final static String IDENTIFIER_1_TITLE_1_TITLE = "Austrian weather data";
-    public final static String IDENTIFIER_1_TITLE_1_TITLE_MODIFY = "Austrian weather some data";
-    public final static TitleType IDENTIFIER_1_TITLE_1_TYPE = null;
-    public final static TitleTypeDto IDENTIFIER_1_TITLE_1_TYPE_DTO = null;
-    public final static LanguageType IDENTIFIER_1_TITLE_1_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_1_TITLE_1_LANG_DTO = LanguageTypeDto.EN;
+    public static final Long IDENTIFIER_1_TITLE_1_ID = 1L;
+    public static final Long IDENTIFIER_1_TITLE_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
+    public static final String IDENTIFIER_1_TITLE_1_TITLE = "Austrian weather data";
+    public static final String IDENTIFIER_1_TITLE_1_TITLE_MODIFY = "Austrian weather some data";
+    public static final TitleType IDENTIFIER_1_TITLE_1_TYPE = null;
+    public static final TitleTypeDto IDENTIFIER_1_TITLE_1_TYPE_DTO = null;
+    public static final LanguageType IDENTIFIER_1_TITLE_1_LANG = LanguageType.EN;
+    public static final LanguageTypeDto IDENTIFIER_1_TITLE_1_LANG_DTO = LanguageTypeDto.EN;
 
-    public final static IdentifierTitle IDENTIFIER_1_TITLE_1 = IdentifierTitle.builder()
+    public static final IdentifierTitle IDENTIFIER_1_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE)
             .language(IDENTIFIER_1_TITLE_1_LANG)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_1_TITLE)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_UPDATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_1_UPDATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
             .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final static Long IDENTIFIER_1_TITLE_2_ID = 2L;
-    public final static Long IDENTIFIER_1_TITLE_2_IDENTIFIER_ID = IDENTIFIER_1_ID;
-    public final static String IDENTIFIER_1_TITLE_2_TITLE = "Österreichische Wetterdaten";
-    public final static String IDENTIFIER_1_TITLE_2_TITLE_MODIFY = "Österreichische Wetterdaten übersetzt";
-    public final static TitleType IDENTIFIER_1_TITLE_2_TYPE = TitleType.TRANSLATED_TITLE;
-    public final static TitleTypeDto IDENTIFIER_1_TITLE_2_TYPE_DTO = TitleTypeDto.TRANSLATED_TITLE;
-    public final static LanguageType IDENTIFIER_1_TITLE_2_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_1_TITLE_2_LANG_DTO = LanguageTypeDto.EN;
+    public static final Long IDENTIFIER_1_TITLE_2_ID = 2L;
+    public static final Long IDENTIFIER_1_TITLE_2_IDENTIFIER_ID = IDENTIFIER_1_ID;
+    public static final String IDENTIFIER_1_TITLE_2_TITLE = "Österreichische Wetterdaten";
+    public static final String IDENTIFIER_1_TITLE_2_TITLE_MODIFY = "Österreichische Wetterdaten übersetzt";
+    public static final TitleType IDENTIFIER_1_TITLE_2_TYPE = TitleType.TRANSLATED_TITLE;
+    public static final TitleTypeDto IDENTIFIER_1_TITLE_2_TYPE_DTO = TitleTypeDto.TRANSLATED_TITLE;
+    public static final LanguageType IDENTIFIER_1_TITLE_2_LANG = LanguageType.EN;
+    public static final LanguageTypeDto IDENTIFIER_1_TITLE_2_LANG_DTO = LanguageTypeDto.EN;
 
-    public final static IdentifierTitle IDENTIFIER_1_TITLE_2 = IdentifierTitle.builder()
+    public static final IdentifierTitle IDENTIFIER_1_TITLE_2 = IdentifierTitle.builder()
             .id(IDENTIFIER_1_TITLE_2_ID)
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE)
             .language(IDENTIFIER_1_TITLE_2_LANG)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_2_ID)
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO_MODIFY = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO_MODIFY = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_2_ID)
             .title(IDENTIFIER_1_TITLE_2_TITLE_MODIFY)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_2_TITLE)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_UPDATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_1_TITLE_2_UPDATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_2_TITLE_MODIFY)
             .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
-    public final static Long IDENTIFIER_1_DESCRIPTION_1_ID = 1L;
-    public final static Long IDENTIFIER_1_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
-    public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Austrian table";
-    public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
-    public final static DescriptionType IDENTIFIER_1_DESCRIPTION_1_TYPE = null;
-    public final static DescriptionTypeDto IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO = null;
-    public final static LanguageType IDENTIFIER_1_DESCRIPTION_1_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_1_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
+    public static final Long IDENTIFIER_1_DESCRIPTION_1_ID = 1L;
+    public static final Long IDENTIFIER_1_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
+    public static final String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Austrian table";
+    public static final String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
+    public static final DescriptionType IDENTIFIER_1_DESCRIPTION_1_TYPE = null;
+    public static final DescriptionTypeDto IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO = null;
+    public static final LanguageType IDENTIFIER_1_DESCRIPTION_1_LANG = LanguageType.EN;
+    public static final LanguageTypeDto IDENTIFIER_1_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
 
-    public final static IdentifierDescription IDENTIFIER_1_DESCRIPTION_1 = IdentifierDescription.builder()
+    public static final IdentifierDescription IDENTIFIER_1_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG)
             .build();
 
-    public final static IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+    public static final IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
+    public static final IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
+    public static final SaveIdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
             .id(null)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
             .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static Long IDENTIFIER_1_CREATOR_1_ID = 1L;
-    public final static String IDENTIFIER_1_CREATOR_1_FIRSTNAME = CREATOR_1_FIRSTNAME;
-    public final static String IDENTIFIER_1_CREATOR_1_LASTNAME = CREATOR_1_LASTNAME;
-    public final static String IDENTIFIER_1_CREATOR_1_NAME = CREATOR_1_NAME;
-    public final static String IDENTIFIER_1_CREATOR_1_ORCID = CREATOR_1_ORCID;
-    public final static NameIdentifierSchemeType IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ORCID;
-    public final static NameIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
-    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION = CREATOR_1_AFFIL;
-    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER = CREATOR_1_AFFIL_ROR;
-    public final static AffiliationIdentifierSchemeType IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME = CREATOR_1_AFFIL_TYPE;
-    public final static AffiliationIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO = CREATOR_1_AFFIL_TYPE_DTO;
-    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI = CREATOR_1_AFFIL_URI;
+    public static final Long IDENTIFIER_1_CREATOR_1_ID = 1L;
+    public static final String IDENTIFIER_1_CREATOR_1_FIRSTNAME = CREATOR_1_FIRSTNAME;
+    public static final String IDENTIFIER_1_CREATOR_1_LASTNAME = CREATOR_1_LASTNAME;
+    public static final String IDENTIFIER_1_CREATOR_1_NAME = CREATOR_1_NAME;
+    public static final String IDENTIFIER_1_CREATOR_1_ORCID = CREATOR_1_ORCID;
+    public static final NameIdentifierSchemeType IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ORCID;
+    public static final NameIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public static final String IDENTIFIER_1_CREATOR_1_AFFILIATION = CREATOR_1_AFFIL;
+    public static final String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER = CREATOR_1_AFFIL_ROR;
+    public static final AffiliationIdentifierSchemeType IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME = CREATOR_1_AFFIL_TYPE;
+    public static final AffiliationIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO = CREATOR_1_AFFIL_TYPE_DTO;
+    public static final String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI = CREATOR_1_AFFIL_URI;
 
-    public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
+    public static final Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_1_CREATOR_1_ID)
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
@@ -6225,7 +6225,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI)
             .build();
 
-    public final static CreatorDto IDENTIFIER_1_CREATOR_1_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_1_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_1_CREATOR_1_ID)
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
@@ -6239,7 +6239,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
             .id(null)
             .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
             .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
@@ -6252,15 +6252,15 @@ public abstract class BaseTest {
             .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO)
             .build();
 
-    public final static Long FUNDER_1_ID = 1L;
-    public final static String FUNDER_1_NAME = "European Commission";
-    public final static String FUNDER_1_IDENTIFIER = "https://doi.org/10.13039/501100000780";
-    public final static String FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
-    public final static IdentifierFunderType FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
-    public final static IdentifierFunderTypeDto FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
-    public final static String FUNDER_1_AWARD_TITLE = "Institutionalizing global genetic-resource commons. Global Strategies for accessing and using essential public knowledge assets in the life science";
+    public static final Long FUNDER_1_ID = 1L;
+    public static final String FUNDER_1_NAME = "European Commission";
+    public static final String FUNDER_1_IDENTIFIER = "https://doi.org/10.13039/501100000780";
+    public static final String FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
+    public static final IdentifierFunderType FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
+    public static final IdentifierFunderTypeDto FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
+    public static final String FUNDER_1_AWARD_TITLE = "Institutionalizing global genetic-resource commons. Global Strategies for accessing and using essential public knowledge assets in the life science";
 
-    public final static IdentifierFunder IDENTIFIER_1_FUNDER_1 = IdentifierFunder.builder()
+    public static final IdentifierFunder IDENTIFIER_1_FUNDER_1 = IdentifierFunder.builder()
             .id(FUNDER_1_ID)
             .funderName(FUNDER_1_NAME)
             .funderIdentifier(FUNDER_1_IDENTIFIER)
@@ -6268,7 +6268,7 @@ public abstract class BaseTest {
             .awardTitle(FUNDER_1_AWARD_TITLE)
             .build();
 
-    public final static IdentifierFunderDto IDENTIFIER_1_FUNDER_1_DTO = IdentifierFunderDto.builder()
+    public static final IdentifierFunderDto IDENTIFIER_1_FUNDER_1_DTO = IdentifierFunderDto.builder()
             .id(FUNDER_1_ID)
             .funderName(FUNDER_1_NAME)
             .funderIdentifier(FUNDER_1_IDENTIFIER)
@@ -6276,14 +6276,14 @@ public abstract class BaseTest {
             .awardTitle(FUNDER_1_AWARD_TITLE)
             .build();
 
-    public final static SaveIdentifierFunderDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = SaveIdentifierFunderDto.builder()
+    public static final SaveIdentifierFunderDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = SaveIdentifierFunderDto.builder()
             .funderName(FUNDER_1_NAME)
             .funderIdentifier(FUNDER_1_IDENTIFIER)
             .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE_DTO)
             .awardTitle(FUNDER_1_AWARD_TITLE)
             .build();
 
-    public final static DataCiteBody<DataCiteDoi> IDENTIFIER_1_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
+    public static final DataCiteBody<DataCiteDoi> IDENTIFIER_1_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
             .data(DataCiteData.<DataCiteDoi>builder()
                     .type("dois")
                     .attributes(DataCiteDoi.builder()
@@ -6292,7 +6292,7 @@ public abstract class BaseTest {
                     .build())
             .build();
 
-    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+    public static final Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2)))
@@ -6319,7 +6319,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
-    public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
+    public static final Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
             .id(IDENTIFIER_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1)))
@@ -6345,7 +6345,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
@@ -6369,7 +6369,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierBriefDto IDENTIFIER_1_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_1_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
@@ -6381,7 +6381,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_1_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_1_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .type(IDENTIFIER_1_TYPE_DTO)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -6398,7 +6398,7 @@ public abstract class BaseTest {
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_1_CREATE_WITH_DOI_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_1_CREATE_WITH_DOI_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .type(IDENTIFIER_1_TYPE_DTO)
             .doi(IDENTIFIER_1_DOI)
@@ -6415,7 +6415,7 @@ public abstract class BaseTest {
             .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO)))
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_1_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_1_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO)))
@@ -6430,7 +6430,7 @@ public abstract class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_1_SAVE_MODIFY_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_1_SAVE_MODIFY_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(new LinkedList<>(List.of())) // <<<
@@ -6445,89 +6445,89 @@ public abstract class BaseTest {
             .licenses(new LinkedList<>(List.of())) // <<<
             .build();
 
-    public final static Long IDENTIFIER_5_ID = 5L;
-    public final static Long IDENTIFIER_5_QUERY_ID = QUERY_2_ID;
-    public final static Long IDENTIFIER_5_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long IDENTIFIER_5_DATABASE_ID = DATABASE_2_ID;
-    public final static String IDENTIFIER_5_DOI = "10.12345/13/50BBFCFE08A12";
-    public final static Instant IDENTIFIER_5_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant IDENTIFIER_5_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1541588352L);
-    public final static Integer IDENTIFIER_5_PUBLICATION_DAY = 14;
-    public final static Integer IDENTIFIER_5_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_5_PUBLICATION_YEAR = 2022;
-    public final static String IDENTIFIER_5_QUERY_HASH = QUERY_2_QUERY_HASH;
-    public final static String IDENTIFIER_5_RESULT_HASH = QUERY_2_RESULT_HASH;
-    public final static String IDENTIFIER_5_QUERY = QUERY_2_STATEMENT;
-    public final static String IDENTIFIER_5_NORMALIZED = QUERY_2_STATEMENT;
-    public final static Long IDENTIFIER_5_RESULT_NUMBER = QUERY_2_RESULT_NUMBER;
-    public final static String IDENTIFIER_5_PUBLISHER = "Australian Government";
-    public final static IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
-    public final static IdentifierTypeDto IDENTIFIER_5_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static IdentifierStatusType IDENTIFIER_5_STATUS_TYPE = IdentifierStatusType.DRAFT;
-    public final static IdentifierStatusTypeDto IDENTIFIER_5_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
-    public final static UUID IDENTIFIER_5_CREATED_BY = USER_2_ID;
+    public static final Long IDENTIFIER_5_ID = 5L;
+    public static final Long IDENTIFIER_5_QUERY_ID = QUERY_2_ID;
+    public static final Long IDENTIFIER_5_CONTAINER_ID = CONTAINER_2_ID;
+    public static final Long IDENTIFIER_5_DATABASE_ID = DATABASE_2_ID;
+    public static final String IDENTIFIER_5_DOI = "10.12345/13/50BBFCFE08A12";
+    public static final Instant IDENTIFIER_5_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant IDENTIFIER_5_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1541588352L);
+    public static final Integer IDENTIFIER_5_PUBLICATION_DAY = 14;
+    public static final Integer IDENTIFIER_5_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_5_PUBLICATION_YEAR = 2022;
+    public static final String IDENTIFIER_5_QUERY_HASH = QUERY_2_QUERY_HASH;
+    public static final String IDENTIFIER_5_RESULT_HASH = QUERY_2_RESULT_HASH;
+    public static final String IDENTIFIER_5_QUERY = QUERY_2_STATEMENT;
+    public static final String IDENTIFIER_5_NORMALIZED = QUERY_2_STATEMENT;
+    public static final Long IDENTIFIER_5_RESULT_NUMBER = QUERY_2_RESULT_NUMBER;
+    public static final String IDENTIFIER_5_PUBLISHER = "Australian Government";
+    public static final IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
+    public static final IdentifierTypeDto IDENTIFIER_5_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public static final IdentifierStatusType IDENTIFIER_5_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public static final IdentifierStatusTypeDto IDENTIFIER_5_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
+    public static final UUID IDENTIFIER_5_CREATED_BY = USER_2_ID;
 
-    public final static Long IDENTIFIER_5_TITLE_1_ID = 3L;
-    public final static Long IDENTIFIER_5_TITLE_1_IDENTIFIER_ID = IDENTIFIER_5_ID;
-    public final static String IDENTIFIER_5_TITLE_1_TITLE = "Australische Wetterdaten";
-    public final static LanguageType IDENTIFIER_5_TITLE_1_LANG = LanguageType.DE;
-    public final static LanguageTypeDto IDENTIFIER_5_TITLE_1_LANG_DTO = LanguageTypeDto.DE;
-    public final static TitleType IDENTIFIER_5_TITLE_1_TYPE = TitleType.SUBTITLE;
-    public final static TitleTypeDto IDENTIFIER_5_TITLE_1_TYPE_DTO = TitleTypeDto.SUBTITLE;
+    public static final Long IDENTIFIER_5_TITLE_1_ID = 3L;
+    public static final Long IDENTIFIER_5_TITLE_1_IDENTIFIER_ID = IDENTIFIER_5_ID;
+    public static final String IDENTIFIER_5_TITLE_1_TITLE = "Australische Wetterdaten";
+    public static final LanguageType IDENTIFIER_5_TITLE_1_LANG = LanguageType.DE;
+    public static final LanguageTypeDto IDENTIFIER_5_TITLE_1_LANG_DTO = LanguageTypeDto.DE;
+    public static final TitleType IDENTIFIER_5_TITLE_1_TYPE = TitleType.SUBTITLE;
+    public static final TitleTypeDto IDENTIFIER_5_TITLE_1_TYPE_DTO = TitleTypeDto.SUBTITLE;
 
-    public final static IdentifierTitle IDENTIFIER_5_TITLE_1 = IdentifierTitle.builder()
+    public static final IdentifierTitle IDENTIFIER_5_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_5_TITLE_1_ID)
             .title(IDENTIFIER_5_TITLE_1_TITLE)
             .language(IDENTIFIER_5_TITLE_1_LANG)
             .titleType(IDENTIFIER_5_TITLE_1_TYPE)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_5_TITLE_1_DTO = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_5_TITLE_1_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_5_TITLE_1_ID)
             .title(IDENTIFIER_5_TITLE_1_TITLE)
             .language(IDENTIFIER_5_TITLE_1_LANG_DTO)
             .titleType(IDENTIFIER_5_TITLE_1_TYPE_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_5_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_5_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_5_TITLE_1_TITLE)
             .language(IDENTIFIER_5_TITLE_1_LANG_DTO)
             .titleType(IDENTIFIER_5_TITLE_1_TYPE_DTO)
             .build();
 
-    public final static Long IDENTIFIER_5_DESCRIPTION_1_ID = 2L;
-    public final static Long IDENTIFIER_5_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_5_ID;
-    public final static String IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION = "Alle Wetterdaten in Australien";
-    public final static LanguageType IDENTIFIER_5_DESCRIPTION_1_LANG = LanguageType.DE;
-    public final static LanguageTypeDto IDENTIFIER_5_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.DE;
-    public final static DescriptionType IDENTIFIER_5_DESCRIPTION_1_TYPE = DescriptionType.ABSTRACT;
-    public final static DescriptionTypeDto IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO = DescriptionTypeDto.ABSTRACT;
+    public static final Long IDENTIFIER_5_DESCRIPTION_1_ID = 2L;
+    public static final Long IDENTIFIER_5_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_5_ID;
+    public static final String IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION = "Alle Wetterdaten in Australien";
+    public static final LanguageType IDENTIFIER_5_DESCRIPTION_1_LANG = LanguageType.DE;
+    public static final LanguageTypeDto IDENTIFIER_5_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.DE;
+    public static final DescriptionType IDENTIFIER_5_DESCRIPTION_1_TYPE = DescriptionType.ABSTRACT;
+    public static final DescriptionTypeDto IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO = DescriptionTypeDto.ABSTRACT;
 
-    public final static IdentifierDescription IDENTIFIER_5_DESCRIPTION_1 = IdentifierDescription.builder()
+    public static final IdentifierDescription IDENTIFIER_5_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_5_DESCRIPTION_1_ID)
             .description(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_5_DESCRIPTION_1_LANG)
             .descriptionType(IDENTIFIER_5_DESCRIPTION_1_TYPE)
             .build();
 
-    public final static IdentifierDescriptionDto IDENTIFIER_5_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+    public static final IdentifierDescriptionDto IDENTIFIER_5_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_5_DESCRIPTION_1_ID)
             .description(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_5_DESCRIPTION_1_LANG_DTO)
             .descriptionType(IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO)
             .build();
 
-    public final static SaveIdentifierDescriptionDto IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
+    public static final SaveIdentifierDescriptionDto IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
             .id(null)
             .description(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_5_DESCRIPTION_1_LANG_DTO)
             .descriptionType(IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO)
             .build();
 
-    public final static Long IDENTIFIER_5_CREATOR_1_ID = 2L;
+    public static final Long IDENTIFIER_5_CREATOR_1_ID = 2L;
 
-    public final static Creator IDENTIFIER_5_CREATOR_1 = Creator.builder()
+    public static final Creator IDENTIFIER_5_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_5_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -6540,7 +6540,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static CreatorDto IDENTIFIER_5_CREATOR_1_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_5_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_5_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -6553,7 +6553,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -6562,7 +6562,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -6571,9 +6571,9 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
-    public final static Long IDENTIFIER_5_CREATOR_2_ID = 3L;
+    public static final Long IDENTIFIER_5_CREATOR_2_ID = 3L;
 
-    public final static Creator IDENTIFIER_5_CREATOR_2 = Creator.builder()
+    public static final Creator IDENTIFIER_5_CREATOR_2 = Creator.builder()
             .id(IDENTIFIER_5_CREATOR_2_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
@@ -6583,7 +6583,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static CreatorDto IDENTIFIER_5_CREATOR_2_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_5_CREATOR_2_DTO = CreatorDto.builder()
             .id(IDENTIFIER_5_CREATOR_2_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
@@ -6593,7 +6593,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_CREATE_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_CREATE_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .creatorName(CREATOR_2_NAME)
@@ -6602,7 +6602,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_5_CREATOR_2_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .creatorName(CREATOR_2_NAME)
@@ -6611,7 +6611,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static Identifier IDENTIFIER_5 = Identifier.builder()
+    public static final Identifier IDENTIFIER_5 = Identifier.builder()
             .id(IDENTIFIER_5_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_5_DESCRIPTION_1)))
@@ -6636,7 +6636,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_5_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_5_ID)
             .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
@@ -6659,7 +6659,7 @@ public abstract class BaseTest {
             .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1_DTO, IDENTIFIER_5_CREATOR_2_DTO)))
             .build();
 
-    public final static IdentifierBriefDto IDENTIFIER_5_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_5_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_5_ID)
             .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
@@ -6670,15 +6670,15 @@ public abstract class BaseTest {
             .type(IDENTIFIER_5_TYPE_DTO)
             .build();
 
-    public final static Long RELATED_IDENTIFIER_5_ID = 1L;
-    public final static Long RELATED_IDENTIFIER_5_IDENTIFIER_ID = 2L;
-    public final static String RELATED_IDENTIFIER_5_VALUE = "10.5281/zenodo.6637333";
-    public final static RelatedType RELATED_IDENTIFIER_5_TYPE = RelatedType.DOI;
-    public final static RelatedTypeDto RELATED_IDENTIFIER_5_TYPE_DTO = RelatedTypeDto.DOI;
-    public final static RelationType RELATED_IDENTIFIER_5_RELATION_TYPE = RelationType.CITES;
-    public final static RelationTypeDto RELATED_IDENTIFIER_5_RELATION_TYPE_DTO = RelationTypeDto.CITES;
+    public static final Long RELATED_IDENTIFIER_5_ID = 1L;
+    public static final Long RELATED_IDENTIFIER_5_IDENTIFIER_ID = 2L;
+    public static final String RELATED_IDENTIFIER_5_VALUE = "10.5281/zenodo.6637333";
+    public static final RelatedType RELATED_IDENTIFIER_5_TYPE = RelatedType.DOI;
+    public static final RelatedTypeDto RELATED_IDENTIFIER_5_TYPE_DTO = RelatedTypeDto.DOI;
+    public static final RelationType RELATED_IDENTIFIER_5_RELATION_TYPE = RelationType.CITES;
+    public static final RelationTypeDto RELATED_IDENTIFIER_5_RELATION_TYPE_DTO = RelationTypeDto.CITES;
 
-    public final static RelatedIdentifier IDENTIFIER_1_RELATED_IDENTIFIER_1 = RelatedIdentifier.builder()
+    public static final RelatedIdentifier IDENTIFIER_1_RELATED_IDENTIFIER_1 = RelatedIdentifier.builder()
             .id(RELATED_IDENTIFIER_5_ID)
             .identifier(IDENTIFIER_5)
             .type(RELATED_IDENTIFIER_5_TYPE)
@@ -6686,19 +6686,19 @@ public abstract class BaseTest {
             .value(RELATED_IDENTIFIER_5_VALUE)
             .build();
 
-    public final static SaveRelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO = SaveRelatedIdentifierDto.builder()
+    public static final SaveRelatedIdentifierDto IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO = SaveRelatedIdentifierDto.builder()
             .value(RELATED_IDENTIFIER_5_VALUE)
             .type(RELATED_IDENTIFIER_5_TYPE_DTO)
             .relation(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_5_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_5_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_5_DATABASE_ID)
             .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_5_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_5_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_5_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
             .databaseId(IDENTIFIER_5_DATABASE_ID)
@@ -6714,84 +6714,84 @@ public abstract class BaseTest {
             .type(IDENTIFIER_5_TYPE_DTO)
             .build();
 
-    public final static Long IDENTIFIER_6_ID = 6L;
-    public final static Long IDENTIFIER_6_QUERY_ID = QUERY_3_ID;
-    public final static Long IDENTIFIER_6_CONTAINER_ID = CONTAINER_3_ID;
-    public final static Long IDENTIFIER_6_DATABASE_ID = DATABASE_3_ID;
-    public final static String IDENTIFIER_6_DOI = null;
-    public final static Instant IDENTIFIER_6_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant IDENTIFIER_6_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Instant IDENTIFIER_6_EXECUTION = Instant.ofEpochSecond(1541588352L);
-    public final static Integer IDENTIFIER_6_PUBLICATION_DAY = 14;
-    public final static Integer IDENTIFIER_6_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_6_PUBLICATION_YEAR = 2022;
-    public final static String IDENTIFIER_6_QUERY_HASH = QUERY_3_QUERY_HASH;
-    public final static String IDENTIFIER_6_RESULT_HASH = QUERY_3_RESULT_HASH;
-    public final static String IDENTIFIER_6_QUERY = QUERY_3_STATEMENT;
-    public final static String IDENTIFIER_6_NORMALIZED = QUERY_3_STATEMENT;
-    public final static Long IDENTIFIER_6_RESULT_NUMBER = QUERY_3_RESULT_NUMBER;
-    public final static String IDENTIFIER_6_PUBLISHER = "Norwegian Government";
-    public final static IdentifierType IDENTIFIER_6_TYPE = IdentifierType.SUBSET;
-    public final static IdentifierTypeDto IDENTIFIER_6_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static IdentifierStatusType IDENTIFIER_6_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_6_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public static final Long IDENTIFIER_6_ID = 6L;
+    public static final Long IDENTIFIER_6_QUERY_ID = QUERY_3_ID;
+    public static final Long IDENTIFIER_6_CONTAINER_ID = CONTAINER_3_ID;
+    public static final Long IDENTIFIER_6_DATABASE_ID = DATABASE_3_ID;
+    public static final String IDENTIFIER_6_DOI = null;
+    public static final Instant IDENTIFIER_6_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant IDENTIFIER_6_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Instant IDENTIFIER_6_EXECUTION = Instant.ofEpochSecond(1541588352L);
+    public static final Integer IDENTIFIER_6_PUBLICATION_DAY = 14;
+    public static final Integer IDENTIFIER_6_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_6_PUBLICATION_YEAR = 2022;
+    public static final String IDENTIFIER_6_QUERY_HASH = QUERY_3_QUERY_HASH;
+    public static final String IDENTIFIER_6_RESULT_HASH = QUERY_3_RESULT_HASH;
+    public static final String IDENTIFIER_6_QUERY = QUERY_3_STATEMENT;
+    public static final String IDENTIFIER_6_NORMALIZED = QUERY_3_STATEMENT;
+    public static final Long IDENTIFIER_6_RESULT_NUMBER = QUERY_3_RESULT_NUMBER;
+    public static final String IDENTIFIER_6_PUBLISHER = "Norwegian Government";
+    public static final IdentifierType IDENTIFIER_6_TYPE = IdentifierType.SUBSET;
+    public static final IdentifierTypeDto IDENTIFIER_6_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public static final IdentifierStatusType IDENTIFIER_6_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public static final IdentifierStatusTypeDto IDENTIFIER_6_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
 
-    public final static Long IDENTIFIER_6_TITLE_1_ID = 4L;
-    public final static Long IDENTIFIER_6_TITLE_1_IDENTIFIER_ID = IDENTIFIER_6_ID;
-    public final static String IDENTIFIER_6_TITLE_1_TITLE = "Norwegian weather data";
-    public final static String IDENTIFIER_6_TITLE_1_TITLE_MODIFY = "Norwegian weather some data";
-    public final static LanguageType IDENTIFIER_6_TITLE_1_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_6_TITLE_1_LANG_DTO = LanguageTypeDto.EN;
+    public static final Long IDENTIFIER_6_TITLE_1_ID = 4L;
+    public static final Long IDENTIFIER_6_TITLE_1_IDENTIFIER_ID = IDENTIFIER_6_ID;
+    public static final String IDENTIFIER_6_TITLE_1_TITLE = "Norwegian weather data";
+    public static final String IDENTIFIER_6_TITLE_1_TITLE_MODIFY = "Norwegian weather some data";
+    public static final LanguageType IDENTIFIER_6_TITLE_1_LANG = LanguageType.EN;
+    public static final LanguageTypeDto IDENTIFIER_6_TITLE_1_LANG_DTO = LanguageTypeDto.EN;
 
-    public final static IdentifierTitle IDENTIFIER_6_TITLE_1 = IdentifierTitle.builder()
+    public static final IdentifierTitle IDENTIFIER_6_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_6_TITLE_1_ID)
             .title(IDENTIFIER_6_TITLE_1_TITLE)
             .language(IDENTIFIER_6_TITLE_1_LANG)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_6_TITLE_1_DTO = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_6_TITLE_1_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_6_TITLE_1_ID)
             .title(IDENTIFIER_6_TITLE_1_TITLE)
             .language(IDENTIFIER_6_TITLE_1_LANG_DTO)
             .build();
 
-    public final static IdentifierTitleDto IDENTIFIER_6_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
+    public static final IdentifierTitleDto IDENTIFIER_6_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
             .id(IDENTIFIER_6_TITLE_1_ID)
             .title(IDENTIFIER_6_TITLE_1_TITLE_MODIFY)
             .language(IDENTIFIER_6_TITLE_1_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierTitleDto IDENTIFIER_6_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
+    public static final SaveIdentifierTitleDto IDENTIFIER_6_TITLE_1_CREATE_DTO = SaveIdentifierTitleDto.builder()
             .title(IDENTIFIER_6_TITLE_1_TITLE_MODIFY)
             .language(IDENTIFIER_6_TITLE_1_LANG_DTO)
             .build();
 
-    public final static Long IDENTIFIER_6_DESCRIPTION_1_ID = 3L;
-    public final static Long IDENTIFIER_6_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_6_ID;
-    public final static String IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Norwegian table";
-    public final static String IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Norwegian table";
-    public final static LanguageType IDENTIFIER_6_DESCRIPTION_1_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_6_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
+    public static final Long IDENTIFIER_6_DESCRIPTION_1_ID = 3L;
+    public static final Long IDENTIFIER_6_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_6_ID;
+    public static final String IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Norwegian table";
+    public static final String IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Norwegian table";
+    public static final LanguageType IDENTIFIER_6_DESCRIPTION_1_LANG = LanguageType.EN;
+    public static final LanguageTypeDto IDENTIFIER_6_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
 
-    public final static IdentifierDescription IDENTIFIER_6_DESCRIPTION_1 = IdentifierDescription.builder()
+    public static final IdentifierDescription IDENTIFIER_6_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_6_DESCRIPTION_1_ID)
             .description(IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_6_DESCRIPTION_1_LANG)
             .build();
 
-    public final static IdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
+    public static final IdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_6_DESCRIPTION_1_ID)
             .description(IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_6_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static IdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
+    public static final IdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_6_DESCRIPTION_1_ID)
             .description(IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION_MODIFY)
             .language(IDENTIFIER_6_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static SaveIdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
+    public static final SaveIdentifierDescriptionDto IDENTIFIER_6_DESCRIPTION_1_CREATE_DTO = SaveIdentifierDescriptionDto.builder()
             .id(null)
             .description(IDENTIFIER_6_DESCRIPTION_1_DESCRIPTION_MODIFY)
             .language(IDENTIFIER_6_DESCRIPTION_1_LANG_DTO)
@@ -6799,7 +6799,7 @@ public abstract class BaseTest {
 
     private final static Long IDENTIFIER_6_CREATOR_1_ID = 4L;
 
-    public final static Creator IDENTIFIER_6_CREATOR_1 = Creator.builder()
+    public static final Creator IDENTIFIER_6_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -6812,7 +6812,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static CreatorDto IDENTIFIER_6_CREATOR_1_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_6_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -6825,7 +6825,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -6836,7 +6836,7 @@ public abstract class BaseTest {
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_6_CREATOR_1_MODIFY_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -6849,7 +6849,7 @@ public abstract class BaseTest {
 
     private final static Long IDENTIFIER_6_CREATOR_2_ID = 5L;
 
-    public final static Creator IDENTIFIER_6_CREATOR_2 = Creator.builder()
+    public static final Creator IDENTIFIER_6_CREATOR_2 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_2_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
@@ -6859,7 +6859,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static CreatorDto IDENTIFIER_6_CREATOR_2_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_6_CREATOR_2_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_2_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
@@ -6871,7 +6871,7 @@ public abstract class BaseTest {
 
     private final static Long IDENTIFIER_6_CREATOR_3_ID = 6L;
 
-    public final static Creator IDENTIFIER_6_CREATOR_3 = Creator.builder()
+    public static final Creator IDENTIFIER_6_CREATOR_3 = Creator.builder()
             .id(IDENTIFIER_6_CREATOR_3_ID)
             .firstname(CREATOR_3_FIRSTNAME)
             .lastname(CREATOR_3_LASTNAME)
@@ -6884,7 +6884,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
             .build();
 
-    public final static CreatorDto IDENTIFIER_6_CREATOR_3_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_6_CREATOR_3_DTO = CreatorDto.builder()
             .id(IDENTIFIER_6_CREATOR_3_ID)
             .firstname(CREATOR_3_FIRSTNAME)
             .lastname(CREATOR_3_LASTNAME)
@@ -6897,7 +6897,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_3_AFFIL_URI)
             .build();
 
-    public final static Identifier IDENTIFIER_6 = Identifier.builder()
+    public static final Identifier IDENTIFIER_6 = Identifier.builder()
             .id(IDENTIFIER_6_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_6_DESCRIPTION_1)))
@@ -6923,7 +6923,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_6_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_6_ID)
             .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
@@ -6948,7 +6948,7 @@ public abstract class BaseTest {
             .build();
 
 
-    public final static IdentifierBriefDto IDENTIFIER_6_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_6_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_6_ID)
             .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
@@ -6960,13 +6960,13 @@ public abstract class BaseTest {
             .status(IDENTIFIER_6_STATUS_TYPE_DTO)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_6_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_6_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_6_DATABASE_ID)
             .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_6_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_6_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_6_ID)
             .databaseId(IDENTIFIER_6_DATABASE_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
@@ -6981,23 +6981,23 @@ public abstract class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
-    public final static Long IDENTIFIER_7_ID = 7L;
-    public final static Long IDENTIFIER_7_DATABASE_ID = DATABASE_4_ID;
-    public final static String IDENTIFIER_7_DOI = null;
-    public final static Instant IDENTIFIER_7_CREATED = Instant.ofEpochSecond(1641588352L);
-    public final static Instant IDENTIFIER_7_MODIFIED = Instant.ofEpochSecond(1541588352L);
-    public final static Instant IDENTIFIER_7_EXECUTION = Instant.ofEpochSecond(1541588352L);
-    public final static Integer IDENTIFIER_7_PUBLICATION_DAY = 14;
-    public final static Integer IDENTIFIER_7_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_7_PUBLICATION_YEAR = 2022;
-    public final static Long IDENTIFIER_7_RESULT_NUMBER = 2L;
-    public final static String IDENTIFIER_7_PUBLISHER = "Swedish Government";
-    public final static IdentifierType IDENTIFIER_7_TYPE = IdentifierType.DATABASE;
-    public final static IdentifierTypeDto IDENTIFIER_7_TYPE_DTO = IdentifierTypeDto.DATABASE;
-    public final static IdentifierStatusType IDENTIFIER_7_STATUS_TYPE = IdentifierStatusType.DRAFT;
-    public final static IdentifierStatusTypeDto IDENTIFIER_7_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
+    public static final Long IDENTIFIER_7_ID = 7L;
+    public static final Long IDENTIFIER_7_DATABASE_ID = DATABASE_4_ID;
+    public static final String IDENTIFIER_7_DOI = null;
+    public static final Instant IDENTIFIER_7_CREATED = Instant.ofEpochSecond(1641588352L);
+    public static final Instant IDENTIFIER_7_MODIFIED = Instant.ofEpochSecond(1541588352L);
+    public static final Instant IDENTIFIER_7_EXECUTION = Instant.ofEpochSecond(1541588352L);
+    public static final Integer IDENTIFIER_7_PUBLICATION_DAY = 14;
+    public static final Integer IDENTIFIER_7_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_7_PUBLICATION_YEAR = 2022;
+    public static final Long IDENTIFIER_7_RESULT_NUMBER = 2L;
+    public static final String IDENTIFIER_7_PUBLISHER = "Swedish Government";
+    public static final IdentifierType IDENTIFIER_7_TYPE = IdentifierType.DATABASE;
+    public static final IdentifierTypeDto IDENTIFIER_7_TYPE_DTO = IdentifierTypeDto.DATABASE;
+    public static final IdentifierStatusType IDENTIFIER_7_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public static final IdentifierStatusTypeDto IDENTIFIER_7_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
-    public final static DataCiteBody<DataCiteDoi> IDENTIFIER_7_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
+    public static final DataCiteBody<DataCiteDoi> IDENTIFIER_7_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
             .data(DataCiteData.<DataCiteDoi>builder()
                     .type("dois")
                     .attributes(DataCiteDoi.builder()
@@ -7008,7 +7008,7 @@ public abstract class BaseTest {
 
     private final static Long IDENTIFIER_7_CREATOR_1_ID = 6L;
 
-    public final static Creator IDENTIFIER_7_CREATOR_1 = Creator.builder()
+    public static final Creator IDENTIFIER_7_CREATOR_1 = Creator.builder()
             .id(IDENTIFIER_7_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -7021,7 +7021,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static CreatorDto IDENTIFIER_7_CREATOR_1_DTO = CreatorDto.builder()
+    public static final CreatorDto IDENTIFIER_7_CREATOR_1_DTO = CreatorDto.builder()
             .id(IDENTIFIER_7_CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -7034,7 +7034,7 @@ public abstract class BaseTest {
             .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_7_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_7_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_7_ID)
             .databaseId(DATABASE_4_ID)
             .descriptions(new LinkedList<>())
@@ -7055,7 +7055,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_7_STATUS_TYPE_DTO)
             .build();
 
-    public final static SaveIdentifierCreatorDto IDENTIFIER_7_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
+    public static final SaveIdentifierCreatorDto IDENTIFIER_7_CREATOR_1_CREATE_DTO = SaveIdentifierCreatorDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -7065,13 +7065,13 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_7_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_7_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_7_DATABASE_ID)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_7_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_7_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_7_ID)
             .databaseId(IDENTIFIER_7_DATABASE_ID)
             .descriptions(new LinkedList<>())
@@ -7086,29 +7086,29 @@ public abstract class BaseTest {
             .type(IDENTIFIER_7_TYPE_DTO)
             .build();
 
-    public final static Long IDENTIFIER_2_ID = 2L;
-    public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_1_ID;
-    public final static String IDENTIFIER_2_DOI = null;
-    public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1651588352L);
-    public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1551588352L);
-    public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1551588352L);
-    public final static Integer IDENTIFIER_2_PUBLICATION_DAY = 10;
-    public final static Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_2_PUBLICATION_YEAR = 2023;
-    public final static String IDENTIFIER_2_QUERY_HASH = QUERY_1_QUERY_HASH;
-    public final static String IDENTIFIER_2_RESULT_HASH = QUERY_1_RESULT_HASH;
-    public final static String IDENTIFIER_2_QUERY = QUERY_1_STATEMENT;
-    public final static Long IDENTIFIER_2_QUERY_ID = QUERY_1_ID;
-    public final static String IDENTIFIER_2_NORMALIZED = QUERY_1_STATEMENT;
-    public final static Long IDENTIFIER_2_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
-    public final static String IDENTIFIER_2_PUBLISHER = "Swedish Government";
-    public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
-    public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
-    public final static UUID IDENTIFIER_2_CREATED_BY = USER_1_ID;
+    public static final Long IDENTIFIER_2_ID = 2L;
+    public static final Long IDENTIFIER_2_DATABASE_ID = DATABASE_1_ID;
+    public static final String IDENTIFIER_2_DOI = null;
+    public static final Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1651588352L);
+    public static final Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1551588352L);
+    public static final Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1551588352L);
+    public static final Integer IDENTIFIER_2_PUBLICATION_DAY = 10;
+    public static final Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_2_PUBLICATION_YEAR = 2023;
+    public static final String IDENTIFIER_2_QUERY_HASH = QUERY_1_QUERY_HASH;
+    public static final String IDENTIFIER_2_RESULT_HASH = QUERY_1_RESULT_HASH;
+    public static final String IDENTIFIER_2_QUERY = QUERY_1_STATEMENT;
+    public static final Long IDENTIFIER_2_QUERY_ID = QUERY_1_ID;
+    public static final String IDENTIFIER_2_NORMALIZED = QUERY_1_STATEMENT;
+    public static final Long IDENTIFIER_2_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
+    public static final String IDENTIFIER_2_PUBLISHER = "Swedish Government";
+    public static final IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
+    public static final IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public static final IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public static final IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public static final UUID IDENTIFIER_2_CREATED_BY = USER_1_ID;
 
-    public final static CreateIdentifierDto IDENTIFIER_2_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_2_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .type(IDENTIFIER_2_TYPE_DTO)
@@ -7116,7 +7116,7 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .build();
 
-    public final static Identifier IDENTIFIER_2 = Identifier.builder()
+    public static final Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(new LinkedList<>())
@@ -7143,7 +7143,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_2_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
@@ -7167,7 +7167,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_2_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierBriefDto IDENTIFIER_2_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_2_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
@@ -7179,7 +7179,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_2_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_2_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_2_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_2_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
@@ -7195,29 +7195,29 @@ public abstract class BaseTest {
             .queryId(QUERY_1_ID)
             .build();
 
-    public final static Long IDENTIFIER_3_ID = 3L;
-    public final static Long IDENTIFIER_3_DATABASE_ID = DATABASE_1_ID;
-    public final static Long IDENTIFIER_3_VIEW_ID = VIEW_1_ID;
-    public final static String IDENTIFIER_3_DOI = null;
-    public final static Instant IDENTIFIER_3_CREATED = Instant.ofEpochSecond(1651588352L);
-    public final static Instant IDENTIFIER_3_MODIFIED = Instant.ofEpochSecond(1551588352L);
-    public final static Instant IDENTIFIER_3_EXECUTION = Instant.ofEpochSecond(1551588352L);
-    public final static Integer IDENTIFIER_3_PUBLICATION_DAY = 10;
-    public final static Integer IDENTIFIER_3_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_3_PUBLICATION_YEAR = 2023;
-    public final static String IDENTIFIER_3_QUERY_HASH = VIEW_1_QUERY_HASH;
-    public final static String IDENTIFIER_3_RESULT_HASH = null;
-    public final static String IDENTIFIER_3_QUERY = VIEW_1_QUERY;
-    public final static String IDENTIFIER_3_NORMALIZED = VIEW_1_QUERY;
-    public final static Long IDENTIFIER_3_RESULT_NUMBER = null;
-    public final static String IDENTIFIER_3_PUBLISHER = "Polish Government";
-    public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.VIEW;
-    public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.VIEW;
-    public final static IdentifierStatusType IDENTIFIER_3_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_3_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
-    public final static UUID IDENTIFIER_3_CREATED_BY = USER_1_ID;
+    public static final Long IDENTIFIER_3_ID = 3L;
+    public static final Long IDENTIFIER_3_DATABASE_ID = DATABASE_1_ID;
+    public static final Long IDENTIFIER_3_VIEW_ID = VIEW_1_ID;
+    public static final String IDENTIFIER_3_DOI = null;
+    public static final Instant IDENTIFIER_3_CREATED = Instant.ofEpochSecond(1651588352L);
+    public static final Instant IDENTIFIER_3_MODIFIED = Instant.ofEpochSecond(1551588352L);
+    public static final Instant IDENTIFIER_3_EXECUTION = Instant.ofEpochSecond(1551588352L);
+    public static final Integer IDENTIFIER_3_PUBLICATION_DAY = 10;
+    public static final Integer IDENTIFIER_3_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_3_PUBLICATION_YEAR = 2023;
+    public static final String IDENTIFIER_3_QUERY_HASH = VIEW_1_QUERY_HASH;
+    public static final String IDENTIFIER_3_RESULT_HASH = null;
+    public static final String IDENTIFIER_3_QUERY = VIEW_1_QUERY;
+    public static final String IDENTIFIER_3_NORMALIZED = VIEW_1_QUERY;
+    public static final Long IDENTIFIER_3_RESULT_NUMBER = null;
+    public static final String IDENTIFIER_3_PUBLISHER = "Polish Government";
+    public static final IdentifierType IDENTIFIER_3_TYPE = IdentifierType.VIEW;
+    public static final IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.VIEW;
+    public static final IdentifierStatusType IDENTIFIER_3_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public static final IdentifierStatusTypeDto IDENTIFIER_3_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public static final UUID IDENTIFIER_3_CREATED_BY = USER_1_ID;
 
-    public final static Identifier IDENTIFIER_3 = Identifier.builder()
+    public static final Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
             .descriptions(new LinkedList<>())
@@ -7244,7 +7244,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_3_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_3_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
@@ -7268,7 +7268,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_3_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierBriefDto IDENTIFIER_3_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_3_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_3_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
@@ -7280,7 +7280,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_3_STATUS_TYPE_DTO)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_3_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_3_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
             .type(IDENTIFIER_3_TYPE_DTO)
@@ -7288,7 +7288,7 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_3_PUBLISHER)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_3_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_3_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_3_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
@@ -7303,26 +7303,26 @@ public abstract class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
-    public final static Long IDENTIFIER_4_ID = 4L;
-    public final static Long IDENTIFIER_4_DATABASE_ID = DATABASE_1_ID;
-    public final static Long IDENTIFIER_4_TABLE_ID = TABLE_1_ID;
-    public final static String IDENTIFIER_4_DOI = null;
-    public final static Instant IDENTIFIER_4_CREATED = Instant.ofEpochSecond(1751588352L);
-    public final static Instant IDENTIFIER_4_MODIFIED = Instant.ofEpochSecond(1551588352L);
-    public final static Instant IDENTIFIER_4_EXECUTION = Instant.ofEpochSecond(1551588352L);
-    public final static Integer IDENTIFIER_4_PUBLICATION_DAY = 10;
-    public final static Integer IDENTIFIER_4_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_4_PUBLICATION_YEAR = 2023;
-    public final static String IDENTIFIER_4_RESULT_HASH = null;
-    public final static Long IDENTIFIER_4_RESULT_NUMBER = null;
-    public final static String IDENTIFIER_4_PUBLISHER = "Example Publisher";
-    public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.TABLE;
-    public final static IdentifierTypeDto IDENTIFIER_4_TYPE_DTO = IdentifierTypeDto.TABLE;
-    public final static IdentifierStatusType IDENTIFIER_4_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
-    public final static IdentifierStatusTypeDto IDENTIFIER_4_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
-    public final static UUID IDENTIFIER_4_CREATED_BY = USER_1_ID;
+    public static final Long IDENTIFIER_4_ID = 4L;
+    public static final Long IDENTIFIER_4_DATABASE_ID = DATABASE_1_ID;
+    public static final Long IDENTIFIER_4_TABLE_ID = TABLE_1_ID;
+    public static final String IDENTIFIER_4_DOI = null;
+    public static final Instant IDENTIFIER_4_CREATED = Instant.ofEpochSecond(1751588352L);
+    public static final Instant IDENTIFIER_4_MODIFIED = Instant.ofEpochSecond(1551588352L);
+    public static final Instant IDENTIFIER_4_EXECUTION = Instant.ofEpochSecond(1551588352L);
+    public static final Integer IDENTIFIER_4_PUBLICATION_DAY = 10;
+    public static final Integer IDENTIFIER_4_PUBLICATION_MONTH = 7;
+    public static final Integer IDENTIFIER_4_PUBLICATION_YEAR = 2023;
+    public static final String IDENTIFIER_4_RESULT_HASH = null;
+    public static final Long IDENTIFIER_4_RESULT_NUMBER = null;
+    public static final String IDENTIFIER_4_PUBLISHER = "Example Publisher";
+    public static final IdentifierType IDENTIFIER_4_TYPE = IdentifierType.TABLE;
+    public static final IdentifierTypeDto IDENTIFIER_4_TYPE_DTO = IdentifierTypeDto.TABLE;
+    public static final IdentifierStatusType IDENTIFIER_4_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public static final IdentifierStatusTypeDto IDENTIFIER_4_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public static final UUID IDENTIFIER_4_CREATED_BY = USER_1_ID;
 
-    public final static Identifier IDENTIFIER_4 = Identifier.builder()
+    public static final Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
             .descriptions(new LinkedList<>())
@@ -7346,7 +7346,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_4_STATUS_TYPE)
             .build();
 
-    public final static IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
+    public static final IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_4_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
@@ -7367,7 +7367,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_4_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierBriefDto IDENTIFIER_4_BRIEF_DTO = IdentifierBriefDto.builder()
+    public static final IdentifierBriefDto IDENTIFIER_4_BRIEF_DTO = IdentifierBriefDto.builder()
             .id(IDENTIFIER_4_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
@@ -7379,13 +7379,13 @@ public abstract class BaseTest {
             .status(IDENTIFIER_4_STATUS_TYPE_DTO)
             .build();
 
-    public final static CreateIdentifierDto IDENTIFIER_4_CREATE_DTO = CreateIdentifierDto.builder()
+    public static final CreateIdentifierDto IDENTIFIER_4_CREATE_DTO = CreateIdentifierDto.builder()
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_4_SAVE_DTO = IdentifierSaveDto.builder()
+    public static final IdentifierSaveDto IDENTIFIER_4_SAVE_DTO = IdentifierSaveDto.builder()
             .id(IDENTIFIER_4_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
@@ -7400,36 +7400,36 @@ public abstract class BaseTest {
             .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
-    public final static String VIRTUAL_HOST_NAME = "fda";
-    public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";
-    public final static String VIRTUAL_HOST_TAGS = "";
+    public static final String VIRTUAL_HOST_NAME = "fda";
+    public static final String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";
+    public static final String VIRTUAL_HOST_TAGS = "";
 
-    public final static CreateVirtualHostDto VIRTUAL_HOST_CREATE_DTO = CreateVirtualHostDto.builder()
+    public static final CreateVirtualHostDto VIRTUAL_HOST_CREATE_DTO = CreateVirtualHostDto.builder()
             .name(VIRTUAL_HOST_NAME)
             .description(VIRTUAL_HOST_DESCRIPTION)
             .tags(VIRTUAL_HOST_TAGS)
             .build();
 
-    public final static ExchangeUpdatePermissionsDto VIRTUAL_HOST_EXCHANGE_UPDATE_DTO = ExchangeUpdatePermissionsDto.builder()
+    public static final ExchangeUpdatePermissionsDto VIRTUAL_HOST_EXCHANGE_UPDATE_DTO = ExchangeUpdatePermissionsDto.builder()
             .exchange(DATABASE_1_EXCHANGE)
             .read(".*")
             .write(".*")
             .build();
 
-    public final static GrantVirtualHostPermissionsDto VIRTUAL_HOST_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
+    public static final GrantVirtualHostPermissionsDto VIRTUAL_HOST_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
             .read(".*")
             .write(".*")
             .configure(".*")
             .build();
 
-    public final static Long BANNER_MESSAGE_1_ID = 1L;
-    public final static String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
-    public final static BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
-    public final static BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
-    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L) /* 2022-12-23 22:00:00 (UTC) */;
-    public final static Instant BANNER_MESSAGE_1_END = null;
+    public static final Long BANNER_MESSAGE_1_ID = 1L;
+    public static final String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
+    public static final BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
+    public static final BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
+    public static final Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786L) /* 2022-12-23 22:00:00 (UTC) */;
+    public static final Instant BANNER_MESSAGE_1_END = null;
 
-    public final static BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
+    public static final BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
             .id(BANNER_MESSAGE_1_ID)
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BANNER_MESSAGE_1_TYPE)
@@ -7437,7 +7437,7 @@ public abstract class BaseTest {
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();
 
-    public final static BannerMessageDto BANNER_MESSAGE_1_DTO = BannerMessageDto.builder()
+    public static final BannerMessageDto BANNER_MESSAGE_1_DTO = BannerMessageDto.builder()
             .id(BANNER_MESSAGE_1_ID)
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BANNER_MESSAGE_1_TYPE_DTO)
@@ -7445,28 +7445,28 @@ public abstract class BaseTest {
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();
 
-    public final static BannerMessageCreateDto BANNER_MESSAGE_1_CREATE_DTO = BannerMessageCreateDto.builder()
+    public static final BannerMessageCreateDto BANNER_MESSAGE_1_CREATE_DTO = BannerMessageCreateDto.builder()
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BANNER_MESSAGE_1_TYPE_DTO)
             .displayStart(BANNER_MESSAGE_1_START)
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();
 
-    public final static BannerMessageUpdateDto BANNER_MESSAGE_1_UPDATE_DTO = BannerMessageUpdateDto.builder()
+    public static final BannerMessageUpdateDto BANNER_MESSAGE_1_UPDATE_DTO = BannerMessageUpdateDto.builder()
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BannerMessageTypeDto.WARNING)
             .displayStart(BANNER_MESSAGE_1_START)
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();
 
-    public final static Long BANNER_MESSAGE_2_ID = 2L;
-    public final static String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
-    public final static BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
-    public final static BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
-    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L) /* 2022-12-23 22:00:00 (UTC) */;
-    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L) /* 2022-12-25 22:00:00 (UTC) */;
+    public static final Long BANNER_MESSAGE_2_ID = 2L;
+    public static final String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
+    public static final BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
+    public static final BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
+    public static final Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400L) /* 2022-12-23 22:00:00 (UTC) */;
+    public static final Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200L) /* 2022-12-25 22:00:00 (UTC) */;
 
-    public final static BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
+    public static final BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
             .id(BANNER_MESSAGE_2_ID)
             .message(BANNER_MESSAGE_2_MESSAGE)
             .type(BANNER_MESSAGE_2_TYPE)
@@ -7474,14 +7474,14 @@ public abstract class BaseTest {
             .displayEnd(BANNER_MESSAGE_2_END)
             .build();
 
-    public final static BannerMessageCreateDto BANNER_MESSAGE_2_CREATE_DTO = BannerMessageCreateDto.builder()
+    public static final BannerMessageCreateDto BANNER_MESSAGE_2_CREATE_DTO = BannerMessageCreateDto.builder()
             .message(BANNER_MESSAGE_2_MESSAGE)
             .type(BANNER_MESSAGE_2_TYPE_DTO)
             .displayStart(BANNER_MESSAGE_2_START)
             .displayEnd(BANNER_MESSAGE_2_END)
             .build();
 
-    public final static Database DATABASE_1 = Database.builder()
+    public static final Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
             .created(Instant.now().minus(1, HOURS))
             .lastModified(Instant.now())
@@ -7510,7 +7510,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
             .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
@@ -7524,7 +7524,7 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
-    public final static DatabaseDto DATABASE_1_PRIVILEGED_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_1_PRIVILEGED_DTO = DatabaseDto.builder()
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
             .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
@@ -7540,7 +7540,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static DatabaseBriefDto DATABASE_1_BRIEF_DTO = DatabaseBriefDto.builder()
+    public static final DatabaseBriefDto DATABASE_1_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_1_ID)
             .isPublic(DATABASE_1_PUBLIC)
             .isSchemaPublic(DATABASE_1_SCHEMA_PUBLIC)
@@ -7549,7 +7549,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>(List.of(IDENTIFIER_1_BRIEF_DTO, IDENTIFIER_2_BRIEF_DTO, IDENTIFIER_3_BRIEF_DTO, IDENTIFIER_4_BRIEF_DTO)))
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7557,14 +7557,14 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
             .user(USER_1_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7572,7 +7572,7 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7580,7 +7580,7 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7588,14 +7588,14 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .user(USER_2_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7603,14 +7603,14 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .user(USER_2_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7618,14 +7618,14 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .user(USER_2_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7633,7 +7633,7 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7641,7 +7641,7 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7649,14 +7649,14 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_USER_4_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_1_USER_4_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .database(DATABASE_1)
@@ -7664,14 +7664,14 @@ public abstract class BaseTest {
             .user(USER_4)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_1_USER_4_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_1_USER_4_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_4_ID)
             .user(USER_4_BRIEF_DTO)
             .build();
 
-    public final static Database DATABASE_2 = Database.builder()
+    public static final Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
             .created(DATABASE_2_CREATED)
             .lastModified(Instant.now())
@@ -7695,7 +7695,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
@@ -7710,7 +7710,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static DatabaseDto DATABASE_2_PRIVILEGED_DTO = DatabaseDto.builder()
+    public static final DatabaseDto DATABASE_2_PRIVILEGED_DTO = DatabaseDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
@@ -7725,7 +7725,7 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
-    public final static DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
+    public static final DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
             .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
@@ -7735,7 +7735,7 @@ public abstract class BaseTest {
             .ownerId(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7743,7 +7743,7 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7751,7 +7751,7 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7759,7 +7759,7 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7767,13 +7767,13 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_2_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_2_USER_2_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7781,7 +7781,7 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7789,14 +7789,14 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_2_USER_2_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .user(USER_2_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7804,14 +7804,14 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_2_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_2_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7819,7 +7819,7 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .database(DATABASE_2)
@@ -7827,7 +7827,7 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static Database DATABASE_3 = Database.builder()
+    public static final Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
             .created(Instant.now().minus(1, HOURS))
             .lastModified(Instant.now())
@@ -7851,7 +7851,7 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>()) /* IDENTIFIER_6 */
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7859,14 +7859,14 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .user(USER_1_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7874,14 +7874,14 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .user(USER_1_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7889,14 +7889,14 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_1_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .user(USER_1_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7904,7 +7904,7 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7912,7 +7912,7 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7920,7 +7920,7 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7928,14 +7928,14 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7943,14 +7943,14 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
@@ -7958,14 +7958,14 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
-    public final static DatabaseAccessDto DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+    public static final DatabaseAccessDto DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
             .type(AccessTypeDto.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
             .build();
 
-    public final static Identifier IDENTIFIER_7 = Identifier.builder()
+    public static final Identifier IDENTIFIER_7 = Identifier.builder()
             .id(IDENTIFIER_7_ID)
             .descriptions(new LinkedList<>())
             .titles(new LinkedList<>())
@@ -7988,7 +7988,7 @@ public abstract class BaseTest {
             .status(IDENTIFIER_7_STATUS_TYPE)
             .build();
 
-    public final static Database DATABASE_4 = Database.builder()
+    public static final Database DATABASE_4 = Database.builder()
             .id(DATABASE_4_ID)
             .created(Instant.now().minus(4, HOURS))
             .lastModified(Instant.now())
@@ -8011,72 +8011,72 @@ public abstract class BaseTest {
             .identifiers(new LinkedList<>())
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public static final DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .database(DATABASE_4)
             .huserid(USER_3_ID)
             .build();
 
-    public final static List<IdentifierDto> VIEW_1_DTO_IDENTIFIERS = List.of(IDENTIFIER_3_DTO);
+    public static final List<IdentifierDto> VIEW_1_DTO_IDENTIFIERS = List.of(IDENTIFIER_3_DTO);
 
-    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8087,7 +8087,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_1_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_1_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8098,7 +8098,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
                     .id(1L)
@@ -8127,7 +8127,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_2_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_2_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>(List.of("`mintemp` > 0")))
             .foreignKeys(new LinkedList<>(List.of(ForeignKeyDto.builder()
                     .id(1L)
@@ -8156,7 +8156,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8167,7 +8167,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8178,7 +8178,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8189,7 +8189,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_4_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_4_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8200,7 +8200,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8211,7 +8211,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_5_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_5_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8222,7 +8222,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_6_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_6_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>(List.of()))
             .uniques(new LinkedList<>())
@@ -8233,7 +8233,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_6_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_6_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8244,7 +8244,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_7_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_7_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>(List.of(ForeignKey.builder()
                             .id(8L)
@@ -8282,7 +8282,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ForeignKeyDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_0_DTO = ForeignKeyDto.builder()
+    public static final ForeignKeyDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_0_DTO = ForeignKeyDto.builder()
             .id(2L)
             .name("fk_name_id")
             .onDelete(ReferenceTypeDto.NO_ACTION)
@@ -8297,11 +8297,11 @@ public abstract class BaseTest {
             .onUpdate(ReferenceTypeDto.NO_ACTION)
             .build();
 
-    public final static ForeignKeyBriefDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_0_DTO = ForeignKeyBriefDto.builder()
+    public static final ForeignKeyBriefDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_0_DTO = ForeignKeyBriefDto.builder()
             .id(2L)
             .build();
 
-    public final static ForeignKeyDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_1_DTO = ForeignKeyDto.builder()
+    public static final ForeignKeyDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_1_DTO = ForeignKeyDto.builder()
             .id(3L)
             .name("fk_zoo_id")
             .onDelete(ReferenceTypeDto.NO_ACTION)
@@ -8316,11 +8316,11 @@ public abstract class BaseTest {
             .onUpdate(ReferenceTypeDto.NO_ACTION)
             .build();
 
-    public final static ForeignKeyBriefDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_1_DTO = ForeignKeyBriefDto.builder()
+    public static final ForeignKeyBriefDto TABLE_7_CONSTRAINTS_FOREIGN_KEY_BRIEF_1_DTO = ForeignKeyBriefDto.builder()
             .id(3L)
             .build();
 
-    public final static ConstraintsDto TABLE_7_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_7_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>(List.of(TABLE_7_CONSTRAINTS_FOREIGN_KEY_0_DTO,
                     TABLE_7_CONSTRAINTS_FOREIGN_KEY_1_DTO)))
@@ -8332,7 +8332,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static Constraints TABLE_8_CONSTRAINTS = Constraints.builder()
+    public static final Constraints TABLE_8_CONSTRAINTS = Constraints.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8343,7 +8343,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ConstraintsDto TABLE_8_CONSTRAINTS_DTO = ConstraintsDto.builder()
+    public static final ConstraintsDto TABLE_8_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
@@ -8354,7 +8354,7 @@ public abstract class BaseTest {
                     .build())))
             .build();
 
-    public final static ExportResourceDto EXPORT_RESOURCE_DTO = ExportResourceDto.builder()
+    public static final ExportResourceDto EXPORT_RESOURCE_DTO = ExportResourceDto.builder()
             .filename("68b329da9893e34099c7d8ad5cb9c940")
             .resource(new InputStreamResource(InputStream.nullInputStream()))
             .build();
