@@ -141,23 +141,6 @@
     </v-form>
     <v-main>
       <v-container>
-        <div
-          v-cloak>
-          <v-alert
-            v-if="isNotFinishedAccountSetup"
-            border="start"
-            color="info"
-            class="mb-4">
-            {{ $t('pages.settings.subpages.authentication.setup.text') }}
-            <v-btn
-              variant="flat"
-              size="small"
-              to="/user/authentication">
-              {{ $t('pages.settings.subpages.authentication.setup.action') }}
-            </v-btn>
-            .
-          </v-alert>
-        </div>
         <JumboBox
           v-if="error"
           :title="$t(errorCodeKey(error).title, { resource })"
@@ -268,15 +251,6 @@ export default {
     },
     commitShort () {
       return this.$config.public.commit.substr(0, 8)
-    },
-    isNotFinishedAccountSetup () {
-      if (!this.cacheUser) {
-        return false
-      }
-      if (!('setup_finished' in this.cacheUser)) {
-        return true
-      }
-      return this.cacheUser.setup_finished === false
     },
     error () {
       if (this.identifier) {
