@@ -21,7 +21,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ApiErrorDto> handle(TokenExpiredException e) {
-        return generic_handle(e.getClass(), e.getLocalizedMessage(), "error.token.expired");
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/problem+json");
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNAUTHORIZED)
+                .message(e.getLocalizedMessage())
+                .code("error.token.expired")
+                .build();
+        return new ResponseEntity<>(response, headers, response.getStatus());
     }
 
     @Hidden
@@ -473,17 +480,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message) {
-        return generic_handle(exceptionClass, message, exceptionClass.getAnnotation(ResponseStatus.class).reason());
-    }
-
-    private ResponseEntity<ApiErrorDto> generic_handle(Class<?> exceptionClass, String message, String code) {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/problem+json");
         final ResponseStatus annotation = exceptionClass.getAnnotation(ResponseStatus.class);
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(annotation.code())
                 .message(message)
-                .code(code)
+                .code(exceptionClass.getAnnotation(ResponseStatus.class).reason())
                 .build();
         return new ResponseEntity<>(response, headers, response.getStatus());
     }
