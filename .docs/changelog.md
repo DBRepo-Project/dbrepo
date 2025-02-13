@@ -11,7 +11,7 @@ author: Martin Weise
 #### Fixes
 
 * Fixed a bug where the users were not synced with the Metadata Database and the API Password was not recommended on 
-* first login in [#489](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/489).
+  first login in [#489](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/489).
 
 ## v1.6.3 (2025-02-05)
 
