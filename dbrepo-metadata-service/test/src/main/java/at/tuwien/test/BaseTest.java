@@ -5,6 +5,7 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
@@ -478,8 +479,6 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_1_PASSWORD = "junit1";
     @SuppressWarnings("java:S2068")
-    public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
-    @SuppressWarnings("java:S2068")
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
@@ -487,18 +486,11 @@ public abstract class BaseTest {
     public final static String USER_1_NAME = "John Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
     public final static String USER_1_ORCID_URL = "https://orcid.org/0000-0003-4216-302X";
-    public final static String USER_1_TITLES_BEFORE = "Dr.";
-    public final static String USER_1_TITLES_AFTER = "MSc BSc";
-    public final static Boolean USER_1_VERIFIED = false;
-    public final static Boolean USER_1_TOTP = false;
-    public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
     public final static Boolean USER_1_IS_INTERNAL = false;
     public final static String USER_1_THEME = "light";
     public final static String USER_1_LANGUAGE = "en";
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
-    public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
-    public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
 
     public final static UpdateUserPasswordDto USER_1_UPDATE_PASSWORD_DTO = UpdateUserPasswordDto.builder()
             .username(USER_1_USERNAME)
@@ -568,6 +560,14 @@ public abstract class BaseTest {
             .qualifiedName(USER_1_QUALIFIED_NAME)
             .build();
 
+    public final static CreateUserDto USER_1_CREATE_USER_DTO = CreateUserDto.builder()
+            .id(USER_1_KEYCLOAK_ID)
+            .ldapId(USER_1_ID)
+            .givenName(USER_1_FIRSTNAME)
+            .familyName(USER_1_LASTNAME)
+            .username(USER_1_USERNAME)
+            .build();
+
     public final static UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
@@ -608,7 +608,6 @@ public abstract class BaseTest {
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public final static UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
-    public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
@@ -620,16 +619,9 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static String USER_2_QUALIFIED_NAME = USER_2_FIRSTNAME + " " + USER_2_LASTNAME + " — @" + USER_2_USERNAME;
-    public final static Boolean USER_2_VERIFIED = true;
-    public final static Boolean USER_2_TOTP = false;
-    public final static Long USER_2_NOT_BEFORE = 0L;
-    public final static Boolean USER_2_ENABLED = true;
     public final static Boolean USER_2_IS_INTERNAL = false;
     public final static String USER_2_THEME = "light";
     public final static String USER_2_LANGUAGE = "de";
-    public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528L) /* 2023-02-26 08:18:48 (UTC) */;
-    public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
-    public final static UUID USER_2_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_2_THEME)
@@ -697,20 +689,13 @@ public abstract class BaseTest {
     public final static String USER_3_AFFILIATION = "TU Wien";
     public final static String USER_3_ORCID_URL = null;
     public final static String USER_3_ORCID_UNCOMPRESSED = null;
-    public final static String USER_3_EMAIL = "system@example.com";
     @SuppressWarnings("java:S2068")
     public final static String USER_3_PASSWORD = "password";
     @SuppressWarnings("java:S2068")
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static String USER_3_QUALIFIED_NAME = USER_3_FIRSTNAME + " " + USER_3_LASTNAME + " — @" + USER_3_USERNAME;
-    public final static Boolean USER_3_VERIFIED = true;
-    public final static Boolean USER_3_TOTP = false;
-    public final static Long USER_3_NOT_BEFORE = 0L;
-    public final static Boolean USER_3_ENABLED = true;
     public final static Boolean USER_3_IS_INTERNAL = false;
     public final static String USER_3_THEME = "light";
-    public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559L) /* 2023-02-26 08:19:19 (UTC) */;
-    public final static UUID USER_3_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_3_THEME)
@@ -779,12 +764,8 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_QUALIFIED_NAME = USER_4_FIRSTNAME + " " + USER_4_LASTNAME + " — @" + USER_4_USERNAME;
-    public final static Boolean USER_4_VERIFIED = true;
-    public final static Boolean USER_4_ENABLED = true;
     public final static Boolean USER_4_IS_INTERNAL = false;
     public final static String USER_4_THEME = "light";
-    public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
-    public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_4_THEME)
@@ -842,18 +823,13 @@ public abstract class BaseTest {
     public final static String USER_5_LASTNAME = "Body";
     public final static String USER_5_NAME = "No Body";
     public final static String USER_5_AFFILIATION = "TU Wien";
-    public final static String USER_5_ORCID = null;
     @SuppressWarnings("java:S2068")
     public final static String USER_5_PASSWORD = "junit5";
     @SuppressWarnings("java:S2068")
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_QUALIFIED_NAME = USER_5_FIRSTNAME + " " + USER_5_LASTNAME + " — @" + USER_5_USERNAME;
-    public final static Boolean USER_5_VERIFIED = true;
-    public final static Boolean USER_5_ENABLED = true;
     public final static Boolean USER_5_IS_INTERNAL = false;
     public final static String USER_5_THEME = "dark";
-    public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
-    public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_5_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_5_THEME)
@@ -7678,6 +7654,21 @@ public abstract class BaseTest {
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
             .user(USER_3_BRIEF_DTO)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_USER_4_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .huserid(USER_4_ID)
+            .user(USER_4)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_1_USER_4_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_4_ID)
+            .user(USER_4_BRIEF_DTO)
             .build();
 
     public final static Database DATABASE_2 = Database.builder()

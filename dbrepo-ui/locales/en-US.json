@@ -794,11 +794,11 @@
           },
           "firstname": {
             "label": "Given Name",
-            "hint": ""
+            "hint": "Managed by your identity provider: {provider}"
           },
           "lastname": {
             "label": "Family Name",
-            "hint": ""
+            "hint": "Managed by your identity provider: {provider}"
           },
           "affiliation": {
             "label": "Affiliation Identifier",
@@ -834,8 +834,12 @@
     "settings": {
       "subpages": {
         "authentication": {
-          "title": "User Password",
-          "subtitle": "Update the user password used for basic authentication with all interfaces",
+          "title": "API Password",
+          "subtitle": "Update the user password used for authentication with all interfaces (e.g. HTTP API, AMQP API, MQTT API)",
+          "setup": {
+            "text": "Finish your account setup by setting the",
+            "action": "API Password"
+          },
           "password": {
             "label": "Password",
             "hint": "Required"

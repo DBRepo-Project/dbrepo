@@ -1,5 +1,3 @@
-import {jwtDecode} from 'jwt-decode'
-import axios from 'axios'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useUserService = (): any => {
@@ -78,36 +76,6 @@ export const useUserService = (): any => {
         reject(axiosErrorToApiError(error))
       })
     })
-  }
-
-  async function refreshToken(refreshToken: string): Promise<KeycloakOpenIdTokenDto> {
-    console.debug('refresh user token')
-    return new Promise<KeycloakOpenIdTokenDto>((resolve, reject) => {
-      const config = useRuntimeConfig()
-      const instance = axios.create({
-        timeout: 90_000,
-        params: {},
-        baseURL: config.public.api.client
-      })
-      instance.put<KeycloakOpenIdTokenDto>('/api/user/token', {refresh_token: refreshToken})
-        .then((response) => {
-          console.info('Refreshed user token')
-          const userStore = useUserStore()
-          // eslint-disable-next-line camelcase
-          const {access_token, refresh_token} = response.data
-          userStore.setToken(access_token)
-          userStore.setRefreshToken(refresh_token)
-          resolve(response.data)
-        }).catch((error) => {
-          console.error('Failed to refresh user token', error)
-          reject(axiosErrorToApiError(error))
-      })
-    })
-  }
-
-  function tokenToRoles(token: string): string[] {
-    const data: Token = jwtDecode<Token>(token)
-    return data.realm_access.roles || []
   }
 
   function nameIdentifierToNameIdentifierScheme(nameIdentifier: string) {

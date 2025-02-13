@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "30aa6fefdbdbb9f57d58ebc8660eee64445a831cea44c6ca1fa605f2a2e1adc3"
+            "sha256": "c22580f5873b7bd3fc1edb71c84b7269ae79da6a2554225fe8d95cab6af9f14d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -369,9 +369,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:f25d5adbd618bf2906578e671af2bf3bcc24d738ef8bc791c220e7e5b714e2f7"
+                "sha256:a518aee79540d9e302b161e7e10072f50730489da19368f00a1e68204009ce44"
             ],
-            "path": "./lib/dbrepo-1.7.0.tar.gz"
+            "path": "./lib/dbrepo-1.6.4.tar.gz"
         },
         "docker": {
             "hashes": [

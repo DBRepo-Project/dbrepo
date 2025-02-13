@@ -92,23 +92,4 @@ public class KeycloakGatewayIntegrationTest extends AbstractUnitTest {
         });
     }
 
-    @Test
-    public void updateUserCredentials_succeeds() throws UserNotFoundException {
-
-        /* mock */
-        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
-
-        /* test */
-        keycloakGateway.updateUserCredentials(keycloakUtils.getUserId(USER_1_USERNAME), USER_1_PASSWORD_DTO);
-    }
-
-    @Test
-    public void updateUserCredentials_notFound_fails() {
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            keycloakGateway.updateUserCredentials(keycloakUtils.getUserId(USER_1_USERNAME), USER_1_PASSWORD_DTO);
-        });
-    }
-
 }
