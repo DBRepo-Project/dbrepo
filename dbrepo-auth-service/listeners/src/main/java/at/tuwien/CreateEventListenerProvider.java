@@ -57,7 +57,6 @@ public class CreateEventListenerProvider implements EventListenerProvider {
         final String userData = "{" +
                 quoteAttr("id", user.getId()) + ", " +
                 quoteAttr("username", user.getUsername()) + ", " +
-                quoteAttr("email", user.getEmail()) + ", " +
                 quoteAttr("ldap_id", user.getFirstAttribute("LDAP_ID")) + ", " +
                 quoteAttr("given_name", user.getFirstName()) + ", " +
                 quoteAttr("family_name", user.getLastName()) +

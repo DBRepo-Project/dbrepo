@@ -269,7 +269,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_anonymous_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_anonymous_succeeds() {
 
         /* mock */
         when(databaseService.findAllPublicOrSchemaPublic())
@@ -281,7 +281,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRole_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_hasRole_succeeds() {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -296,7 +296,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleForeign_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_hasRoleForeign_succeeds() {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -311,7 +311,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleFilter_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_hasRoleFilter_succeeds() {
 
         /* mock */
         when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, DATABASE_3_INTERNALNAME))
@@ -323,7 +323,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleFilterNoResult_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_hasRoleFilterNoResult_succeeds() {
 
         /* mock */
         when(databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(USER_1_ID, "i_do_not_exist"))
@@ -331,6 +331,18 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         list_generic("i_do_not_exist", USER_1_PRINCIPAL, 0);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void list_filterNoResult_succeeds() {
+
+        /* mock */
+        when(databaseService.findAllPublicOrSchemaPublicByInternalName("i_do_not_exist"))
+                .thenReturn(List.of());
+
+        /* test */
+        list_generic("i_do_not_exist", null, 0);
     }
 
     @Test
@@ -562,15 +574,15 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void findById_anonymousPrivateSchemaNoAccessSystem_succeeds() throws UserNotFoundException,
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void findById_privateSchemaNoAccessInternalUser_succeeds() throws UserNotFoundException,
             NotAllowedException, DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException,
             DataServiceConnectionException {
 
         /* test */
-        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_LOCAL_ADMIN_PRINCIPAL);
-        assertEquals(4, database.getTables().size());
-        assertEquals(2, database.getViews().size());
+        final DatabaseDto database = findById_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL);
+        assertEquals(0, database.getTables().size());
+        assertEquals(1, database.getViews().size());
         assertNotEquals(0, database.getAccesses().size());
     }
 
@@ -608,6 +620,58 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertEquals(4, database.getTables().size());
         assertEquals(3, database.getViews().size());
         assertEquals(3, database.getAccesses().size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void findById_hiddenAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(accessService.list(DATABASE_1))
+                .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
+
+        /* test */
+        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
+        assertEquals(4, database.getTables().size());
+        assertEquals(3, database.getViews().size());
+        assertEquals(0, database.getAccesses().size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findById_hiddenAccessRightsSeesOwn_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(accessService.list(DATABASE_1))
+                .thenReturn(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS, DATABASE_1_USER_2_READ_ACCESS));
+
+        /* test */
+        final DatabaseDto database = findById_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        assertEquals(4, database.getTables().size());
+        assertEquals(3, database.getViews().size());
+        assertEquals(3, database.getAccesses().size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findById_privateDataPrivateSchemaNoAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            findById_generic(DATABASE_1_ID, DATABASE_1, USER_4_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findById_anonymousPrivateDataPrivateSchema_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            findById_generic(DATABASE_1_ID, DATABASE_1, null);
+        });
     }
 
     @Test
@@ -660,8 +724,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void list_generic(String internalName, Principal principal, Integer expectedSize)
-            throws DatabaseNotFoundException, UserNotFoundException {
+    public void list_generic(String internalName, Principal principal, Integer expectedSize) {
 
         /* test */
         final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(internalName, principal);

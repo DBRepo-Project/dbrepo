@@ -40,7 +40,4 @@ public class CreateUserDto {
     @Schema(example = "bar")
     private String familyName;
 
-    @Schema(example = "foo.bar@example.com")
-    private String email;
-
 }
