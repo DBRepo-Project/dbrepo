@@ -948,7 +948,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_4_ID, TABLE_4, USER_4_PRINCIPAL, USER_4, null);
+            generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_4_PRINCIPAL, USER_4, null);
         });
     }
 
