@@ -11,7 +11,7 @@ components:
       type: http
 externalDocs:
   description: Project Website
-  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/
 info:
   contact:
     email: andreas.rauber@tuwien.ac.at
@@ -24,7 +24,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
   title: DBRepo REST API
-  version: 1.7.0
+  version: 1.6.4
 openapi: 3.1.0
 servers:
   - description: Test Instance

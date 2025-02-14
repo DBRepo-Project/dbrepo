@@ -1,7 +1,6 @@
 package at.tuwien.gateway;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
@@ -22,13 +21,7 @@ public interface KeycloakGateway {
      */
     void deleteUser(UUID id) throws UserNotFoundException;
 
-    /**
-     * Update the credentials for a given user.
-     *
-     * @param id       The user id.
-     * @param password The user credential.
-     */
-    void updateUserCredentials(UUID id, UserPasswordDto password) throws UserNotFoundException;
+    void setupFinished(UUID id) throws AuthServiceException, UserNotFoundException;
 
     void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException;
 }

@@ -114,7 +114,7 @@ services:
     init: true
     restart: "no"
     container_name: dbrepo-auth-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.4
     environment:
       AUTH_SERVICE_ADMIN: ${AUTH_SERVICE_ADMIN:-admin}
       AUTH_SERVICE_ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD:-admin}
@@ -135,7 +135,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.4
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:
@@ -198,7 +198,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.4
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -253,7 +253,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-db:1.6.4
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
@@ -277,7 +277,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.4
     environment:
       AUTH_SERVICE_CLIENT: ${AUTH_SERVICE_CLIENT:-dbrepo-client}
       AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}
@@ -301,7 +301,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.4
     environment:
       NUXT_PUBLIC_API_CLIENT: "${BASE_URL:-http://localhost}"
       NUXT_PUBLIC_API_SERVER: "${BASE_URL:-http://gateway-service}"
@@ -381,7 +381,7 @@ services:
     init: true
     container_name: dbrepo-search-service-init
     hostname: search-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.4
     environment:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       METADATA_SERVICE_ENDPOINT: ${METADATA_SERVICE_ENDPOINT:-http://metadata-service:8080}
@@ -438,7 +438,7 @@ services:
     restart: "no"
     container_name: dbrepo-dashboard-service
     hostname: dashboard-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/dashboard-service:1.6.4
     ports:
       - "3000:3000"
     volumes:
@@ -465,7 +465,7 @@ services:
     init: true
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.4
     environment:
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-seaweedfsadmin}
       S3_BUCKET: "${S3_BUCKET:-dbrepo}"
@@ -511,7 +511,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.7.0
+    image: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.4
     volumes:
       - "${SHARED_VOLUME:-/tmp}:/tmp"
     environment:

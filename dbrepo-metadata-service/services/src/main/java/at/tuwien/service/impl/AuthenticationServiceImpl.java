@@ -1,10 +1,7 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
-import at.tuwien.exception.CredentialsInvalidException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.service.AuthenticationService;
@@ -29,8 +26,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void updatePassword(User user, UserPasswordDto data) throws UserNotFoundException {
-        keycloakGateway.updateUserCredentials(user.getKeycloakId(), data);
+    public void setupFinished(User user) throws AuthServiceException, UserNotFoundException {
+        keycloakGateway.setupFinished(user.getKeycloakId());
     }
 
 }

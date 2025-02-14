@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -61,6 +63,15 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final List<UserBriefDto> response = findAll_generic(null, null);
         assertEquals(2, response.size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findAll_filterInternalUserEmptyList_succeeds() throws UserNotFoundException {
+
+        /* test */
+        final List<UserBriefDto> response = findAll_generic(USER_LOCAL_ADMIN_USERNAME, null);
+        assertEquals(0, response.size());
     }
 
     @Test
@@ -140,6 +151,18 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getHeaders().get("X-Password"));
         assertNotEquals(USER_3_PASSWORD, response.getHeaders().get("X-Password").get(0));
         assertEquals(USER_3_DATABASE_PASSWORD, response.getHeaders().get("X-Password").get(0));
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void find_internalUser_fails() {
+        final Principal principal = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS, USER_LOCAL_ADMIN_PASSWORD, List.of(
+                new SimpleGrantedAuthority("system")));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            find_generic(USER_LOCAL_ADMIN_ID, USER_LOCAL, principal);
+        });
     }
 
     @Test
@@ -233,13 +256,45 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void password_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
-            UserNotFoundException, DatabaseNotFoundException {
+            UserNotFoundException, DatabaseNotFoundException, AuthServiceException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();
 
         /* test */
         password_generic(USER_1_PRINCIPAL, request);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void create_anonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_create(USER_1_CREATE_USER_DTO);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void create_notInternalUser_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_create(USER_1_CREATE_USER_DTO);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
+    public void create_succeeds() {
+
+        /* mock */
+        when(userService.create(USER_1_CREATE_USER_DTO))
+                .thenReturn(USER_1);
+
+        /* test */
+        generic_create(USER_1_CREATE_USER_DTO);
     }
 
     /* ################################################################################################### */
@@ -260,7 +315,7 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
             }
         } else {
             when(userService.findAll())
-                    .thenReturn(List.of(USER_1, USER_2));
+                    .thenReturn(List.of(USER_1, USER_2, USER_LOCAL));
         }
 
         /* test */
@@ -310,14 +365,15 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
     }
 
     protected void password_generic(Principal principal, UserPasswordDto data) throws NotAllowedException,
-            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException {
+            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
+            AuthServiceException {
 
         /* mock */
         when(userService.findById(USER_1_ID))
                 .thenReturn(USER_1);
         doNothing()
                 .when(authenticationService)
-                .updatePassword(USER_1, data);
+                .setupFinished(USER_1);
         doNothing()
                 .when(userService)
                 .updatePassword(USER_1, data);
@@ -330,5 +386,14 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         /* test */
         final ResponseEntity<?> response = userEndpoint.password(USER_1_ID, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    protected void generic_create(CreateUserDto data) {
+
+        /* test */
+        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        final UserBriefDto body = response.getBody();
+        assertNotNull(body);
     }
 }

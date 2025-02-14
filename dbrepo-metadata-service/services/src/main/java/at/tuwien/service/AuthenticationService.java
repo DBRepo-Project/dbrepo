@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
@@ -23,8 +22,7 @@ public interface AuthenticationService {
      * Updates the password of a user with given id.
      *
      * @param user The user.
-     * @param data The new password.
      * @throws UserNotFoundException      The user was not found after creation in the auth database.
      */
-    void updatePassword(User user, UserPasswordDto data) throws UserNotFoundException;
+    void setupFinished(User user) throws UserNotFoundException, AuthServiceException;
 }

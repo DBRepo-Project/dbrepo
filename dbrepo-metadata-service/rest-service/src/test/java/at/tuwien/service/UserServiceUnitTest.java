@@ -93,12 +93,12 @@ public class UserServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws UserNotFoundException {
+    public void updatePassword_succeeds() throws UserNotFoundException, AuthServiceException {
 
         /* mock */
         doNothing()
                 .when(keycloakGateway)
-                .updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
+                .setupFinished(USER_1_ID);
         when(userRepository.findById(USER_1_ID))
                 .thenReturn(Optional.of(USER_1));
         when(userRepository.save(any(User.class)))

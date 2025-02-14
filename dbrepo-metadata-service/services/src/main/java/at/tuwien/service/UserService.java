@@ -4,7 +4,6 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.AuthServiceConnectionException;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
@@ -47,7 +46,7 @@ public interface UserService {
      * @param data The user data.
      * @return The user, if successful.
      */
-    User create(CreateUserDto data) throws UserNotFoundException, AuthServiceException;
+    User create(CreateUserDto data);
 
     /**
      * Updates the user information for a user with given id in the metadata database.
