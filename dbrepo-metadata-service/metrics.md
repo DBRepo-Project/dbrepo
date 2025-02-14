@@ -55,11 +55,6 @@
 | `dbrepo_tables_find`               | Find table                    |
 | `dbrepo_tables_findall`            | List tables                   |
 | `dbrepo_tables_refresh`            | Update database table schemas |
-| `dbrepo_user_create`               | Create user                   |
-| `dbrepo_user_find`                 | Get user                      |
-| `dbrepo_user_modify`               | Update user                   |
-| `dbrepo_user_password_modify`      | Update user password          |
-| `dbrepo_users_list`                | List users                    |
 | `dbrepo_view_create`               | Create view                   |
 | `dbrepo_view_delete`               | Delete view                   |
 | `dbrepo_view_find`                 | Get view                      |
