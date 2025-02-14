@@ -588,8 +588,7 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify",
-                "dbrepo_user_password_modify")) {
+        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

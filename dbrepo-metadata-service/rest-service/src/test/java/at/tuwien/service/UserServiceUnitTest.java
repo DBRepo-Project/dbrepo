@@ -1,8 +1,10 @@
 package at.tuwien.service;
 
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +17,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -27,6 +29,9 @@ public class UserServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private KeycloakGateway keycloakGateway;
 
     @Autowired
     private UserService userService;
@@ -82,6 +87,9 @@ public class UserServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(userRepository.save(any(User.class)))
                 .thenReturn(USER_1);
+        doNothing()
+                .when(keycloakGateway)
+                .updateUser(any(UUID.class), any(UserUpdateDto.class));
 
         /* test */
         final User response = userService.modify(USER_1, USER_1_UPDATE_DTO);
