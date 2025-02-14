@@ -4,11 +4,11 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.NotAllowedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
@@ -210,62 +210,6 @@ public class UserEndpoint extends AbstractEndpoint {
         return ResponseEntity.accepted()
                 .body(userMapper.userToUserBriefDto(
                         userService.modify(user, data)));
-    }
-
-    @PutMapping("/{userId}/password")
-    @Transactional(rollbackFor = {Exception.class})
-    @PreAuthorize("isAuthenticated()")
-    @Observed(name = "dbrepo_user_password_modify")
-    @Operation(summary = "Update user password",
-            description = "Updates password of user with id. Requires authentication.",
-            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Modified user password"),
-            @ApiResponse(responseCode = "400",
-                    description = "Invalid password payload",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Not allowed to change foreign user password",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Failed to find database/user in metadata database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to auth service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to get user in auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<Void> password(@NotNull @PathVariable("userId") UUID userId,
-                                         @NotNull @Valid @RequestBody UserPasswordDto data,
-                                         @NotNull Principal principal) throws NotAllowedException,
-            UserNotFoundException, DatabaseNotFoundException, DataServiceException,
-            DataServiceConnectionException, AuthServiceException {
-        log.debug("endpoint modify a user password, userId={}, principal.name={}", userId, principal.getName());
-        final User user = userService.findById(userId);
-        if (!user.getUsername().equals(principal.getName())) {
-            log.error("Failed to modify user password: not current user");
-            throw new NotAllowedException("Failed to modify user password: not current user");
-        }
-        for (Database database : databaseService.findAllAtLestReadAccess(userId)) {
-            databaseService.updatePassword(database, user);
-        }
-        userService.updatePassword(user, data);
-        authenticationService.setupFinished(user);
-        return ResponseEntity.accepted()
-                .build();
     }
 
 }

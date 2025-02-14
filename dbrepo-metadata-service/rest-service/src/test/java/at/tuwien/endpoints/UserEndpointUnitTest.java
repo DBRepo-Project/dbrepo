@@ -3,10 +3,11 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AuthServiceException;
+import at.tuwien.exception.NotAllowedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
@@ -32,7 +33,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -229,44 +231,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void password_anonymous_fails() {
-        final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            password_generic(null, request);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void password_noRoleForeign_fails() {
-        final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            password_generic(USER_4_PRINCIPAL, request);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void password_succeeds() throws NotAllowedException, DataServiceException, DataServiceConnectionException,
-            UserNotFoundException, DatabaseNotFoundException, AuthServiceException {
-        final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        password_generic(USER_1_PRINCIPAL, request);
-    }
-
-    @Test
-    @WithAnonymousUser
     public void create_anonymous_fails() {
 
         /* test */
@@ -362,30 +326,6 @@ public class UserEndpointUnitTest extends AbstractUnitTest {
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final UserBriefDto body = response.getBody();
         assertNotNull(body);
-    }
-
-    protected void password_generic(Principal principal, UserPasswordDto data) throws NotAllowedException,
-            DataServiceException, DataServiceConnectionException, UserNotFoundException, DatabaseNotFoundException,
-            AuthServiceException {
-
-        /* mock */
-        when(userService.findById(USER_1_ID))
-                .thenReturn(USER_1);
-        doNothing()
-                .when(authenticationService)
-                .setupFinished(USER_1);
-        doNothing()
-                .when(userService)
-                .updatePassword(USER_1, data);
-        when(databaseService.findAllAtLestReadAccess(USER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-        doNothing()
-                .when(databaseService)
-                .updatePassword(DATABASE_1, USER_1);
-
-        /* test */
-        final ResponseEntity<?> response = userEndpoint.password(USER_1_ID, data, principal);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     protected void generic_create(CreateUserDto data) {
