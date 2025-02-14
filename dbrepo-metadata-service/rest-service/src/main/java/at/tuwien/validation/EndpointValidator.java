@@ -131,7 +131,7 @@ public class EndpointValidator extends AbstractEndpoint {
         final Optional<CreateTableColumnDto> optional3 = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SET))
-                .filter(c -> c.getEnums() == null || c.getSets().isEmpty())
+                .filter(c -> c.getSets() == null || c.getSets().isEmpty())
                 .findFirst();
         if (optional3.isPresent()) {
             log.error("Validation failed: column {} needs at least 1 allowed set value", optional3.get().getName());

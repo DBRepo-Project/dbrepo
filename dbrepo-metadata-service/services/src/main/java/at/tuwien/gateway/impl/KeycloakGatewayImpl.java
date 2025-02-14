@@ -1,14 +1,12 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.keycloak.TokenDto;
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.MetadataMapper;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
@@ -17,7 +15,6 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
@@ -80,21 +77,25 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void updateUserCredentials(UUID id, UserPasswordDto data) throws UserNotFoundException {
-        final CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setTemporary(false);
-        credential.setValue(data.getPassword());
-        credential.setType(CredentialRepresentation.PASSWORD);
+    public void setupFinished(UUID id) throws AuthServiceException, UserNotFoundException {
+        final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .get(String.valueOf(id));
+        final UserRepresentation user;
         try {
-            keycloak.realm(keycloakConfig.getRealm())
-                    .users()
-                    .get(String.valueOf(id))
-                    .resetPassword(credential);
+            user = resource.toRepresentation();
         } catch (NotFoundException e) {
-            log.error("Failed to update user password: not found");
-            throw new UserNotFoundException("Failed to update user password: not found", e);
+            log.error("Failed to update user setup: not found: {}", e.getMessage());
+            throw new UserNotFoundException("Failed to update user setup: not found", e);
         }
-        log.info("Updated user {} password at auth service", id);
+        user.singleAttribute("SETUP_FINISHED", "true");
+        try {
+            resource.update(user);
+        } catch (ForbiddenException e) {
+            log.error("Failed to update user setup: forbidden: {}", e.getMessage());
+            throw new AuthServiceException("Failed to update user setup: forbidden", e);
+        }
+        log.info("Updated user {} setup at auth service", id);
     }
 
     @Override
@@ -102,7 +103,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
                 .users()
                 .get(String.valueOf(id));
-        UserRepresentation user;
+        final UserRepresentation user;
         try {
             user = resource.toRepresentation();
         } catch (NotFoundException e) {

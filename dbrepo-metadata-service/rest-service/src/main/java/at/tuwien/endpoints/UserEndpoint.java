@@ -106,47 +106,15 @@ public class UserEndpoint extends AbstractEndpoint {
             @ApiResponse(responseCode = "400",
                     description = "Parameters are not well-formed (likely email)",
                     content = {@Content(mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    description = "Internal authentication to the auth service is invalid",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Default role not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "409",
-                    description = "User with username already exists",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "417",
-                    description = "User with e-mail already exists",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to create in auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to create in auth service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data)
-            throws UserExistsException, EmailExistsException, AuthServiceException, AuthServiceConnectionException,
-            UserNotFoundException, CredentialsInvalidException {
+    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody CreateUserDto data) {
         log.debug("endpoint create user, data.id={}, data.username={}", data.getId(), data.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserBriefDto(
                         userService.create(data)));
     }
 
-    @GetMapping("/{userId}")
+    @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbrepo_user_find")
@@ -181,12 +149,14 @@ public class UserEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to find user: foreign user");
         }
         if (user.getIsInternal()) {
-            throw new UserNotFoundException("Failed to find user with username: " + user.getUsername());
+            log.error("Failed to find user: internal user");
+            throw new NotAllowedException("Failed to find user: internal user");
         }
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", user.getUsername());
             headers.set("X-Password", user.getMariadbPassword());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
         }
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
@@ -282,18 +252,18 @@ public class UserEndpoint extends AbstractEndpoint {
                                          @NotNull @Valid @RequestBody UserPasswordDto data,
                                          @NotNull Principal principal) throws NotAllowedException,
             UserNotFoundException, DatabaseNotFoundException, DataServiceException,
-            DataServiceConnectionException {
+            DataServiceConnectionException, AuthServiceException {
         log.debug("endpoint modify a user password, userId={}, principal.name={}", userId, principal.getName());
         final User user = userService.findById(userId);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user password: not current user");
             throw new NotAllowedException("Failed to modify user password: not current user");
         }
-        authenticationService.updatePassword(user, data);
         for (Database database : databaseService.findAllAtLestReadAccess(userId)) {
             databaseService.updatePassword(database, user);
         }
         userService.updatePassword(user, data);
+        authenticationService.setupFinished(user);
         return ResponseEntity.accepted()
                 .build();
     }

@@ -42,7 +42,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
     public void beforeEach() {
         genesis();
         /* metadata database */
-        userRepository.save(USER_1);
+        userRepository.saveAll(List.of(USER_1, USER_LOCAL));
     }
 
     @Test
@@ -52,6 +52,16 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
         final User response = userService.findByUsername(USER_1_USERNAME);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
+    }
+
+    @Test
+    public void findAllInternalUsers_succeeds() {
+
+        /* test */
+        final List<User> response = userService.findAllInternalUsers();
+        assertEquals(1, response.size());
+        final User user0 = response.get(0);
+        assertEquals(USER_LOCAL_ADMIN_ID, user0.getId());
     }
 
     @Test
@@ -68,7 +78,7 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<User> response = userService.findAll();
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test

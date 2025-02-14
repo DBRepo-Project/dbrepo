@@ -31,8 +31,7 @@ public class Client {
             if (systemPassword == null || systemPassword.isEmpty()) {
                 throw new IllegalArgumentException("Environment variable SYSTEM_PASSWORD is not set or is empty.");
             }
-
-            URL url = URI.create(urlString).toURL();
+            final URL url = URI.create(urlString + "/api/user").toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");

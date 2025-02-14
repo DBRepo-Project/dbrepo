@@ -141,12 +141,13 @@
     </v-form>
     <v-main>
       <v-container>
-        <slot />
         <JumboBox
           v-if="error"
           :title="$t(errorCodeKey(error).title, { resource })"
           :subtitle="$t(errorCodeKey(error).subtitle)"
           :text="$t(errorCodeKey(error).text, { resource })" />
+        <slot
+          v-else />
       </v-container>
     </v-main>
   </v-app>

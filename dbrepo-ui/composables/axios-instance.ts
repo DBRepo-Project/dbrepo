@@ -16,7 +16,7 @@ export const useAxiosInstance = () => {
       baseURL: config.public.api.client
     });
     instance.interceptors.request.use((config) => {
-      const { loggedIn, user, login, logout } = useOidcAuth()
+      const { loggedIn, user } = useOidcAuth()
       if (!loggedIn) {
         return config
       }

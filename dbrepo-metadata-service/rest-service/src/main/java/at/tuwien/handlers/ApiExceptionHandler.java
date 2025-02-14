@@ -2,6 +2,7 @@ package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,20 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Log4j2
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Hidden
+    @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ApiErrorDto> handle(TokenExpiredException e) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/problem+json");
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNAUTHORIZED)
+                .message(e.getLocalizedMessage())
+                .code("error.token.expired")
+                .build();
+        return new ResponseEntity<>(response, headers, response.getStatus());
+    }
 
     @Hidden
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
@@ -471,7 +486,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(annotation.code())
                 .message(message)
-                .code(annotation.reason())
+                .code(exceptionClass.getAnnotation(ResponseStatus.class).reason())
                 .build();
         return new ResponseEntity<>(response, headers, response.getStatus());
     }
