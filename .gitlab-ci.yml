@@ -348,6 +348,7 @@ test-search-service:
   before_script:
     - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
     - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
+    - "cp -r ./dbrepo-search-service/init/test/rsa ./dbrepo-search-service/test/rsa"
     - "cp ./dbrepo-search-service/init/test/test_keycloak_client.py ./dbrepo-search-service/test"
     - "cp ./dbrepo-search-service/init/test/test_opensearch_client.py ./dbrepo-search-service/test"
     - "cp ./dbrepo-search-service/init/friendly_names_overrides.json ./dbrepo-search-service/friendly_names_overrides.json"

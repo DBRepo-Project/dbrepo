@@ -40,6 +40,9 @@ MANIFEST
 
 # generate
 /friendly_names_overrides.json
+/test/rsa
+/test/test_keycloak_client.py
+/test/test_opensearch_client.py
 
 # Installer logs
 pip-log.txt
