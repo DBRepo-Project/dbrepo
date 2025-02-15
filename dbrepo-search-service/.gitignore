@@ -38,6 +38,9 @@ MANIFEST
 *.manifest
 *.spec
 
+# generate
+/friendly_names_overrides.json
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

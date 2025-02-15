@@ -19,9 +19,9 @@ WORKDIR /app
 
 COPY --chown=1001 ./init/clients ./clients
 COPY --chown=1001 ./init/omlib ./omlib
+COPY --chown=1001 ./init/friendly_names_overrides.json ./friendly_names_overrides.json
 COPY --chown=1001 ./os-yml ./os-yml
 COPY --chown=1001 ./app.py ./app.py
-COPY --chown=1001 ./friendly_names_overrides.json ./friendly_names_overrides.json
 
 # non-root port
 EXPOSE 8080
