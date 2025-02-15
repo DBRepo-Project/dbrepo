@@ -14,10 +14,7 @@ import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.CreateTableDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
@@ -2322,6 +2319,12 @@ public abstract class BaseTest {
             .columns(new LinkedList<>()) /* TABLE_8_COLUMNS_DTO */
             .constraints(null) /* TABLE_8_CONSTRAINTS_DTO */
             .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public static final TableUpdateDto TABLE_8_UPDATE_DTO = TableUpdateDto.builder()
+            .description(TABLE_8_DESCRIPTION)
+            .isPublic(true)
+            .isSchemaPublic(true)
             .build();
 
     public static final TableBriefDto TABLE_8_BRIEF_DTO = TableBriefDto.builder()

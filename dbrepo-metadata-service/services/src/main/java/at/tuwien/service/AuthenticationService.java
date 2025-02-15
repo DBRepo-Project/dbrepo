@@ -16,13 +16,7 @@ public interface AuthenticationService {
      * @throws AuthServiceConnectionException The connection with the auth service could not be established.
      * @throws UserNotFoundException      The user was not found after creation in the auth database.
      */
-    void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException, CredentialsInvalidException;
+    void delete(User user) throws AuthServiceException, AuthServiceConnectionException, UserNotFoundException,
+            CredentialsInvalidException;
 
-    /**
-     * Updates the password of a user with given id.
-     *
-     * @param user The user.
-     * @throws UserNotFoundException      The user was not found after creation in the auth database.
-     */
-    void setupFinished(User user) throws UserNotFoundException, AuthServiceException;
 }

@@ -25,9 +25,4 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         keycloakGateway.deleteUser(user.getKeycloakId());
     }
 
-    @Override
-    public void setupFinished(User user) throws AuthServiceException, UserNotFoundException {
-        keycloakGateway.setupFinished(user.getKeycloakId());
-    }
-
 }
