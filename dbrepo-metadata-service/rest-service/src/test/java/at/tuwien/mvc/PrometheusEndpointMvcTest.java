@@ -586,15 +586,9 @@ public class PrometheusEndpointMvcTest extends AbstractUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
-        try {
-            userEndpoint.password(USER_1_ID, USER_1_PASSWORD_DTO, USER_1_PRINCIPAL);
-        } catch (Exception e) {
-            /* ignore */
-        }
 
         /* test */
-        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify",
-                "dbrepo_user_password_modify")) {
+        for (String metric : List.of("dbrepo_users_list", "dbrepo_user_find", "dbrepo_user_modify")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

@@ -10,6 +10,7 @@ mariadb = "*"
 [dev-packages]
 coverage = "*"
 pytest = "*"
+testcontainers-mysql = "*"
 requests-mock = "*"
 
 [requires]

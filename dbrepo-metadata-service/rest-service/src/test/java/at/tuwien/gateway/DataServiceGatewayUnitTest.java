@@ -27,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -312,6 +311,20 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(DataServiceException.class, () -> {
+            dataServiceGateway.createDatabase(DATABASE_1_CREATE_INTERNAL);
+        });
+    }
+
+    @Test
+    public void createDatabase_notFound_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
             dataServiceGateway.createDatabase(DATABASE_1_CREATE_INTERNAL);
         });
     }
@@ -1103,7 +1116,8 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
     }
 
     @Test
-    public void getTableStatistics_emptyBody_fails() throws TableNotFoundException, DataServiceException, DataServiceConnectionException {
+    public void getTableStatistics_emptyBody_fails() throws TableNotFoundException, DataServiceException,
+            DataServiceConnectionException {
 
         /* mock */
         when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.GET), eq(HttpEntity.EMPTY), eq(TableStatisticDto.class)))
@@ -1112,6 +1126,89 @@ public class DataServiceGatewayUnitTest extends AbstractUnitTest {
 
         /* test */
         dataServiceGateway.getTableStatistics(DATABASE_3_ID, TABLE_8_ID);
+    }
+
+    @Test
+    public void updateTable_succeeds() throws DataServiceException, DataServiceConnectionException,
+            DatabaseNotFoundException {
+
+        /* mock */
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+
+        /* test */
+        dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+    }
+
+    @Test
+    public void updateTable_connection_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(DataServiceConnectionException.class, () -> {
+            dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_notFound_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_malformed_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(DataServiceException.class, () -> {
+            dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_unauthorized_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(DataServiceException.class, () -> {
+            dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        });
+    }
+
+    @Test
+    public void updateTable_responseCode_fails() {
+
+        /* mock */
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK)
+                        .build());
+
+        /* test */
+        assertThrows(DataServiceException.class, () -> {
+            dataServiceGateway.updateTable(DATABASE_3_ID, TABLE_8_ID, TABLE_8_UPDATE_DTO);
+        });
     }
 
 }

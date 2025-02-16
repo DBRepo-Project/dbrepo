@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,10 +28,10 @@ import static org.mockito.Mockito.*;
 public class UserServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
-    private KeycloakGateway keycloakGateway;
+    private UserRepository userRepository;
 
     @MockBean
-    private UserRepository userRepository;
+    private KeycloakGateway keycloakGateway;
 
     @Autowired
     private UserService userService;
@@ -85,27 +87,14 @@ public class UserServiceUnitTest extends AbstractUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(userRepository.save(any(User.class)))
                 .thenReturn(USER_1);
+        doNothing()
+                .when(keycloakGateway)
+                .updateUser(any(UUID.class), any(UserUpdateDto.class));
 
         /* test */
         final User response = userService.modify(USER_1, USER_1_UPDATE_DTO);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
-    }
-
-    @Test
-    public void updatePassword_succeeds() throws UserNotFoundException, AuthServiceException {
-
-        /* mock */
-        doNothing()
-                .when(keycloakGateway)
-                .setupFinished(USER_1_ID);
-        when(userRepository.findById(USER_1_ID))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(USER_1);
-
-        /* test */
-        userService.updatePassword(USER_1, USER_1_PASSWORD_DTO);
     }
 
     @Test

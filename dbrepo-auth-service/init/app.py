@@ -42,8 +42,8 @@ def fetch() -> (str, str):
 def save(user_id: str, keycloak_id: str) -> None:
     conn = mariadb.connect(user=os.getenv('METADATA_USERNAME', 'root'),
                            password=os.getenv('METADATA_DB_PASSWORD', 'dbrepo'),
-                           host="metadata-db",
-                           port=3306,
+                           host=os.getenv('METADATA_HOST', 'metadata-db'),
+                           port=int(os.getenv('METADATA_PORT', '3306')),
                            database=os.getenv('METADATA_DB', 'dbrepo'))
     cursor = conn.cursor()
     cursor.execute(

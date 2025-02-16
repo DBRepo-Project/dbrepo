@@ -21,7 +21,5 @@ public interface KeycloakGateway {
      */
     void deleteUser(UUID id) throws UserNotFoundException;
 
-    void setupFinished(UUID id) throws AuthServiceException, UserNotFoundException;
-
     void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException;
 }

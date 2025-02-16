@@ -1,11 +1,9 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.CreateUserDto;
-import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceException;
-import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
@@ -98,21 +96,6 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
         log.info("Modified user with id: {}", user.getId());
         return user;
-    }
-
-    @Override
-    public void updatePassword(User user, UserPasswordDto data) {
-        user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
-        /* update at metadata database */
-        userRepository.save(user);
-        log.info("Updated password of user with id: {}", user.getId());
-    }
-
-    @Override
-    public void validateUsernameNotExists(String username) throws UserExistsException {
-        if (userRepository.existsByUsername(username)) {
-            throw new UserExistsException("User with username " + username + " already exists");
-        }
     }
 
     @Override

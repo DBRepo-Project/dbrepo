@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AuthServiceException;
-import at.tuwien.exception.UserExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.UserRepository;
@@ -122,22 +121,6 @@ public class UserServicePersistenceTest extends AbstractUnitTest {
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
             userService.findById(USER_2_ID);
-        });
-    }
-
-    @Test
-    public void validateUsernameNotExists_succeeds() throws UserExistsException {
-
-        /* test */
-        userService.validateUsernameNotExists(USER_2_USERNAME);
-    }
-
-    @Test
-    public void validateUsernameNotExists_fails() {
-
-        /* test */
-        assertThrows(UserExistsException.class, () -> {
-            userService.validateUsernameNotExists(USER_1_USERNAME);
         });
     }
 }
