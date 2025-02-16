@@ -57,21 +57,5 @@ public interface UserService {
      */
     User modify(User user, UserUpdateDto data) throws UserNotFoundException, AuthServiceException;
 
-    /**
-     * Updates the user password for a user with given id in the metadata database.
-     *
-     * @param user The user.
-     * @param data The new password.
-     */
-    void updatePassword(User user, UserPasswordDto data);
-
-    /**
-     * Validates if a user with the given username already exists in the metadata database.
-     *
-     * @param username The username.
-     * @throws UserExistsException The user with this username already exists.
-     */
-    void validateUsernameNotExists(String username) throws UserExistsException;
-
     String getMariaDbPassword(String password);
 }

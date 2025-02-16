@@ -77,28 +77,6 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void setupFinished(UUID id) throws AuthServiceException, UserNotFoundException {
-        final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
-                .users()
-                .get(String.valueOf(id));
-        final UserRepresentation user;
-        try {
-            user = resource.toRepresentation();
-        } catch (NotFoundException e) {
-            log.error("Failed to update user setup: not found: {}", e.getMessage());
-            throw new UserNotFoundException("Failed to update user setup: not found", e);
-        }
-        user.singleAttribute("SETUP_FINISHED", "true");
-        try {
-            resource.update(user);
-        } catch (ForbiddenException e) {
-            log.error("Failed to update user setup: forbidden: {}", e.getMessage());
-            throw new AuthServiceException("Failed to update user setup: forbidden", e);
-        }
-        log.info("Updated user {} setup at auth service", id);
-    }
-
-    @Override
     public void updateUser(UUID id, UserUpdateDto data) throws AuthServiceException, UserNotFoundException {
         final UserResource resource = keycloak.realm(keycloakConfig.getRealm())
                 .users()
