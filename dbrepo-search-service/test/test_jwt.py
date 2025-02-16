@@ -84,7 +84,7 @@ class JwtTest(unittest.TestCase):
         with app.app_context():
             with requests_mock.Mocker() as mock:
                 # mock
-                mock.post('http://auth-service:8080/api/auth/realms/dbrepo/protocol/openid-connect/token',
+                mock.post('http://auth-service:8080/realms/dbrepo/protocol/openid-connect/token',
                           json=self.response([]))
                 # test
                 user = verify_password('username', 'password')

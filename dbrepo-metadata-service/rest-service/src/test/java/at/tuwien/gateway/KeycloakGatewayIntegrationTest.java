@@ -1,5 +1,6 @@
 package at.tuwien.gateway;
 
+import at.tuwien.exception.AuthServiceException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.impl.KeycloakGatewayImpl;
 import at.tuwien.test.AbstractUnitTest;
@@ -9,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -18,7 +20,9 @@ import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @SpringBootTest
@@ -90,6 +94,24 @@ public class KeycloakGatewayIntegrationTest extends AbstractUnitTest {
         assertThrows(UserNotFoundException.class, () -> {
             keycloakGateway.findByUsername(USER_1_USERNAME);
         });
+    }
+
+    @Test
+    public void updateUser_succeeds() throws UserNotFoundException, AuthServiceException {
+
+        /* mock */
+        keycloakUtils.createUser(USER_1_ID, USER_1_KEYCLOAK_SIGNUP_REQUEST);
+
+        /* test */
+        keycloakGateway.updateUser(keycloakUtils.getUserId(USER_1_USERNAME), USER_1_UPDATE_DTO);
+        final UserRepresentation user = keycloakUtils.getUser(USER_1_USERNAME);
+        assertNotNull(user.getId());
+        assertEquals(USER_1_FIRSTNAME, user.getFirstName());
+        assertEquals(USER_1_LASTNAME, user.getLastName());
+        assertEquals(USER_1_THEME, user.firstAttribute("THEME"));
+        assertEquals(USER_1_ORCID_URL, user.firstAttribute("ORCID"));
+        assertEquals(USER_1_LANGUAGE, user.firstAttribute("LANGUAGE"));
+        assertEquals(USER_1_AFFILIATION, user.firstAttribute("AFFILIATION"));
     }
 
 }

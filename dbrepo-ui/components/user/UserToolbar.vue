@@ -11,9 +11,6 @@
           <v-tab
             :text="$t('toolbars.user.info')"
             to="/user/info" />
-          <v-tab
-            :text="$t('toolbars.user.authentication')"
-            to="/user/authentication" />
         </v-tabs>
       </template>
     </v-toolbar>

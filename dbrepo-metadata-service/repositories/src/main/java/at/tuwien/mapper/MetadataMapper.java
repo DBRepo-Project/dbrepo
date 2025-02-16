@@ -97,6 +97,7 @@ public interface MetadataMapper {
     DataTypeDto dataTypeToDataTypeDto(DataType data);
 
     @Mappings({
+            @Mapping(target = "id", ignore = true), /* id attribute is ignored by the library anyway, just making it explicit */
             @Mapping(target = "attributes", ignore = true)
     })
     UserRepresentation userCreateDtoToUserRepresentation(UserCreateDto data);

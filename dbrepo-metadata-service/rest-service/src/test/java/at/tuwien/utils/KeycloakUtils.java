@@ -52,6 +52,16 @@ public class KeycloakUtils {
         return UUID.fromString(users.get(0).getId());
     }
 
+    public UserRepresentation getUser(String username) throws UserNotFoundException {
+        final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
+                .users()
+                .search(username);
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("Failed to find user: " + username);
+        }
+        return users.get(0);
+    }
+
     public void deleteUser(String username) {
         final List<UserRepresentation> users = keycloak.realm(keycloakConfig.getRealm())
                 .users()

@@ -17,6 +17,7 @@ build-metadata-service: ## Build the Metadata Service.
 .PHONY: build-auth-event-listener
 build-auth-event-listener: ## Build the Auth Service Event Listener.
 	mvn -f ./dbrepo-auth-service/listeners/pom.xml clean package -DskipTests
+	cp ./dbrepo-auth-service/listeners/target/create-event-listener.jar ./helm/dbrepo/files/create-event-listener.jar
 
 .PHONY: build-ui
 build-ui: ## Build the UI.
