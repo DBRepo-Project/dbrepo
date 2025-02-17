@@ -259,8 +259,10 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:a518aee79540d9e302b161e7e10072f50730489da19368f00a1e68204009ce44"
+                "sha256:541a7d289dcc71fa251b4a6a5c2d3b6636de933b043e4cff4639e085e1b6cc15",
+                "sha256:d805f58bdf068f952a0ee90bad208f43c1f7d6ea23172d8d7f86c703d8674c9a"
             ],
+            "markers": "python_version >= '3.11'",
             "path": "./lib/dbrepo-1.6.4.tar.gz"
         },
         "docker": {
@@ -639,7 +641,7 @@
                 "sha256:f4ca91d61a4bf61b0f2228f24bbfa6a9facd5f8af03759fe2a655c50ae2c6610",
                 "sha256:f6b3dfc7661f8842babd8ea07e9897fe3d9b69a1d7e5fbb743e4160f9387833b"
             ],
-            "markers": "python_version >= '3.10'",
+            "markers": "python_version == '3.11'",
             "version": "==2.2.3"
         },
         "opensearch-py": {
@@ -1043,7 +1045,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         },
         "werkzeug": {
@@ -1307,7 +1309,7 @@
                 "sha256:f7f5baafcc48261359e14bcd6d9bff6d4b28d9103847c9e136694cb0501aef87",
                 "sha256:fc48c783f9c87e60831201f2cce7f3b2e4846bf4d8728eabe54d60700b318a0b"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "platform_python_implementation != 'PyPy'",
             "version": "==1.17.1"
         },
         "charset-normalizer": {
@@ -1594,7 +1596,7 @@
                 "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df",
                 "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
             ],
-            "markers": "python_version >= '3.9'",
+            "markers": "python_version >= '3.10'",
             "version": "==2.3.0"
         }
     }

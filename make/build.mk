@@ -25,9 +25,9 @@ build-ui: ## Build the UI.
 
 .PHONY: build-lib
 build-lib: ## Build the Python Library.
-	rm -rf ./dbrepo-analyse-service/venv/ ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-analyse-service/lib/dbrepo-${APP_VERSION}*
-	rm -rf ./dbrepo-search-service/venv/ ./dbrepo-search-service/Pipfile.lock ./dbrepo-search-service/lib/dbrepo-${APP_VERSION}*
-	rm -rf ./dbrepo-search-service/init/venv/ ./dbrepo-search-service/init/Pipfile.lock ./dbrepo-search-service/init/lib/dbrepo-${APP_VERSION}*
+	rm -rf ./dbrepo-analyse-service/venv/ ./dbrepo-analyse-service/Pipfile.lock ./dbrepo-analyse-service/lib/*
+	rm -rf ./dbrepo-search-service/venv/ ./dbrepo-search-service/Pipfile.lock ./dbrepo-search-service/lib/*
+	rm -rf ./dbrepo-search-service/init/venv/ ./dbrepo-search-service/init/Pipfile.lock ./dbrepo-search-service/init/lib/*
 	python3 -m build --sdist ./lib/python
 	python3 -m build --wheel ./lib/python
 	cp -r ./lib/python/dist/dbrepo-${APP_VERSION}* ./dbrepo-analyse-service/lib
