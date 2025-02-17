@@ -349,8 +349,8 @@ test-search-service:
     - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
     - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
     - "cp -r ./dbrepo-search-service/init/tests/rsa ./dbrepo-search-service/tests/rsa"
-    - "cp ./dbrepo-search-service/init/tests/test_keycloak_client.py ./dbrepo-search-service/test"
-    - "cp ./dbrepo-search-service/init/tests/test_opensearch_client.py ./dbrepo-search-service/test"
+    - "cp ./dbrepo-search-service/init/tests/test_keycloak_client.py ./dbrepo-search-service/tests"
+    - "cp ./dbrepo-search-service/init/tests/test_opensearch_client.py ./dbrepo-search-service/tests"
     - "cp ./dbrepo-search-service/init/friendly_names_overrides.json ./dbrepo-search-service/friendly_names_overrides.json"
   script:
     - "pip install pipenv"
