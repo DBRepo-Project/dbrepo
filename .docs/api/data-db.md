@@ -22,6 +22,14 @@ Any number of MariaDB ata databases can be integrated into DBRepo, even non-empt
 registered in the Metadata Database to be visible in the [User Interface](../ui) and usable from e.g. the Python
 Library.
 
+## Configuration
+
+By default, the Data Database is configured as a cluster of three nodes where each node has a maximum of 2048 MiB RAM
+available. As recommended by
+[MariaDB](https://mariadb.com/kb/en/mariadb-memory-allocation/#allocating-ram-for-mariadb-the-short-answer), we set
+`innodb_buffer_pool_size=1430M` (70% of the available RAM). If you have more RAM available, you should set the variable
+accordingly to improve the performance.
+
 ## Data
 
 The procedures requires the in parameter of the `hash_table` stored procedure to have the same collation as the
