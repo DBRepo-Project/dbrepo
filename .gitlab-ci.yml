@@ -302,7 +302,7 @@ test-analyse-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
+    - cd ./dbrepo-analyse-service/ && coverage run -m pytest tests/test_determine_dt.py tests/test_determine_pk.py tests/test_s3_client.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -324,7 +324,7 @@ test-auth-service-init:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
   script:
-    - cd ./dbrepo-auth-service/init/ && coverage run -m pytest test/test_unit_app.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
+    - cd ./dbrepo-auth-service/init/ && coverage run -m pytest tests/test_unit_app.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -348,14 +348,14 @@ test-search-service:
   before_script:
     - "cp -r ./dbrepo-search-service/init/clients ./dbrepo-search-service/clients"
     - "cp -r ./dbrepo-search-service/init/omlib ./dbrepo-search-service/omlib"
-    - "cp -r ./dbrepo-search-service/init/test/rsa ./dbrepo-search-service/test/rsa"
-    - "cp ./dbrepo-search-service/init/test/test_keycloak_client.py ./dbrepo-search-service/test"
-    - "cp ./dbrepo-search-service/init/test/test_opensearch_client.py ./dbrepo-search-service/test"
+    - "cp -r ./dbrepo-search-service/init/tests/rsa ./dbrepo-search-service/tests/rsa"
+    - "cp ./dbrepo-search-service/init/tests/test_keycloak_client.py ./dbrepo-search-service/test"
+    - "cp ./dbrepo-search-service/init/tests/test_opensearch_client.py ./dbrepo-search-service/test"
     - "cp ./dbrepo-search-service/init/friendly_names_overrides.json ./dbrepo-search-service/friendly_names_overrides.json"
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/ && coverage run -m pytest test/test_app.py test/test_jwt.py test/test_opensearch_client.py test/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+    - cd ./dbrepo-search-service/ && coverage run -m pytest tests/test_app.py tests/test_jwt.py tests/test_opensearch_client.py tests/test_keycloak_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -379,7 +379,7 @@ test-search-service-init:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-search-service/init/ && coverage run -m pytest test/test_app.py test/test_keycloak_client.py test/test_opensearch_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
+    - cd ./dbrepo-search-service/init/ && coverage run -m pytest tests/test_app.py tests/test_keycloak_client.py tests/test_opensearch_client.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -428,7 +428,7 @@ test-ui:
     - "docker run --name dbrepo-ui -e NODE_OPTIONS='--max_old_space_size=256' -p 3000:3000 -d dbrepo-ui:latest"
   script:
     - "sleep 30"
-    - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/test/test_heap.sh"
+    - "ENDPOINT=http://localhost:3000 bash ./dbrepo-ui/tests/test_heap.sh"
 
 release-images:
   stage: release
