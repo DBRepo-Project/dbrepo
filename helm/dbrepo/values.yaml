@@ -56,6 +56,8 @@ metadatadb:
     enabled: true
   ## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
   initdbScriptsConfigMap: metadata-db-setup
+  ## @param metadatadb.configurationConfigMap The database configuration files.
+  configurationConfigMap: metadata-db-config
   ## @param metadatadb.extraInitDbScripts Additional init.db scripts that are executed on the first start.
   extraInitDbScripts: { }
   #    03-additional-data.sql: |
@@ -65,6 +67,8 @@ metadatadb:
   #      COMMIT;
   ## @param metadatadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
+  ## @param metadatadb.resourcesPreset The container resource preset
+  resourcesPreset: "nano-hm"
   persistence:
     ## @param metadatadb.persistence.enabled Enable persistent storage.
     enabled: true
@@ -185,6 +189,8 @@ datadb:
     enabled: true
   ## @param datadb.replicaCount The number of cluster nodes, should be uneven i.e. 2n+1
   replicaCount: 3
+  ## @param datadb.resourcesPreset The container resource preset
+  resourcesPreset: "nano-hm"
   persistence:
     ## @param datadb.persistence.enabled Enable persistent storage.
     enabled: true
@@ -205,17 +211,25 @@ searchdb:
   coordinating:
     ## @param searchdb.coordinating.resourcesPreset The container resource preset
     resourcesPreset: "small"
+    ## @param searchdb.coordinating.replicaCount The number of pod replicas.
+    replicaCount: 1
   ingest:
     ## @skip searchdb.ingest.enabled The limited default payload does not require this node type.
     enabled: false
     ## @param searchdb.ingest.resourcesPreset The container resource preset
     resourcesPreset: "micro"
+      ## @param searchdb.ingest.replicaCount The number of pod replicas.
+    replicaCount: 1
   master:
     ## @param searchdb.master.resourcesPreset The container resource preset
     resourcesPreset: "small"
+    ## @param searchdb.master.replicaCount The number of pod replicas.
+    replicaCount: 1
   data:
     ## @param searchdb.data.resourcesPreset The container resource preset
     resourcesPreset: "medium"
+    ## @param searchdb.data.replicaCount The number of pod replicas.
+    replicaCount: 1
   security:
     ## @skip searchdb.security.enabled
     enabled: false

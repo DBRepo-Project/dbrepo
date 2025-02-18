@@ -620,6 +620,9 @@
                 "replicaCount": {
                     "type": "integer"
                 },
+                "resourcesPreset": {
+                    "type": "string"
+                },
                 "rootUser": {
                     "properties": {
                         "password": {
@@ -1015,6 +1018,9 @@
         },
         "metadatadb": {
             "properties": {
+                "configurationConfigMap": {
+                    "type": "string"
+                },
                 "db": {
                     "properties": {
                         "name": {
@@ -1079,6 +1085,9 @@
                 },
                 "replicaCount": {
                     "type": "integer"
+                },
+                "resourcesPreset": {
+                    "type": "string"
                 },
                 "rootUser": {
                     "properties": {
@@ -1363,6 +1372,9 @@
                 },
                 "coordinating": {
                     "properties": {
+                        "replicaCount": {
+                            "type": "integer"
+                        },
                         "resourcesPreset": {
                             "type": "string"
                         }
@@ -1371,6 +1383,9 @@
                 },
                 "data": {
                     "properties": {
+                        "replicaCount": {
+                            "type": "integer"
+                        },
                         "resourcesPreset": {
                             "type": "string"
                         }
@@ -1391,6 +1406,9 @@
                         "enabled": {
                             "type": "boolean"
                         },
+                        "replicaCount": {
+                            "type": "integer"
+                        },
                         "resourcesPreset": {
                             "type": "string"
                         }
@@ -1399,6 +1417,9 @@
                 },
                 "master": {
                     "properties": {
+                        "replicaCount": {
+                            "type": "integer"
+                        },
                         "resourcesPreset": {
                             "type": "string"
                         }

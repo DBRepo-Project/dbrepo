@@ -11,6 +11,8 @@ author: Martin Weise
 #### Fixes
 
 * Fixed a bug where listing the views in the Python library did not work.
+* Fixed a wrong MariaDB configuration where the `innodb_buffer_pool_size` variable was not configured to 70% of the
+  available memory in the Helm chart.
 
 ## v1.6.4 (2025-02-14)
 
