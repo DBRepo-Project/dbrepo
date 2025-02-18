@@ -34,6 +34,14 @@ services:
     ...
 ```
 
+## Configuration
+
+By default, the Metadata Database is configured as a cluster of three nodes where each node has a maximum of 2048 MiB
+RAM available. As recommended by
+[MariaDB](https://mariadb.com/kb/en/mariadb-memory-allocation/#allocating-ram-for-mariadb-the-short-answer), we set
+`innodb_buffer_pool_size=1430M` (70% of the available RAM). If you have more RAM available, you should set the variable
+accordingly to improve the performance.
+
 ## Image
 
 :octicons-tag-16:{ title="Minimum version" } 1.4.4

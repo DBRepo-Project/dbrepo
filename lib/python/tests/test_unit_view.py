@@ -5,7 +5,7 @@ import requests_mock
 from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import View, ViewColumn, ColumnType, UserBrief
+from dbrepo.api.dto import View, ViewColumn, ColumnType, UserBrief, ViewBrief
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -21,26 +21,16 @@ class ViewUnitTest(unittest.TestCase):
 
     def test_get_views_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [View(id=1,
+            exp = [ViewBrief(id=1,
                         name="Data",
                         internal_name="data",
                         database_id=1,
                         initial_view=False,
                         query="SELECT id FROM mytable WHERE deg > 0",
                         query_hash="94c74728b11a690e51d64719868824735f0817b7",
-                        owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                        owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                         is_public=True,
-                        is_schema_public=True,
-                        columns=[ViewColumn(id=1,
-                                            ord=0,
-                                            name="id",
-                                            internal_name="id",
-                                            database_id=1,
-                                            auto_generated=False,
-                                            type=ColumnType.BIGINT,
-                                            is_public=True,
-                                            is_null_allowed=False)],
-                        identifiers=[])]
+                        is_schema_public=True)]
             # mock
             mock.get('/api/database/1/view', json=[exp[0].model_dump()])
             # test
@@ -74,9 +64,7 @@ class ViewUnitTest(unittest.TestCase):
                                            name="id",
                                            internal_name="id",
                                            database_id=1,
-                                           auto_generated=False,
                                            type=ColumnType.BIGINT,
-                                           is_public=True,
                                            is_null_allowed=False)],
                        identifiers=[])
             # mock
@@ -122,9 +110,7 @@ class ViewUnitTest(unittest.TestCase):
                                            name="id",
                                            internal_name="id",
                                            database_id=1,
-                                           auto_generated=False,
                                            type=ColumnType.BIGINT,
-                                           is_public=True,
                                            is_null_allowed=False)],
                        identifiers=[])
             # mock

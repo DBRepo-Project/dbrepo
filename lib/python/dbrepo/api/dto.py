@@ -677,6 +677,7 @@ class View(BaseModel):
     owner: UserBrief
     internal_name: str
     is_public: bool
+    is_schema_public: bool
     initial_view: bool
     columns: List[ViewColumn]
     identifiers: List[Identifier] = field(default_factory=list)
@@ -959,6 +960,7 @@ class Column(BaseModel):
 class ViewColumn(BaseModel):
     id: int
     name: str
+    ord: int
     database_id: int
     internal_name: str
     type: ColumnType

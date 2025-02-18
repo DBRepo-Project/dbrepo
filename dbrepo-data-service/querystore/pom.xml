@@ -6,12 +6,12 @@
     <parent>
         <groupId>at.tuwien</groupId>
         <artifactId>dbrepo-data-service</artifactId>
-        <version>1.6.4</version>
+        <version>1.6.5</version>
     </parent>
 
     <artifactId>dbrepo-data-service-querystore</artifactId>
     <name>dbrepo-data-service-querystore</name>
-    <version>1.6.4</version>
+    <version>1.6.5</version>
 
     <dependencies/>
 
