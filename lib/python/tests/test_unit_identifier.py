@@ -47,7 +47,7 @@ class IdentifierUnitTest(unittest.TestCase):
                 creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             self.assertEqual(exp, response)
 
-    def test_create_identifier_malformed_fails(self):
+    def test_create_identifier_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/identifier', status_code=400)
@@ -63,7 +63,7 @@ class IdentifierUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_create_identifier_not_allowed_fails(self):
+    def test_create_identifier_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/identifier', status_code=403)
@@ -79,7 +79,7 @@ class IdentifierUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_create_identifier_not_found_fails(self):
+    def test_create_identifier_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/identifier', status_code=404)
@@ -95,7 +95,7 @@ class IdentifierUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_create_identifier_not_auth_fails(self):
+    def test_create_identifier_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/identifier', status_code=503)

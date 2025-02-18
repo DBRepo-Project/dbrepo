@@ -25,7 +25,7 @@ class QueryUnitTest(unittest.TestCase):
                                             query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             self.assertTrue(DataFrame.equals(df, response))
 
-    def test_create_subset_malformed_fails(self):
+    def test_create_subset_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=400)
@@ -37,7 +37,7 @@ class QueryUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_create_subset_not_allowed_fails(self):
+    def test_create_subset_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=403)
@@ -49,7 +49,7 @@ class QueryUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_create_subset_not_found_fails(self):
+    def test_create_subset_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/subset', status_code=404)
@@ -61,7 +61,7 @@ class QueryUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_create_subset_not_auth_succeeds(self):
+    def test_create_subset_anonymous_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
             df = DataFrame.from_records(json.dumps(exp))
@@ -94,7 +94,7 @@ class QueryUnitTest(unittest.TestCase):
             response = RestClient().get_subset(database_id=1, subset_id=6)
             self.assertEqual(exp, response)
 
-    def test_find_query_not_allowed_fails(self):
+    def test_find_query_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6', status_code=403)
@@ -104,7 +104,7 @@ class QueryUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_find_query_not_found_fails(self):
+    def test_find_query_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6', status_code=404)
@@ -143,7 +143,7 @@ class QueryUnitTest(unittest.TestCase):
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
 
-    def test_get_queries_not_allowed_fails(self):
+    def test_get_queries_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset', status_code=403)
@@ -153,7 +153,7 @@ class QueryUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_queries_not_found_fails(self):
+    def test_get_queries_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset', status_code=404)
@@ -184,7 +184,7 @@ class QueryUnitTest(unittest.TestCase):
             self.assertEqual(df.shape, response.shape)
             self.assertTrue(DataFrame.equals(df, response))
 
-    def test_get_subset_data_not_allowed_fails(self):
+    def test_get_subset_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6/data', status_code=403)
@@ -194,7 +194,7 @@ class QueryUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_subset_data_not_found_fails(self):
+    def test_get_subset_data_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/subset/6/data', status_code=404)
@@ -213,7 +213,7 @@ class QueryUnitTest(unittest.TestCase):
             response = RestClient().get_subset_data_count(database_id=1, subset_id=6)
             self.assertEqual(exp, response)
 
-    def test_get_subset_data_count_not_allowed_fails(self):
+    def test_get_subset_data_count_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/subset/6/data', status_code=403)
@@ -223,7 +223,7 @@ class QueryUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_subset_data_count_not_found_fails(self):
+    def test_get_subset_data_count_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/subset/6/data', status_code=404)

@@ -21,6 +21,8 @@ pytest = "*"
 requests-mock = "*"
 furo = "*"
 pytest-ordering = "*"
+testcontainers = "*"
+httpx = "*"
 
 [requires]
 python_version = "3.11"

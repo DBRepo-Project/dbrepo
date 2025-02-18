@@ -1,12 +1,12 @@
 import unittest
 
 import requests_mock
-from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Database, DatabaseAccess, AccessType, DatabaseBrief, UserBrief, \
     ContainerBrief, ImageBrief
-from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
+from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, \
+    AuthenticationError, QueryStoreError, ServiceConnectionError, ServiceError
 
 
 class DatabaseUnitTest(unittest.TestCase):
@@ -28,18 +28,7 @@ class DatabaseUnitTest(unittest.TestCase):
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 internal_name='test_abcd',
                 is_public=True,
-                is_schema_public=True,
-                container=ContainerBrief(
-                    id=1,
-                    name='MariaDB Galera 11.1.3',
-                    internal_name='mariadb',
-                    image=ImageBrief(
-                        id=1,
-                        name='mariadb',
-                        version='11.2.2',
-                        jdbc_method='mariadb'
-                    )
-                )
+                is_schema_public=True
             )
         ]
         with requests_mock.Mocker() as mock:
@@ -48,6 +37,34 @@ class DatabaseUnitTest(unittest.TestCase):
             # test
             response = RestClient().get_databases()
             self.assertEqual(exp, response)
+
+    def test_get_databases_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database', status_code=401)
+            # test
+            try:
+                RestClient().get_databases()
+            except ResponseCodeError:
+                pass
+
+    def test_get_databases_count_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database', headers={'X-Count': '100'})
+            # test
+            response = RestClient().get_databases_count()
+            self.assertEqual(100, response)
+
+    def test_get_databases_count_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database', status_code=401)
+            # test
+            try:
+                RestClient().get_databases_count()
+            except ResponseCodeError:
+                pass
 
     def test_get_database_succeeds(self):
         exp = Database(
@@ -78,7 +95,17 @@ class DatabaseUnitTest(unittest.TestCase):
             response = RestClient().get_database(1)
             self.assertEqual(exp, response)
 
-    def test_get_database_not_found_fails(self):
+    def test_get_database_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1', status_code=403)
+            # test
+            try:
+                response = RestClient().get_database(1)
+            except ForbiddenError as e:
+                pass
+
+    def test_get_database_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1', status_code=404)
@@ -88,16 +115,10 @@ class DatabaseUnitTest(unittest.TestCase):
             except NotExistsError as e:
                 pass
 
-    def test_get_database_invalid_dto_fails(self):
-        try:
-            exp = Database()
-        except ValidationError as e:
-            pass
-
-    def test_get_database_unauthorized_fails(self):
+    def test_get_database_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1', status_code=401)
+            mock.get('/api/database/1', status_code=202)
             # test
             try:
                 response = RestClient().get_database(1)
@@ -131,32 +152,88 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.post('/api/database', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
-            response = client.create_database(name='test', container_id=1, is_public=True)
+            response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                              is_public=True)
             self.assertEqual(response.name, 'test')
 
-    def test_create_database_not_allowed_fails(self):
+    def test_create_database_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database', status_code=400)
+            # test
+            try:
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
+            except MalformedError as e:
+                pass
+
+    def test_create_database_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_database(name='test', container_id=1, is_public=True)
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
             except ForbiddenError as e:
                 pass
 
-    def test_create_database_not_found_fails(self):
+    def test_create_database_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_database(name='test', container_id=1, is_public=True)
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
             except NotExistsError as e:
                 pass
 
-    def test_create_database_not_auth_fails(self):
+    def test_create_database_409_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database', status_code=409)
+            # test
+            try:
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
+            except QueryStoreError as e:
+                pass
+
+    def test_create_database_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database', status_code=502)
+            # test
+            try:
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
+            except ServiceConnectionError as e:
+                pass
+
+    def test_create_database_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database', status_code=503)
+            # test
+            try:
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
+            except ServiceError as e:
+                pass
+
+    def test_create_database_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database', status_code=202)
+            # test
+            try:
+                response = RestClient(username="a", password="b").create_database(name='test', container_id=1,
+                                                                                  is_public=True)
+            except ResponseCodeError as e:
+                pass
+
+    def test_create_database_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database', status_code=404)
@@ -193,40 +270,88 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.put('/api/database/1/visibility', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
+            response = RestClient(username="a", password="b").update_database_visibility(database_id=1, is_public=True,
+                                                                                         is_schema_public=True)
             self.assertEqual(response.is_public, True)
 
-    def test_update_database_visibility_not_allowed_fails(self):
+    def test_update_database_visibility_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/visibility', status_code=400)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
+            except MalformedError:
+                pass
+
+    def test_update_database_visibility_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/visibility', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
             except ForbiddenError:
                 pass
 
-    def test_update_database_visibility_not_found_fails(self):
+    def test_update_database_visibility_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/visibility', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
             except NotExistsError:
                 pass
 
-    def test_update_database_visibility_not_auth_fails(self):
+    def test_update_database_visibility_502_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1', status_code=404)
+            mock.put('/api/database/1/visibility', status_code=502)
             # test
             try:
-                response = RestClient().update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
-            except AuthenticationError:
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
+            except ServiceConnectionError:
                 pass
+
+    def test_update_database_visibility_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/visibility', status_code=503)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
+            except ServiceError:
+                pass
+
+    def test_update_database_visibility_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/visibility', status_code=200)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_visibility(database_id=1,
+                                                                                             is_public=True,
+                                                                                             is_schema_public=True)
+            except ResponseCodeError:
+                pass
+
+    def test_update_database_visibility_anonymous_fails(self):
+        # test
+        try:
+            response = RestClient().update_database_visibility(database_id=1, is_public=True, is_schema_public=True)
+        except AuthenticationError:
+            pass
 
     def test_update_database_owner_succeeds(self):
         exp = Database(
@@ -255,34 +380,77 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.put('/api/database/1/owner', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            response = client.update_database_owner(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                    user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             self.assertEqual(response.owner.id, 'abdbf897-e599-4e5a-a3f0-7529884ea011')
 
-    def test_update_database_owner_not_allowed_fails(self):
+    def test_update_database_owner_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/owner', status_code=400)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            except MalformedError:
+                pass
+
+    def test_update_database_owner_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/owner', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_owner(database_id=1,
-                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except ForbiddenError:
                 pass
 
-    def test_update_database_owner_not_found_fails(self):
+    def test_update_database_owner_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/owner', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_owner(database_id=1,
-                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except NotExistsError:
                 pass
 
-    def test_update_database_owner_not_auth_fails(self):
+    def test_update_database_owner_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/owner', status_code=502)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            except ServiceConnectionError:
+                pass
+
+    def test_update_database_owner_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/owner', status_code=503)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            except ServiceError:
+                pass
+
+    def test_update_database_owner_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/owner', status_code=200)
+            # test
+            try:
+                response = RestClient(username="a", password="b").update_database_owner(database_id=1,
+                                                                                        user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            except ResponseCodeError:
+                pass
+
+    def test_update_database_owner_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/owner', status_code=404)
@@ -292,6 +460,157 @@ class DatabaseUnitTest(unittest.TestCase):
                                                               user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except AuthenticationError:
                 pass
+
+    def test_update_database_schema_succeeds(self):
+        exp = DatabaseBrief(
+            id=1,
+            name='test',
+            owner_id='8638c043-5145-4be8-a3e4-4b79991b0a16',
+            contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+            internal_name='test_abcd',
+            is_public=True,
+            is_schema_public=True
+        )
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json=exp.model_dump())
+            mock.put('/api/database/1/metadata/view', json=exp.model_dump())
+            # test
+            response = RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            self.assertEqual(exp, response)
+
+    def test_update_database_schema_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=400)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except MalformedError:
+                pass
+
+    def test_update_database_schema_view_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=400)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except MalformedError:
+                pass
+
+    def test_update_database_schema_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=403)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ForbiddenError:
+                pass
+
+    def test_update_database_schema_view_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=403)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ForbiddenError:
+                pass
+
+    def test_update_database_schema_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=404)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except NotExistsError:
+                pass
+
+    def test_update_database_schema_view_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=404)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except NotExistsError:
+                pass
+
+    def test_update_database_schema_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=502)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ServiceConnectionError:
+                pass
+
+    def test_update_database_schema_view_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=502)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ServiceConnectionError:
+                pass
+
+    def test_update_database_schema_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=503)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ServiceError:
+                pass
+
+    def test_update_database_schema_view_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=503)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ServiceError:
+                pass
+
+    def test_update_database_schema_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', status_code=202)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ResponseCodeError:
+                pass
+
+    def test_update_database_schema_view_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/metadata/table', json={}, status_code=200)
+            mock.put('/api/database/1/metadata/view', status_code=202)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_database_schema(database_id=1)
+            except ResponseCodeError:
+                pass
+
+    def test_update_database_schema_anonymous_fails(self):
+        # test
+        try:
+            RestClient().update_database_schema(database_id=1)
+        except AuthenticationError:
+            pass
 
     def test_get_database_access_succeeds(self):
         exp = DatabaseAccess(type=AccessType.READ,
@@ -303,7 +622,7 @@ class DatabaseUnitTest(unittest.TestCase):
             response = RestClient().get_database_access(database_id=1)
             self.assertEqual(response, AccessType.READ)
 
-    def test_get_database_access_not_allowed_fails(self):
+    def test_get_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/access', status_code=403)
@@ -313,7 +632,7 @@ class DatabaseUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_database_access_not_found_fails(self):
+    def test_get_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/access', status_code=404)
@@ -331,24 +650,24 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump(),
                       status_code=202)
             # test
-            client = RestClient(username="a", password="b")
-            response = client.create_database_access(database_id=1, type=AccessType.READ,
-                                                     user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            response = RestClient(username="a", password="b").create_database_access(database_id=1,
+                                                                                     type=AccessType.READ,
+                                                                                     user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             self.assertEqual(response, exp.type)
 
-    def test_create_database_access_malformed_fails(self):
+    def test_create_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=400)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").create_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except MalformedError:
                 pass
 
-    def test_create_database_access_not_auth_fails(self):
+    def test_create_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=400)
@@ -359,27 +678,27 @@ class DatabaseUnitTest(unittest.TestCase):
             except AuthenticationError:
                 pass
 
-    def test_create_database_access_not_allowed_fails(self):
+    def test_create_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").create_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except ForbiddenError:
                 pass
 
-    def test_create_database_access_not_found_fails(self):
+    def test_create_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").create_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except NotExistsError:
                 pass
 
@@ -391,48 +710,48 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump(),
                      status_code=202)
             # test
-            client = RestClient(username="a", password="b")
-            response = client.update_database_access(database_id=1, type=AccessType.READ,
-                                                     user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            response = RestClient(username="a", password="b").update_database_access(database_id=1,
+                                                                                     type=AccessType.READ,
+                                                                                     user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             self.assertEqual(response, exp.type)
 
-    def test_update_database_access_malformed_fails(self):
+    def test_update_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=400)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").update_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except MalformedError:
                 pass
 
-    def test_update_database_access_not_allowed_fails(self):
+    def test_update_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").update_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except ForbiddenError:
                 pass
 
-    def test_update_database_access_not_found_fails(self):
+    def test_update_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.update_database_access(database_id=1, type=AccessType.READ,
-                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                response = RestClient(username="a", password="b").update_database_access(database_id=1,
+                                                                                         type=AccessType.READ,
+                                                                                         user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except NotExistsError:
                 pass
 
-    def test_update_database_access_not_auth_fails(self):
+    def test_update_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)
@@ -449,42 +768,43 @@ class DatabaseUnitTest(unittest.TestCase):
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+            RestClient(username="a", password="b").delete_database_access(database_id=1,
+                                                                          user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
 
-    def test_delete_database_access_malformed_fails(self):
+    def test_delete_database_access_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=400)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                RestClient(username="a", password="b").delete_database_access(database_id=1,
+                                                                              user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except MalformedError:
                 pass
 
-    def test_delete_database_access_not_allowed_fails(self):
+    def test_delete_database_access_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                RestClient(username="a", password="b").delete_database_access(database_id=1,
+                                                                              user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except ForbiddenError:
                 pass
 
-    def test_delete_database_access_not_found_fails(self):
+    def test_delete_database_access_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                client.delete_database_access(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
+                RestClient(username="a", password="b").delete_database_access(database_id=1,
+                                                                              user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
             except NotExistsError:
                 pass
 
-    def test_delete_database_access_not_auth_fails(self):
+    def test_delete_database_access_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', status_code=404)

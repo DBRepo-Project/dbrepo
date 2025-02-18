@@ -12,18 +12,6 @@ Timestamp = Annotated[
 ]
 
 
-class JwtAuth(BaseModel):
-    access_token: str
-    refresh_token: str
-    id_token: str
-    expires_in: int
-    refresh_expires_in: int
-    not_before_policy: int
-    scope: str
-    session_state: str
-    token_type: str
-
-
 class Image(BaseModel):
     id: int
     registry: str
@@ -52,6 +40,7 @@ class CreateDatabase(BaseModel):
 
 class UpdateView(BaseModel):
     is_public: bool
+    is_schema_public: bool
 
 
 class CreateContainer(BaseModel):
@@ -134,6 +123,7 @@ class TableBrief(BaseModel):
 
 class UserAttributes(BaseModel):
     theme: str
+    language: str
     orcid: Optional[str] = None
     affiliation: Optional[str] = None
 
@@ -690,6 +680,12 @@ class CreateView(BaseModel):
     is_schema_public: bool
 
 
+class History(BaseModel):
+    event: HistoryEventType
+    total: int
+    timestamp: Timestamp
+
+
 class ViewBrief(BaseModel):
     id: int
     database_id: int
@@ -757,6 +753,14 @@ class TitleType(str, Enum):
     SUBTITLE = "Subtitle"
     TRANSLATED_TITLE = "TranslatedTitle"
     OTHER = "Other"
+
+
+class HistoryEventType(str, Enum):
+    """
+    Enumeration of history event types.
+    """
+    INSERT = "insert"
+    DELETE = "delete"
 
 
 class RelatedIdentifierType(str, Enum):

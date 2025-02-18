@@ -1,3 +1,4 @@
+import datetime
 import json
 import unittest
 
@@ -6,9 +7,9 @@ from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Table, CreateTableConstraints, Column, Constraints, ColumnType, ConceptBrief, UnitBrief, \
-    TableStatistics, ColumnStatistic, PrimaryKey, ColumnBrief, TableBrief, UserBrief
+    TableStatistics, ColumnStatistic, PrimaryKey, ColumnBrief, TableBrief, UserBrief, History, HistoryEventType
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, NameExistsError, \
-    AuthenticationError, ExternalSystemError
+    AuthenticationError, ExternalSystemError, ServiceError, ServiceConnectionError, ResponseCodeError
 
 
 class TableUnitTest(unittest.TestCase):
@@ -33,7 +34,7 @@ class TableUnitTest(unittest.TestCase):
                                            constraints=CreateTableConstraints())
             self.assertEqual(exp, response)
 
-    def test_create_table_malformed_fails(self):
+    def test_create_table_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table', status_code=400)
@@ -46,20 +47,20 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_create_table_not_allowed_fails(self):
+    def test_create_table_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table', status_code=403)
             # test
             try:
-                client = RestClient(username="a", password="b")
-                response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
-                                               is_public=True, is_schema_public=True,
-                                               constraints=CreateTableConstraints())
+                RestClient(username="a", password="b").create_table(database_id=1, name="Test",
+                                                                    description="Test Table", columns=[],
+                                                                    is_public=True, is_schema_public=True,
+                                                                    constraints=CreateTableConstraints())
             except ForbiddenError:
                 pass
 
-    def test_create_table_not_allowed_fails(self):
+    def test_create_table_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table', status_code=404)
@@ -72,7 +73,7 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_create_table_name_exists_fails(self):
+    def test_create_table_409_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table', status_code=409)
@@ -85,7 +86,46 @@ class TableUnitTest(unittest.TestCase):
             except NameExistsError:
                 pass
 
-    def test_create_table_not_auth_fails(self):
+    def test_create_table_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table', status_code=502)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
+                                               constraints=CreateTableConstraints())
+            except ServiceConnectionError:
+                pass
+
+    def test_create_table_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
+                                               constraints=CreateTableConstraints())
+            except ServiceError:
+                pass
+
+    def test_create_table_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
+                                               is_public=True, is_schema_public=True,
+                                               constraints=CreateTableConstraints())
+            except ResponseCodeError:
+                pass
+
+    def test_create_table_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table', status_code=409)
@@ -121,6 +161,36 @@ class TableUnitTest(unittest.TestCase):
             # test
             response = RestClient().get_tables(database_id=1)
             self.assertEqual(exp, response)
+
+    def test_get_tables_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table', status_code=403)
+            # test
+            try:
+                RestClient().get_tables(database_id=1)
+            except ForbiddenError:
+                pass
+
+    def test_get_tables_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table', status_code=404)
+            # test
+            try:
+                RestClient().get_tables(database_id=1)
+            except NotExistsError:
+                pass
+
+    def test_get_tables_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table', status_code=202)
+            # test
+            try:
+                RestClient().get_tables(database_id=1)
+            except ResponseCodeError:
+                pass
 
     def test_get_table_succeeds(self):
         with requests_mock.Mocker() as mock:
@@ -159,10 +229,7 @@ class TableUnitTest(unittest.TestCase):
                                         database_id=1,
                                         table_id=2,
                                         internal_name="id",
-                                        auto_generated=True,
-                                        is_primary_key=True,
                                         type=ColumnType.BIGINT,
-                                        is_public=True,
                                         is_null_allowed=False)])
             # mock
             mock.get('/api/database/1/table/2', json=exp.model_dump())
@@ -170,7 +237,7 @@ class TableUnitTest(unittest.TestCase):
             response = RestClient().get_table(database_id=1, table_id=2)
             self.assertEqual(exp, response)
 
-    def test_get_table_not_allowed_fails(self):
+    def test_get_table_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/table/2', status_code=403)
@@ -180,7 +247,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_table_not_found_fails(self):
+    def test_get_table_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/table/2', status_code=404)
@@ -188,6 +255,16 @@ class TableUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_table(database_id=1, table_id=2)
             except NotExistsError:
+                pass
+
+    def test_get_table_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/2', status_code=202)
+            # test
+            try:
+                response = RestClient().get_table(database_id=1, table_id=2)
+            except ResponseCodeError:
                 pass
 
     def test_delete_table_succeeds(self):
@@ -198,7 +275,18 @@ class TableUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             client.delete_table(database_id=1, table_id=2)
 
-    def test_delete_table_not_allowed_fails(self):
+    def test_delete_table_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/2', status_code=400)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table(database_id=1, table_id=2)
+            except MalformedError:
+                pass
+
+    def test_delete_table_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/2', status_code=403)
@@ -209,7 +297,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_delete_table_not_found_fails(self):
+    def test_delete_table_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/2', status_code=404)
@@ -220,7 +308,40 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_delete_table_not_auth_fails(self):
+    def test_delete_table_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/2', status_code=502)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table(database_id=1, table_id=2)
+            except ServiceConnectionError:
+                pass
+
+    def test_delete_table_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/2', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table(database_id=1, table_id=2)
+            except ServiceError:
+                pass
+
+    def test_delete_table_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/2', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table(database_id=1, table_id=2)
+            except ResponseCodeError:
+                pass
+
+    def test_delete_table_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/2', status_code=404)
@@ -230,6 +351,67 @@ class TableUnitTest(unittest.TestCase):
             except AuthenticationError:
                 pass
 
+    def test_get_table_history_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            exp = [History(event=HistoryEventType.INSERT,
+                           total=2,
+                           timestamp=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))]
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', json=[exp[0].model_dump()])
+            # test
+            response = RestClient().get_table_history(database_id=1, table_id=9)
+            self.assertEqual(exp, response)
+
+    def test_get_table_history_400_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', status_code=400)
+            # test
+            try:
+                RestClient().get_table_history(database_id=1, table_id=9)
+            except MalformedError:
+                pass
+
+    def test_get_table_history_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', status_code=403)
+            # test
+            try:
+                RestClient().get_table_history(database_id=1, table_id=9)
+            except ForbiddenError:
+                pass
+
+    def test_get_table_history_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', status_code=404)
+            # test
+            try:
+                RestClient().get_table_history(database_id=1, table_id=9)
+            except NotExistsError:
+                pass
+
+    def test_get_table_history_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', status_code=503)
+            # test
+            try:
+                RestClient().get_table_history(database_id=1, table_id=9)
+            except ServiceError:
+                pass
+
+    def test_get_table_history_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/history?size=100', status_code=202)
+            # test
+            try:
+                RestClient().get_table_history(database_id=1, table_id=9)
+            except ResponseCodeError:
+                pass
+
     def test_get_table_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
@@ -237,7 +419,9 @@ class TableUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/database/1/table/9/data', json=json.dumps(exp))
             # test
-            response = RestClient().get_table_data(database_id=1, table_id=9)
+            response = RestClient().get_table_data(database_id=1, table_id=9,
+                                                   timestamp=datetime.datetime(2024, 1, 1, 0, 0, 0, 0,
+                                                                               datetime.timezone.utc))
             self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_table_data_dataframe_succeeds(self):
@@ -251,7 +435,7 @@ class TableUnitTest(unittest.TestCase):
             self.assertEqual(df.shape, response.shape)
             self.assertTrue(DataFrame.equals(df, response))
 
-    def test_get_table_data_malformed_fails(self):
+    def test_get_table_data_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/table/9/data', status_code=400)
@@ -261,7 +445,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_get_table_data_not_allowed_fails(self):
+    def test_get_table_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/table/9/data', status_code=403)
@@ -271,7 +455,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_table_data_not_found_fails(self):
+    def test_get_table_data_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/table/9/data', status_code=404)
@@ -279,6 +463,26 @@ class TableUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_table_data(database_id=1, table_id=9)
             except NotExistsError:
+                pass
+
+    def test_get_table_data_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                response = RestClient().get_table_data(database_id=1, table_id=9)
+            except ServiceError:
+                pass
+
+    def test_get_table_data_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/table/9/data', status_code=202)
+            # test
+            try:
+                response = RestClient().get_table_data(database_id=1, table_id=9)
+            except ResponseCodeError:
                 pass
 
     def test_get_table_data_count_succeeds(self):
@@ -290,7 +494,7 @@ class TableUnitTest(unittest.TestCase):
             response = RestClient().get_table_data_count(database_id=1, table_id=9)
             self.assertEqual(exp, response)
 
-    def test_get_table_data_count_malformed_fails(self):
+    def test_get_table_data_count_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/table/9/data', status_code=400)
@@ -300,7 +504,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_get_table_data_count_not_allowed_fails(self):
+    def test_get_table_data_count_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/table/9/data', status_code=403)
@@ -310,7 +514,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_table_data_count_not_found_fails(self):
+    def test_get_table_data_count_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/table/9/data', status_code=404)
@@ -339,7 +543,7 @@ class TableUnitTest(unittest.TestCase):
             client.create_table_data(database_id=1, table_id=9,
                                      data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
 
-    def test_create_table_data_malformed_fails(self):
+    def test_create_table_data_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table/9/data', status_code=400)
@@ -351,7 +555,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_create_table_data_not_allowed_fails(self):
+    def test_create_table_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table/9/data', status_code=403)
@@ -363,7 +567,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_create_table_data_not_found_fails(self):
+    def test_create_table_data_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/table/9/data', status_code=404)
@@ -373,6 +577,41 @@ class TableUnitTest(unittest.TestCase):
                 client.create_table_data(database_id=1, table_id=9,
                                          data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
             except NotExistsError:
+                pass
+
+    def test_create_table_data_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.create_table_data(database_id=1, table_id=9,
+                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
+            except ServiceError:
+                pass
+
+    def test_create_table_data_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table/9/data', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.create_table_data(database_id=1, table_id=9,
+                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
+            except ResponseCodeError:
+                pass
+
+    def test_create_table_data_anonymous_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                RestClient().create_table_data(database_id=1, table_id=9,
+                                               data={'name': 'Josiah', 'age': 45, 'gender': 'male'})
+            except AuthenticationError:
                 pass
 
     def test_update_table_data_succeeds(self):
@@ -385,7 +624,7 @@ class TableUnitTest(unittest.TestCase):
                                      data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
                                      keys={'id': 1})
 
-    def test_update_table_data_malformed_fails(self):
+    def test_update_table_data_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/9/data', status_code=400)
@@ -398,7 +637,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_update_table_data_not_allowed_fails(self):
+    def test_update_table_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/9/data', status_code=403)
@@ -411,7 +650,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_update_table_data_not_found_fails(self):
+    def test_update_table_data_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/9/data', status_code=404)
@@ -424,6 +663,32 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
+    def test_update_table_data_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.update_table_data(database_id=1, table_id=9,
+                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
+                                         keys={'id': 1})
+            except ServiceError:
+                pass
+
+    def test_update_table_data_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/table/9/data', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.update_table_data(database_id=1, table_id=9,
+                                         data={'name': 'Josiah', 'age': 45, 'gender': 'male'},
+                                         keys={'id': 1})
+            except ResponseCodeError:
+                pass
+
     def test_delete_table_data_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
@@ -432,7 +697,7 @@ class TableUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             client.delete_table_data(database_id=1, table_id=9, keys={'id': 1})
 
-    def test_delete_table_data_malformed_fails(self):
+    def test_delete_table_data_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/9/data', status_code=400)
@@ -443,7 +708,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_delete_table_data_not_allowed_fails(self):
+    def test_delete_table_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/9/data', status_code=403)
@@ -454,7 +719,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_delete_table_data_not_found_fails(self):
+    def test_delete_table_data_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/9/data', status_code=404)
@@ -465,7 +730,29 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_delete_table_data_not_auth_fails(self):
+    def test_delete_table_data_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table_data(database_id=1, table_id=9, keys={'id': 1})
+            except ServiceError:
+                pass
+
+    def test_delete_table_data_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/table/9/data', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_table_data(database_id=1, table_id=9, keys={'id': 1})
+            except ResponseCodeError:
+                pass
+
+    def test_delete_table_data_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/table/9/data', status_code=404)
@@ -503,7 +790,7 @@ class TableUnitTest(unittest.TestCase):
                                                   concept_uri="http://dbpedia.org/page/Category:Precipitation")
             self.assertEqual(exp, response)
 
-    def test_update_table_column_malformed_fails(self):
+    def test_update_table_column_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/2/column/1', status_code=400)
@@ -516,7 +803,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_update_table_column_not_allowed_fails(self):
+    def test_update_table_column_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/2/column/1', status_code=403)
@@ -529,7 +816,7 @@ class TableUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_update_table_column_not_found_fails(self):
+    def test_update_table_column_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/2/column/1', status_code=404)
@@ -542,7 +829,7 @@ class TableUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_update_table_column_not_auth_fails(self):
+    def test_update_table_column_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.put('/api/database/1/table/2/column/1', status_code=404)
@@ -564,7 +851,7 @@ class TableUnitTest(unittest.TestCase):
             response = RestClient().analyse_table_statistics(database_id=1, table_id=2)
             self.assertEqual(exp, response)
 
-    def test_analyse_table_statistics_malformed_fails(self):
+    def test_analyse_table_statistics_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/analyse/database/1/table/2/statistics', status_code=400)
@@ -574,7 +861,7 @@ class TableUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_analyse_table_statistics_not_found_fails(self):
+    def test_analyse_table_statistics_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/analyse/database/1/table/2/statistics', status_code=404)
@@ -582,6 +869,36 @@ class TableUnitTest(unittest.TestCase):
             try:
                 RestClient().analyse_table_statistics(database_id=1, table_id=2)
             except NotExistsError:
+                pass
+
+    def test_analyse_table_statistics_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/analyse/database/1/table/2/statistics', status_code=502)
+            # test
+            try:
+                RestClient().analyse_table_statistics(database_id=1, table_id=2)
+            except ServiceConnectionError:
+                pass
+
+    def test_analyse_table_statistics_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/analyse/database/1/table/2/statistics', status_code=503)
+            # test
+            try:
+                RestClient().analyse_table_statistics(database_id=1, table_id=2)
+            except ServiceError:
+                pass
+
+    def test_analyse_table_statistics_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/analyse/database/1/table/2/statistics', status_code=200)
+            # test
+            try:
+                RestClient().analyse_table_statistics(database_id=1, table_id=2)
+            except ResponseCodeError:
                 pass
 
 

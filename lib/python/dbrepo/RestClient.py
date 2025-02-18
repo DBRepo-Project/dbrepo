@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import time
 
 import requests
 from pandas import DataFrame
@@ -9,7 +8,7 @@ from pydantic import TypeAdapter
 
 from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
-from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
+from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
 
@@ -78,71 +77,6 @@ class RestClient:
         return requests.request(method=method, url=url, auth=auth, verify=self.secure,
                                 json=payload, headers=headers, params=params, stream=stream)
 
-    def get_jwt_auth(self, username: str = None, password: str = None) -> JwtAuth:
-        """
-        Obtains a JWT auth object from the auth service containing e.g. the access token and refresh token.
-
-        :param username: The username used to authenticate with the auth service. Optional. Default: username from the `RestClient` constructor.
-        :param password: The password used to authenticate with the auth service. Optional. Default: password from the `RestClient` constructor.
-
-        :returns: JWT auth object from the auth service, if successful.
-
-        :raises MalformedError: If the payload was rejected by the service.
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises AuthenticationError: If something went wrong with the authentication.
-        :raises ServiceConnectionError: If something went wrong with connection to the auth service.
-        :raises ServiceError: If something went wrong with obtaining the information in the auth service.
-        :raises ResponseCodeError: If something went wrong with the authentication.
-        """
-        if username is None:
-            username = self.username
-        if password is None:
-            password = self.password
-        url = f'{self.endpoint}/api/user/token'
-        response = requests.post(url=url, json=dict({"username": username, "password": password}))
-        if response.status_code == 202:
-            body = response.json()
-            return JwtAuth.model_validate(body)
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to get JWT: {response.text}')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to get JWT: not allowed')
-        if response.status_code == 428:
-            raise AuthenticationError(f'Failed to get JWT: account not fully setup (requires password change?)')
-        if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to get JWT: failed to establish connection with auth service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to get JWT: failed to get user in auth service')
-        raise ResponseCodeError(f'Failed to get JWT: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
-
-    def refresh_jwt_auth(self, refresh_token: str) -> JwtAuth:
-        """
-        Refreshes a JWT auth object from the auth service containing e.g. the access token and refresh token.
-
-        :param refresh_token: The refresh token.
-
-        :returns: JWT auth object from the auth service, if successful.
-
-        :raises MalformedError: If the payload was rejected by the service.
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises ServiceConnectionError: If something went wrong with the connection to the auth service.
-        :raises ResponseCodeError: If something went wrong with the authentication.
-        """
-        url = f'{self.endpoint}/api/user/token'
-        response = requests.put(url=url, json=dict({"refresh_token": refresh_token}))
-        if response.status_code == 202:
-            body = response.json()
-            return JwtAuth.model_validate(body)
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to refresh JWT: {response.text}')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to refresh JWT: not allowed')
-        if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to refresh JWT: failed to establish connection with auth service')
-        raise ResponseCodeError(f'Failed to refresh JWT: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
-
     def whoami(self) -> str | None:
         """
         Print the username.
@@ -209,48 +143,6 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find user: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_user(self, username: str, password: str, email: str) -> UserBrief:
-        """
-        Creates a new user.
-
-        :param username: The username of the new user. Must be unique.
-        :param password: The password of the new user.
-        :param email: The email of the new user. Must be unique.
-
-        :returns: The user, if successful.
-
-        :raises MalformedError: If the payload was rejected by the service.
-        :raises ForbiddenError: If the internal authentication to the auth service is invalid.
-        :raises UsernameExistsError: The username exists already.
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the created user was not found in the auth service.
-        :raises EmailExistsError: The email exists already.
-        :raises ServiceConnectionError: If something went wrong with connection to the auth service.
-        :raises ServiceError: If something went wrong with obtaining the information in the auth service.
-        """
-        url = f'/api/user'
-        response = self._wrapper(method="post", url=url,
-                                 payload=CreateUser(username=username, password=password, email=email))
-        if response.status_code == 201:
-            body = response.json()
-            return UserBrief.model_validate(body)
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to create user: {response.text}')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to create user: internal authentication to the auth service is invalid')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to create user: created user not found in auth service')
-        if response.status_code == 409:
-            raise UsernameExistsError(f'Failed to create user: user with username exists')
-        if response.status_code == 417:
-            raise EmailExistsError(f'Failed to create user: user with e-mail exists')
-        if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to create user: failed to establish connection with auth service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to create user: failed to create in auth service')
-        raise ResponseCodeError(f'Failed to create user: response code: {response.status_code} is not '
-                                f'201 (CREATED): {response.text}')
-
     def update_user(self, user_id: str, theme: str, language: str, firstname: str = None, lastname: str = None,
                     affiliation: str = None, orcid: str = None) -> UserBrief:
         """
@@ -285,38 +177,6 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to update user: user not found')
         raise ResponseCodeError(f'Failed to update user: response code: {response.status_code} is not '
-                                f'202 (ACCEPTED): {response.text}')
-
-    def update_user_password(self, user_id: str, password: str) -> None:
-        """
-        Updates the password of a user with given user id.
-
-        :param user_id: The user id of the user that should be updated.
-        :param password: The updated user password.
-
-        :raises MalformedError: If the payload was rejected by the service.
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the user does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the auth service.
-        :raises ServiceError: If something went wrong with obtaining the information in the auth service.
-        :raises ResponseCodeError: If something went wrong with the update.
-        """
-        url = f'/api/user/{user_id}/password'
-        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserPassword(password=password))
-        if response.status_code == 202:
-            return None
-        if response.status_code == 400:
-            raise MalformedError(f'Failed to update user password: {response.text}')
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to update user password: not allowed')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to update user password: not found')
-        if response.status_code == 502:
-            raise ServiceConnectionError(
-                f'Failed to update user password: failed to establish connection with auth service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to update user password: failed to update in auth service')
-        raise ResponseCodeError(f'Failed to update user theme: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
     def get_containers(self) -> List[ContainerBrief]:
@@ -393,8 +253,6 @@ class RestClient:
         :returns: The database, if successful.
 
         :raises NotExistsError: If the container does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the broker service.
-        :raises ServiceError: If something went wrong with obtaining the information in the broker service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}'
@@ -402,12 +260,10 @@ class RestClient:
         if response.status_code == 200:
             body = response.json()
             return Database.model_validate(body)
+        if response.status_code == 403:
+            raise ForbiddenError(f'Failed to find database: not allowed')
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find database: not found')
-        if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to find database: failed to establish connection with broker service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to find database: failed to obtain queue metadata from broker service')
         raise ResponseCodeError(f'Failed to find database: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
@@ -453,9 +309,8 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create database: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_container(self, name: str, host: str, image_id: int, sidecar_host: str, sidecar_port: int,
-                         privileged_username: str, privileged_password: str, port: int = None, ui_host: str = None,
-                         ui_port: int = None) -> Container:
+    def create_container(self, name: str, host: str, image_id: int, privileged_username: str, privileged_password: str,
+                         port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
         """
         Register a container instance executing a given container image. Note that this does not create a container,
         but only saves it in the metadata database to be used within DBRepo. The container still needs to be created
@@ -464,8 +319,6 @@ class RestClient:
         :param name: The container name.
         :param host: The container hostname.
         :param image_id: The container image id.
-        :param sidecar_host: The container sidecar hostname.
-        :param sidecar_port: The container sidecar port.
         :param privileged_username: The container privileged user username.
         :param privileged_password: The container privileged user password.
         :param port: The container port bound to the host. Optional.
@@ -483,7 +336,6 @@ class RestClient:
         url = f'/api/container'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=CreateContainer(name=name, host=host, image_id=image_id,
-                                                         sidecar_host=sidecar_host, sidecar_port=sidecar_port,
                                                          privileged_username=privileged_username,
                                                          privileged_password=privileged_password, port=port,
                                                          ui_host=ui_host, ui_port=ui_port))
@@ -574,7 +426,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_schema(self, database_id: int) -> Database:
+    def update_database_schema(self, database_id: int) -> DatabaseBrief:
         """
         Updates the database table and view metadata of a database with given database id.
 
@@ -597,7 +449,7 @@ class RestClient:
             response = self._wrapper(method="put", url=url, force_auth=True)
             if response.status_code == 200:
                 body = response.json()
-                return Database.model_validate(body)
+                return DatabaseBrief.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database schema: {response.text}')
         if response.status_code == 403:
@@ -693,8 +545,6 @@ class RestClient:
 
         :raises ForbiddenError: If something went wrong with the authorization.
         :raises NotExistsError: If the table does not exist.
-        :raises ServiceConnectionError: If something went wrong with connection to the metadata service.
-        :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/table/{table_id}'
@@ -706,10 +556,6 @@ class RestClient:
             raise ForbiddenError(f'Failed to find table: not allowed')
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find table: not found')
-        if response.status_code == 502:
-            raise ServiceConnectionError(f'Failed to find table: failed to establish connection to broker service')
-        if response.status_code == 503:
-            raise ServiceError(f'Failed to find table: failed to obtain queue information from broker service')
         raise ResponseCodeError(f'Failed to find table: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
@@ -770,29 +616,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete container: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_table_metadata(self, database_id: int) -> Database:
-        """
-        Generate metadata of all system-versioned tables in a database with given id.
-
-        :param database_id: The database id.
-
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the table does not exist.
-        :raises ResponseCodeError: If something went wrong with the retrieval.
-        """
-        url = f'/api/database/{database_id}/metadata/table'
-        response = self._wrapper(method="put", url=url, force_auth=True)
-        if response.status_code == 200:
-            body = response.json()
-            return Database.model_validate(body)
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to get tables metadata: not allowed')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to get tables metadata: not found')
-        raise ResponseCodeError(f'Failed to get tables metadata: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
-
-    def get_table_history(self, database_id: int, table_id: int, size: int = 100) -> Database:
+    def get_table_history(self, database_id: int, table_id: int, size: int = 100) -> [History]:
         """
         Get the table history of insert/delete operations.
 
@@ -807,10 +631,10 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/table/{table_id}/history?size={size}'
-        response = self._wrapper(method="get", url=url, force_auth=True)
+        response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Database.model_validate(body)
+            return TypeAdapter(List[History]).validate_python(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to get table history: {response.text}')
         if response.status_code == 403:
@@ -868,13 +692,14 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find view: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_view(self, database_id: int, view_id: int, is_public: bool) -> ViewBrief:
+    def update_view(self, database_id: int, view_id: int, is_public: bool, is_schema_public: bool) -> ViewBrief:
         """
         Get a view of a database with given database id and view id.
 
         :param database_id: The database id.
         :param view_id: The view id.
-        :param is_public: If set to `True`, the view is publicly visible.
+        :param is_public: If set to `True`, the view data is publicly visible.
+        :param is_schema_public: If set to `True`, the view schema is publicly visible.
 
         :returns: The view, if successful.
 
@@ -883,7 +708,8 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/view/{view_id}'
-        response = self._wrapper(method="put", url=url, payload=UpdateView(is_public=is_public))
+        response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateView(is_public=is_public,
+                                                                                            is_schema_public=is_schema_public))
         if response.status_code == 202:
             body = response.json()
             return ViewBrief.model_validate(body)
@@ -1010,28 +836,6 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get view data: response code: {response.status_code} is not '
                                 f'200 (OK):{response.text}')
 
-    def get_views_metadata(self, database_id: int) -> Database:
-        """
-        Generate metadata of all views in a database with given id.
-
-        :param database_id: The database id.
-
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the container does not exist.
-        :raises ResponseCodeError: If something went wrong with the retrieval.
-        """
-        url = f'/api/database/{database_id}/metadata/view'
-        response = self._wrapper(method="put", url=url, force_auth=True)
-        if response.status_code == 200:
-            body = response.json()
-            return Database.model_validate(body)
-        if response.status_code == 403:
-            raise ForbiddenError(f'Failed to get views metadata: not allowed')
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to get views metadata: not found')
-        raise ResponseCodeError(f'Failed to get views metadata: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
-
     def get_table_data(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
                        timestamp: datetime.datetime = None) -> DataFrame:
         """
@@ -1103,9 +907,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def import_table_data(self, database_id: int, table_id: int, file_name_or_data_frame: str | DataFrame,
-                          separator: str = ",", quote: str = "\"", header: bool = False,
-                          line_encoding: str = "\n") -> None:
+    def import_table_data(self, database_id: int, table_id: int, dataframe: DataFrame) -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
         the import is column-ordering sensitive! The csv dataset must have the same columns in the same order as the
@@ -1113,11 +915,7 @@ class RestClient:
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param file_name_or_data_frame: The path of the file that is imported on the storage service or pandas dataframe.
-        :param separator: The csv column separator. Optional.
-        :param quote: The column data quotation character. Optional.
-        :param header: If `True`, the first line contains column names, otherwise the first line is data. Optional. Default: `False`.
-        :param line_encoding: The encoding of the line termination. Optional. Default: CR (Windows).
+        :param dataframe: The pandas dataframe.
 
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB could not be imported).
         :raises ForbiddenError: If something went wrong with the authorization.
@@ -1125,18 +923,12 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the metadata service.
         :raises ResponseCodeError: If something went wrong with the insert.
         """
-        client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
-        if type(file_name_or_data_frame) is DataFrame:
-            file_path: str = f"./tmp-{time.time()}"
-            df: DataFrame = file_name_or_data_frame
-            df.to_csv(path_or_buf=file_path, index=False, header=False)
-        else:
-            file_path: str = file_name_or_data_frame
-        filename = client.upload(file_path=file_path)
+        client = UploadClient()
+        filename = client.upload(dataframe)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=Import(location=filename, separator=separator, quote=quote,
-                                                header=header, line_termination=line_encoding))
+                                 payload=Import(location=filename, separator=',', quote='"', header=True,
+                                                line_termination='\n'))
         if response.status_code == 202:
             return
         if response.status_code == 400:
@@ -1151,17 +943,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to import table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def analyse_datatypes(self, file_path: str, separator: str, enum: bool = None,
-                          enum_tol: int = None, upload: bool = True) -> DatatypeAnalysis:
+    def analyse_datatypes(self, dataframe: DataFrame, enum: bool = None, enum_tol: int = None) -> DatatypeAnalysis:
         """
         Import a csv dataset from a file and analyse it for the possible enums, line encoding and column data types.
 
-        :param file_path: The path of the file that is imported on the storage service.
-        :param separator: The csv column separator.
+        :param dataframe: The dataframe.
         :param enum: If set to true, enumerations should be guessed, otherwise no guessing. Optional.
         :param enum_tol: The tolerance for guessing enumerations (ignored if enum=False). Optional.
-        :param upload: If set to true, the file from file_path will be uploaded, otherwise no upload will be performed \
-            and the file_path will be treated as S3 filename and analysed instead. Optional. Default: true.
 
         :returns: The determined data types, if successful.
 
@@ -1169,14 +957,11 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        if upload:
-            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
-            filename = client.upload(file_path=file_path)
-        else:
-            filename = file_path
+        client = UploadClient()
+        filename = client.upload(dataframe)
         params = [
             ('filename', filename),
-            ('separator', separator),
+            ('separator', ','),
             ('enum', enum),
             ('enum_tol', enum_tol)
         ]
@@ -1192,14 +977,11 @@ class RestClient:
         raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def analyse_keys(self, file_path: str, separator: str, upload: bool = True) -> KeyAnalysis:
+    def analyse_keys(self, dataframe: DataFrame) -> KeyAnalysis:
         """
         Import a csv dataset from a file and analyse it for the possible primary key.
 
-        :param file_path: The path of the file that is imported on the storage service.
-        :param separator: The csv column separator.
-        :param upload: If set to true, the file from file_path will be uploaded, otherwise no upload will be performed \
-            and the file_path will be treated as S3 filename and analysed instead. Optional. Default: `True`.
+        :param dataframe: The dataframe.
 
         :returns: The determined ranking of the primary key candidates, if successful.
 
@@ -1207,14 +989,11 @@ class RestClient:
         :raises NotExistsError: If the file was not found by the Analyse Service.
         :raises ResponseCodeError: If something went wrong with the analysis.
         """
-        if upload:
-            client = UploadClient(endpoint=f"{self.endpoint}/api/upload/files")
-            filename = client.upload(file_path=file_path)
-        else:
-            filename = file_path
+        client = UploadClient()
+        filename = client.upload(dataframe=dataframe)
         params = [
             ('filename', filename),
-            ('separator', separator),
+            ('separator', ','),
         ]
         url = f'/api/analyse/keys'
         response = self._wrapper(method="get", url=url, params=params)
@@ -1253,7 +1032,7 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to analyse table statistics: separator error')
         if response.status_code == 502:
-            raise NotExistsError(
+            raise ServiceConnectionError(
                 f'Failed to analyse table statistics: data service failed to establish connection to metadata service')
         if response.status_code == 503:
             raise ServiceError(f'Failed to analyse table statistics: failed to save statistic in search service')

@@ -6,7 +6,8 @@ from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import View, ViewColumn, ColumnType, UserBrief, ViewBrief
-from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
+from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError, \
+    ResponseCodeError, ExternalSystemError, ServiceError, ServiceConnectionError
 
 
 class ViewUnitTest(unittest.TestCase):
@@ -22,22 +23,22 @@ class ViewUnitTest(unittest.TestCase):
     def test_get_views_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [ViewBrief(id=1,
-                        name="Data",
-                        internal_name="data",
-                        database_id=1,
-                        initial_view=False,
-                        query="SELECT id FROM mytable WHERE deg > 0",
-                        query_hash="94c74728b11a690e51d64719868824735f0817b7",
-                        owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
-                        is_public=True,
-                        is_schema_public=True)]
+                             name="Data",
+                             internal_name="data",
+                             database_id=1,
+                             initial_view=False,
+                             query="SELECT id FROM mytable WHERE deg > 0",
+                             query_hash="94c74728b11a690e51d64719868824735f0817b7",
+                             owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
+                             is_public=True,
+                             is_schema_public=True)]
             # mock
             mock.get('/api/database/1/view', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_views(database_id=1)
             self.assertEqual(exp, response)
 
-    def test_get_views_not_found_fails(self):
+    def test_get_views_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/view', status_code=404)
@@ -45,6 +46,16 @@ class ViewUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_views(database_id=1)
             except NotExistsError:
+                pass
+
+    def test_get_views_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view', status_code=202)
+            # test
+            try:
+                response = RestClient().get_views(database_id=1)
+            except ResponseCodeError:
                 pass
 
     def test_get_view_succeeds(self):
@@ -73,7 +84,7 @@ class ViewUnitTest(unittest.TestCase):
             response = RestClient().get_view(database_id=1, view_id=3)
             self.assertEqual(exp, response)
 
-    def test_get_view_not_allowed_fails(self):
+    def test_get_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/view/3', status_code=403)
@@ -83,7 +94,7 @@ class ViewUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_get_views_not_found_fails(self):
+    def test_get_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/view/3', status_code=404)
@@ -91,6 +102,78 @@ class ViewUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_view(database_id=1, view_id=3)
             except NotExistsError:
+                pass
+
+    def test_get_view_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view/3', status_code=202)
+            # test
+            try:
+                response = RestClient().get_view(database_id=1, view_id=3)
+            except ResponseCodeError:
+                pass
+
+    def test_update_view_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            exp = ViewBrief(id=1,
+                            name="Data",
+                            internal_name="data",
+                            database_id=1,
+                            initial_view=False,
+                            query="SELECT id FROM mytable WHERE deg > 0",
+                            query_hash="94c74728b11a690e51d64719868824735f0817b7",
+                            owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
+                            is_public=False,
+                            is_schema_public=False)
+            # mock
+            mock.put('/api/database/1/view/1', json=exp.model_dump(), status_code=202)
+            # test
+            response = RestClient(username='foo', password='bar').update_view(database_id=1, view_id=1,
+                                                                              is_public=False, is_schema_public=False)
+            self.assertEqual(exp, response)
+
+    def test_update_view_403_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/view/1', status_code=403)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_view(database_id=1, view_id=1, is_public=False,
+                                                                       is_schema_public=False)
+            except ForbiddenError:
+                pass
+
+    def test_update_view_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/view/1', status_code=404)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_view(database_id=1, view_id=1, is_public=False,
+                                                                       is_schema_public=False)
+            except NotExistsError:
+                pass
+
+    def test_update_view_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/view/1', status_code=200)
+            # test
+            try:
+                RestClient(username='foo', password='bar').update_view(database_id=1, view_id=1, is_public=False,
+                                                                       is_schema_public=False)
+            except ResponseCodeError:
+                pass
+
+    def test_update_view_anonymous_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/view/1', status_code=403)
+            # test
+            try:
+                RestClient().update_view(database_id=1, view_id=1, is_public=False, is_schema_public=False)
+            except AuthenticationError:
                 pass
 
     def test_create_view_succeeds(self):
@@ -121,7 +204,7 @@ class ViewUnitTest(unittest.TestCase):
                                           query="SELECT id FROM mytable WHERE deg > 0")
             self.assertEqual(exp, response)
 
-    def test_create_view_malformed_fails(self):
+    def test_create_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/view', status_code=400)
@@ -133,7 +216,7 @@ class ViewUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_create_view_not_allowed_fails(self):
+    def test_create_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/view', status_code=403)
@@ -145,7 +228,7 @@ class ViewUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_create_view_not_found_fails(self):
+    def test_create_view_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/view', status_code=404)
@@ -157,7 +240,55 @@ class ViewUnitTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_create_view_not_auth_fails(self):
+    def test_create_view_423_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/view', status_code=423)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_view(database_id=1, name="Data", is_public=True, is_schema_public=True,
+                                              query="SELECT id FROM mytable WHERE deg > 0")
+            except ExternalSystemError:
+                pass
+
+    def test_create_view_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/view', status_code=502)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_view(database_id=1, name="Data", is_public=True, is_schema_public=True,
+                                              query="SELECT id FROM mytable WHERE deg > 0")
+            except ServiceConnectionError:
+                pass
+
+    def test_create_view_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/view', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_view(database_id=1, name="Data", is_public=True, is_schema_public=True,
+                                              query="SELECT id FROM mytable WHERE deg > 0")
+            except ServiceError:
+                pass
+
+    def test_create_view_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.post('/api/database/1/view', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                response = client.create_view(database_id=1, name="Data", is_public=True, is_schema_public=True,
+                                              query="SELECT id FROM mytable WHERE deg > 0")
+            except ResponseCodeError:
+                pass
+
+    def test_create_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.post('/api/database/1/view', status_code=404)
@@ -176,7 +307,7 @@ class ViewUnitTest(unittest.TestCase):
             client = RestClient(username="a", password="b")
             client.delete_view(database_id=1, view_id=3)
 
-    def test_delete_view_malformed_fails(self):
+    def test_delete_view_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/view/3', status_code=400)
@@ -187,7 +318,7 @@ class ViewUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_delete_view_not_allowed_fails(self):
+    def test_delete_view_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/view/3', status_code=403)
@@ -198,7 +329,62 @@ class ViewUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_delete_view_not_auth_fails(self):
+    def test_delete_view_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/view/3', status_code=404)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_view(database_id=1, view_id=3)
+            except NotExistsError:
+                pass
+
+    def test_delete_view_423_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/view/3', status_code=423)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_view(database_id=1, view_id=3)
+            except ExternalSystemError:
+                pass
+
+    def test_delete_view_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/view/3', status_code=502)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_view(database_id=1, view_id=3)
+            except ServiceConnectionError:
+                pass
+
+    def test_delete_view_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/view/3', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_view(database_id=1, view_id=3)
+            except ServiceError:
+                pass
+
+    def test_delete_view_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.delete('/api/database/1/view/3', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.delete_view(database_id=1, view_id=3)
+            except ResponseCodeError:
+                pass
+
+    def test_delete_view_anonymous_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.delete('/api/database/1/view/3', status_code=403)
@@ -229,7 +415,7 @@ class ViewUnitTest(unittest.TestCase):
             self.assertEqual(df.shape, response.shape)
             self.assertTrue(DataFrame.equals(df, response))
 
-    def test_get_view_data_malformed_fails(self):
+    def test_get_view_data_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/view/3/data', status_code=400)
@@ -239,7 +425,7 @@ class ViewUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_get_view_data_not_allowed_fails(self):
+    def test_get_view_data_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/view/3/data', status_code=403)
@@ -247,6 +433,46 @@ class ViewUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_view_data(database_id=1, view_id=3)
             except ForbiddenError:
+                pass
+
+    def test_get_view_data_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view/3/data', status_code=404)
+            # test
+            try:
+                response = RestClient().get_view_data(database_id=1, view_id=3)
+            except NotExistsError:
+                pass
+
+    def test_get_view_data_409_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view/3/data', status_code=409)
+            # test
+            try:
+                response = RestClient().get_view_data(database_id=1, view_id=3)
+            except ExternalSystemError:
+                pass
+
+    def test_get_view_data_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view/3/data', status_code=503)
+            # test
+            try:
+                response = RestClient().get_view_data(database_id=1, view_id=3)
+            except ServiceError:
+                pass
+
+    def test_get_view_data_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.get('/api/database/1/view/3/data', status_code=202)
+            # test
+            try:
+                response = RestClient().get_view_data(database_id=1, view_id=3)
+            except ResponseCodeError:
                 pass
 
     def test_get_view_data_count_succeeds(self):
@@ -258,7 +484,7 @@ class ViewUnitTest(unittest.TestCase):
             response = RestClient().get_view_data_count(database_id=1, view_id=3)
             self.assertEqual(exp, response)
 
-    def test_get_view_data_count_malformed_fails(self):
+    def test_get_view_data_count_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/view/3/data', status_code=400)
@@ -268,7 +494,7 @@ class ViewUnitTest(unittest.TestCase):
             except MalformedError:
                 pass
 
-    def test_get_view_data_count_not_allowed_fails(self):
+    def test_get_view_data_count_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.head('/api/database/1/view/3/data', status_code=403)

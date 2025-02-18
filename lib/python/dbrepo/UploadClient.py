@@ -2,7 +2,12 @@ import logging
 import os
 import re
 import sys
+from io import BytesIO
+
+from pandas import DataFrame
 from tusclient import client
+
+from dbrepo.api.exceptions import UploadError
 
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
@@ -21,19 +26,15 @@ class UploadClient:
     def __init__(self, endpoint: str = 'http://gateway-service/api/upload/files') -> None:
         self.endpoint = os.environ.get('REST_UPLOAD_ENDPOINT', endpoint)
 
-    def upload(self, file_path: str) -> str:
-        """
-        Imports a file through the Upload Service into the Storage Service.
-
-        :param file_path: The file path on the local machine.
-
-        :returns: Filename on the Storage Service, if successful.
-        """
-        logging.debug(f"upload file to endpoint: {self.endpoint}")
+    def upload(self, dataframe: DataFrame) -> str:
+        logging.debug(f"upload to endpoint: {self.endpoint}")
         tus_client = client.TusClient(url=self.endpoint)
-        uploader = tus_client.uploader(file_path=file_path)
+        buffer: BytesIO = BytesIO(dataframe.to_csv(index=False, header=False).encode('utf-8'))
+        uploader = tus_client.uploader(file_stream=buffer)
         uploader.upload()
-        m = re.search('\\/([a-f0-9]+)\\+', uploader.url)
+        m = re.search('\\/([a-f0-9]+)$', uploader.url)
         filename = m.group(0)[1:-1]
-        logging.info(f'Uploaded file {file_path} to storage service with key: {filename}')
+        if filename is None:
+            raise UploadError('Failed to upload file: no filename')
+        logging.info(f'Uploaded to storage service with key: {filename}')
         return filename
