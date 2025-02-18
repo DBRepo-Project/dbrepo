@@ -7,8 +7,8 @@ description: Helm Chart for installing DBRepo
 sources:
   - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
-version: "1.6.4"
-appVersion: "1.6.4"
+version: "1.6.5"
+appVersion: "1.6.5"
 keywords:
   - dbrepo
 maintainers:

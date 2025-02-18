@@ -61,7 +61,7 @@ class JwtTest(unittest.TestCase):
                 'roles': roles
             }
         }
-        with open('test/rsa/rs256.key', 'rb') as fh:
+        with open('tests/rsa/rs256.key', 'rb') as fh:
             return jwt.JWT().encode(claims, jwt.jwk_from_pem(fh.read()), alg='RS256')
 
     def test_update_database_media_type_fails(self):

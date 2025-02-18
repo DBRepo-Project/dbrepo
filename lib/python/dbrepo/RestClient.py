@@ -822,7 +822,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get table history: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_views(self, database_id: int) -> List[View]:
+    def get_views(self, database_id: int) -> List[ViewBrief]:
         """
         Gets views of a database with given database id.
 
@@ -837,7 +837,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[View]).validate_python(body)
+            return TypeAdapter(List[ViewBrief]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find views: not found')
         raise ResponseCodeError(f'Failed to find views: response code: {response.status_code} is not '
