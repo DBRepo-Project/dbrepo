@@ -2,550 +2,494 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS `mdb_users`
 (
-    id               varchar(36)  not null,
-    keycloak_id      varchar(36)  not null,
-    username         varchar(255) not null,
-    firstname        varchar(255),
-    lastname         varchar(255),
-    orcid            varchar(255),
-    affiliation      varchar(255),
-    is_internal      boolean      not null default false,
-    mariadb_password varchar(255) not null,
-    theme            varchar(255) not null default ('light'),
-    language         varchar(3)   not null default ('en'),
-    primary key (id),
-    unique (keycloak_id),
-    unique (username)
+    id               UUID         NOT NULL DEFAULT uuid(),
+    keycloak_id      UUID         NOT NULL DEFAULT UUID(),
+    username         VARCHAR(255) NOT NULL,
+    firstname        VARCHAR(255),
+    lastname         VARCHAR(255),
+    orcid            VARCHAR(255),
+    affiliation      VARCHAR(255),
+    is_internal      BOOLEAN      NOT NULL DEFAULT FALSE,
+    mariadb_password VARCHAR(255) NOT NULL,
+    theme            VARCHAR(255) NOT NULL DEFAULT ('light'),
+    language         VARCHAR(3)   NOT NULL DEFAULT ('en'),
+    PRIMARY KEY (id),
+    UNIQUE (keycloak_id),
+    UNIQUE (username)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
-    id            varchar(36)  not null,
-    registry      varchar(255) not null default 'docker.io',
-    name          varchar(255) not null,
-    version       varchar(255) not null,
-    default_port  int          not null,
-    dialect       varchar(255) not null,
-    driver_class  varchar(255) not null,
-    jdbc_method   varchar(255) not null,
-    is_default    boolean      not null default false,
-    created       timestamp    not null default now(),
-    last_modified timestamp,
-    primary key (id),
-    unique (name, version),
-    unique (is_default)
+    id            UUID         NOT NULL DEFAULT UUID(),
+    registry      VARCHAR(255) NOT NULL DEFAULT 'docker.io',
+    name          VARCHAR(255) NOT NULL,
+    version       VARCHAR(255) NOT NULL,
+    DEFAULT_port  INT          NOT NULL,
+    dialect       VARCHAR(255) NOT NULL,
+    driver_class  VARCHAR(255) NOT NULL,
+    jdbc_method   VARCHAR(255) NOT NULL,
+    is_DEFAULT    BOOLEAN      NOT NULL DEFAULT FALSE,
+    created       TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_modified TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE (name, version),
+    UNIQUE (is_DEFAULT)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
-    id                  varchar(36)  not null,
-    internal_name       varchar(255) not null,
-    name                varchar(255) not null,
-    host                varchar(255) not null,
-    port                int          not null default 3306,
-    ui_host             varchar(255) not null default host,
-    ui_port             int          not null default port,
-    ui_additional_flags text,
-    sidecar_host        varchar(255),
-    sidecar_port        int,
-    image_id            bigint       not null,
-    created             timestamp    not null default now(),
-    last_modified       timestamp,
-    privileged_username varchar(255) not null,
-    privileged_password varchar(255) not null,
-    quota               int          not null default 50,
-    primary key (id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_data`
-(
-    id           varchar(36) not null,
-    PROVENANCE   text,
-    FileEncoding text,
-    FileType     varchar(100),
-    Version      text,
-    Seperator    text,
-    primary key (ID)
+    id                  UUID         NOT NULL DEFAULT UUID(),
+    internal_name       VARCHAR(255) NOT NULL,
+    name                VARCHAR(255) NOT NULL,
+    host                VARCHAR(255) NOT NULL,
+    port                INT          NOT NULL DEFAULT 3306,
+    ui_host             VARCHAR(255) NOT NULL DEFAULT host,
+    ui_port             INT          NOT NULL DEFAULT port,
+    ui_additional_flags TEXT,
+    sidecar_host        VARCHAR(255),
+    sidecar_port        INT,
+    image_id            UUID         NOT NULL DEFAULT UUID(),
+    created             TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_modified       TIMESTAMP,
+    privileged_username VARCHAR(255) NOT NULL,
+    privileged_password VARCHAR(255) NOT NULL,
+    quota               INT          NOT NULL DEFAULT 50,
+    PRIMARY KEY (id),
+    FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_licenses`
 (
-    identifier  varchar(255) not null,
-    uri         text         not null,
-    description text         not null,
-    primary key (identifier),
-    unique (uri(200))
+    identifier  VARCHAR(255) NOT NULL,
+    uri         TEXT         NOT NULL,
+    description TEXT         NOT NULL,
+    PRIMARY KEY (identifier),
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
-    id               varchar(36)     not null,
-    cid              bigint unsigned not null,
-    name             varchar(255)    not null,
-    internal_name    varchar(255)    not null,
-    exchange_name    varchar(255)    not null,
-    description      text,
-    engine           varchar(20),
-    is_public        boolean         not null default true,
-    is_schema_public boolean         not null default true,
-    image            longblob,
-    owned_by         varchar(36),
-    contact_person   varchar(36),
-    created          timestamp       not null default now(),
-    last_modified    timestamp,
-    primary key (id),
-    foreign key (cid) references mdb_containers (id),
-    foreign key (owned_by) references mdb_users (id),
-    foreign key (contact_person) references mdb_users (id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
-(
-    dbid     bigint       not null,
-    subjects varchar(255) not null,
-    primary key (dbid, subjects)
+    id               UUID         NOT NULL DEFAULT UUID(),
+    cid              UUID         NOT NULL DEFAULT UUID(),
+    name             VARCHAR(255) NOT NULL,
+    internal_name    VARCHAR(255) NOT NULL,
+    exchange_name    VARCHAR(255) NOT NULL,
+    description      TEXT,
+    engine           VARCHAR(20),
+    is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
+    is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
+    image            LONGBLOB,
+    owned_by         UUID,
+    contact_person   UUID,
+    created          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_modified    TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
-    id               varchar(36)     not null,
-    tDBID            bigint unsigned not null,
-    tName            varchar(64)     not null,
-    internal_name    varchar(64)     not null,
-    queue_name       varchar(255)    not null,
-    routing_key      varchar(255),
-    tDescription     varchar(2048),
-    num_rows         bigint,
-    data_length      bigint,
-    max_data_length  bigint,
-    avg_row_length   bigint,
-    `separator`      char(1),
-    quote            char(1),
-    element_null     varchar(50),
-    skip_lines       bigint,
-    element_true     varchar(50),
-    element_false    varchar(50),
-    Version          text,
-    created          timestamp       not null default now(),
-    versioned        boolean         not null default true,
-    is_public        boolean         not null default true,
-    is_schema_public boolean         not null default true,
-    owned_by         varchar(36)     not null,
-    last_modified    timestamp,
-    primary key (ID),
-    unique (tDBID, internal_name),
-    foreign key (tDBID) references mdb_databases (id),
-    foreign key (owned_by) references mdb_users (id)
+    id               UUID         NOT NULL DEFAULT UUID(),
+    tDBID            UUID         NOT NULL DEFAULT UUID(),
+    tName            VARCHAR(64)  NOT NULL,
+    internal_name    VARCHAR(64)  NOT NULL,
+    queue_name       VARCHAR(255) NOT NULL,
+    routing_key      VARCHAR(255),
+    tDescription     VARCHAR(2048),
+    num_rows         BIGINT,
+    data_length      BIGINT,
+    max_data_length  BIGINT,
+    avg_row_length   BIGINT,
+    created          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    versioned        BOOLEAN      NOT NULL DEFAULT TRUE,
+    is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
+    is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
+    owned_by         UUID         NOT NULL DEFAULT UUID(),
+    last_modified    TIMESTAMP,
+    PRIMARY KEY (ID),
+    UNIQUE (tDBID, internal_name),
+    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
-    id               varchar(36)     not null,
-    tID              bigint unsigned not null,
-    cName            varchar(64),
-    internal_name    varchar(64)     not null,
-    Datatype         enum ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    length           bigint unsigned NULL,
-    ordinal_position int             not null,
-    index_length     bigint unsigned NULL,
-    description      varchar(2048),
-    size             bigint unsigned,
-    d                bigint unsigned,
-    is_null_allowed  boolean         not null default true,
+    id               UUID            NOT NULL DEFAULT UUID(),
+    tID              UUID            NOT NULL DEFAULT UUID(),
+    cName            VARCHAR(64),
+    internal_name    VARCHAR(64)     NOT NULL,
+    Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
+    length           BIGINT UNSIGNED NULL,
+    ordinal_position INT             NOT NULL,
+    index_length     BIGINT UNSIGNED NULL,
+    description      VARCHAR(2048),
+    size             BIGINT UNSIGNED,
+    d                BIGINT UNSIGNED,
+    is_null_allowed  BOOLEAN         NOT NULL DEFAULT TRUE,
     val_min          NUMERIC         NULL,
     val_max          NUMERIC         NULL,
     mean             NUMERIC         NULL,
     median           NUMERIC         NULL,
     std_dev          Numeric         NULL,
-    created          timestamp       not null default now(),
-    last_modified    timestamp,
-    foreign key (tID) references mdb_tables (ID) ON DELETE CASCADE,
-    primary key (ID),
-    unique (tID, internal_name)
+    created          TIMESTAMP       NOT NULL DEFAULT NOW(),
+    last_modified    TIMESTAMP,
+    FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
+    PRIMARY KEY (ID),
+    UNIQUE (tID, internal_name)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
+CREATE TABLE IF NOT EXISTS `mdb_columns_ENUMs`
 (
-    id        varchar(36)     not null,
-    column_id bigint unsigned not null,
-    value     varchar(255)    not null,
-    foreign key (column_id) references mdb_columns (ID) ON DELETE CASCADE,
-    primary key (id)
+    id        UUID         NOT NULL DEFAULT UUID(),
+    column_id UUID         NOT NULL DEFAULT UUID(),
+    value     VARCHAR(255) NOT NULL,
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
-    id        varchar(36)     not null,
-    column_id bigint unsigned not null,
-    value     varchar(255)    not null,
-    foreign key (column_id) references mdb_columns (ID) ON DELETE CASCADE,
-    primary key (id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
-(
-    cID           bigint unsigned,
-    tID           bigint unsigned,
-    maxlength     int,
-    last_modified timestamp,
-    created       timestamp not null default now(),
-    primary key (cID),
-    foreign key (cID) references mdb_columns (ID)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
-(
-    cID           bigint unsigned,
-    tID           bigint unsigned,
-    num_cat       int,
-    --    cat_array     TEXT[],
-    last_modified timestamp,
-    created       timestamp not null default now(),
-    primary key (cID),
-    foreign key (cID) references mdb_columns (ID)
+    id        UUID         NOT NULL DEFAULT UUID(),
+    column_id UUID         NOT NULL DEFAULT UUID(),
+    value     VARCHAR(255) NOT NULL,
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
-    fkid      varchar(36)     not null,
-    tid       bigint unsigned not null,
-    rtid      bigint unsigned not null,
-    name      varchar(255)    not null,
-    on_update varchar(50)     NULL,
-    on_delete varchar(50)     NULL,
-    position  int             NULL,
-    primary key (fkid),
-    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE,
-    foreign key (rtid) references mdb_tables (id)
+    fkid      UUID         NOT NULL DEFAULT UUID(),
+    tid       UUID         NOT NULL DEFAULT UUID(),
+    rtid      UUID         NOT NULL DEFAULT UUID(),
+    name      VARCHAR(255) NOT NULL,
+    on_update VARCHAR(50)  NULL,
+    on_delete VARCHAR(50)  NULL,
+    position  INT          NULL,
+    PRIMARY KEY (fkid),
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
+    FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 (
-    pkid varchar(36)     not null,
-    tID  bigint unsigned not null,
-    cid  bigint unsigned not null,
-    primary key (pkid),
-    foreign key (tID) references mdb_tables (id) ON DELETE CASCADE,
-    foreign key (cid) references mdb_columns (id) ON DELETE CASCADE
+    pkid UUID NOT NULL DEFAULT UUID(),
+    tID  UUID NOT NULL DEFAULT UUID(),
+    cid  UUID NOT NULL DEFAULT UUID(),
+    PRIMARY KEY (pkid),
+    FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
+    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
-    id   varchar(36)     not null,
-    fkid bigint unsigned not null,
-    cid  bigint unsigned not null,
-    rcid bigint unsigned not null,
-    primary key (id),
-    unique (fkid, cid, rcid),
-    foreign key (fkid) references mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
-    foreign key (cid) references mdb_columns (id),
-    foreign key (rcid) references mdb_columns (id)
+    id   UUID NOT NULL DEFAULT UUID(),
+    fkid UUID NOT NULL DEFAULT UUID(),
+    cid  UUID NOT NULL DEFAULT UUID(),
+    rcid UUID NOT NULL DEFAULT UUID(),
+    PRIMARY KEY (id),
+    UNIQUE (fkid, cid, rcid),
+    FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
+    FOREIGN KEY (cid) REFERENCES mdb_columns (id),
+    FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_UNIQUE`
 (
-    uid      varchar(36)     not null,
-    name     varchar(255)    not null,
-    tid      bigint unsigned not null,
-    position int             NULL,
-    primary key (uid),
-    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE
+    uid      UUID         NOT NULL DEFAULT UUID(),
+    name     VARCHAR(255) NOT NULL,
+    tid      UUID         NOT NULL DEFAULT UUID(),
+    position INT          NULL,
+    PRIMARY KEY (uid),
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_UNIQUE_columns`
 (
-    id  varchar(36)     not null,
-    uid bigint unsigned not null,
-    cid bigint unsigned not null,
-    primary key (id),
-    foreign key (uid) references mdb_constraints_unique (uid),
-    foreign key (cid) references mdb_columns (id) ON DELETE CASCADE
+    id  UUID NOT NULL DEFAULT UUID(),
+    uid UUID NOT NULL DEFAULT UUID(),
+    cid UUID NOT NULL DEFAULT UUID(),
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_constraints_UNIQUE (uid),
+    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
-    id     varchar(36)     not null,
-    tid    bigint unsigned not null,
-    checks varchar(255)    not null,
-    primary key (id),
-    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE
+    id     UUID         NOT NULL DEFAULT UUID(),
+    tid    UUID         NOT NULL DEFAULT UUID(),
+    checks VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          varchar(36)  not null,
-    uri         text         not null,
-    name        varchar(255) null,
-    description text         null,
-    created     timestamp    not null default now(),
-    primary key (id),
-    unique (uri(200))
+    id          UUID         NOT NULL DEFAULT UUID(),
+    uri         TEXT         NOT NULL,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id),
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          varchar(36)  not null,
-    uri         text         not null,
-    name        varchar(255) null,
-    description text         null,
-    created     timestamp    not null default now(),
-    primary key (id),
-    unique (uri(200))
+    id          UUID         NOT NULL DEFAULT UUID(),
+    uri         TEXT         NOT NULL,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     TIMESTAMP    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id),
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
 (
-    id      bigint unsigned not null,
-    cID     bigint unsigned not null,
-    created timestamp       not null default now(),
-    primary key (id, cid),
-    foreign key (cID) references mdb_columns (ID)
+    id      UUID      NOT NULL DEFAULT UUID(),
+    cID     UUID      NOT NULL DEFAULT UUID(),
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, cid),
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 (
-    id      bigint unsigned not null,
-    cID     bigint unsigned not null,
-    created timestamp       not null default now(),
-    primary key (id, cID),
-    foreign key (cID) references mdb_columns (ID)
+    id      UUID      NOT NULL DEFAULT UUID(),
+    cID     UUID      NOT NULL DEFAULT UUID(),
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, cID),
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
-    id               varchar(36)     not null,
-    vdbid            bigint unsigned not null,
-    vName            varchar(64)     not null,
-    internal_name    varchar(64)     not null,
-    Query            text            not null,
-    query_hash       varchar(255)    not null,
-    Public           boolean         not null default true,
-    is_schema_public boolean         not null default true,
-    InitialView      boolean         not null,
-    created          timestamp       not null default now(),
-    last_modified    timestamp,
-    owned_by         varchar(36)     not null,
-    primary key (id),
-    foreign key (vdbid) references mdb_databases (id),
-    foreign key (owned_by) references mdb_users (id)
+    id               UUID         NOT NULL DEFAULT UUID(),
+    vdbid            UUID         NOT NULL DEFAULT UUID(),
+    vName            VARCHAR(64)  NOT NULL,
+    internal_name    VARCHAR(64)  NOT NULL,
+    Query            TEXT         NOT NULL,
+    query_hash       VARCHAR(255) NOT NULL,
+    Public           BOOLEAN      NOT NULL DEFAULT TRUE,
+    is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
+    InitialView      BOOLEAN      NOT NULL,
+    created          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_modified    TIMESTAMP,
+    owned_by         UUID         NOT NULL DEFAULT UUID(),
+    PRIMARY KEY (id),
+    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_messages`
 (
-    id            varchar(36)                       not null,
-    type          enum ('ERROR', 'WARNING', 'INFO') not null default 'INFO',
-    message       text                              not null,
-    link          text                              NULL,
-    link_text     varchar(255)                      NULL,
-    display_start timestamp                         NULL,
-    display_end   timestamp                         NULL,
-    primary key (id)
+    id            UUID                              NOT NULL DEFAULT UUID(),
+    type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL DEFAULT 'INFO',
+    message       TEXT                              NOT NULL,
+    link          TEXT                              NULL,
+    link_TEXT     VARCHAR(255)                      NULL,
+    display_start TIMESTAMP                         NULL,
+    display_end   TIMESTAMP                         NULL,
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 (
-    id              varchar(36) not null,
-    prefix          varchar(8)  not null,
-    uri             text        not null,
-    uri_pattern     text,
-    sparql_endpoint text        NULL,
-    rdf_path        text        NULL,
-    last_modified   timestamp,
-    created         timestamp   not null default now(),
-    unique (prefix),
-    unique (uri(200)),
-    primary key (id)
+    id              UUID       NOT NULL DEFAULT UUID(),
+    prefix          VARCHAR(8) NOT NULL,
+    uri             TEXT       NOT NULL,
+    uri_pattern     TEXT,
+    sparql_endpoint TEXT       NULL,
+    rdf_path        TEXT       NULL,
+    last_modified   TIMESTAMP,
+    created         TIMESTAMP  NOT NULL DEFAULT NOW(),
+    UNIQUE (prefix),
+    UNIQUE (uri(200)),
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
-    id               varchar(36)     not null,
-    view_id          bigint unsigned not null,
-    name             varchar(64),
-    internal_name    varchar(64)     not null,
-    column_type      enum ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    ordinal_position int             not null,
-    size             bigint unsigned,
-    d                bigint unsigned,
-    is_null_allowed  boolean         not null default true,
-    primary key (id),
-    foreign key (view_id) references mdb_view (id) ON DELETE CASCADE,
-    unique (view_id, internal_name)
+    id               UUID        NOT NULL DEFAULT UUID(),
+    view_id          UUID        NOT NULL DEFAULT UUID(),
+    name             VARCHAR(64),
+    internal_name    VARCHAR(64) NOT NULL,
+    column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
+    ordinal_position INT         NOT NULL,
+    size             BIGINT UNSIGNED,
+    d                BIGINT UNSIGNED,
+    is_null_allowed  BOOLEAN     NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id),
+    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
+    UNIQUE (view_id, internal_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
-    id                varchar(36)                                  not null,
-    dbid              bigint unsigned                              not null,
-    qid               bigint unsigned,
-    vid               bigint unsigned,
-    tid               bigint unsigned,
-    publisher         varchar(255)                                 not null,
-    language          varchar(2),
-    publication_year  int                                          not null,
-    publication_month int,
-    publication_day   int,
-    identifier_type   enum ('DATABASE', 'SUBSET', 'VIEW', 'TABLE') not null,
-    status            enum ('DRAFT', 'PUBLISHED')                  not null default ('PUBLISHED'),
-    query             text,
-    query_normalized  text,
-    query_hash        varchar(255),
-    execution         timestamp,
-    result_hash       varchar(255),
-    result_number     bigint,
-    doi               varchar(255),
-    created           timestamp                                    not null default now(),
-    owned_by          varchar(36)                                  not null,
-    last_modified     timestamp,
-    primary key (id), /* must be a single id from persistent identifier concept */
-    foreign key (dbid) references mdb_databases (id),
-    foreign key (owned_by) references mdb_users (id)
+    id                UUID                                         NOT NULL DEFAULT UUID(),
+    dbid              UUID                                         NOT NULL DEFAULT UUID(),
+    qid               UUID,
+    vid               UUID,
+    tid               UUID,
+    publisher         VARCHAR(255)                                 NOT NULL,
+    language          VARCHAR(2),
+    publication_year  INT                                          NOT NULL,
+    publication_month INT,
+    publication_day   INT,
+    identifier_type   ENUM ('DATABASE', 'SUBSET', 'VIEW', 'TABLE') NOT NULL,
+    status            ENUM ('DRAFT', 'PUBLISHED')                  NOT NULL DEFAULT ('PUBLISHED'),
+    query             TEXT,
+    query_normalized  TEXT,
+    query_hash        VARCHAR(255),
+    execution         TIMESTAMP,
+    result_hash       VARCHAR(255),
+    result_number     BIGINT,
+    doi               VARCHAR(255),
+    created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
+    owned_by          UUID                                         NOT NULL DEFAULT UUID(),
+    last_modified     TIMESTAMP,
+    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
-    pid        bigint unsigned not null,
-    license_id varchar(255)    not null,
-    primary key (pid, license_id),
-    foreign key (pid) references mdb_identifiers (id),
-    foreign key (license_id) references mdb_licenses (identifier)
+    pid        UUID         NOT NULL DEFAULT UUID(),
+    license_id VARCHAR(255) NOT NULL,
+    PRIMARY KEY (pid, license_id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
-    id         varchar(36)     not null,
-    pid        bigint unsigned not null,
-    title      text            not null,
-    title_type enum ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
-    language   varchar(2),
-    primary key (id),
-    foreign key (pid) references mdb_identifiers (id)
+    id         UUID NOT NULL DEFAULT UUID(),
+    pid        UUID NOT NULL DEFAULT UUID(),
+    title      TEXT NOT NULL,
+    title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
+    language   VARCHAR(2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
-    id                     varchar(36)     not null,
-    pid                    bigint unsigned not null,
-    funder_name            varchar(255)    not null,
-    funder_identifier      text,
-    funder_identifier_type enum ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
-    scheme_uri             text,
-    award_number           varchar(255),
-    award_title            text,
-    language               varchar(255),
-    primary key (id),
-    foreign key (pid) references mdb_identifiers (id)
+    id                     UUID         NOT NULL DEFAULT UUID(),
+    pid                    UUID         NOT NULL DEFAULT UUID(),
+    funder_name            VARCHAR(255) NOT NULL,
+    funder_identifier      TEXT,
+    funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
+    scheme_uri             TEXT,
+    award_number           VARCHAR(255),
+    award_title            TEXT,
+    language               VARCHAR(255),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
-    id               varchar(36)     not null,
-    pid              bigint unsigned not null,
-    description      text            not null,
-    description_type enum ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
-    language         varchar(2),
-    primary key (id),
-    foreign key (pid) references mdb_identifiers (id)
+    id               UUID NOT NULL DEFAULT UUID(),
+    pid              UUID NOT NULL DEFAULT UUID(),
+    description      TEXT NOT NULL,
+    description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
+    language         VARCHAR(2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
 (
-    id       varchar(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          not null,
-    pid      bigint unsigned                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      not null,
-    value    varchar(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         not null,
-    type     enum ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             not null,
-    relation enum ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','references','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') not null,
-    primary key (id), /* must be a single id from persistent identifier concept */
-    foreign key (pid) references mdb_identifiers (id),
-    unique (pid, value)
+    id       UUID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 NOT NULL DEFAULT UUID(),
+    pid      UUID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 NOT NULL DEFAULT UUID(),
+    value    VARCHAR(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
+    type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
+    relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
+    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
-    id                                varchar(36)     not null,
-    pid                               bigint unsigned not null,
-    given_names                       text,
-    family_name                       text,
-    creator_name                      varchar(255)    not null,
-    name_type                         enum ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
-    name_identifier                   text,
-    name_identifier_scheme            enum ('ROR', 'GRID', 'ISNI', 'ORCID'),
-    name_identifier_scheme_uri        text,
-    affiliation                       varchar(255),
-    affiliation_identifier            text,
-    affiliation_identifier_scheme     enum ('ROR', 'GRID', 'ISNI'),
-    affiliation_identifier_scheme_uri text,
-    primary key (id),
-    foreign key (pid) references mdb_identifiers (id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_update`
-(
-    uUserID varchar(255)    not null,
-    uDBID   bigint unsigned not null,
-    created timestamp       not null default now(),
-    primary key (uUserID, uDBID),
-    foreign key (uDBID) references mdb_databases (id)
+    id                                UUID         NOT NULL               DEFAULT UUID(),
+    pid                               UUID         NOT NULL               DEFAULT UUID(),
+    given_names                       TEXT,
+    family_name                       TEXT,
+    creator_name                      VARCHAR(255) NOT NULL,
+    name_type                         ENUM ('PERSONAL', 'ORGANIZATIONAL') DEFAULT 'PERSONAL',
+    name_identifier                   TEXT,
+    name_identifier_scheme            ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
+    name_identifier_scheme_uri        TEXT,
+    affiliation                       VARCHAR(255),
+    affiliation_identifier            TEXT,
+    affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
+    affiliation_identifier_scheme_uri TEXT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
-    aUserID  varchar(255) not null,
-    aDBID    bigint unsigned references mdb_databases (id),
-    attime   timestamp,
-    download boolean,
-    created  timestamp    not null default now(),
-    primary key (aUserID, aDBID)
+    aUserID  VARCHAR(255) NOT NULL,
+    aDBID    UUID REFERENCES mdb_databases (id),
+    attime   TIMESTAMP,
+    download BOOLEAN,
+    created  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (aUserID, aDBID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
-    user_id     varchar(36)                             not null,
-    database_id bigint unsigned references mdb_databases (id),
-    access_type enum ('READ', 'WRITE_OWN', 'WRITE_ALL') not null,
-    created     timestamp                               not null default now(),
-    primary key (user_id, database_id),
-    foreign key (user_id) references mdb_users (id)
+    user_id     UUID                                    NOT NULL DEFAULT UUID(),
+    database_id UUID REFERENCES mdb_databases (id),
+    access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
+    created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, database_id),
+    FOREIGN KEY (user_id) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_types`
 (
-    id            varchar(36)     not null,
-    image_id      bigint unsigned not null,
-    display_name  varchar(255)    not null,
-    value         varchar(255)    not null,
-    size_min      int unsigned,
-    size_max      int unsigned,
-    size_default  int unsigned,
-    size_required boolean comment 'When setting NULL, the service assumes the data type has no size',
-    size_step     int unsigned,
-    d_min         int unsigned,
-    d_max         int unsigned,
-    d_default     int unsigned,
-    d_required    boolean comment 'When setting NULL, the service assumes the data type has no d',
-    d_step        int unsigned,
-    type_hint     text,
-    data_hint     text,
-    documentation text            not null,
-    is_generated  boolean         not null,
-    is_quoted     boolean         not null,
-    is_buildable  boolean         not null,
-    primary key (id),
-    foreign key (image_id) references `mdb_images` (`id`),
-    unique (value)
+    id            UUID         NOT NULL DEFAULT UUID(),
+    image_id      UUID         NOT NULL DEFAULT UUID(),
+    display_name  VARCHAR(255) NOT NULL,
+    value         VARCHAR(255) NOT NULL,
+    size_min      INT UNSIGNED,
+    size_max      INT UNSIGNED,
+    size_DEFAULT  INT UNSIGNED,
+    size_required BOOLEAN comment 'When setting NULL, the service assumes the data type has no size',
+    size_step     INT UNSIGNED,
+    d_min         INT UNSIGNED,
+    d_max         INT UNSIGNED,
+    d_DEFAULT     INT UNSIGNED,
+    d_required    BOOLEAN comment 'When setting NULL, the service assumes the data type has no d',
+    d_step        INT UNSIGNED,
+    type_hint     TEXT,
+    data_hint     TEXT,
+    documentation TEXT         NOT NULL,
+    is_generated  BOOLEAN      NOT NULL,
+    is_quoted     BOOLEAN      NOT NULL,
+    is_buildable  BOOLEAN      NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
+    UNIQUE (value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_operators`
 (
-    id            varchar(36)     not null,
-    image_id      bigint unsigned not null,
-    display_name  varchar(255)    not null,
-    value         varchar(255)    not null,
-    documentation text            not null,
-    primary key (id),
-    foreign key (image_id) references `mdb_images` (`id`),
-    unique (value)
+    id            UUID         NOT NULL DEFAULT UUID(),
+    image_id      UUID         NOT NULL DEFAULT UUID(),
+    display_name  VARCHAR(255) NOT NULL,
+    value         VARCHAR(255) NOT NULL,
+    documentation TEXT         NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
+    UNIQUE (value)
 ) WITH SYSTEM VERSIONING;
 
 COMMIT;
@@ -558,110 +502,121 @@ VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
         'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
-INSERT INTO `mdb_images` (name, registry, version, default_port, dialect, driver_class, jdbc_method)
-VALUES ('mariadb', 'docker.io', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver',
-        'mariadb');
+INSERT INTO `mdb_images` (id, name, registry, version, DEFAULT_port, dialect, driver_class, jdbc_method)
+VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'mariadb', 'docker.io', '11.1.3', 3306,
+        'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
-INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_default, size_required,
-                               size_step, d_min, d_max, d_default, d_required, d_step, type_hint, data_hint,
+INSERT INTO `mdb_image_types` (image_id, display_name, value, size_min, size_max, size_DEFAULT, size_required,
+                               size_step, d_min, d_max, d_DEFAULT, d_required, d_step, type_hint, data_hint,
                                documentation, is_quoted, is_buildable, is_generated)
-VALUES (1, 'BIGINT(size)', 'bigint', 0, null, null, false, 1, null, null, null, null, null, null, null,
-        'https://mariadb.com/kb/en/bigint/', false, true, false),
-       (1, 'BINARY(size)', 'binary', 0, 255, 255, true, 1, null, null, null, null, null, 'size in Bytes', null,
-        'https://mariadb.com/kb/en/binary/', false, true, false),
-       (1, 'BIT(size)', 'bit', 0, 64, null, false, 1, null, null, null, null, null, null, null,
-        'https://mariadb.com/kb/en/bit/', false, true, false),
-       (1, 'BLOB(size)', 'blob', 0, 65535, null, false, 1, null, null, null, null, null, 'size in Bytes', null,
-        'https://mariadb.com/kb/en/blob/', false, false, false),
-       (1, 'BOOL', 'bool', null, null, null, null, null, null, null, null, null, null, null, null,
-        'https://mariadb.com/kb/en/bool/', false, true, false),
-       (1, 'CHAR(size)', 'char', 0, 255, 255, false, 1, null, null, null, null, null, null, null,
-        'https://mariadb.com/kb/en/char/', false, true, false),
-       (1, 'DATE', 'date', null, null, null, null, null, null, null, null, null, null,
-        'min. 1000-01-01, max. 9999-12-31', 'e.g. YYYY-MM-DD, YY-MM-DD, YYMMDD, YYYY/MM/DD',
-        'https://mariadb.com/kb/en/date/', true, true, false),
-       (1, 'DATETIME(fsp)', 'datetime', 0, 6, null, null, 1, null, null, null, null, null,
-        'fsp=microsecond precision, min. 1000-01-01 00:00:00.0, max. 9999-12-31 23:59:59.9',
+VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BIGINT(size)', 'bigint', 0, null, null, FALSE, 1, null, null, null,
+        null, null, null, null, 'https://mariadb.com/kb/en/bigint/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BINARY(size)', 'binary', 0, 255, 255, TRUE, 1, null, null, null, null,
+        null, 'size in Bytes', null, 'https://mariadb.com/kb/en/binary/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BIT(size)', 'bit', 0, 64, null, FALSE, 1, null, null, null, null, null,
+        null, null, 'https://mariadb.com/kb/en/bit/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BLOB(size)', 'blob', 0, 65535, null, FALSE, 1, null, null, null, null,
+        null, 'size in Bytes', null, 'https://mariadb.com/kb/en/blob/', FALSE, FALSE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'BOOL', 'bool', null, null, null, null, null, null, null, null, null,
+        null, null, null, 'https://mariadb.com/kb/en/bool/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'CHAR(size)', 'char', 0, 255, 255, FALSE, 1, null, null, null, null,
+        null, null, null, 'https://mariadb.com/kb/en/char/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DATE', 'date', null, null, null, null, null, null, null, null, null,
+        null, 'min. 1000-01-01, max. 9999-12-31', 'e.g. YYYY-MM-DD, YY-MM-DD, YYMMDD, YYYY/MM/DD',
+        'https://mariadb.com/kb/en/date/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DATETIME(fsp)', 'datetime', 0, 6, null, null, 1, null, null, null,
+        null, null, 'fsp=microsecond precision, min. 1000-01-01 00:00:00.0, max. 9999-12-31 23:59:59.9',
         'e.g. YYYY-MM-DD HH:MM:SS, YY-MM-DD HH:MM:SS, YYYYMMDDHHMMSS, YYMMDDHHMMSS, YYYYMMDD, YYMMDD',
-        'https://mariadb.com/kb/en/datetime/', true, true, false),
-       (1, 'DECIMAL(size, d)', 'decimal', 0, 65, null, false, 1, 0, 38, null, false, null, null, null,
-        'https://mariadb.com/kb/en/decimal/', false, true, false),
-       (1, 'DOUBLE(size, d)', 'double', null, null, null, false, null, null, null, null, false, null, null, null,
-        'https://mariadb.com/kb/en/double/', false, true, false),
-       (1, 'ENUM(v1,v2,...)', 'enum', null, null, null, null, null, null, null, null, null, null, null,
-        'e.g. value1, value2, ...', 'https://mariadb.com/kb/en/enum/', true, true, false),
-       (1, 'FLOAT(size)', 'float', null, null, null, false, null, null, null, null, null, null, null, null,
-        'https://mariadb.com/kb/en/float/', false, true, false),
-       (1, 'INT(size)', 'int', null, null, null, false, null, null, null, null, null, null, 'size in Bytes', null,
-        'https://mariadb.com/kb/en/int/', false, true, false),
-       (1, 'LONGBLOB', 'longblob', null, null, null, null, null, null, null, null, null, null, 'max. 3.999 GiB', null,
-        'https://mariadb.com/kb/en/longblob/', false, true, false),
-       (1, 'LONGTEXT', 'longtext', null, null, null, null, null, null, null, null, null, null, 'max. 3.999 GiB', null,
-        'https://mariadb.com/kb/en/longtext/', true, true, false),
-       (1, 'MEDIUMBLOB', 'mediumblob', null, null, null, null, null, null, null, null, null, null, 'max. 15.999 MiB',
-        null, 'https://mariadb.com/kb/en/mediumblob/', false, true, false),
-       (1, 'MEDIUMINT', 'mediumint', null, null, null, null, null, null, null, null, null, null, 'size in Bytes', null,
-        'https://mariadb.com/kb/en/mediumint/', false, true, false),
-       (1, 'MEDIUMTEXT', 'mediumtext', null, null, null, null, null, null, null, null, null, null, 'size in Bytes',
-        null, 'https://mariadb.com/kb/en/mediumtext/', true, true, false),
-       (1, 'SERIAL', 'serial', null, null, null, null, null, null, null, null, null, null, null,
-        null, 'https://mariadb.com/kb/en/bigint/', true, true, true),
-       (1, 'SET(v1,v2,...)', 'set', null, null, null, null, null, null, null, null, null, null, null,
-        'e.g. value1, value2, ...', 'https://mariadb.com/kb/en/set/', true, true, false),
-       (1, 'SMALLINT(size)', 'smallint', 0, null, null, false, null, null, null, null, null, null, 'size in Bytes',
-        null, 'https://mariadb.com/kb/en/smallint/', false, true, false),
-       (1, 'TEXT(size)', 'text', 0, null, null, false, null, null, null, null, null, null, 'size in Bytes', null,
-        'https://mariadb.com/kb/en/text/', true, true, false),
-       (1, 'TIME(fsp)', 'time', 0, 6, 0, false, null, null, null, null, null, null,
+        'https://mariadb.com/kb/en/datetime/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DECIMAL(size, d)', 'decimal', 0, 65, null, FALSE, 1, 0, 38, null,
+        FALSE, null, null, null, 'https://mariadb.com/kb/en/decimal/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'DOUBLE(size, d)', 'double', null, null, null, FALSE, null, null, null,
+        null, FALSE, null, null, null, 'https://mariadb.com/kb/en/double/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'ENUM(v1,v2,...)', 'ENUM', null, null, null, null, null, null, null,
+        null, null, null, null, 'e.g. value1, value2, ...', 'https://mariadb.com/kb/en/ENUM/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'FLOAT(size)', 'float', null, null, null, FALSE, null, null, null, null,
+        null, null, null, null, 'https://mariadb.com/kb/en/float/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'INT(size)', 'int', null, null, null, FALSE, null, null, null, null,
+        null, null, 'size in Bytes', null, 'https://mariadb.com/kb/en/int/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'LONGBLOB', 'longblob', null, null, null, null, null, null, null, null,
+        null, null, 'max. 3.999 GiB', null, 'https://mariadb.com/kb/en/longblob/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'LONGTEXT', 'longTEXT', null, null, null, null, null, null, null, null,
+        null, null, 'max. 3.999 GiB', null, 'https://mariadb.com/kb/en/longTEXT/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'MEDIUMBLOB', 'mediumblob', null, null, null, null, null, null, null,
+        null, null, null, 'max. 15.999 MiB', null, 'https://mariadb.com/kb/en/mediumblob/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'MEDIUMINT', 'mediumint', null, null, null, null, null, null, null,
+        null, null, null, 'size in Bytes', null, 'https://mariadb.com/kb/en/mediumint/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'MEDIUMTEXT', 'mediumTEXT', null, null, null, null, null, null, null,
+        null, null, null, 'size in Bytes', null, 'https://mariadb.com/kb/en/mediumTEXT/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'SERIAL', 'serial', null, null, null, null, null, null, null, null,
+        null, null, null, null, 'https://mariadb.com/kb/en/bigint/', TRUE, TRUE, TRUE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'SET(v1,v2,...)', 'set', null, null, null, null, null, null, null, null,
+        null, null, null, 'e.g. value1, value2, ...', 'https://mariadb.com/kb/en/set/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'SMALLINT(size)', 'smallint', 0, null, null, FALSE, null, null, null,
+        null, null, null, 'size in Bytes', null, 'https://mariadb.com/kb/en/smallint/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TEXT(size)', 'TEXT', 0, null, null, FALSE, null, null, null, null,
+        null, null, 'size in Bytes', null, 'https://mariadb.com/kb/en/TEXT/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TIME(fsp)', 'time', 0, 6, 0, FALSE, null, null, null, null, null, null,
         'fsp=microsecond precision, min. 0, max. 6', 'e.g. HH:MM:SS, HH:MM, HHMMSS, H:M:S',
-        'https://mariadb.com/kb/en/time/', true, true, false),
-       (1, 'TIMESTAMP(fsp)', 'timestamp', 0, 6, 0, false, null, null, null, null, null, null,
-        'fsp=microsecond precision, min. 0, max. 6',
+        'https://mariadb.com/kb/en/time/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TIMESTAMP(fsp)', 'timestamp', 0, 6, 0, FALSE, null, null, null, null,
+        null, null, 'fsp=microsecond precision, min. 0, max. 6',
         'e.g. YYYY-MM-DD HH:MM:SS, YY-MM-DD HH:MM:SS, YYYYMMDDHHMMSS, YYMMDDHHMMSS, YYYYMMDD, YYMMDD',
-        'https://mariadb.com/kb/en/timestamp/', true, true, false),
-       (1, 'TINYBLOB', 'tinyblob', null, null, null, null, null, null, null, null, null, null, null,
-        'fsp=microsecond precision, min. 0, max. 6', 'https://mariadb.com/kb/en/timestamp/', false, true, false),
-       (1, 'TINYINT(size)', 'tinyint', 0, null, null, false, null, null, null, null, null, null, null,
-        'size in Bytes', 'https://mariadb.com/kb/en/tinyint/', false, true, false),
-       (1, 'TINYTEXT', 'tinytext', null, null, null, null, null, null, null, null, null, null, null,
-        'max. 255 characters', 'https://mariadb.com/kb/en/tinytext/', true, true, false),
-       (1, 'YEAR', 'year', 2, 4, null, false, 2, null, null, null, null, null, 'min. 1901, max. 2155', 'e.g. YYYY, YY',
-        'https://mariadb.com/kb/en/year/', false, true, false),
-       (1, 'VARBINARY(size)', 'varbinary', 0, null, null, true, null, null, null, null, null, null, null,
-        null, 'https://mariadb.com/kb/en/varbinary/', false, true, false),
-       (1, 'varchar(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null, null,
-        null, 'https://mariadb.com/kb/en/varchar/', false, true, false);
+        'https://mariadb.com/kb/en/timestamp/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TINYBLOB', 'tinyblob', null, null, null, null, null, null, null, null,
+        null, null, null, 'fsp=microsecond precision, min. 0, max. 6', 'https://mariadb.com/kb/en/timestamp/', FALSE,
+        TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TINYINT(size)', 'tinyint', 0, null, null, FALSE, null, null, null,
+        null, null, null, null, 'size in Bytes', 'https://mariadb.com/kb/en/tinyint/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'TINYTEXT', 'tinyTEXT', null, null, null, null, null, null, null, null,
+        null, null, null, 'max. 255 characters', 'https://mariadb.com/kb/en/tinyTEXT/', TRUE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'YEAR', 'year', 2, 4, null, FALSE, 2, null, null, null, null, null,
+        'min. 1901, max. 2155', 'e.g. YYYY, YY', 'https://mariadb.com/kb/en/year/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'VARBINARY(size)', 'varbinary', 0, null, null, TRUE, null, null, null,
+        null, null, null, null, null, 'https://mariadb.com/kb/en/varbinary/', FALSE, TRUE, FALSE),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'VARCHAR(size)', 'VARCHAR', 0, 65532, 255, TRUE, null, null, null, null,
+        null, null, null, null, 'https://mariadb.com/kb/en/VARCHAR/', FALSE, TRUE, FALSE);
+
 
 INSERT INTO `mdb_image_operators` (image_id, display_name, value, documentation)
-VALUES (1, 'Equal operator', '=', 'https://mariadb.com/kb/en/assignment-operators-assignment-operator/'),
-       (1, 'NULL-safe equal operator', '<=>', 'https://mariadb.com/kb/en/null-safe-equal/'),
-       (1, 'Less-than operator', '<', 'https://mariadb.com/kb/en/less-than/'),
-       (1, 'Less than or equal operator', '<=', 'https://mariadb.com/kb/en/less-than-or-equal/'),
-       (1, 'Greater-than operator', '>', 'https://mariadb.com/kb/en/greater-than/'),
-       (1, 'Greater than or equal operator', '>=', 'https://mariadb.com/kb/en/greater-than-or-equal/'),
-       (1, 'Not equal operator', '!=', 'https://mariadb.com/kb/en/not-equal/'),
-       (1, 'Addition operator', '+', 'https://mariadb.com/kb/en/addition-operator/'),
-       (1, 'Division operator', '/', 'https://mariadb.com/kb/en/division-operator/'),
-       (1, 'Modulo operator', '%', 'https://mariadb.com/kb/en/modulo-operator/'),
-       (1, 'Multiplication operator', '*', 'https://mariadb.com/kb/en/multiplication-operator/'),
-       (1, 'Subtraction operator', '-', 'https://mariadb.com/kb/en/subtraction-operator-/'),
-       (1, 'LIKE', 'LIKE', 'https://mariadb.com/kb/en/like/'),
-       (1, 'NOT LIKE', 'NOT LIKE', 'https://mariadb.com/kb/en/not-like/'),
-       (1, 'IN', 'IN', 'https://mariadb.com/kb/en/in/'),
-       (1, 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
-       (1, 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
-       (1, 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
-       (1, 'IS not null', 'IS not null', 'https://mariadb.com/kb/en/is-not-null/'),
-       (1, 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
-       (1, 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
-       (1, 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
-       (1, 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/'),
-       (1, 'Bitwise AND', '&', 'https://mariadb.com/kb/en/bitwise_and/'),
-       (1, 'Bitwise OR', '|', 'https://mariadb.com/kb/en/bitwise-or/'),
-       (1, 'Bitwise XOR', '^', 'https://mariadb.com/kb/en/bitwise-xor/'),
-       (1, 'Bitwise NOT', '~', 'https://mariadb.com/kb/en/bitwise-not/'),
-       (1, 'Left shift', '<<', 'https://mariadb.com/kb/en/shift-left/'),
-       (1, 'Right shift', '>>', 'https://mariadb.com/kb/en/shift-right/');
+VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Equal operator', '=',
+        'https://mariadb.com/kb/en/assignment-operators-assignment-operator/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NULL-safe equal operator', '<=>',
+        'https://mariadb.com/kb/en/null-safe-equal/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Less-than operator', '<', 'https://mariadb.com/kb/en/less-than/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Less than or equal operator', '<=',
+        'https://mariadb.com/kb/en/less-than-or-equal/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Greater-than operator', '>',
+        'https://mariadb.com/kb/en/greater-than/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Greater than or equal operator', '>=',
+        'https://mariadb.com/kb/en/greater-than-or-equal/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Not equal operator', '!=', 'https://mariadb.com/kb/en/not-equal/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Addition operator', '+',
+        'https://mariadb.com/kb/en/addition-operator/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Division operator', '/',
+        'https://mariadb.com/kb/en/division-operator/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Modulo operator', '%', 'https://mariadb.com/kb/en/modulo-operator/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Multiplication operator', '*',
+        'https://mariadb.com/kb/en/multiplication-operator/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Subtraction operator', '-',
+        'https://mariadb.com/kb/en/subtraction-operator-/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'LIKE', 'LIKE', 'https://mariadb.com/kb/en/like/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT LIKE', 'NOT LIKE', 'https://mariadb.com/kb/en/not-like/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IN', 'IN', 'https://mariadb.com/kb/en/in/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NOT NULL', 'IS NOT NULL', 'https://mariadb.com/kb/en/is-not-null/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise AND', '&', 'https://mariadb.com/kb/en/bitwise_and/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise OR', '|', 'https://mariadb.com/kb/en/bitwise-or/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise XOR', '^', 'https://mariadb.com/kb/en/bitwise-xor/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise NOT', '~', 'https://mariadb.com/kb/en/bitwise-not/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Left shift', '<<', 'https://mariadb.com/kb/en/shift-left/'),
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Right shift', '>>', 'https://mariadb.com/kb/en/shift-right/');
 
 INSERT
 INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)

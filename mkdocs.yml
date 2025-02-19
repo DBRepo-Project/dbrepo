@@ -1,5 +1,5 @@
 site_name: Database Repository
-site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/
+site_url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
 repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
@@ -120,9 +120,9 @@ markdown_extensions:
         custom_icons:
           - .docs/overrides/.icons
 extra:
-  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.6/
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.7/
   version:
-    default: 1.6
+    default: 1.7
     provider: mike
   social:
     - icon: simple/artifacthub

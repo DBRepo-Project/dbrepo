@@ -28,7 +28,7 @@ authservice:
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   setupJob:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.6.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/auth-service-init:1.7.0
   persistence:
     enabled: true
 
@@ -71,12 +71,12 @@ searchdb:
 analyseservice:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.6.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/analyse-service:1.7.0
 
 metadataservice:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.6.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/metadata-service:1.7.0
   admin:
     email: noreply@example.com
   deletedRecord: permanent
@@ -92,7 +92,7 @@ metadataservice:
 dataservice:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.6.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/data-service:1.7.0
   rabbitmq:
     consumer:
       username: admin
@@ -106,16 +106,16 @@ dataservice:
 searchservice:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.6.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/search-service:1.7.0
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.6.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/search-service-init:1.7.0
 
 storageservice:
   enabled: true
   init:
     image:
-      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.6.3
+      name: registry.datalab.tuwien.ac.at/dbrepo/storage-service-init:1.7.0
 
 uploadservice:
   enabled: true
@@ -132,7 +132,7 @@ metricdb:
 ui:
   enabled: true
   image:
-    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.6.3
+    name: registry.datalab.tuwien.ac.at/dbrepo/ui:1.7.0
   public:
     api:
       client: https://s155.datalab.tuwien.ac.at
