@@ -8,14 +8,11 @@ import lombok.Getter;
 @Schema
 public enum HistoryEventTypeDto {
 
-    @JsonProperty("read")
-    READ("read"),
+    @JsonProperty("insert")
+    INSERT("insert"),
 
-    @JsonProperty("write_own")
-    WRITE_OWN("write_own"),
-
-    @JsonProperty("write_all")
-    WRITE_ALL("write_all");
+    @JsonProperty("delete")
+    DELETE("delete");
 
     private String name;
 

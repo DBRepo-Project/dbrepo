@@ -44,16 +44,16 @@ import java.util.Optional;
 public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final UserService userService;
-    private final MetadataMapper databaseMapper;
+    private final MetadataMapper metadataMapper;
     private final StorageService storageService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
-    public DatabaseEndpoint(UserService userService, MetadataMapper databaseMapper, StorageService storageService,
+    public DatabaseEndpoint(UserService userService, MetadataMapper metadataMapper, StorageService storageService,
                             DatabaseService databaseService, ContainerService containerService) {
         this.userService = userService;
-        this.databaseMapper = databaseMapper;
+        this.metadataMapper = metadataMapper;
         this.storageService = storageService;
         this.databaseService = databaseService;
         this.containerService = containerService;
@@ -100,7 +100,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(databases.stream()
-                        .map(databaseMapper::databaseToDatabaseBriefDto)
+                        .map(metadataMapper::databaseToDatabaseBriefDto)
                         .toList());
     }
 
@@ -166,7 +166,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         }
         final User caller = userService.findById(getId(principal));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.create(container, data, caller, userService.findAllInternalUsers()))));
     }
 
@@ -220,7 +220,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database tables metadata: not owner");
             throw new NotAllowedException("Failed to refresh tables metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                 databaseService.updateTableMetadata(database))));
     }
 
@@ -268,7 +268,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             log.error("Failed to refresh database views metadata: not owner");
             throw new NotAllowedException("Failed to refresh database views metadata: not owner");
         }
-        return ResponseEntity.ok(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+        return ResponseEntity.ok(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                 databaseService.updateViewMetadata(database))));
     }
 
@@ -322,7 +322,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyVisibility(database, data))));
     }
 
@@ -378,7 +378,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Failed to transfer database: not owner");
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyOwner(database, newOwner))));
     }
 
@@ -437,7 +437,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             image = storageService.getBytes(data.getKey());
         }
         return ResponseEntity.accepted()
-                .body(databaseMapper.databaseDtoToDatabaseBriefDto(databaseMapper.databaseToDatabaseDto(
+                .body(metadataMapper.databaseDtoToDatabaseBriefDto(metadataMapper.databaseToDatabaseDto(
                         databaseService.modifyImage(database, image))));
     }
 
@@ -485,24 +485,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database, user or exchange could not be found",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to the broker service could not be established",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to find queue information in broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                Principal principal) throws DataServiceException,
-            DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException,
+                                                Principal principal) throws DatabaseNotFoundException,
             NotAllowedException {
         log.debug("endpoint find database, databaseId={}", databaseId);
         final Database database = databaseService.findById(databaseId);
@@ -553,7 +542,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             .toList());
             database.setAccesses(List.of());
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final DatabaseDto dto = metadataMapper.databaseToDatabaseDto(database);
         final HttpHeaders headers = new HttpHeaders();
         if (isSystem(principal)) {
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());

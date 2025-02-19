@@ -341,7 +341,8 @@ public class SubsetEndpoint extends RestEndpoint {
                                                              @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
             QueryNotFoundException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException {
+            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException,
+            ViewMalformedException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);

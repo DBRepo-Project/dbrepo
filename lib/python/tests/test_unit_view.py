@@ -504,6 +504,46 @@ class ViewUnitTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
+    def test_get_view_data_count_404_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/view/3/data', status_code=404)
+            # test
+            try:
+                response = RestClient().get_view_data_count(database_id=1, view_id=3)
+            except NotExistsError:
+                pass
+
+    def test_get_view_data_count_409_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/view/3/data', status_code=409)
+            # test
+            try:
+                response = RestClient().get_view_data_count(database_id=1, view_id=3)
+            except ExternalSystemError:
+                pass
+
+    def test_get_view_data_count_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/view/3/data', status_code=503)
+            # test
+            try:
+                response = RestClient().get_view_data_count(database_id=1, view_id=3)
+            except ServiceError:
+                pass
+
+    def test_get_view_data_count_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/view/3/data', status_code=202)
+            # test
+            try:
+                response = RestClient().get_view_data_count(database_id=1, view_id=3)
+            except ResponseCodeError:
+                pass
+
 
 if __name__ == "__main__":
     unittest.main()

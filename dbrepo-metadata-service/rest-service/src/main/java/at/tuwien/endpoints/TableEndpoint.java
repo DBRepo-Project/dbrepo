@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.CreateTableDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -457,22 +457,11 @@ public class TableEndpoint extends AbstractEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to establish connection with broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Failed to obtain queue information from broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal) throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException, AccessNotFoundException {
+                                             Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
         final Database database = databaseService.findById(databaseId);
         final Table table = tableService.findById(database, tableId);

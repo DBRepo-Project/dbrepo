@@ -409,10 +409,14 @@ class IdentifierTitle(BaseModel):
     type: Optional[TitleType] = None
 
 
-class SaveIdentifierTitle(BaseModel):
+class CreateIdentifierTitle(BaseModel):
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
+
+
+class SaveIdentifierTitle(CreateIdentifierTitle):
+    id: int
 
 
 class IdentifierDescription(BaseModel):
@@ -422,10 +426,14 @@ class IdentifierDescription(BaseModel):
     type: Optional[DescriptionType] = None
 
 
-class SaveIdentifierDescription(BaseModel):
+class CreateIdentifierDescription(BaseModel):
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
+
+
+class SaveIdentifierDescription(CreateIdentifierDescription):
+    id: int
 
 
 class IdentifierFunder(BaseModel):
@@ -438,13 +446,17 @@ class IdentifierFunder(BaseModel):
     award_title: Optional[str] = None
 
 
-class SaveIdentifierFunder(BaseModel):
+class CreateIdentifierFunder(BaseModel):
     funder_name: str
     funder_identifier: Optional[str] = None
     funder_identifier_type: Optional[str] = None
     scheme_uri: Optional[str] = None
     award_number: Optional[str] = None
     award_title: Optional[str] = None
+
+
+class SaveIdentifierFunder(CreateIdentifierFunder):
+    id: int
 
 
 class License(BaseModel):
@@ -577,6 +589,10 @@ class CreateIdentifierCreator(BaseModel):
     affiliation_identifier_scheme_uri: Optional[str] = None
 
 
+class SaveIdentifierCreator(CreateIdentifierCreator):
+    id: int
+
+
 class RelatedIdentifier(BaseModel):
     id: int
     value: str
@@ -584,10 +600,14 @@ class RelatedIdentifier(BaseModel):
     relation: RelatedIdentifierRelation
 
 
-class SaveRelatedIdentifier(BaseModel):
+class CreateRelatedIdentifier(BaseModel):
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
+
+
+class SaveRelatedIdentifier(CreateRelatedIdentifier):
+    id: int
 
 
 class CreateIdentifier(BaseModel):
@@ -596,9 +616,9 @@ class CreateIdentifier(BaseModel):
     creators: List[CreateIdentifierCreator]
     publication_year: int
     publisher: str
-    titles: List[SaveIdentifierTitle]
-    descriptions: List[SaveIdentifierDescription]
-    funders: Optional[List[SaveIdentifierFunder]] = field(default_factory=list)
+    titles: List[CreateIdentifierTitle]
+    descriptions: List[CreateIdentifierDescription]
+    funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
@@ -608,11 +628,15 @@ class CreateIdentifier(BaseModel):
     query: Optional[str] = None
     query_normalized: Optional[str] = None
     execution: Optional[str] = None
-    related_identifiers: Optional[List[SaveRelatedIdentifier]] = field(default_factory=list)
+    related_identifiers: Optional[List[CreateRelatedIdentifier]] = field(default_factory=list)
     result_hash: Optional[str] = None
     result_number: Optional[int] = None
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
+
+
+class IdentifierSave(CreateIdentifier):
+    id: int
 
 
 class Identifier(BaseModel):

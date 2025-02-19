@@ -491,7 +491,8 @@ class TableUnitTest(unittest.TestCase):
             # mock
             mock.head('/api/database/1/table/9/data', headers={'X-Count': str(exp)})
             # test
-            response = RestClient().get_table_data_count(database_id=1, table_id=9)
+            response = RestClient().get_table_data_count(database_id=1, table_id=9,
+                                                         timestamp=datetime.datetime(2024, 1, 1, 0, 0, 0, 0))
             self.assertEqual(exp, response)
 
     def test_get_table_data_count_400_fails(self):
@@ -522,6 +523,26 @@ class TableUnitTest(unittest.TestCase):
             try:
                 response = RestClient().get_table_data_count(database_id=1, table_id=9)
             except NotExistsError:
+                pass
+
+    def test_get_table_data_count_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/table/9/data', status_code=503)
+            # test
+            try:
+                response = RestClient().get_table_data_count(database_id=1, table_id=9)
+            except ServiceError:
+                pass
+
+    def test_get_table_data_count_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.head('/api/database/1/table/9/data', status_code=202)
+            # test
+            try:
+                response = RestClient().get_table_data_count(database_id=1, table_id=9)
+            except ResponseCodeError:
                 pass
 
     def test_get_table_data_count_not_countable_fails(self):
@@ -770,10 +791,7 @@ class TableUnitTest(unittest.TestCase):
                          database_id=1,
                          table_id=2,
                          internal_name="id",
-                         auto_generated=True,
-                         is_primary_key=True,
                          type=ColumnType.BIGINT,
-                         is_public=True,
                          concept=ConceptBrief(id=2,
                                               uri="http://dbpedia.org/page/Category:Precipitation",
                                               name="Precipitation"),
@@ -827,6 +845,45 @@ class TableUnitTest(unittest.TestCase):
                                            unit_uri="http://www.wikidata.org/entity/Q119856947",
                                            concept_uri="http://dbpedia.org/page/Category:Precipitation")
             except NotExistsError:
+                pass
+
+    def test_update_table_column_502_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/table/2/column/1', status_code=502)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.update_table_column(database_id=1, table_id=2, column_id=1,
+                                           unit_uri="http://www.wikidata.org/entity/Q119856947",
+                                           concept_uri="http://dbpedia.org/page/Category:Precipitation")
+            except ServiceConnectionError:
+                pass
+
+    def test_update_table_column_503_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/table/2/column/1', status_code=503)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.update_table_column(database_id=1, table_id=2, column_id=1,
+                                           unit_uri="http://www.wikidata.org/entity/Q119856947",
+                                           concept_uri="http://dbpedia.org/page/Category:Precipitation")
+            except ServiceError:
+                pass
+
+    def test_update_table_column_unknown_fails(self):
+        with requests_mock.Mocker() as mock:
+            # mock
+            mock.put('/api/database/1/table/2/column/1', status_code=200)
+            # test
+            try:
+                client = RestClient(username="a", password="b")
+                client.update_table_column(database_id=1, table_id=2, column_id=1,
+                                           unit_uri="http://www.wikidata.org/entity/Q119856947",
+                                           concept_uri="http://dbpedia.org/page/Category:Precipitation")
+            except ResponseCodeError:
                 pass
 
     def test_update_table_column_anonymous_fails(self):

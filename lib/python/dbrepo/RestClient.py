@@ -861,7 +861,7 @@ class RestClient:
             params.append(('page', page))
             params.append(('size', size))
         if timestamp is not None:
-            params.append(('timestamp', timestamp))
+            params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 200:
             return DataFrame.from_records(response.json())
@@ -1100,15 +1100,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_table_data_count(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
-                             timestamp: datetime.datetime = None) -> int:
+    def get_table_data_count(self, database_id: int, table_id: int, timestamp: datetime.datetime = None) -> int:
         """
         Get data count of a table in a database with given database id and table id.
 
         :param database_id: The database id.
         :param table_id: The table id.
-        :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
         :param timestamp: The query execution time. Optional.
 
         :returns: The result of the view query, if successful.
@@ -1121,15 +1118,10 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/table/{table_id}/data'
-        if page is not None and size is not None:
-            url += f'?page={page}&size={size}'
+        params = []
         if timestamp is not None:
-            if page is not None and size is not None:
-                url += '&'
-            else:
-                url += '?'
-            url += f'timestamp={timestamp}'
-        response = self._wrapper(method="head", url=url)
+            params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
+        response = self._wrapper(method="head", url=url, params=params)
         if response.status_code == 200:
             return int(response.headers.get('X-Count'))
         if response.status_code == 400:
@@ -1202,29 +1194,6 @@ class RestClient:
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get database access: not found')
         raise ResponseCodeError(f'Failed to get database access: response code: {response.status_code} is not '
-                                f'200 (OK): {response.text}')
-
-    def check_database_access(self, database_id: int) -> bool:
-        """
-        Checks access of a view in a database with given database id and view id.
-
-        :param database_id: The database id.
-
-        :returns: The access type, if successful.
-
-        :raises ForbiddenError: If something went wrong with the authorization.
-        :raises NotExistsError: If the container does not exist.
-        :raises ResponseCodeError: If something went wrong with the retrieval.
-        """
-        url = f'/api/database/{database_id}/access'
-        response = self._wrapper(method="get", url=url)
-        if response.status_code == 200:
-            return True
-        if response.status_code == 403:
-            return False
-        if response.status_code == 404:
-            raise NotExistsError(f'Failed to check database access: not found')
-        raise ResponseCodeError(f'Failed to check database access: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
     def create_database_access(self, database_id: int, user_id: str, type: AccessType) -> AccessType:
@@ -1355,14 +1324,13 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/subset'
+        params = []
         if page is not None and size is not None:
-            url += f'?page={page}&size={size}'
-            if timestamp is not None:
-                url += f'&timestamp={timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")}'
-        else:
-            if timestamp is not None:
-                url += f'?timestamp={timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")}'
-        response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"},
+            params.append(('page', page))
+            params.append(('size', size))
+        if timestamp is not None:
+            params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
+        response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"}, params=params,
                                  payload=ExecuteQuery(statement=query))
         if response.status_code == 201:
             logging.info(f'Created subset with id: {response.headers["X-Id"]}')
@@ -1418,14 +1386,12 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get query data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_subset_data_count(self, database_id: int, subset_id: int, page: int = 0, size: int = 10) -> int:
+    def get_subset_data_count(self, database_id: int, subset_id: int) -> int:
         """
         Re-executes a query in a database with given database id and query id and only counts the results.
 
         :param database_id: The database id.
         :param subset_id: The subset id.
-        :param page: The result pagination number. Optional. Default: `0`.
-        :param size: The result pagination size. Optional. Default: `10`.
 
         :returns: The result set, if successful.
 
@@ -1436,8 +1402,6 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
         url = f'/api/database/{database_id}/subset/{subset_id}/data'
-        if page is not None and size is not None:
-            url += f'?page={page}&size={size}'
         response = self._wrapper(method="head", url=url)
         if response.status_code == 200:
             return int(response.headers.get('X-Count'))
@@ -1546,13 +1510,13 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update query: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[SaveIdentifierTitle],
+    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[CreateIdentifierTitle],
                           publisher: str, creators: List[CreateIdentifierCreator], publication_year: int,
-                          descriptions: List[SaveIdentifierDescription] = None,
-                          funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
+                          descriptions: List[CreateIdentifierDescription] = None,
+                          funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
                           language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
                           publication_day: int = None, publication_month: int = None,
-                          related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
+                          related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
         """
         Create an identifier draft.
 
@@ -1585,7 +1549,7 @@ class RestClient:
         url = f'/api/identifier'
         payload = CreateIdentifier(database_id=database_id, type=type, titles=titles, publisher=publisher,
                                    creators=creators, publication_year=publication_year, descriptions=descriptions,
-                                   funders=funders, licenses=licenses, language=language, subset_id=subset_id,
+                                   funders=funders, licenses=licenses, language=language, query_id=subset_id,
                                    view_id=view_id, table_id=table_id, publication_day=publication_day,
                                    publication_month=publication_month, related_identifiers=related_identifiers)
         response = self._wrapper(method="post", url=url, force_auth=True, payload=payload)
@@ -1606,15 +1570,15 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create identifier: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def save_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
-                        titles: List[SaveIdentifierTitle], publisher: str, creators: List[CreateIdentifierCreator],
-                        publication_year: int, descriptions: List[SaveIdentifierDescription] = None,
-                        funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
-                        language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
-                        publication_day: int = None, publication_month: int = None,
-                        related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
+    def update_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
+                          titles: List[SaveIdentifierTitle], publisher: str, creators: List[SaveIdentifierCreator],
+                          publication_year: int, descriptions: List[SaveIdentifierDescription] = None,
+                          funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
+                          language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
+                          publication_day: int = None, publication_month: int = None,
+                          related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
-        Save an existing identifier and update the metadata attached to it.
+        Update an existing identifier and update the metadata attached to it.
 
         :param identifier_id: The identifier id.
         :param database_id: The database id of the created identifier.
@@ -1644,11 +1608,12 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the creation of the identifier.
         """
         url = f'/api/identifier/{identifier_id}'
-        payload = CreateIdentifier(database_id=database_id, type=type, titles=titles, publisher=publisher,
-                                   creators=creators, publication_year=publication_year, descriptions=descriptions,
-                                   funders=funders, licenses=licenses, language=language, subset_id=subset_id,
-                                   view_id=view_id, table_id=table_id, publication_day=publication_day,
-                                   publication_month=publication_month, related_identifiers=related_identifiers)
+        payload = IdentifierSave(id=identifier_id, database_id=database_id, type=type, titles=titles,
+                                 publisher=publisher, creators=creators, publication_year=publication_year,
+                                 descriptions=descriptions, funders=funders, licenses=licenses, language=language,
+                                 query_id=subset_id, view_id=view_id, table_id=table_id,
+                                 publication_day=publication_day, publication_month=publication_month,
+                                 related_identifiers=related_identifiers)
         response = self._wrapper(method="put", url=url, force_auth=True, payload=payload)
         if response.status_code == 202:
             body = response.json()
@@ -1730,7 +1695,8 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_identifiers(self, database_id: int = None, subset_id: int = None, view_id: int = None,
-                        table_id: int = None) -> List[Identifier] | str:
+                        table_id: int = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
+                                                                                                                       Identifier] | str:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1738,6 +1704,8 @@ class RestClient:
         :param subset_id: The subset id. Optional. Requires `database_id` to be set.
         :param view_id: The view id. Optional. Requires `database_id` to be set.
         :param table_id: The table id. Optional. Requires `database_id` to be set.
+        :param type: The identifier type. Optional.
+        :param status: The identifier status. Optional.
 
         :returns: List of identifiers, if successful.
 
@@ -1746,28 +1714,33 @@ class RestClient:
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """
         url = f'/api/identifiers'
+        params = []
         if database_id is not None:
-            url += f'?dbid={database_id}'
+            params.append(('dbid', database_id))
         if subset_id is not None:
             if database_id is None:
                 raise RequestError(f'Filtering by subset_id requires database_id to be set')
-            url += f'&qid={subset_id}'
+            params.append(('qid', subset_id))
         if view_id is not None:
             if database_id is None:
                 raise RequestError(f'Filtering by view_id requires database_id to be set')
-            url += f'&vid={view_id}'
+            params.append(('vid', view_id))
         if table_id is not None:
             if database_id is None:
                 raise RequestError(f'Filtering by table_id requires database_id to be set')
-            url += f'&tid={table_id}'
-        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+            params.append(('tid', table_id))
+        if type is not None:
+            params.append(('type', type))
+        if status is not None:
+            params.append(('status', status))
+        response = self._wrapper(method="get", url=url, params=params, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
             return TypeAdapter(List[Identifier]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifiers: requested style is not known')
         if response.status_code == 406:
-            raise MalformedError(
+            raise FormatNotAvailable(
                 f'Failed to get identifiers: accept header must be application/json or application/ld+json')
         raise ResponseCodeError(f'Failed to get identifiers: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
