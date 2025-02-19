@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -147,7 +148,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void findById_privateDataPrivateSchema_succeeds() throws DatabaseNotFoundException, SQLException,
-            RemoteUnavailableException, UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseUnavailableException, TableNotFoundException, StorageUnavailableException, NotAllowedException, ViewMalformedException, QueryMalformedException, FormatNotAvailableException {
+            RemoteUnavailableException, UserNotFoundException, QueryNotFoundException, MetadataServiceException,
+            DatabaseUnavailableException, TableNotFoundException, StorageUnavailableException, NotAllowedException,
+            QueryMalformedException, FormatNotAvailableException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
@@ -164,8 +167,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void findById_publicDataPrivateSchema_succeeds() throws DatabaseNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, DatabaseUnavailableException, NotAllowedException,
             StorageUnavailableException, QueryMalformedException, QueryNotFoundException,
-            FormatNotAvailableException, TableNotFoundException, MetadataServiceException,
-            ViewMalformedException {
+            FormatNotAvailableException, TableNotFoundException, MetadataServiceException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
@@ -199,7 +201,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
     public void findById_privateDataPrivateSchemaAcceptCsv_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException,
             UserNotFoundException, DatabaseUnavailableException, StorageUnavailableException, QueryMalformedException,
             QueryNotFoundException, FormatNotAvailableException, SQLException, MetadataServiceException,
-            TableNotFoundException, ViewMalformedException, NotAllowedException {
+            TableNotFoundException, NotAllowedException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -207,7 +209,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
@@ -243,7 +245,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         when(subsetService.findById(DATABASE_4_PRIVILEGED_DTO, QUERY_5_ID))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(storageService.transformDataset(any(Dataset.class)))
                 .thenReturn(EXPORT_RESOURCE_DTO);
@@ -303,9 +305,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
-        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -353,7 +355,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_5_ID);
         when(subsetService.findById(any(DatabaseDto.class), eq(QUERY_5_ID)))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.createView(any(DatabaseDto.class), any(CreateViewDto.class)))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -402,9 +404,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_4_ID))
                 .thenReturn(DATABASE_4_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -430,9 +432,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_1_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_1_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_1_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
@@ -456,9 +458,9 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(credentialService.getDatabase(DATABASE_2_ID))
                 .thenReturn(DATABASE_2_PRIVILEGED_DTO);
-        when(subsetService.findById(eq(DATABASE_2_PRIVILEGED_DTO), anyLong()))
+        when(subsetService.findById(eq(DATABASE_2_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_2_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("POST");
@@ -483,7 +485,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_5_DTO);
         when(subsetService.reExecuteCount(DATABASE_3_PRIVILEGED_DTO, QUERY_5_DTO))
                 .thenReturn(QUERY_5_RESULT_NUMBER);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
@@ -535,7 +537,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(QUERY_1_DTO);
         when(subsetService.reExecuteCount(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO))
                 .thenReturn(QUERY_1_RESULT_NUMBER);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_1_VIEW_DTO);
@@ -705,7 +707,7 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         });
     }
 
-    protected List<QueryDto> generic_list(Long databaseId, DatabaseDto database, Principal principal)
+    protected List<QueryDto> generic_list(UUID databaseId, DatabaseDto database, Principal principal)
             throws NotAllowedException, DatabaseUnavailableException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
 
@@ -725,11 +727,11 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
         return response.getBody();
     }
 
-    protected void generic_findById(Long databaseId, Long subsetId, String accept, Instant timestamp,
+    protected void generic_findById(UUID databaseId, UUID subsetId, String accept, Instant timestamp,
                                     Principal principal) throws UserNotFoundException, DatabaseUnavailableException,
             StorageUnavailableException, NotAllowedException, QueryMalformedException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, FormatNotAvailableException,
-            MetadataServiceException, TableNotFoundException, ViewMalformedException {
+            MetadataServiceException, TableNotFoundException {
 
         /* test */
         final ResponseEntity<?> response = subsetEndpoint.findById(databaseId, subsetId, accept, timestamp, principal);

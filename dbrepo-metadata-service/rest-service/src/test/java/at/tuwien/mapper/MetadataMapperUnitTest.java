@@ -87,7 +87,7 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertNull(response.getDatabase());
         assertNull(response.getViewId());
         assertNull(response.getTableId());
-        assertEquals(IDENTIFIER_2_QUERY_ID, response.getQueryId());
+        assertEquals(QUERY_1_ID, response.getQueryId());
         assertNull(response.getDoi());
         assertEquals(IDENTIFIER_2_TYPE, response.getType());
     }

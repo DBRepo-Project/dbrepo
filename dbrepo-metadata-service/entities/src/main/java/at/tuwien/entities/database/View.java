@@ -17,8 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Data
 @Entity
 @Builder
@@ -37,13 +35,12 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class View {
 
     @Id
-    @org.springframework.data.annotation.Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
-    @Column(updatable = false, nullable = false)
-    private Long vdbid;
+    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID vdbid;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)

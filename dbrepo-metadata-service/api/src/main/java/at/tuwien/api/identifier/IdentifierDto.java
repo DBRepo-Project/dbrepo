@@ -13,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,25 +26,25 @@ import java.util.List;
 public class IdentifierDto {
 
     @NotNull
-    @Schema(example = "2")
-    private Long id;
+    @Schema(example = "b97cd56b-66ca-4354-9e6c-f47210cfaaec")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "null")
+    private UUID databaseId;
 
     @JsonProperty("query_id")
-    @Schema(example = "1")
-    private Long queryId;
+    @Schema(example = "null")
+    private UUID queryId;
 
     @JsonProperty("table_id")
-    @Schema(example = "1")
-    private Long tableId;
+    @Schema(example = "null")
+    private UUID tableId;
 
     @JsonProperty("view_id")
-    @Schema(example = "1")
-    private Long viewId;
+    @Schema(example = "null")
+    private UUID viewId;
 
     @NotNull
     @Schema(example = "database")

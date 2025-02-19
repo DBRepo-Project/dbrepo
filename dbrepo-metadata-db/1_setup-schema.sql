@@ -2,550 +2,550 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS `mdb_users`
 (
-    id               character varying(36)  NOT NULL,
-    keycloak_id      character varying(36)  NOT NULL,
-    username         character varying(255) NOT NULL,
-    firstname        character varying(255),
-    lastname         character varying(255),
-    orcid            character varying(255),
-    affiliation      character varying(255),
-    is_internal      BOOLEAN                NOT NULL DEFAULT FALSE,
-    mariadb_password character varying(255) NOT NULL,
-    theme            character varying(255) NOT NULL default ('light'),
-    language         character varying(3)   NOT NULL default ('en'),
-    PRIMARY KEY (id),
-    UNIQUE (keycloak_id),
-    UNIQUE (username)
+    id               varchar(36)  not null,
+    keycloak_id      varchar(36)  not null,
+    username         varchar(255) not null,
+    firstname        varchar(255),
+    lastname         varchar(255),
+    orcid            varchar(255),
+    affiliation      varchar(255),
+    is_internal      boolean      not null default false,
+    mariadb_password varchar(255) not null,
+    theme            varchar(255) not null default ('light'),
+    language         varchar(3)   not null default ('en'),
+    primary key (id),
+    unique (keycloak_id),
+    unique (username)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
-    id            SERIAL,
-    registry      character varying(255) NOT NULL DEFAULT 'docker.io',
-    name          character varying(255) NOT NULL,
-    version       character varying(255) NOT NULL,
-    default_port  integer                NOT NULL,
-    dialect       character varying(255) NOT NULL,
-    driver_class  character varying(255) NOT NULL,
-    jdbc_method   character varying(255) NOT NULL,
-    is_default    BOOLEAN                NOT NULL DEFAULT FALSE,
-    created       timestamp              NOT NULL DEFAULT NOW(),
+    id            varchar(36)  not null,
+    registry      varchar(255) not null default 'docker.io',
+    name          varchar(255) not null,
+    version       varchar(255) not null,
+    default_port  int          not null,
+    dialect       varchar(255) not null,
+    driver_class  varchar(255) not null,
+    jdbc_method   varchar(255) not null,
+    is_default    boolean      not null default false,
+    created       timestamp    not null default now(),
     last_modified timestamp,
-    PRIMARY KEY (id),
-    UNIQUE (name, version),
-    UNIQUE (is_default)
+    primary key (id),
+    unique (name, version),
+    unique (is_default)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
-    id                  SERIAL,
-    internal_name       character varying(255) NOT NULL,
-    name                character varying(255) NOT NULL,
-    host                character varying(255) NOT NULL,
-    port                integer                NOT NULL default 3306,
-    ui_host             character varying(255) NOT NULL default host,
-    ui_port             integer                NOT NULL default port,
+    id                  varchar(36)  not null,
+    internal_name       varchar(255) not null,
+    name                varchar(255) not null,
+    host                varchar(255) not null,
+    port                int          not null default 3306,
+    ui_host             varchar(255) not null default host,
+    ui_port             int          not null default port,
     ui_additional_flags text,
-    sidecar_host        character varying(255),
-    sidecar_port        integer,
-    image_id            bigint                 NOT NULL,
-    created             timestamp              NOT NULL DEFAULT NOW(),
+    sidecar_host        varchar(255),
+    sidecar_port        int,
+    image_id            bigint       not null,
+    created             timestamp    not null default now(),
     last_modified       timestamp,
-    privileged_username character varying(255) NOT NULL,
-    privileged_password character varying(255) NOT NULL,
-    quota               integer                NOT NULL DEFAULT 50,
-    PRIMARY KEY (id)
+    privileged_username varchar(255) not null,
+    privileged_password varchar(255) not null,
+    quota               int          not null default 50,
+    primary key (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_data`
 (
-    ID           SERIAL,
+    id           varchar(36) not null,
     PROVENANCE   text,
     FileEncoding text,
-    FileType     character varying(100),
+    FileType     varchar(100),
     Version      text,
     Seperator    text,
-    PRIMARY KEY (ID)
+    primary key (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_licenses`
 (
-    identifier  character varying(255) NOT NULL,
-    uri         text                   NOT NULL,
-    description text                   NOT NULL,
-    PRIMARY KEY (identifier),
-    UNIQUE (uri(200))
+    identifier  varchar(255) not null,
+    uri         text         not null,
+    description text         not null,
+    primary key (identifier),
+    unique (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
-    id               SERIAL,
-    cid              BIGINT UNSIGNED        NOT NULL,
-    name             character varying(255) NOT NULL,
-    internal_name    character varying(255) NOT NULL,
-    exchange_name    character varying(255) NOT NULL,
+    id               varchar(36)     not null,
+    cid              bigint unsigned not null,
+    name             varchar(255)    not null,
+    internal_name    varchar(255)    not null,
+    exchange_name    varchar(255)    not null,
     description      text,
-    engine           character varying(20),
-    is_public        boolean                NOT NULL DEFAULT TRUE,
-    is_schema_public boolean                NOT NULL DEFAULT TRUE,
+    engine           varchar(20),
+    is_public        boolean         not null default true,
+    is_schema_public boolean         not null default true,
     image            longblob,
-    owned_by         character varying(36),
-    contact_person   character varying(36),
-    created          timestamp              NOT NULL DEFAULT NOW(),
+    owned_by         varchar(36),
+    contact_person   varchar(36),
+    created          timestamp       not null default now(),
     last_modified    timestamp,
-    PRIMARY KEY (id),
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
-    FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
+    primary key (id),
+    foreign key (cid) references mdb_containers (id),
+    foreign key (owned_by) references mdb_users (id),
+    foreign key (contact_person) references mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
 (
-    dbid     BIGINT                 NOT NULL,
-    subjects character varying(255) NOT NULL,
-    PRIMARY KEY (dbid, subjects)
+    dbid     bigint       not null,
+    subjects varchar(255) not null,
+    primary key (dbid, subjects)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
-    ID               SERIAL,
-    tDBID            BIGINT UNSIGNED       NOT NULL,
-    tName            VARCHAR(64)           NOT NULL,
-    internal_name    VARCHAR(64)           NOT NULL,
-    queue_name       VARCHAR(255)          NOT NULL,
-    routing_key      VARCHAR(255),
-    tDescription     VARCHAR(2048),
-    num_rows         BIGINT,
-    data_length      BIGINT,
-    max_data_length  BIGINT,
-    avg_row_length   BIGINT,
-    `separator`      CHAR(1),
-    quote            CHAR(1),
-    element_null     VARCHAR(50),
-    skip_lines       BIGINT,
-    element_true     VARCHAR(50),
-    element_false    VARCHAR(50),
-    Version          TEXT,
-    created          timestamp             NOT NULL DEFAULT NOW(),
-    versioned        boolean               not null default true,
-    is_public        boolean               not null default true,
-    is_schema_public boolean               not null default true,
-    owned_by         character varying(36) NOT NULL,
+    id               varchar(36)     not null,
+    tDBID            bigint unsigned not null,
+    tName            varchar(64)     not null,
+    internal_name    varchar(64)     not null,
+    queue_name       varchar(255)    not null,
+    routing_key      varchar(255),
+    tDescription     varchar(2048),
+    num_rows         bigint,
+    data_length      bigint,
+    max_data_length  bigint,
+    avg_row_length   bigint,
+    `separator`      char(1),
+    quote            char(1),
+    element_null     varchar(50),
+    skip_lines       bigint,
+    element_true     varchar(50),
+    element_false    varchar(50),
+    Version          text,
+    created          timestamp       not null default now(),
+    versioned        boolean         not null default true,
+    is_public        boolean         not null default true,
+    is_schema_public boolean         not null default true,
+    owned_by         varchar(36)     not null,
     last_modified    timestamp,
-    PRIMARY KEY (ID),
-    UNIQUE (tDBID, internal_name),
-    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    primary key (ID),
+    unique (tDBID, internal_name),
+    foreign key (tDBID) references mdb_databases (id),
+    foreign key (owned_by) references mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
-    ID               SERIAL,
-    tID              BIGINT UNSIGNED NOT NULL,
-    cName            VARCHAR(64),
-    internal_name    VARCHAR(64)     NOT NULL,
-    Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    length           BIGINT UNSIGNED NULL,
-    ordinal_position INTEGER         NOT NULL,
-    index_length     BIGINT UNSIGNED NULL,
-    description      VARCHAR(2048),
-    size             BIGINT UNSIGNED,
-    d                BIGINT UNSIGNED,
-    is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
+    id               varchar(36)     not null,
+    tID              bigint unsigned not null,
+    cName            varchar(64),
+    internal_name    varchar(64)     not null,
+    Datatype         enum ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
+    length           bigint unsigned NULL,
+    ordinal_position int             not null,
+    index_length     bigint unsigned NULL,
+    description      varchar(2048),
+    size             bigint unsigned,
+    d                bigint unsigned,
+    is_null_allowed  boolean         not null default true,
     val_min          NUMERIC         NULL,
     val_max          NUMERIC         NULL,
     mean             NUMERIC         NULL,
     median           NUMERIC         NULL,
     std_dev          Numeric         NULL,
-    created          timestamp       NOT NULL DEFAULT NOW(),
+    created          timestamp       not null default now(),
     last_modified    timestamp,
-    FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
-    PRIMARY KEY (ID),
-    UNIQUE (tID, internal_name)
+    foreign key (tID) references mdb_tables (ID) ON DELETE CASCADE,
+    primary key (ID),
+    unique (tID, internal_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
-    id        SERIAL,
-    column_id BIGINT UNSIGNED        NOT NULL,
-    value     CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    id        varchar(36)     not null,
+    column_id bigint unsigned not null,
+    value     varchar(255)    not null,
+    foreign key (column_id) references mdb_columns (ID) ON DELETE CASCADE,
+    primary key (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
-    id        SERIAL,
-    column_id BIGINT UNSIGNED        NOT NULL,
-    value     CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    id        varchar(36)     not null,
+    column_id bigint unsigned not null,
+    value     varchar(255)    not null,
+    foreign key (column_id) references mdb_columns (ID) ON DELETE CASCADE,
+    primary key (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
 (
-    cID           BIGINT UNSIGNED,
-    tID           BIGINT UNSIGNED,
-    maxlength     INTEGER,
+    cID           bigint unsigned,
+    tID           bigint unsigned,
+    maxlength     int,
     last_modified timestamp,
-    created       timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (cID),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    created       timestamp not null default now(),
+    primary key (cID),
+    foreign key (cID) references mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
 (
-    cID           BIGINT UNSIGNED,
-    tID           BIGINT UNSIGNED,
-    num_cat       INTEGER,
+    cID           bigint unsigned,
+    tID           bigint unsigned,
+    num_cat       int,
     --    cat_array     TEXT[],
     last_modified timestamp,
-    created       timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (cID),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    created       timestamp not null default now(),
+    primary key (cID),
+    foreign key (cID) references mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
-    fkid      SERIAL,
-    tid       BIGINT UNSIGNED NOT NULL,
-    rtid      BIGINT UNSIGNED NOT NULL,
-    name      VARCHAR(255)    NOT NULL,
-    on_update VARCHAR(50)     NULL,
-    on_delete VARCHAR(50)     NULL,
-    position  INT             NULL,
-    PRIMARY KEY (fkid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
+    fkid      varchar(36)     not null,
+    tid       bigint unsigned not null,
+    rtid      bigint unsigned not null,
+    name      varchar(255)    not null,
+    on_update varchar(50)     NULL,
+    on_delete varchar(50)     NULL,
+    position  int             NULL,
+    primary key (fkid),
+    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE,
+    foreign key (rtid) references mdb_tables (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 (
-    pkid SERIAL,
-    tID  BIGINT UNSIGNED NOT NULL,
-    cid  BIGINT UNSIGNED NOT NULL,
-    PRIMARY KEY (pkid),
-    FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    pkid varchar(36)     not null,
+    tID  bigint unsigned not null,
+    cid  bigint unsigned not null,
+    primary key (pkid),
+    foreign key (tID) references mdb_tables (id) ON DELETE CASCADE,
+    foreign key (cid) references mdb_columns (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
-    id   SERIAL,
-    fkid BIGINT UNSIGNED NOT NULL,
-    cid  BIGINT UNSIGNED NOT NULL,
-    rcid BIGINT UNSIGNED NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE (fkid, cid, rcid),
-    FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id),
-    FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
+    id   varchar(36)     not null,
+    fkid bigint unsigned not null,
+    cid  bigint unsigned not null,
+    rcid bigint unsigned not null,
+    primary key (id),
+    unique (fkid, cid, rcid),
+    foreign key (fkid) references mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
+    foreign key (cid) references mdb_columns (id),
+    foreign key (rcid) references mdb_columns (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
 (
-    uid      SERIAL,
-    name     VARCHAR(255)    NOT NULL,
-    tid      BIGINT UNSIGNED NOT NULL,
-    position INT             NULL,
-    PRIMARY KEY (uid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    uid      varchar(36)     not null,
+    name     varchar(255)    not null,
+    tid      bigint unsigned not null,
+    position int             NULL,
+    primary key (uid),
+    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (
-    id  SERIAL,
-    uid BIGINT UNSIGNED NOT NULL,
-    cid BIGINT UNSIGNED NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    id  varchar(36)     not null,
+    uid bigint unsigned not null,
+    cid bigint unsigned not null,
+    primary key (id),
+    foreign key (uid) references mdb_constraints_unique (uid),
+    foreign key (cid) references mdb_columns (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
-    id     SERIAL,
-    tid    BIGINT UNSIGNED NOT NULL,
-    checks VARCHAR(255)    NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    id     varchar(36)     not null,
+    tid    bigint unsigned not null,
+    checks varchar(255)    not null,
+    primary key (id),
+    foreign key (tid) references mdb_tables (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          SERIAL,
+    id          varchar(36)  not null,
     uri         text         not null,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     timestamp    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
-    UNIQUE (uri(200))
+    name        varchar(255) null,
+    description text         null,
+    created     timestamp    not null default now(),
+    primary key (id),
+    unique (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          SERIAL,
+    id          varchar(36)  not null,
     uri         text         not null,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     timestamp    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
-    UNIQUE (uri(200))
+    name        varchar(255) null,
+    description text         null,
+    created     timestamp    not null default now(),
+    primary key (id),
+    unique (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
 (
-    id      BIGINT UNSIGNED NOT NULL,
-    cID     BIGINT UNSIGNED NOT NULL,
-    created timestamp       NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id, cid),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    id      bigint unsigned not null,
+    cID     bigint unsigned not null,
+    created timestamp       not null default now(),
+    primary key (id, cid),
+    foreign key (cID) references mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 (
-    id      BIGINT UNSIGNED NOT NULL,
-    cID     BIGINT UNSIGNED NOT NULL,
-    created timestamp       NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id, cID),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    id      bigint unsigned not null,
+    cID     bigint unsigned not null,
+    created timestamp       not null default now(),
+    primary key (id, cID),
+    foreign key (cID) references mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
-    id               SERIAL,
-    vdbid            BIGINT UNSIGNED       NOT NULL,
-    vName            VARCHAR(64)           NOT NULL,
-    internal_name    VARCHAR(64)           NOT NULL,
-    Query            TEXT                  NOT NULL,
-    query_hash       VARCHAR(255)          NOT NULL,
-    Public           BOOLEAN               NOT NULL DEFAULT TRUE,
-    is_schema_public boolean               NOT NULL DEFAULT TRUE,
-    InitialView      BOOLEAN               NOT NULL,
-    created          timestamp             NOT NULL DEFAULT NOW(),
+    id               varchar(36)     not null,
+    vdbid            bigint unsigned not null,
+    vName            varchar(64)     not null,
+    internal_name    varchar(64)     not null,
+    Query            text            not null,
+    query_hash       varchar(255)    not null,
+    Public           boolean         not null default true,
+    is_schema_public boolean         not null default true,
+    InitialView      boolean         not null,
+    created          timestamp       not null default now(),
     last_modified    timestamp,
-    owned_by         character varying(36) NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    owned_by         varchar(36)     not null,
+    primary key (id),
+    foreign key (vdbid) references mdb_databases (id),
+    foreign key (owned_by) references mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
+CREATE TABLE IF NOT EXISTS `mdb_messages`
 (
-    id            SERIAL,
-    type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL default 'INFO',
-    message       TEXT                              NOT NULL,
-    link          TEXT                              NULL,
-    link_text     VARCHAR(255)                      NULL,
+    id            varchar(36)                       not null,
+    type          enum ('ERROR', 'WARNING', 'INFO') not null default 'INFO',
+    message       text                              not null,
+    link          text                              NULL,
+    link_text     varchar(255)                      NULL,
     display_start timestamp                         NULL,
     display_end   timestamp                         NULL,
-    PRIMARY KEY (id)
+    primary key (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 (
-    id              SERIAL,
-    prefix          VARCHAR(8) NOT NULL,
-    uri             TEXT       NOT NULL,
-    uri_pattern     TEXT,
-    sparql_endpoint TEXT       NULL,
-    rdf_path        TEXT       NULL,
+    id              varchar(36) not null,
+    prefix          varchar(8)  not null,
+    uri             text        not null,
+    uri_pattern     text,
+    sparql_endpoint text        NULL,
+    rdf_path        text        NULL,
     last_modified   timestamp,
-    created         timestamp  NOT NULL DEFAULT NOW(),
-    UNIQUE (prefix),
-    UNIQUE (uri(200)),
-    PRIMARY KEY (id)
+    created         timestamp   not null default now(),
+    unique (prefix),
+    unique (uri(200)),
+    primary key (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
-    id               SERIAL,
-    view_id          BIGINT UNSIGNED NOT NULL,
-    name             VARCHAR(64),
-    internal_name    VARCHAR(64)     NOT NULL,
-    column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
-    ordinal_position INTEGER         NOT NULL,
-    size             BIGINT UNSIGNED,
-    d                BIGINT UNSIGNED,
-    is_null_allowed  BOOLEAN         NOT NULL DEFAULT true,
-    PRIMARY KEY (id),
-    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
-    UNIQUE (view_id, internal_name)
+    id               varchar(36)     not null,
+    view_id          bigint unsigned not null,
+    name             varchar(64),
+    internal_name    varchar(64)     not null,
+    column_type      enum ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
+    ordinal_position int             not null,
+    size             bigint unsigned,
+    d                bigint unsigned,
+    is_null_allowed  boolean         not null default true,
+    primary key (id),
+    foreign key (view_id) references mdb_view (id) ON DELETE CASCADE,
+    unique (view_id, internal_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
-    id                SERIAL,
-    dbid              BIGINT UNSIGNED                              NOT NULL,
-    qid               BIGINT UNSIGNED,
-    vid               BIGINT UNSIGNED,
-    tid               BIGINT UNSIGNED,
-    publisher         VARCHAR(255)                                 NOT NULL,
-    language          VARCHAR(2),
-    publication_year  INTEGER                                      NOT NULL,
-    publication_month INTEGER,
-    publication_day   INTEGER,
-    identifier_type   ENUM ('DATABASE', 'SUBSET', 'VIEW', 'TABLE') NOT NULL,
-    status            ENUM ('DRAFT', 'PUBLISHED')                  NOT NULL DEFAULT ('PUBLISHED'),
-    query             TEXT,
-    query_normalized  TEXT,
-    query_hash        VARCHAR(255),
-    execution         TIMESTAMP,
-    result_hash       VARCHAR(255),
-    result_number     BIGINT,
-    doi               VARCHAR(255),
-    created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
-    owned_by          VARCHAR(36)                                  NOT NULL,
-    last_modified     TIMESTAMP,
-    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    id                varchar(36)                                  not null,
+    dbid              bigint unsigned                              not null,
+    qid               bigint unsigned,
+    vid               bigint unsigned,
+    tid               bigint unsigned,
+    publisher         varchar(255)                                 not null,
+    language          varchar(2),
+    publication_year  int                                          not null,
+    publication_month int,
+    publication_day   int,
+    identifier_type   enum ('DATABASE', 'SUBSET', 'VIEW', 'TABLE') not null,
+    status            enum ('DRAFT', 'PUBLISHED')                  not null default ('PUBLISHED'),
+    query             text,
+    query_normalized  text,
+    query_hash        varchar(255),
+    execution         timestamp,
+    result_hash       varchar(255),
+    result_number     bigint,
+    doi               varchar(255),
+    created           timestamp                                    not null default now(),
+    owned_by          varchar(36)                                  not null,
+    last_modified     timestamp,
+    primary key (id), /* must be a single id from persistent identifier concept */
+    foreign key (dbid) references mdb_databases (id),
+    foreign key (owned_by) references mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
-    pid        BIGINT UNSIGNED NOT NULL,
-    license_id VARCHAR(255)    NOT NULL,
-    PRIMARY KEY (pid, license_id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
+    pid        bigint unsigned not null,
+    license_id varchar(255)    not null,
+    primary key (pid, license_id),
+    foreign key (pid) references mdb_identifiers (id),
+    foreign key (license_id) references mdb_licenses (identifier)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
-    id         SERIAL,
-    pid        BIGINT UNSIGNED NOT NULL,
-    title      text            NOT NULL,
-    title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
-    language   VARCHAR(2),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    id         varchar(36)     not null,
+    pid        bigint unsigned not null,
+    title      text            not null,
+    title_type enum ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
+    language   varchar(2),
+    primary key (id),
+    foreign key (pid) references mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
-    id                     SERIAL,
-    pid                    BIGINT UNSIGNED NOT NULL,
-    funder_name            VARCHAR(255)    NOT NULL,
-    funder_identifier      TEXT,
-    funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
+    id                     varchar(36)     not null,
+    pid                    bigint unsigned not null,
+    funder_name            varchar(255)    not null,
+    funder_identifier      text,
+    funder_identifier_type enum ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
     scheme_uri             text,
-    award_number           VARCHAR(255),
+    award_number           varchar(255),
     award_title            text,
-    language               VARCHAR(255),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    language               varchar(255),
+    primary key (id),
+    foreign key (pid) references mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
-    id               SERIAL,
-    pid              BIGINT UNSIGNED NOT NULL,
-    description      text            NOT NULL,
-    description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
-    language         VARCHAR(2),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    id               varchar(36)     not null,
+    pid              bigint unsigned not null,
+    description      text            not null,
+    description_type enum ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
+    language         varchar(2),
+    primary key (id),
+    foreign key (pid) references mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
 (
-    id       SERIAL,
-    pid      BIGINT UNSIGNED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      NOT NULL,
-    value    varchar(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
-    type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
-    relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
-    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    UNIQUE (pid, value)
+    id       varchar(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          not null,
+    pid      bigint unsigned                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      not null,
+    value    varchar(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         not null,
+    type     enum ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             not null,
+    relation enum ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','references','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') not null,
+    primary key (id), /* must be a single id from persistent identifier concept */
+    foreign key (pid) references mdb_identifiers (id),
+    unique (pid, value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
-    id                                SERIAL,
-    pid                               BIGINT UNSIGNED NOT NULL,
+    id                                varchar(36)     not null,
+    pid                               bigint unsigned not null,
     given_names                       text,
     family_name                       text,
-    creator_name                      VARCHAR(255)    NOT NULL,
-    name_type                         ENUM ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
+    creator_name                      varchar(255)    not null,
+    name_type                         enum ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
     name_identifier                   text,
-    name_identifier_scheme            ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
+    name_identifier_scheme            enum ('ROR', 'GRID', 'ISNI', 'ORCID'),
     name_identifier_scheme_uri        text,
-    affiliation                       VARCHAR(255),
+    affiliation                       varchar(255),
     affiliation_identifier            text,
-    affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
+    affiliation_identifier_scheme     enum ('ROR', 'GRID', 'ISNI'),
     affiliation_identifier_scheme_uri text,
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    primary key (id),
+    foreign key (pid) references mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_update`
 (
-    uUserID character varying(255) NOT NULL,
-    uDBID   BIGINT UNSIGNED        NOT NULL,
-    created timestamp              NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (uUserID, uDBID),
-    FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
+    uUserID varchar(255)    not null,
+    uDBID   bigint unsigned not null,
+    created timestamp       not null default now(),
+    primary key (uUserID, uDBID),
+    foreign key (uDBID) references mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
-    aUserID  character varying(255) NOT NULL,
-    aDBID    BIGINT UNSIGNED REFERENCES mdb_databases (id),
-    attime   TIMESTAMP,
-    download BOOLEAN,
-    created  timestamp              NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aUserID, aDBID)
+    aUserID  varchar(255) not null,
+    aDBID    bigint unsigned references mdb_databases (id),
+    attime   timestamp,
+    download boolean,
+    created  timestamp    not null default now(),
+    primary key (aUserID, aDBID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
-    user_id     character varying(36)                   NOT NULL,
-    database_id BIGINT UNSIGNED REFERENCES mdb_databases (id),
-    access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
-    created     timestamp                               NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, database_id),
-    FOREIGN KEY (user_id) REFERENCES mdb_users (id)
+    user_id     varchar(36)                             not null,
+    database_id bigint unsigned references mdb_databases (id),
+    access_type enum ('READ', 'WRITE_OWN', 'WRITE_ALL') not null,
+    created     timestamp                               not null default now(),
+    primary key (user_id, database_id),
+    foreign key (user_id) references mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_types`
 (
-    id            SERIAL,
-    image_id      BIGINT UNSIGNED NOT NULL,
-    display_name  varchar(255)    NOT NULL,
-    value         varchar(255)    NOT NULL,
-    size_min      INT UNSIGNED,
-    size_max      INT UNSIGNED,
-    size_default  INT UNSIGNED,
-    size_required BOOLEAN COMMENT 'When setting NULL, the service assumes the data type has no size',
-    size_step     INT UNSIGNED,
-    d_min         INT UNSIGNED,
-    d_max         INT UNSIGNED,
-    d_default     INT UNSIGNED,
-    d_required    BOOLEAN COMMENT 'When setting NULL, the service assumes the data type has no d',
-    d_step        INT UNSIGNED,
-    type_hint     TEXT,
-    data_hint     TEXT,
-    documentation TEXT            NOT NULL,
-    is_generated  BOOLEAN         NOT NULL,
-    is_quoted     BOOLEAN         NOT NULL,
-    is_buildable  BOOLEAN         NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
-    UNIQUE (value)
+    id            varchar(36)     not null,
+    image_id      bigint unsigned not null,
+    display_name  varchar(255)    not null,
+    value         varchar(255)    not null,
+    size_min      int unsigned,
+    size_max      int unsigned,
+    size_default  int unsigned,
+    size_required boolean comment 'When setting NULL, the service assumes the data type has no size',
+    size_step     int unsigned,
+    d_min         int unsigned,
+    d_max         int unsigned,
+    d_default     int unsigned,
+    d_required    boolean comment 'When setting NULL, the service assumes the data type has no d',
+    d_step        int unsigned,
+    type_hint     text,
+    data_hint     text,
+    documentation text            not null,
+    is_generated  boolean         not null,
+    is_quoted     boolean         not null,
+    is_buildable  boolean         not null,
+    primary key (id),
+    foreign key (image_id) references `mdb_images` (`id`),
+    unique (value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_operators`
 (
-    id            SERIAL,
-    image_id      BIGINT UNSIGNED NOT NULL,
-    display_name  varchar(255)    NOT NULL,
-    value         varchar(255)    NOT NULL,
-    documentation TEXT            NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
-    UNIQUE (value)
+    id            varchar(36)     not null,
+    image_id      bigint unsigned not null,
+    display_name  varchar(255)    not null,
+    value         varchar(255)    not null,
+    documentation text            not null,
+    primary key (id),
+    foreign key (image_id) references `mdb_images` (`id`),
+    unique (value)
 ) WITH SYSTEM VERSIONING;
 
 COMMIT;
@@ -629,7 +629,7 @@ VALUES (1, 'BIGINT(size)', 'bigint', 0, null, null, false, 1, null, null, null, 
         'https://mariadb.com/kb/en/year/', false, true, false),
        (1, 'VARBINARY(size)', 'varbinary', 0, null, null, true, null, null, null, null, null, null, null,
         null, 'https://mariadb.com/kb/en/varbinary/', false, true, false),
-       (1, 'VARCHAR(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null, null,
+       (1, 'varchar(size)', 'varchar', 0, 65532, 255, true, null, null, null, null, null, null, null,
         null, 'https://mariadb.com/kb/en/varchar/', false, true, false);
 
 INSERT INTO `mdb_image_operators` (image_id, display_name, value, documentation)
@@ -651,7 +651,7 @@ VALUES (1, 'Equal operator', '=', 'https://mariadb.com/kb/en/assignment-operator
        (1, 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
        (1, 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
        (1, 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
-       (1, 'IS NOT NULL', 'IS NOT NULL', 'https://mariadb.com/kb/en/is-not-null/'),
+       (1, 'IS not null', 'IS not null', 'https://mariadb.com/kb/en/is-not-null/'),
        (1, 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
        (1, 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
        (1, 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),

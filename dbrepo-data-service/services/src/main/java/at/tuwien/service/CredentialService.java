@@ -22,7 +22,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    DatabaseDto getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -35,7 +35,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ContainerDto getContainer(Long id) throws ContainerNotFoundException, RemoteUnavailableException,
+    ContainerDto getContainer(UUID id) throws ContainerNotFoundException, RemoteUnavailableException,
             MetadataServiceException;
 
     /**
@@ -49,7 +49,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    TableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
+    TableDto getTable(UUID databaseId, UUID tableId) throws RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException;
 
     /**
@@ -63,7 +63,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    ViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
+    ViewDto getView(UUID databaseId, UUID viewId) throws RemoteUnavailableException,
             MetadataServiceException, ViewNotFoundException;
 
     /**
@@ -90,7 +90,7 @@ public interface CredentialService {
      * @throws RemoteUnavailableException The remote service is not available.
      * @throws MetadataServiceException   The remote service returned invalid data.
      */
-    DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
+    DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException;
 
     /**
@@ -98,5 +98,5 @@ public interface CredentialService {
      *
      * @param databaseId The database id.
      */
-    void invalidateAccess(Long databaseId);
+    void invalidateAccess(UUID databaseId);
 }

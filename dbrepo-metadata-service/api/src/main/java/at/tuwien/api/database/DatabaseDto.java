@@ -14,6 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,8 +27,8 @@ import java.util.List;
 public class DatabaseDto extends CacheableDto {
 
     @NotNull
-    @Schema(example = "3")
-    private Long id;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "Air Quality")

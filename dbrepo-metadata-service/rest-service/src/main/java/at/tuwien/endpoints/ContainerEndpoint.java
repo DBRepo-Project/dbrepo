@@ -1,8 +1,8 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.ContainerAlreadyExistsException;
@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -129,7 +130,7 @@ public class ContainerEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("containerId") Long containerId,
+    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("containerId") UUID containerId,
                                                  Principal principal)
             throws ContainerNotFoundException {
         log.debug("endpoint find container, containerId={}", containerId);
@@ -139,7 +140,8 @@ public class ContainerEndpoint extends AbstractEndpoint {
             log.trace("attach privileged credential information");
             headers.set("X-Username", container.getPrivilegedUsername());
             headers.set("X-Password", container.getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+            headers.set("X-Jdbc-Method", container.getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
         }
         return ResponseEntity.ok()
                 .headers(headers)
@@ -167,7 +169,7 @@ public class ContainerEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") Long containerId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("containerId") UUID containerId)
             throws ContainerNotFoundException {
         log.debug("endpoint delete container, containerId={}", containerId);
         containerService.remove(containerService.find(containerId));

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @CrossOrigin(origins = "*")
@@ -83,7 +84,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("ontologyId") Long ontologyId)
+    public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("ontologyId") UUID ontologyId)
             throws OntologyNotFoundException {
         log.debug("endpoint find all ontologies, ontologyId={}", ontologyId);
         return ResponseEntity.ok(metadataMapper.ontologyToOntologyDto(ontologyService.find(ontologyId)));
@@ -127,7 +128,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("ontologyId") Long ontologyId,
+    public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("ontologyId") UUID ontologyId,
                                               @NotNull @Valid @RequestBody OntologyModifyDto data)
             throws OntologyNotFoundException {
         log.debug("endpoint update ontology, ontologyId={}, data={}", ontologyId, data);
@@ -153,7 +154,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("ontologyId") Long ontologyId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("ontologyId") UUID ontologyId)
             throws OntologyNotFoundException {
         log.debug("endpoint delete ontology, ontologyId={}", ontologyId);
         ontologyService.delete(ontologyService.find(ontologyId));
@@ -194,7 +195,7 @@ public class OntologyEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("ontologyId") Long id,
+    public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("ontologyId") UUID id,
                                                 @RequestParam(name = "label", required = false) String label,
                                                 @RequestParam(name = "uri", required = false) String uri)
             throws OntologyNotFoundException, UriMalformedException, FilterBadRequestException, MalformedException {

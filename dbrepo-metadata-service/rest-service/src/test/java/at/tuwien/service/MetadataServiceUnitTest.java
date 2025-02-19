@@ -1,9 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.oaipmh.OaiErrorType;
-import at.tuwien.oaipmh.OaiListIdentifiersParameters;
-import at.tuwien.oaipmh.OaiRecordParameters;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.ror.RorDto;
@@ -13,6 +9,10 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
+import at.tuwien.oaipmh.OaiErrorType;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
+import at.tuwien.test.AbstractUnitTest;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -29,10 +29,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -118,7 +118,7 @@ public class MetadataServiceUnitTest extends AbstractUnitTest {
                 .build();
 
         /* mock */
-        when(identifierService.find(1L))
+        when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
@@ -139,7 +139,7 @@ public class MetadataServiceUnitTest extends AbstractUnitTest {
         /* mock */
         doThrow(IdentifierNotFoundException.class)
                 .when(identifierService)
-                .find(anyLong());
+                .find(any(UUID.class));
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {

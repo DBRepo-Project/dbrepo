@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -155,7 +156,7 @@ public class TableServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            tableService.findColumnById(TABLE_1, 9999L);
+            tableService.findColumnById(TABLE_1, UUID.randomUUID());
         });
     }
 

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Log4j2
 @Component
@@ -53,8 +54,8 @@ public class DefaultListener implements MessageListener {
             log.error("Failed to map database and table names from routing key: is not 3-part");
             return;
         }
-        final Long databaseId = Long.parseLong(parts[1]);
-        final Long tableId = Long.parseLong(parts[2]);
+        final UUID databaseId = UUID.fromString(parts[1]);
+        final UUID tableId = UUID.fromString(parts[2]);
         log.trace("received message for table with id {} of database id {}: {} bytes", tableId, databaseId, message.getMessageProperties().getContentLength());
         final Map<String, Object> body;
         try {

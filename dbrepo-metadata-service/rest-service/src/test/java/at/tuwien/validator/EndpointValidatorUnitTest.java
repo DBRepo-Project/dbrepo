@@ -26,10 +26,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -176,7 +178,7 @@ public class EndpointValidatorUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException, AccessNotFoundException {
 
         /* mock */
-        when(databaseService.findById(anyLong()))
+        when(databaseService.findById(any(UUID.class)))
                 .thenReturn(DATABASE_3);
 
         /* test */

@@ -1,21 +1,20 @@
 package at.tuwien.service;
 
+import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.License;
+import at.tuwien.entities.identifier.*;
+import at.tuwien.exception.*;
+import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.repository.LicenseRepository;
 import at.tuwien.repository.UserRepository;
 import at.tuwien.test.AbstractUnitTest;
-import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.identifier.*;
-import at.tuwien.exception.*;
-import at.tuwien.gateway.DataServiceGateway;
-import at.tuwien.gateway.SearchServiceGateway;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -84,7 +84,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
         /* test */
         final List<Identifier> response = identifierService.findAll(null, null, null, null, null);
         assertEquals(7, response.size());
-        for (Long id : List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_4_ID, IDENTIFIER_5_ID, IDENTIFIER_6_ID, IDENTIFIER_7_ID)) {
+        for (UUID id : List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_4_ID, IDENTIFIER_5_ID, IDENTIFIER_6_ID, IDENTIFIER_7_ID)) {
             assertTrue(response.stream().map(Identifier::getId).toList().contains(id));
         }
     }
@@ -149,7 +149,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.find(9999L);
+            identifierService.find(UUID.randomUUID());
         });
     }
 
@@ -173,7 +173,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* mock */
-        when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
+        when(dataServiceGateway.findQuery(DATABASE_2_ID, QUERY_2_ID))
                 .thenReturn(QUERY_2_DTO);
         when(searchServiceGateway.update(any(Database.class)))
                 .thenReturn(DATABASE_2_BRIEF_DTO);
@@ -307,7 +307,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
             QueryNotFoundException, SearchServiceException, SearchServiceConnectionException, ExternalServiceException {
 
         /* mock */
-        when(dataServiceGateway.findQuery(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID))
+        when(dataServiceGateway.findQuery(DATABASE_2_ID, QUERY_2_ID))
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
@@ -326,7 +326,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
         assertEquals(IDENTIFIER_5_DESCRIPTION_1_TYPE, description0.getDescriptionType());
         assertNull(response.getDoi());
         assertEquals(IDENTIFIER_5_PUBLISHER, response.getPublisher());
-        assertEquals(IDENTIFIER_5_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(DATABASE_2_ID, response.getDatabase().getId());
         assertNull(response.getLanguage());
         assertEquals(IDENTIFIER_5_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_5_PUBLICATION_MONTH, response.getPublicationMonth());
@@ -439,12 +439,12 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
             ExternalServiceException {
 
         /* mock */
-        when(dataServiceGateway.findQuery(IDENTIFIER_2_DATABASE_ID, IDENTIFIER_2_QUERY_ID))
+        when(dataServiceGateway.findQuery(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_2_SAVE_DTO);
-        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(DATABASE_1_ID, response.getDatabase().getId());
         assertEquals(IDENTIFIER_2_QUERY, response.getQuery());
         assertEquals(IDENTIFIER_2_QUERY_HASH, response.getQueryHash());
         assertEquals(IDENTIFIER_2_RESULT_HASH, response.getResultHash());
@@ -460,7 +460,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final Identifier response = identifierService.save(DATABASE_1, USER_1, IDENTIFIER_3_SAVE_DTO);
-        assertEquals(IDENTIFIER_3_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(DATABASE_1_ID, response.getDatabase().getId());
         assertEquals(IDENTIFIER_3_QUERY, response.getQuery());
         assertEquals(IDENTIFIER_3_QUERY_HASH, response.getQueryHash());
         assertEquals(IDENTIFIER_3_RESULT_HASH, response.getResultHash());
@@ -476,7 +476,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_DTO);
-        assertEquals(8L, response.getId());
+        assertNotNull(response.getId());
     }
 
     @Test
@@ -487,7 +487,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final Identifier response = identifierService.create(DATABASE_1, USER_1, IDENTIFIER_1_CREATE_WITH_DOI_DTO);
-        assertEquals(8L, response.getId());
+        assertNotNull(response.getId());
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
     }
 

@@ -44,7 +44,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public ContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
+    public ContainerDto getContainerById(UUID containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException {
         final ResponseEntity<ContainerDto> response;
         final String url = "/api/container/" + containerId;
@@ -77,12 +77,13 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final ContainerDto container = metadataMapper.containerDtoToContainerDto(response.getBody());
         container.setUsername(response.getHeaders().get("X-Username").get(0));
         container.setPassword(response.getHeaders().get("X-Password").get(0));
+        container.getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         container.setLastRetrieved(Instant.now());
         return container;
     }
 
     @Override
-    public DatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    public DatabaseDto getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ResponseEntity<DatabaseDto> response;
         final String url = "/api/database/" + id;
@@ -119,7 +120,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public TableDto getTableById(Long databaseId, Long id) throws TableNotFoundException,
+    public TableDto getTableById(UUID databaseId, UUID id) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
         final String url = "/api/database/" + databaseId + "/table/" + id;
@@ -156,7 +157,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public ViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException,
+    public ViewDto getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException,
             ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view/" + id;
@@ -230,7 +231,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
+    public DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
@@ -256,7 +257,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public List<IdentifierBriefDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
+    public List<IdentifierBriefDto> getIdentifiers(@NotNull UUID databaseId, UUID subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException {
         final ResponseEntity<IdentifierBriefDto[]> response;
         final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
@@ -282,7 +283,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public void updateTableStatistics(Long databaseId, Long tableId, String authorization) throws TableNotFoundException,
+    public void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";

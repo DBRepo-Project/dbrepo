@@ -3,7 +3,10 @@ package at.tuwien.entities.database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -21,9 +24,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

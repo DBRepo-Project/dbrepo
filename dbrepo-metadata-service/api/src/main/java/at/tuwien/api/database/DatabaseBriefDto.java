@@ -23,8 +23,8 @@ import java.util.UUID;
 public class DatabaseBriefDto {
 
     @NotNull
-    @Schema(example = "3")
-    private Long id;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "Air Quality")

@@ -42,9 +42,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Database implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
@@ -56,8 +56,8 @@ public class Database implements Serializable {
     })
     private User owner;
 
-    @Column(nullable = false)
-    private Long cid;
+    @Column(nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID cid;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)

@@ -22,18 +22,18 @@ public class CredentialServiceImpl implements CredentialService {
 
     private final MetadataServiceGateway gateway;
     private final Cache<UUID, UserDto> userCache;
-    private final Cache<Long, ViewDto> viewCache;
-    private final Cache<Long, DatabaseAccessDto> accessCache;
-    private final Cache<Long, TableDto> tableCache;
-    private final Cache<Long, DatabaseDto> databaseCache;
-    private final Cache<Long, ContainerDto> containerCache;
+    private final Cache<UUID, ViewDto> viewCache;
+    private final Cache<UUID, DatabaseAccessDto> accessCache;
+    private final Cache<UUID, TableDto> tableCache;
+    private final Cache<UUID, DatabaseDto> databaseCache;
+    private final Cache<UUID, ContainerDto> containerCache;
 
     @Autowired
     public CredentialServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
-                                 Cache<Long, ViewDto> viewCache, Cache<Long, DatabaseAccessDto> accessCache,
-                                 Cache<Long, TableDto> tableCache,
-                                 Cache<Long, DatabaseDto> databaseCache,
-                                 Cache<Long, ContainerDto> containerCache) {
+                                 Cache<UUID, ViewDto> viewCache, Cache<UUID, DatabaseAccessDto> accessCache,
+                                 Cache<UUID, TableDto> tableCache,
+                                 Cache<UUID, DatabaseDto> databaseCache,
+                                 Cache<UUID, ContainerDto> containerCache) {
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
@@ -44,7 +44,7 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public DatabaseDto getDatabase(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    public DatabaseDto getDatabase(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final DatabaseDto cacheDatabase = databaseCache.getIfPresent(id);
         if (cacheDatabase != null) {
@@ -58,7 +58,7 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public TableDto getTable(Long databaseId, Long tableId) throws RemoteUnavailableException,
+    public TableDto getTable(UUID databaseId, UUID tableId) throws RemoteUnavailableException,
             MetadataServiceException, TableNotFoundException {
         final TableDto cacheTable = tableCache.getIfPresent(tableId);
         if (cacheTable != null) {
@@ -72,13 +72,13 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public void invalidateAccess(Long databaseId) {
+    public void invalidateAccess(UUID databaseId) {
         accessCache.invalidate(databaseId);
         log.debug("invalidated access for database with id {} in cache", databaseId);
     }
 
     @Override
-    public ContainerDto getContainer(Long id) throws RemoteUnavailableException, MetadataServiceException,
+    public ContainerDto getContainer(UUID id) throws RemoteUnavailableException, MetadataServiceException,
             ContainerNotFoundException {
         final ContainerDto cacheContainer = containerCache.getIfPresent(id);
         if (cacheContainer != null) {
@@ -92,7 +92,7 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public ViewDto getView(Long databaseId, Long viewId) throws RemoteUnavailableException,
+    public ViewDto getView(UUID databaseId, UUID viewId) throws RemoteUnavailableException,
             MetadataServiceException, ViewNotFoundException {
         final ViewDto cacheView = viewCache.getIfPresent(viewId);
         if (cacheView != null) {
@@ -120,7 +120,7 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
+    public DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException {
         final DatabaseAccessDto cacheAccess = accessCache.getIfPresent(databaseId);
         if (cacheAccess != null) {

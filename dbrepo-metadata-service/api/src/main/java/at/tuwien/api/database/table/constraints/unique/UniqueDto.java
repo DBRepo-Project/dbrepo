@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,8 +20,8 @@ import java.util.List;
 public class UniqueDto {
 
     @NotNull
-    @Schema(example = "5")
-    private Long id;
+    @Schema(example = "d984f9d7-e8a7-4b81-b59a-862db1871f13")
+    private UUID id;
 
     @NotNull
     @Schema(example = "uk_name")

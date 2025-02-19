@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Log4j2
 @Service
@@ -62,7 +59,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional(readOnly = true)
-    public Table findById(Database database, Long tableId) throws TableNotFoundException {
+    public Table findById(Database database, UUID tableId) throws TableNotFoundException {
         final Optional<Table> table = database.getTables()
                 .stream()
                 .filter(t -> t.getId().equals(tableId))
@@ -265,7 +262,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional(readOnly = true)
-    public TableColumn findColumnById(Table table, Long columnId) throws MalformedException {
+    public TableColumn findColumnById(Table table, UUID columnId) throws MalformedException {
         final Optional<TableColumn> optional = table.getColumns()
                 .stream()
                 .filter(c -> c.getId().equals(columnId))

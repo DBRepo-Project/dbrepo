@@ -26,6 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -84,20 +85,21 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
     public void find_noSparql_fails() throws OntologyNotFoundException {
+        final UUID id = UUID.randomUUID();
         final Ontology mock = Ontology.builder()
-                .id(9999L)
+                .id(id)
                 .uri(ONTOLOGY_1_URI)
                 .uriPattern(ONTOLOGY_1_URI_PATTERN)
                 .sparqlEndpoint(null) // <<<
                 .build();
 
         /* mock */
-        when(ontologyService.find(9999L))
+        when(ontologyService.find(id))
                 .thenReturn(mock);
 
         /* test */
         assertThrows(OntologyNotFoundException.class, () -> {
-            ontologyEndpoint.find(9999L, null, UNIT_1_URI);
+            ontologyEndpoint.find(id, null, UNIT_1_URI);
         });
     }
 
@@ -107,7 +109,7 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(OntologyNotFoundException.class, () -> {
-            find_generic(99999L, null);
+            find_generic(UUID.randomUUID(), null);
         });
     }
 
@@ -293,7 +295,7 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
         assertEquals(4, body.size());
     }
 
-    public void find_generic(Long ontologyId, Ontology ontology) throws OntologyNotFoundException {
+    public void find_generic(UUID ontologyId, Ontology ontology) throws OntologyNotFoundException {
 
         /* mock */
         if (ontology != null) {
@@ -340,7 +342,7 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    public void update_generic(Long ontologyId, OntologyModifyDto modifyDto, Ontology ontology)
+    public void update_generic(UUID ontologyId, OntologyModifyDto modifyDto, Ontology ontology)
             throws OntologyNotFoundException {
 
         /* mock */
@@ -362,7 +364,7 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    public void delete_generic(Long ontologyId, Ontology ontology) throws OntologyNotFoundException {
+    public void delete_generic(UUID ontologyId, Ontology ontology) throws OntologyNotFoundException {
 
         /* mock */
         doNothing()
@@ -374,7 +376,7 @@ public class OntologyEndpointUnitTest extends AbstractUnitTest {
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
-    public List<EntityDto> find_generic(Long ontologyId, String label, String uri, Ontology ontology,
+    public List<EntityDto> find_generic(UUID ontologyId, String label, String uri, Ontology ontology,
                                         EntityDto entityDto) throws MalformedException, UriMalformedException,
             FilterBadRequestException, OntologyNotFoundException {
 

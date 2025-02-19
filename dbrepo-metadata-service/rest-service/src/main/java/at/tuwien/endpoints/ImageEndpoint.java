@@ -10,7 +10,7 @@ import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.service.impl.ImageServiceImpl;
+import at.tuwien.service.ImageService;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -39,11 +40,11 @@ import java.util.List;
 @RequestMapping(path = "/api/image")
 public class ImageEndpoint extends AbstractEndpoint {
 
+    private final ImageService imageService;
     private final MetadataMapper metadataMapper;
-    private final ImageServiceImpl imageService;
 
     @Autowired
-    public ImageEndpoint(ImageServiceImpl imageService, MetadataMapper metadataMapper) {
+    public ImageEndpoint(ImageService imageService, MetadataMapper metadataMapper) {
         this.imageService = imageService;
         this.metadataMapper = metadataMapper;
     }
@@ -119,7 +120,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
+    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") UUID imageId) throws ImageNotFoundException {
         log.debug("endpoint find image, imageId={}", imageId);
         return ResponseEntity.ok()
                 .body(metadataMapper.containerImageToImageDto(imageService.find(imageId)));
@@ -144,7 +145,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ImageDto> update(@NotNull @PathVariable("imageId") Long imageId,
+    public ResponseEntity<ImageDto> update(@NotNull @PathVariable("imageId") UUID imageId,
                                            @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
         log.debug("endpoint update image, imageId={}, changeDto={}", imageId, changeDto);
@@ -170,7 +171,7 @@ public class ImageEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("imageId") UUID imageId) throws ImageNotFoundException {
         log.debug("endpoint delete image, imageId={}", imageId);
         imageService.delete(imageService.find(imageId));
         return ResponseEntity.accepted()

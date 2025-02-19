@@ -38,12 +38,12 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Table {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "ID", updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @Column(updatable = false, nullable = false)
-    private Long tdbid;
+    private UUID tdbid;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")

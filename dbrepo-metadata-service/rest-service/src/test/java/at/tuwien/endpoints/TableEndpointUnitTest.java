@@ -1131,7 +1131,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void analyseTable_generic(Long databaseId, Database database, Long tableId, Table table, Principal principal)
+    public void analyseTable_generic(UUID databaseId, Database database, UUID tableId, Table table, Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
@@ -1149,7 +1149,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    public void analyseTableColumn_generic(Long databaseId, Database database, Long tableId, Long columnId,
+    public void analyseTableColumn_generic(UUID databaseId, Database database, UUID tableId, UUID columnId,
                                            TableColumn tableColumn, Principal principal)
             throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
 
@@ -1165,7 +1165,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    protected ResponseEntity<List<TableBriefDto>> generic_list(Long databaseId, Database database, Principal principal,
+    protected ResponseEntity<List<TableBriefDto>> generic_list(UUID databaseId, Database database, Principal principal,
                                                                User user, DatabaseAccess access)
             throws NotAllowedException, DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException {
 
@@ -1193,7 +1193,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.list(databaseId, principal);
     }
 
-    protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, CreateTableDto data,
+    protected ResponseEntity<TableBriefDto> generic_create(UUID databaseId, Database database, CreateTableDto data,
                                                            Principal principal, User user, DatabaseAccess access)
             throws MalformedException, NotAllowedException, DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, TableNotFoundException,
@@ -1226,11 +1226,10 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         return tableEndpoint.create(databaseId, data, principal);
     }
 
-    protected ResponseEntity<TableDto> generic_findById(Long databaseId, Database database, Long tableId,
+    protected ResponseEntity<TableDto> generic_findById(UUID databaseId, Database database, UUID tableId,
                                                         Table table, Principal principal, User user,
-                                                        DatabaseAccess access) throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, UserNotFoundException, NotAllowedException {
+                                                        DatabaseAccess access) throws TableNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {
@@ -1277,15 +1276,15 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(tableService.findById(any(Database.class), anyLong()))
+        when(tableService.findById(any(Database.class), any(UUID.class)))
                 .thenReturn(table);
 
         /* test */
         return tableEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, principal);
     }
 
-    protected ResponseEntity<ColumnDto> generic_updateColumn(Long databaseId, Database database, Long tableId,
-                                                             Table table, Long columnId, TableColumn column,
+    protected ResponseEntity<ColumnDto> generic_updateColumn(UUID databaseId, Database database, UUID tableId,
+                                                             Table table, UUID columnId, TableColumn column,
                                                              Principal principal, User user,
                                                              ColumnSemanticsUpdateDto data, DatabaseAccess access)
             throws DataServiceException, DataServiceConnectionException, MalformedException, NotAllowedException,

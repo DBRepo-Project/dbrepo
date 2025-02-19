@@ -12,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 
 @Getter
@@ -25,11 +26,13 @@ import java.util.List;
 public class QueryBriefDto {
 
     @NotNull
-    private Long id;
+    @Schema(example = "83ea2326-f8f6-4263-baf8-cdf88a54efc7")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    private Long databaseId;
+    @Schema(example = "1a6fb0c0-49c3-4a22-a515-35f7a3dd8e62")
+    private UUID databaseId;
 
     @NotNull
     private UserBriefDto owner;

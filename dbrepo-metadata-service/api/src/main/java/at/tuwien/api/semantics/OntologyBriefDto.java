@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -18,7 +20,8 @@ import lombok.extern.jackson.Jacksonized;
 public class OntologyBriefDto {
 
     @NotNull
-    private Long id;
+    @Schema(example = "7c491e40-082a-47b8-b82c-51d03c520466")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "http://www.wikidata.org/")

@@ -41,6 +41,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -106,7 +107,7 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                            @Valid @RequestBody TableCreateDto data) throws DatabaseNotFoundException,
             RemoteUnavailableException, TableMalformedException, DatabaseUnavailableException, TableExistsException,
             TableNotFoundException, QueryMalformedException, MetadataServiceException, ContainerNotFoundException {
@@ -155,8 +156,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                           @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<TableDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                           @NotNull @PathVariable("tableId") UUID tableId,
                                            @Valid @RequestBody TableUpdateDto data) throws RemoteUnavailableException,
             TableMalformedException, DatabaseUnavailableException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint update table, databaseId={}, data.description={}", databaseId, data.getDescription());
@@ -199,8 +200,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("tableId") Long tableId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("tableId") UUID tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             QueryMalformedException, MetadataServiceException {
         log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
@@ -249,8 +250,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                             @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                             @NotNull @PathVariable("tableId") UUID tableId,
                                                              @RequestParam(required = false) Instant timestamp,
                                                              @RequestParam(required = false) Long page,
                                                              @RequestParam(required = false) Long size,
@@ -296,7 +297,7 @@ public class TableEndpoint extends RestEndpoint {
             final String query = mariaDbMapper.defaultRawSelectQuery(table.getDatabase().getInternalName(),
                     table.getInternalName(), timestamp, page, size);
             final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(table.getTdbid()),
-                    query, timestamp, page, size, null, null);
+                    query);
             metricsService.countTableGetData(databaseId, tableId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -337,8 +338,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> insertRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                               @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDto data,
                                                @NotNull Principal principal,
                                                @RequestHeader("Authorization") String authorization)
@@ -390,8 +391,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> updateRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                               @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleUpdateDto data,
                                                @NotNull Principal principal,
                                                @RequestHeader("Authorization") String authorization)
@@ -443,8 +444,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> deleteRawTuple(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                               @NotNull @PathVariable("tableId") UUID tableId,
                                                @Valid @RequestBody TupleDeleteDto data,
                                                @NotNull Principal principal,
                                                @RequestHeader("Authorization") String authorization)
@@ -498,8 +499,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableHistoryDto>> getHistory(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                            @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<List<TableHistoryDto>> getHistory(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                            @NotNull @PathVariable("tableId") UUID tableId,
                                                             @RequestParam(value = "size", required = false) Long size,
                                                             Principal principal) throws DatabaseUnavailableException,
             RemoteUnavailableException, TableNotFoundException, NotAllowedException, MetadataServiceException,
@@ -567,7 +568,7 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableDto>> getSchema(@NotNull @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<List<TableDto>> getSchema(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, TableNotFoundException, MetadataServiceException {
         log.debug("endpoint inspect table schemas, databaseId={}", databaseId);
@@ -612,8 +613,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                             @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                             @NotNull @PathVariable("tableId") UUID tableId,
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, TableNotFoundException, NotAllowedException, StorageUnavailableException,
@@ -635,7 +636,7 @@ public class TableEndpoint extends RestEndpoint {
         final String query = mariaDbMapper.defaultRawSelectQuery(table.getDatabase().getInternalName(),
                 table.getInternalName(), timestamp, null, null);
         final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(table.getTdbid()),
-                query, timestamp, null, null, null, null);
+                query);
         metricsService.countTableGetData(databaseId, tableId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();
@@ -676,8 +677,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> importDataset(@NotNull @PathVariable("databaseId") Long databaseId,
-                                              @NotNull @PathVariable("tableId") Long tableId,
+    public ResponseEntity<Void> importDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                              @NotNull @PathVariable("tableId") UUID tableId,
                                               @Valid @RequestBody ImportDto data,
                                               @NotNull Principal principal,
                                               @RequestHeader("Authorization") String authorization)
@@ -730,8 +731,8 @@ public class TableEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                       @NotNull @PathVariable("tableId") Long tableId)
+    public ResponseEntity<TableStatisticDto> statistic(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                       @NotNull @PathVariable("tableId") UUID tableId)
             throws DatabaseUnavailableException, RemoteUnavailableException, TableNotFoundException,
             MetadataServiceException, TableMalformedException {
         log.debug("endpoint generate table statistic, databaseId={}, tableId={}", databaseId, tableId);

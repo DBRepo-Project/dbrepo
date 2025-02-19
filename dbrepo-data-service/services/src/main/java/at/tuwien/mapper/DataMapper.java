@@ -198,7 +198,7 @@ public interface DataMapper {
     default QueryDto resultSetToQueryDto(@NotNull ResultSet data) throws SQLException {
         /* note that next() is called outside this mapping function */
         final QueryDto subset = QueryDto.builder()
-                .id(data.getLong(1))
+                .id(UUID.fromString(data.getString(1)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))

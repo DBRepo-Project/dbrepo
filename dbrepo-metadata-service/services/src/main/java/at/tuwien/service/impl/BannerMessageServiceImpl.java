@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -39,7 +40,7 @@ public class BannerMessageServiceImpl implements BannerMessageService {
     }
 
     @Override
-    public BannerMessage find(Long id) throws MessageNotFoundException {
+    public BannerMessage find(UUID id) throws MessageNotFoundException {
         final Optional<BannerMessage> optional = bannerMessageRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to find banner message with id {}", id);

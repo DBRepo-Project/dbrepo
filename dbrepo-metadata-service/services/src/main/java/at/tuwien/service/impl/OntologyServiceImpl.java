@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -45,7 +46,7 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
-    public Ontology find(Long id) throws OntologyNotFoundException {
+    public Ontology find(UUID id) throws OntologyNotFoundException {
         final Optional<Ontology> optional = ontologyRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to find ontology with id {}", id);

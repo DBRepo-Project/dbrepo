@@ -1,10 +1,12 @@
 package at.tuwien.service;
 
+import java.util.UUID;
+
 public interface MetricsService {
 
-    void countTableGetData(Long databaseId, Long tableId);
+    void countTableGetData(UUID databaseId, UUID tableId);
 
-    void countSubsetGetData(Long databaseId, Long subsetId);
+    void countSubsetGetData(UUID databaseId, UUID subsetId);
 
-    void countViewGetData(Long databaseId, Long viewId);
+    void countViewGetData(UUID databaseId, UUID viewId);
 }

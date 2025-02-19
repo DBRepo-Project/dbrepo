@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -55,8 +56,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(null);
         assertEquals(2, response.size());
-        assertEquals(1L, response.get(0).getId());
-        assertEquals(2L, response.get(1).getId());
+        assertEquals(QUERY_1_ID, response.get(0).getId());
+        assertEquals(QUERY_2_ID, response.get(1).getId());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(true);
         assertEquals(1, response.size());
-        assertEquals(1L, response.get(0).getId());
+        assertEquals(QUERY_1_ID, response.get(0).getId());
     }
 
     @Test
@@ -76,7 +77,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(false);
         assertEquals(1, response.size());
-        assertEquals(2L, response.get(0).getId());
+        assertEquals(QUERY_2_ID, response.get(0).getId());
     }
 
     @Test
@@ -92,7 +93,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            findById_generic(9999L);
+            findById_generic(UUID.randomUUID());
         });
     }
 
@@ -108,7 +109,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_BRIEF_DTO), true);
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_2_ID);
-        assertEquals(2L, response.getId());
+        assertEquals(QUERY_2_ID, response.getId());
         assertTrue(response.getIsPersisted());
     }
 
@@ -124,11 +125,11 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_BRIEF_DTO), false);
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID);
-        assertEquals(1L, response.getId());
+        assertEquals(QUERY_1_ID, response.getId());
         assertFalse(response.getIsPersisted());
     }
 
-    protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
+    protected void findById_generic(UUID queryId) throws RemoteUnavailableException, SQLException,
             UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
 
@@ -164,7 +165,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         return queryService.findAll(DATABASE_1_PRIVILEGED_DTO, filterPersisted);
     }
 
-    protected void persist_generic(Long queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
+    protected void persist_generic(UUID queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
             throws RemoteUnavailableException, SQLException, QueryStorePersistException, MetadataServiceException,
             DatabaseNotFoundException, InterruptedException {
 

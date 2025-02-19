@@ -12,6 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -24,8 +25,8 @@ import java.time.Instant;
 public class RelatedIdentifierDto {
 
     @NotNull
-    @Schema(example = "8")
-    private Long id;
+    @Schema(example = "ce9d11f0-60a2-448d-a3e4-44719a443e8a")
+    private UUID id;
 
     @NotNull
     @Schema(example = "10.70124/dc4zh-9ce78")

@@ -274,8 +274,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateDataPrivateSchema_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
-            SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
-            NotAllowedException, MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
+            DatabaseUnavailableException, QueryMalformedException, PaginationException, NotAllowedException,
+            MetadataServiceException, TableNotFoundException, DatabaseNotFoundException {
         final Dataset<Row> mock = sparkSession.emptyDataFrame();
 
         /* mock */
@@ -285,7 +285,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");

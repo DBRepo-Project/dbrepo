@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface OntologyRepository extends JpaRepository<Ontology, Long> {
+public interface OntologyRepository extends JpaRepository<Ontology, UUID> {
 
     List<Ontology> findAllProcessable();
 

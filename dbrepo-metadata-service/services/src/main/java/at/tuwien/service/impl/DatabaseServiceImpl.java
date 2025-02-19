@@ -84,7 +84,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional(readOnly = true)
-    public Database findById(Long id) throws DatabaseNotFoundException {
+    public Database findById(UUID id) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(id);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {} in metadata database", id);

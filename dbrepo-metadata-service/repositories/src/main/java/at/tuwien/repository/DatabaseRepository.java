@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface DatabaseRepository extends JpaRepository<Database, Long> {
+public interface DatabaseRepository extends JpaRepository<Database, UUID> {
 
     List<Database> findAllDesc();
 

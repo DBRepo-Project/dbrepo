@@ -33,6 +33,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Primary
@@ -64,7 +65,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId) {
+    public List<Identifier> findAll(IdentifierTypeDto type, UUID databaseId, UUID queryId, UUID viewId, UUID tableId) {
         return identifierService.findAll(type, databaseId, queryId, viewId, tableId);
     }
 
@@ -79,7 +80,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId) {
+    public List<Identifier> findByDatabaseIdAndQueryId(UUID databaseId, UUID queryId) {
         return identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
     }
 
@@ -167,13 +168,13 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    public List<Identifier> findAll(Long databaseId) {
+    public List<Identifier> findAll(UUID databaseId) {
         return identifierService.findAll(databaseId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Identifier find(Long identifierId) throws IdentifierNotFoundException {
+    public Identifier find(UUID identifierId) throws IdentifierNotFoundException {
         return identifierService.find(identifierId);
     }
 
