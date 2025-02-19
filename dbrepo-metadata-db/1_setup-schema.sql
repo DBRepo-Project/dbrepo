@@ -545,7 +545,7 @@ CREATE TABLE IF NOT EXISTS `mdb_image_operators`
     documentation TEXT            NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
-    UNIQUE (value)
+    UNIQUE (image_id, value)
 ) WITH SYSTEM VERSIONING;
 
 COMMIT;
