@@ -4,10 +4,7 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
@@ -227,7 +224,7 @@ public interface DataMapper {
                     .timestamp(LocalDateTime.parse(resultSet.getString(1), mariaDbFormatter)
                             .atZone(ZoneId.of("UTC"))
                             .toInstant())
-                    .event(resultSet.getString(2))
+                    .event(HistoryEventTypeDto.valueOf(resultSet.getString(2).toUpperCase()))
                     .total(resultSet.getLong(3))
                     .build());
         }
