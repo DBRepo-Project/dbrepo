@@ -16,6 +16,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     private final KeycloakConfig keycloakConfig;
     private final MetadataMapper metadataMapper;
 
+    @Autowired
     public KeycloakGatewayImpl(Keycloak keycloak, KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.keycloak = keycloak;
         this.keycloakConfig = keycloakConfig;

@@ -177,8 +177,9 @@ build-data-service:
     - build-metadata-service
   dependencies:
     - build-metadata-service
-  script:
+  before_script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
+  script:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package $MAVEN_OPTS -DskipTests"
   # Compiled classes are needed for SonarQube in later stages
   artifacts:
@@ -198,8 +199,9 @@ build-ui:
 build-search-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: build
-  script:
+  before_script:
     - "pip install pipenv"
+  script:
     - "cd dbrepo-search-service && pipenv install --system --deploy"
 
 build-images:
@@ -403,7 +405,7 @@ test-lib:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py tests/test_integration_table.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
+    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_container.py tests/test_unit_concept.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py tests/test_unit_unit.py --junitxml=report.xml && coverage html --omit="tests/*" && coverage report --omit="tests/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

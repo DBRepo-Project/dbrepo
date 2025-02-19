@@ -149,7 +149,7 @@ public abstract class BaseTest {
 
     public static final String RABBITMQ_IMAGE = "rabbitmq:3.13.7";
 
-    public static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0";
+    public static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:26.0.4";
 
     public static final String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
             "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};

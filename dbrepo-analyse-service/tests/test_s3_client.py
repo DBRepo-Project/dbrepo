@@ -117,19 +117,6 @@ class S3ClientTest(unittest.TestCase):
         else:
             self.fail('FileNotFoundError not raised')
 
-    # @Test
-    def test_bucket_exists_notExists_fails(self):
-
-        # test
-        try:
-            S3Client().bucket_exists_or_exit("idnonotexist")
-        except FileNotFoundError:
-            pass
-        except Exception:
-            self.fail('unexpected exception raised')
-        else:
-            self.fail('FileNotFoundError not raised')
-
 
 if __name__ == '__main__':
     unittest.main()

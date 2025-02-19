@@ -15,7 +15,7 @@ def session(request):
     :return: The OpenSearch container
     """
     logging.debug("[fixture] creating opensearch container")
-    container = OpenSearchContainer()
+    container = OpenSearchContainer(image="opensearchproject/opensearch:2.10.0")
     logging.debug("[fixture] starting opensearch container")
     container.start()
 

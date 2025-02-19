@@ -387,7 +387,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(1, response.size());
         final TableHistoryDto history0 = response.get(0);
         assertNotNull(history0.getTimestamp());
-        assertEquals("INSERT", history0.getEvent());
+        assertEquals(HistoryEventTypeDto.INSERT, history0.getEvent());
         assertEquals(3, history0.getTotal());
     }
 

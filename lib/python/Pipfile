@@ -21,7 +21,6 @@ pytest = "*"
 requests-mock = "*"
 furo = "*"
 pytest-ordering = "*"
-testcontainers = "*"
 httpx = "*"
 
 [requires]
