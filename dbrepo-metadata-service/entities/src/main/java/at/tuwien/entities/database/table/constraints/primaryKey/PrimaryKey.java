@@ -21,7 +21,6 @@ import java.util.UUID;
 public class PrimaryKey {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "pkid", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;

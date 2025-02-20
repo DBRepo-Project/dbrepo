@@ -827,7 +827,7 @@ public interface MetadataMapper {
     ViewDto viewToViewDto(View data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "view.vdbid"),
+            @Mapping(target = "databaseId", source = "view.database.id"),
     })
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 

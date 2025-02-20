@@ -22,7 +22,6 @@ import java.util.UUID;
 public class Unique {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "uid", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;

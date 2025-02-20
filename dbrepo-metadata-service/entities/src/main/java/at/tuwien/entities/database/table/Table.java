@@ -38,9 +38,8 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Table {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(updatable = false, nullable = false)

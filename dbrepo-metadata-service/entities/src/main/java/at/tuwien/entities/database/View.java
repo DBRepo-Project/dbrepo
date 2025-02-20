@@ -35,13 +35,9 @@ import java.util.UUID;
 public class View {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;
-
-    @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
-    private UUID vdbid;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)

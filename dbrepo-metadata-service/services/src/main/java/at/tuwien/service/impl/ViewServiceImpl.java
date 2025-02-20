@@ -93,7 +93,6 @@ public class ViewServiceImpl implements ViewService {
             SearchServiceConnectionException {
         /* create in metadata database */
         final View view = View.builder()
-                .vdbid(database.getId())
                 .database(database)
                 .name(data.getName())
                 .internalName(metadataMapper.nameToInternalName(data.getName()))

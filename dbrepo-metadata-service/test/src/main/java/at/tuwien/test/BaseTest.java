@@ -121,7 +121,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Identifier 6 (Title=en, Description=en, Query=3)</li>
  * </ul>
  * <p>
- * Database 4 (Public Data, Public Schema, User 4) -> Container 2
+ * Database 4 (Public Data, Public Schema, User 4) -> Container 4
  * <li>Table 9</li>
  * <li>Identifier 7</li>
  * <li>Query 7</li>
@@ -996,6 +996,7 @@ public abstract class BaseTest {
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .databases(null) /* DATABASE_1, DATABASE_2, DATABASE_3 */
             .build();
 
     public static final ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
@@ -1133,6 +1134,7 @@ public abstract class BaseTest {
             .quota(CONTAINER_4_QUOTA)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
+            .databases(null) /* DATABASE_4 */
             .build();
 
     public static final String EXCHANGE_DBREPO_NAME = "dbrepo";
@@ -4969,9 +4971,15 @@ public abstract class BaseTest {
     public static final String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
     public static final String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
+    public static final UUID VIEW_COLUMN_1_1_ID = UUID.fromString("ebf2c5ce-4deb-4cc6-b6f6-61f5d3f6fc98");
+
+    public static final UUID VIEW_COLUMN_1_2_ID = UUID.fromString("d6ba3475-cefa-4771-aaa1-9274f16335ee");
+
+    public static final UUID VIEW_COLUMN_1_3_ID = UUID.fromString("4f189a5f-c9ca-4518-9758-1a0730f6276b");
+
     public static final List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
-                    .id(COLUMN_2_1_ID)
+                    .id(VIEW_COLUMN_1_1_ID)
                     .ordinalPosition(0)
                     .databaseId(DATABASE_1_ID)
                     .name("location")
@@ -4981,7 +4989,7 @@ public abstract class BaseTest {
                     .isNullAllowed(false)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_2_2_ID)
+                    .id(VIEW_COLUMN_1_2_ID)
                     .ordinalPosition(1)
                     .databaseId(DATABASE_1_ID)
                     .name("lat")
@@ -4992,7 +5000,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_2_3_ID)
+                    .id(VIEW_COLUMN_1_3_ID)
                     .ordinalPosition(2)
                     .databaseId(DATABASE_1_ID)
                     .name("lng")
@@ -5009,7 +5017,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
             .internalName(VIEW_1_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
             .query(VIEW_1_QUERY)
@@ -5132,9 +5139,17 @@ public abstract class BaseTest {
     public static final String VIEW_2_QUERY = "select `date`, `location` as loc, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
     public static final String VIEW_2_QUERY_HASH = "987fc946772ffb6d85060262dcb5df419692a1f6772ea995e3dedb53c191e984";
 
+    public static final UUID VIEW_COLUMN_2_1_ID = UUID.fromString("8fb30bce-04a8-4e9a-9c6b-0776eda3aab8");
+
+    public static final UUID VIEW_COLUMN_2_2_ID = UUID.fromString("d43f9940-ae27-4d81-b17b-ccbaf578186c");
+
+    public static final UUID VIEW_COLUMN_2_3_ID = UUID.fromString("b47733bb-aeea-414d-811e-405c64463730");
+
+    public static final UUID VIEW_COLUMN_2_4_ID = UUID.fromString("2b467e3a-acef-4944-be19-b4b0680874c2");
+
     public static final List<ViewColumnDto> VIEW_2_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
-                    .id(COLUMN_1_2_ID)
+                    .id(VIEW_COLUMN_2_1_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(0)
                     .name("Date")
@@ -5143,7 +5158,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_3_ID)
+                    .id(VIEW_COLUMN_2_2_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(1)
                     .name("loc")
@@ -5153,7 +5168,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_5_ID)
+                    .id(VIEW_COLUMN_2_3_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(2)
                     .name("Rainfall")
@@ -5164,7 +5179,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_4_ID)
+                    .id(VIEW_COLUMN_2_4_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(3)
                     .name("MinTemp")
@@ -5181,7 +5196,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
             .internalName(VIEW_2_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_2_PUBLIC)
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
             .columns(null)  /* VIEW_2_COLUMNS */
@@ -5289,9 +5303,17 @@ public abstract class BaseTest {
 
     public static final Long VIEW_3_DATA_COUNT = 3L;
 
+    public static final UUID VIEW_COLUMN_3_1_ID = UUID.fromString("129839cb-dbd7-492d-8fd0-ee44a8f51c4d");
+
+    public static final UUID VIEW_COLUMN_3_2_ID = UUID.fromString("e229d80a-c25c-4fbe-8f31-bbb2e1dff3d5");
+
+    public static final UUID VIEW_COLUMN_3_3_ID = UUID.fromString("12083a5d-fdd3-41db-9f92-d1298558e477");
+
+    public static final UUID VIEW_COLUMN_3_4_ID = UUID.fromString("668f8a87-1fa6-4be7-9761-1844aa8315a4");
+
     public static final List<ViewColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
-                    .id(COLUMN_1_4_ID)
+                    .id(VIEW_COLUMN_3_1_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(0)
                     .name("MinTemp")
@@ -5302,7 +5324,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_5_ID)
+                    .id(VIEW_COLUMN_3_2_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(1)
                     .name("Rainfall")
@@ -5313,7 +5335,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_3_ID)
+                    .id(VIEW_COLUMN_3_3_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(2)
                     .name("Location")
@@ -5323,7 +5345,7 @@ public abstract class BaseTest {
                     .isNullAllowed(true)
                     .build(),
             ViewColumnDto.builder()
-                    .id(COLUMN_1_2_ID)
+                    .id(VIEW_COLUMN_3_4_ID)
                     .databaseId(DATABASE_1_ID)
                     .ordinalPosition(3)
                     .name("Date")
@@ -5338,7 +5360,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_3_PUBLIC)
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
             .columns(null)  /* VIEW_3_COLUMNS */
@@ -5366,7 +5387,7 @@ public abstract class BaseTest {
 
     public static final List<ViewColumn> VIEW_3_COLUMNS = List.of(
             ViewColumn.builder()
-                    .id(COLUMN_1_4_ID)
+                    .id(VIEW_COLUMN_3_1_ID)
                     .ordinalPosition(0)
                     .name("MinTemp")
                     .internalName("mintemp")
@@ -5377,7 +5398,7 @@ public abstract class BaseTest {
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_5_ID)
+                    .id(VIEW_COLUMN_3_2_ID)
                     .ordinalPosition(1)
                     .name("Rainfall")
                     .internalName("rainfall")
@@ -5388,7 +5409,7 @@ public abstract class BaseTest {
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_3_ID)
+                    .id(VIEW_COLUMN_3_3_ID)
                     .ordinalPosition(2)
                     .name("Location")
                     .internalName("location")
@@ -5398,7 +5419,7 @@ public abstract class BaseTest {
                     .view(VIEW_3)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_2_ID)
+                    .id(VIEW_COLUMN_3_4_ID)
                     .ordinalPosition(3)
                     .name("Date")
                     .internalName("date")
@@ -5605,7 +5626,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
             .internalName(VIEW_4_INTERNAL_NAME)
-            .vdbid(DATABASE_2_ID)
             .isPublic(VIEW_4_PUBLIC)
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
@@ -5811,7 +5831,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
             .internalName(VIEW_5_INTERNAL_NAME)
-            .vdbid(DATABASE_3_ID)
             .isPublic(VIEW_5_PUBLIC)
             .isSchemaPublic(VIEW_5_SCHEMA_PUBLIC)
             .query(VIEW_5_QUERY)
