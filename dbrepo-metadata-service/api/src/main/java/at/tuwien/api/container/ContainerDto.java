@@ -52,7 +52,6 @@ public class ContainerDto extends CacheableDto {
     @NotNull
     private ImageDto image;
 
-    @NotNull
     @Schema(example = "50")
     private Long quota;
 

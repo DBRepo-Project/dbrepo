@@ -115,7 +115,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 
@@ -131,7 +132,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 
@@ -148,7 +150,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 
@@ -178,7 +181,8 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
                 .andDo(print())
                 .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
                 .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password"))
+                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
+                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 

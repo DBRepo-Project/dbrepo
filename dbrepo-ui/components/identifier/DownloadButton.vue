@@ -11,7 +11,7 @@
 export default {
   props: {
     pid: {
-      type: Number,
+      type: String,
       default () {
         return null
       }

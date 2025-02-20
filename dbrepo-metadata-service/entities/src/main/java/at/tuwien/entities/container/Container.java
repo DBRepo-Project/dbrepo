@@ -14,8 +14,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Data
 @Entity
 @Builder
@@ -28,6 +26,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Container {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;
@@ -50,8 +49,8 @@ public class Container {
     @Column
     private Integer uiPort;
 
-    @Column(nullable = false, columnDefinition = "INT DEFAULT 50")
-    private Integer quota = 50;
+    @Column
+    private Integer quota;
 
     @Column
     private String uiAdditionalFlags;

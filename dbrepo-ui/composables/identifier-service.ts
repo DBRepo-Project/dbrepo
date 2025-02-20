@@ -2,7 +2,7 @@ import type {AxiosError, AxiosRequestConfig} from 'axios'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useIdentifierService = (): any => {
-  async function findOne(id: number, accept: string): Promise<IdentifierDto> {
+  async function findOne(id: string, accept: string): Promise<IdentifierDto> {
     const axios = useAxiosInstance()
     console.debug('find identifier with id', id)
     const config: AxiosRequestConfig = {
@@ -55,7 +55,7 @@ export const useIdentifierService = (): any => {
     })
   }
 
-  async function remove(id: number): Promise<void> {
+  async function remove(id: string): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete identifier', id)
     return new Promise<void>((resolve, reject) => {
@@ -71,7 +71,7 @@ export const useIdentifierService = (): any => {
     })
   }
 
-  async function publish(id: number): Promise<IdentifierDto> {
+  async function publish(id: string): Promise<IdentifierDto> {
     const axios = useAxiosInstance()
     console.debug('publish identifier', id)
     return new Promise<IdentifierDto>((resolve, reject) => {

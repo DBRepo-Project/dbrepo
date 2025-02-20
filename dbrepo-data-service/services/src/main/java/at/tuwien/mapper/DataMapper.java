@@ -17,7 +17,6 @@ import at.tuwien.api.database.table.constraints.foreign.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.primary.PrimaryKeyDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.TableNotFoundException;
 import org.apache.hadoop.shaded.com.google.common.hash.Hashing;
 import org.apache.hadoop.shaded.org.apache.commons.io.FileUtils;
@@ -171,7 +170,7 @@ public interface DataMapper {
         return table;
     }
 
-    default ViewDto resultSetToTable(ResultSet resultSet, ViewDto view, QueryConfig queryConfig) throws SQLException {
+    default ViewDto resultSetToTable(ResultSet resultSet, ViewDto view) throws SQLException {
         final ViewColumnDto column = ViewColumnDto.builder()
                 .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
                 .isNullAllowed(resultSet.getString(3).equals("YES"))
@@ -191,7 +190,6 @@ public interface DataMapper {
         }
         view.getColumns()
                 .add(column);
-        log.trace("parsed view column: {}.{}", view.getInternalName(), column.getInternalName());
         return view;
     }
 

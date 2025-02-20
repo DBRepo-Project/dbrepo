@@ -490,7 +490,8 @@ public class TableEndpoint extends AbstractEndpoint {
         if (isSystem(principal)) {
             headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
             headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+            headers.set("X-Jdbc-Method", table.getDatabase().getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
         } else {
             removeInternalData(dto.getDatabase().getContainer());
         }

@@ -145,12 +145,12 @@ export default {
       if (!this.view) {
         return []
       }
-      return this.view.identifiers.filter(s => s.view_id === Number(this.$route.params.view_id))
+      return this.view.identifiers.filter(s => s.view_id === this.$route.params.view_id)
     },
     identifier () {
       /* mount pid */
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.identifiers.filter(i => i.id === this.pid)
         if (filter.length > 0) {
           const identifier = filter[0]
           console.debug('identifier set according to route pid', identifier)

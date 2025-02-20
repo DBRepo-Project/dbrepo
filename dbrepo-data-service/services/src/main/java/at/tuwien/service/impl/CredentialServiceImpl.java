@@ -23,22 +23,21 @@ public class CredentialServiceImpl implements CredentialService {
     private final MetadataServiceGateway gateway;
     private final Cache<UUID, UserDto> userCache;
     private final Cache<UUID, ViewDto> viewCache;
-    private final Cache<UUID, DatabaseAccessDto> accessCache;
     private final Cache<UUID, TableDto> tableCache;
     private final Cache<UUID, DatabaseDto> databaseCache;
     private final Cache<UUID, ContainerDto> containerCache;
+    private final Cache<UUID, DatabaseAccessDto> accessCache;
 
     @Autowired
     public CredentialServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
-                                 Cache<UUID, ViewDto> viewCache, Cache<UUID, DatabaseAccessDto> accessCache,
-                                 Cache<UUID, TableDto> tableCache,
-                                 Cache<UUID, DatabaseDto> databaseCache,
+                                 Cache<UUID, ViewDto> viewCache, Cache<UUID, TableDto> tableCache,
+                                 Cache<UUID, DatabaseAccessDto> accessCache, Cache<UUID, DatabaseDto> databaseCache,
                                  Cache<UUID, ContainerDto> containerCache) {
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
-        this.accessCache = accessCache;
         this.tableCache = tableCache;
+        this.accessCache = accessCache;
         this.databaseCache = databaseCache;
         this.containerCache = containerCache;
     }

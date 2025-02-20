@@ -147,8 +147,8 @@ export default {
       default: () => null
     },
     tableId: {
-      type: Number,
-      default: () => -1
+      type: String,
+      default: () => null
     },
     mode: {
       type: String,

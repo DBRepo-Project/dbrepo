@@ -1,7 +1,0 @@
-Name                           Stmts   Miss  Cover
---------------------------------------------------
-app.py                           210     29    86%
-clients/keycloak_client.py        36      9    75%
-clients/opensearch_client.py     179     51    72%
---------------------------------------------------
-TOTAL                            425     89    79%

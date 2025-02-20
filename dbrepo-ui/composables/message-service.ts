@@ -17,7 +17,7 @@ export const useMessageService = (): any => {
     })
   }
 
-  async function findOne(id: number): Promise<BannerMessageDto> {
+  async function findOne(id: string): Promise<BannerMessageDto> {
     const axios = useAxiosInstance()
     console.debug('find message with id', id)
     return new Promise<BannerMessageDto>((resolve, reject) => {
@@ -49,7 +49,7 @@ export const useMessageService = (): any => {
     })
   }
 
-  async function update(id: number, data: BannerMessageUpdateDto): Promise<BannerMessageDto> {
+  async function update(id: string, data: BannerMessageUpdateDto): Promise<BannerMessageDto> {
     const axios = useAxiosInstance()
     console.debug('update message with id', id)
     return new Promise<BannerMessageDto>((resolve, reject) => {
@@ -65,7 +65,7 @@ export const useMessageService = (): any => {
     })
   }
 
-  async function remove(id: number): Promise<void> {
+  async function remove(id: string): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete message with id', id)
     return new Promise<void>((resolve, reject) => {

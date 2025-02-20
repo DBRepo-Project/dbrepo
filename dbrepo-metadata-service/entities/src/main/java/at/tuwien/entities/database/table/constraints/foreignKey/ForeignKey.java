@@ -21,6 +21,7 @@ import java.util.UUID;
 public class ForeignKey {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "fkid", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;

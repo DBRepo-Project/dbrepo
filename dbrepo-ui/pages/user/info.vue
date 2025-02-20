@@ -14,7 +14,8 @@
             variant="flat">
             <v-card-text>
               <v-row dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="model.id"
                     disabled
@@ -25,7 +26,8 @@
               <v-row
                 v-if="cacheUser"
                 dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="cacheUser.preferred_username"
                     disabled
@@ -56,7 +58,8 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="model.orcid"
                     :disabled="!canModifyInformation"
@@ -71,7 +74,8 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="model.firstname"
                     :disabled="!canModifyInformation || identityProvider"
@@ -83,7 +87,8 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="model.lastname"
                     :disabled="!canModifyInformation || identityProvider"
@@ -95,7 +100,8 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col md="6">
+                <v-col
+                  lg="6">
                   <v-text-field
                     v-model="model.affiliation"
                     :disabled="!canModifyInformation"

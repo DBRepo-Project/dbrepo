@@ -190,7 +190,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Type"));
         assertEquals(List.of(DATABASE_3_INTERNALNAME), headers.get("X-Database"));
         assertEquals(List.of(VIEW_5_INTERNAL_NAME), headers.get("X-View"));
-        assertEquals(List.of("X-Username X-Password X-Host X-Port X-Type X-Database X-View"), headers.get("Access-Control-Expose-Headers"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
+        assertEquals(List.of("X-Username X-Password X-Host X-Port X-Type X-Database X-View X-Jdbc-Method"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test

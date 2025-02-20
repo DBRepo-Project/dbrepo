@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
 
     @Value("${dbrepo.credentialCacheTimeout}")
-    private Long credentialCacheTimeout;
+    private Integer credentialCacheTimeout;
 
     @Bean
     public Cache<UUID, UserDto> userCache() {
@@ -27,28 +27,28 @@ public class CacheConfig {
     }
 
     @Bean
-    public Cache<Long, ViewDto> viewCache() {
-        return new ExpiryCache<Long, ViewDto>().build();
+    public Cache<UUID, ViewDto> viewCache() {
+        return new ExpiryCache<UUID, ViewDto>().build();
     }
 
     @Bean
-    public Cache<Long, DatabaseAccessDto> accessCache() {
-        return new ExpiryCache<Long, DatabaseAccessDto>().build();
+    public Cache<UUID, DatabaseAccessDto> accessCache() {
+        return new ExpiryCache<UUID, DatabaseAccessDto>().build();
     }
 
     @Bean
-    public Cache<Long, TableDto> tableCache() {
-        return new ExpiryCache<Long, TableDto>().build();
+    public Cache<UUID, TableDto> tableCache() {
+        return new ExpiryCache<UUID, TableDto>().build();
     }
 
     @Bean
-    public Cache<Long, DatabaseDto> databaseCache() {
-        return new ExpiryCache<Long, DatabaseDto>().build();
+    public Cache<UUID, DatabaseDto> databaseCache() {
+        return new ExpiryCache<UUID, DatabaseDto>().build();
     }
 
     @Bean
-    public Cache<Long, ContainerDto> containerCache() {
-        return new ExpiryCache<Long, ContainerDto>().build();
+    public Cache<UUID, ContainerDto> containerCache() {
+        return new ExpiryCache<UUID, ContainerDto>().build();
     }
 
     class ExpiryCache<K, T> {

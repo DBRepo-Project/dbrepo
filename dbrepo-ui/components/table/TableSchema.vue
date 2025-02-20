@@ -6,7 +6,8 @@
       :disabled="disabled">
       <v-row
         v-if="showPrimaryKeyWarning">
-        <v-col md="8">
+        <v-col
+          lg="8">
           <v-alert
             border="start"
             color="warning">
@@ -268,7 +269,7 @@ export default {
       }
       this.loadingColumnTypes = true
       const imageService = useImageService()
-      imageService.findById(this.database.container.id)
+      imageService.findById(this.database.container.image.id)
         .then((image) => {
           const types = image.data_types
           if (this.columns.filter(c => c.type === 'serial').length > 0) {

@@ -201,7 +201,8 @@ public class ViewEndpoint extends AbstractEndpoint {
             headers.set("X-Type", database.getContainer().getImage().getJdbcMethod());
             headers.set("X-Database", database.getInternalName());
             headers.set("X-View", view.getInternalName());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
+            headers.set("X-Jdbc-Method", view.getDatabase().getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View X-Jdbc-Method");
         }
         final ViewDto dto = metadataMapper.viewToViewDto(view);
         if (!isSystem(principal)) {

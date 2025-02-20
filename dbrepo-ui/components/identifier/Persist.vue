@@ -867,10 +867,10 @@ export default {
       error: false, // XXX: `error` is never changed
       licenses: [],
       identifier: {
-        database_id: parseInt(this.$route.params.database_id),
-        query_id: parseInt(this.$route.params.subset_id),
-        view_id: parseInt(this.$route.params.view_id),
-        table_id: parseInt(this.$route.params.table_id),
+        database_id: this.$route.params.database_id,
+        query_id: this.$route.params.subset_id,
+        view_id: this.$route.params.view_id,
+        table_id: this.$route.params.table_id,
         titles: [],
         descriptions: [],
         publisher: this.$config.public.pid.default.publisher,

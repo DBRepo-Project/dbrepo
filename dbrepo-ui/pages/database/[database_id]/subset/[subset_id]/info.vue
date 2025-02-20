@@ -94,7 +94,7 @@ if (data.value && data.value.length > 0) {
   useServerHead(identifierService.identifiersToServerHead(data.value))
   useServerSeoMeta(identifierService.identifiersToServerSeoMeta(data.value))
 }
-const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === Number(pid)).length > 0 ? data.value.filter(i => i.id === Number(pid))[0] : data.value[0]) : null)
+const identifier = ref(data.value && data.value.length > 0 ? (pid && data.value.filter(i => i.id === pid).length > 0 ? data.value.filter(i => i.id === pid)[0] : data.value[0]) : null)
 
 const cacheStore = useCacheStore()
 cacheStore.setIdentifier(identifier)
@@ -162,11 +162,14 @@ export default {
     subset () {
       return this.cacheStore.getSubset
     },
+    access () {
+      return this.cacheStore.getAccess
+    },
     identifiers () {
       if (!this.database || !this.database.subsets) {
         return []
       }
-      return this.database.subsets.filter(i => i.query_id === Number(this.$route.params.subset_id))
+      return this.database.subsets.filter(i => i.query_id === this.$route.params.subset_id)
     },
     canViewInfo () {
       if (!this.database) {

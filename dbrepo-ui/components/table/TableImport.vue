@@ -14,8 +14,10 @@
         :disabled="disabled"
         @submit.prevent="submit">
         <v-container>
-          <v-row dense>
-            <v-col md="8">
+          <v-row
+            dense>
+            <v-col
+              lg="8">
               <v-select
                 v-model="tableImport.separator"
                 :items="separators"
@@ -30,8 +32,10 @@
                 :label="$t('pages.table.subpages.import.separator.label')"/>
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col md="8">
+          <v-row
+            dense>
+            <v-col
+              lg="8">
               <v-select
                 v-model="tableImport.header"
                 :items="headers"
@@ -45,8 +49,10 @@
                 :label="$t('pages.table.subpages.import.skip.label')" />
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col md="8">
+          <v-row
+            dense>
+            <v-col
+              lg="8">
               <v-select
                 v-model="tableImport.quote"
                 :items="quotes"
@@ -59,8 +65,10 @@
                 :label="$t('pages.table.subpages.import.quote.label')"/>
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col md="8">
+          <v-row
+            dense>
+            <v-col
+              lg="8">
               <v-select
                 v-model="tableImport.line_termination"
                 :items="lineTerminationItems"
@@ -117,7 +125,7 @@
               v-if="step > 1 && suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
               dense>
               <v-col
-                md="8">
+                lg="8">
                 <v-alert
                   border="start"
                   color="warning">
@@ -137,7 +145,7 @@
               v-if="step > 1 && suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
               dense>
               <v-col
-                md="8">
+                lg="8">
                 <v-alert
                   border="start"
                   color="warning">
@@ -153,7 +161,7 @@
               v-if="!hasCompatibleSchema"
               dense>
               <v-col
-                md="8">
+                lg="8">
                 <v-alert
                   border="start"
                   color="warning"
@@ -236,7 +244,7 @@
         <v-row
           dense>
           <v-col
-            md="8">
+            lg="8">
             <v-alert
               border="start"
               color="success">

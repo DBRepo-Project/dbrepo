@@ -25,6 +25,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class BannerMessage {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(nullable = false, updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID id;

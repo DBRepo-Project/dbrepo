@@ -1,9 +1,9 @@
-FROM docker.io/bitnami/grafana:10.4.9-debian-12-r0 AS runtime
+FROM docker.io/bitnami/grafana:11.5.1 AS runtime
 LABEL org.opencontainers.image.authors="martin.weise@tuwien.ac.at"
 
 WORKDIR /app
 
-COPY --chown=grafana:grafana  ./dashboards /app/dashboards
-COPY --chown=grafana:grafana  ./provisioning /etc/grafana/provisioning
-COPY --chown=grafana:grafana  ./grafana.ini /etc/grafana/grafana.ini
-COPY --chown=grafana:grafana  ./ldap.toml /etc/grafana/ldap.toml
+COPY --chown=grafana:grafana ./dashboards /app/dashboards
+COPY --chown=grafana:grafana ./provisioning /etc/grafana/provisioning
+COPY --chown=grafana:grafana ./grafana.ini /etc/grafana/grafana.ini
+COPY --chown=grafana:grafana ./ldap.toml /etc/grafana/ldap.toml

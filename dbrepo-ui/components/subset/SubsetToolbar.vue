@@ -110,7 +110,7 @@ export default {
     identifier () {
       /* mount pid */
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.identifiers.filter(i => i.id === this.pid)
         if (filter.length > 0) {
           return filter[0]
         }

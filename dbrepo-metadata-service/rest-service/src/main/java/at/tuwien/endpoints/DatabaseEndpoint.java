@@ -161,7 +161,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             ContainerQuotaException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final Container container = containerService.find(data.getCid());
-        if (container.getDatabases().size() + 1 > container.getQuota()) {
+        if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
@@ -548,7 +548,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         if (isSystem(principal)) {
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+            headers.set("X-Jdbc-Method", database.getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
         } else {
             removeInternalData(dto.getContainer());
         }

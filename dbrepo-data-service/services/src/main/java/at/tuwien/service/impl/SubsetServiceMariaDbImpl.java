@@ -174,7 +174,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             }
             callableStatement.setString(2, query);
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
-            callableStatement.registerOutParameter(4, Types.BIGINT);
+            callableStatement.registerOutParameter(4, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             queryId = UUID.fromString(callableStatement.getString(4));

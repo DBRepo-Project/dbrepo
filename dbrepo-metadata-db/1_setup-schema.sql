@@ -2,8 +2,8 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS `mdb_users`
 (
-    id               UUID         NOT NULL DEFAULT uuid(),
-    keycloak_id      UUID         NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    keycloak_id      VARCHAR(36)  NOT NULL,
     username         VARCHAR(255) NOT NULL,
     firstname        VARCHAR(255),
     lastname         VARCHAR(255),
@@ -13,14 +13,14 @@ CREATE TABLE IF NOT EXISTS `mdb_users`
     mariadb_password VARCHAR(255) NOT NULL,
     theme            VARCHAR(255) NOT NULL DEFAULT ('light'),
     language         VARCHAR(3)   NOT NULL DEFAULT ('en'),
-    PRIMARY KEY (id),
-    UNIQUE (keycloak_id),
-    UNIQUE (username)
+    PRIMARY KEY (`id`),
+    UNIQUE (`keycloak_id`),
+    UNIQUE (`username`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_images`
 (
-    id            UUID         NOT NULL DEFAULT UUID(),
+    id            VARCHAR(36)  NOT NULL DEFAULT UUID(),
     registry      VARCHAR(255) NOT NULL DEFAULT 'docker.io',
     name          VARCHAR(255) NOT NULL,
     version       VARCHAR(255) NOT NULL,
@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS `mdb_images`
     is_DEFAULT    BOOLEAN      NOT NULL DEFAULT FALSE,
     created       TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified TIMESTAMP,
-    PRIMARY KEY (id),
-    UNIQUE (name, version),
-    UNIQUE (is_DEFAULT)
+    PRIMARY KEY (`id`),
+    UNIQUE (`name`, `version`),
+    UNIQUE (`is_DEFAULT`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
-    id                  UUID         NOT NULL DEFAULT UUID(),
+    id                  VARCHAR(36)  NOT NULL DEFAULT UUID(),
     internal_name       VARCHAR(255) NOT NULL,
     name                VARCHAR(255) NOT NULL,
     host                VARCHAR(255) NOT NULL,
@@ -46,16 +46,14 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     ui_host             VARCHAR(255) NOT NULL DEFAULT host,
     ui_port             INT          NOT NULL DEFAULT port,
     ui_additional_flags TEXT,
-    sidecar_host        VARCHAR(255),
-    sidecar_port        INT,
-    image_id            UUID         NOT NULL DEFAULT UUID(),
+    image_id            VARCHAR(36)  NOT NULL,
     created             TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified       TIMESTAMP,
     privileged_username VARCHAR(255) NOT NULL,
     privileged_password VARCHAR(255) NOT NULL,
-    quota               INT          NOT NULL DEFAULT 50,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES mdb_images (id)
+    quota               INT,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`image_id`) REFERENCES mdb_images (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_licenses`
@@ -63,14 +61,14 @@ CREATE TABLE IF NOT EXISTS `mdb_licenses`
     identifier  VARCHAR(255) NOT NULL,
     uri         TEXT         NOT NULL,
     description TEXT         NOT NULL,
-    PRIMARY KEY (identifier),
+    PRIMARY KEY (`identifier`),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
-    id               UUID         NOT NULL DEFAULT UUID(),
-    cid              UUID         NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    cid              VARCHAR(36)  NOT NULL,
     name             VARCHAR(255) NOT NULL,
     internal_name    VARCHAR(255) NOT NULL,
     exchange_name    VARCHAR(255) NOT NULL,
@@ -79,20 +77,20 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
     image            LONGBLOB,
-    owned_by         UUID,
-    contact_person   UUID,
+    owned_by         VARCHAR(36)  NOT NULL,
+    contact_person   VARCHAR(36)  NOT NULL,
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
-    PRIMARY KEY (id),
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
-    FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`cid`) REFERENCES mdb_containers (`id`),
+    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`),
+    FOREIGN KEY (`contact_person`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
-    id               UUID         NOT NULL DEFAULT UUID(),
-    tDBID            UUID         NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    tDBID            VARCHAR(36)  NOT NULL,
     tName            VARCHAR(64)  NOT NULL,
     internal_name    VARCHAR(64)  NOT NULL,
     queue_name       VARCHAR(255) NOT NULL,
@@ -106,18 +104,18 @@ CREATE TABLE IF NOT EXISTS `mdb_tables`
     versioned        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_public        BOOLEAN      NOT NULL DEFAULT TRUE,
     is_schema_public BOOLEAN      NOT NULL DEFAULT TRUE,
-    owned_by         UUID         NOT NULL DEFAULT UUID(),
+    owned_by         VARCHAR(36)  NOT NULL DEFAULT UUID(),
     last_modified    TIMESTAMP,
-    PRIMARY KEY (ID),
-    UNIQUE (tDBID, internal_name),
-    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    PRIMARY KEY (`ID`),
+    UNIQUE (`tDBID`, `internal_name`),
+    FOREIGN KEY (`tDBID`) REFERENCES mdb_databases (`id`),
+    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
-    id               UUID            NOT NULL DEFAULT UUID(),
-    tID              UUID            NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36)     NOT NULL DEFAULT UUID(),
+    tID              VARCHAR(36)     NOT NULL,
     cName            VARCHAR(64),
     internal_name    VARCHAR(64)     NOT NULL,
     Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','SERIAL','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
@@ -135,140 +133,140 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     std_dev          Numeric         NULL,
     created          TIMESTAMP       NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
-    FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
-    PRIMARY KEY (ID),
-    UNIQUE (tID, internal_name)
+    FOREIGN KEY (`tID`) REFERENCES mdb_tables (`ID`) ON DELETE CASCADE,
+    PRIMARY KEY (`ID`),
+    UNIQUE (`tID`, `internal_name`)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_columns_ENUMs`
+CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
-    id        UUID         NOT NULL DEFAULT UUID(),
-    column_id UUID         NOT NULL DEFAULT UUID(),
+    id        VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    column_id VARCHAR(36)  NOT NULL,
     value     VARCHAR(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE,
+    PRIMARY KEY (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
-    id        UUID         NOT NULL DEFAULT UUID(),
-    column_id UUID         NOT NULL DEFAULT UUID(),
+    id        VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    column_id VARCHAR(36)  NOT NULL,
     value     VARCHAR(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE,
+    PRIMARY KEY (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
-    fkid      UUID         NOT NULL DEFAULT UUID(),
-    tid       UUID         NOT NULL DEFAULT UUID(),
-    rtid      UUID         NOT NULL DEFAULT UUID(),
+    fkid      VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    tid       VARCHAR(36)  NOT NULL,
+    rtid      VARCHAR(36)  NOT NULL,
     name      VARCHAR(255) NOT NULL,
     on_update VARCHAR(50)  NULL,
     on_delete VARCHAR(50)  NULL,
     position  INT          NULL,
-    PRIMARY KEY (fkid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
+    PRIMARY KEY (`fkid`),
+    FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`rtid`) REFERENCES mdb_tables (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_primary_key`
 (
-    pkid UUID NOT NULL DEFAULT UUID(),
-    tID  UUID NOT NULL DEFAULT UUID(),
-    cid  UUID NOT NULL DEFAULT UUID(),
-    PRIMARY KEY (pkid),
-    FOREIGN KEY (tID) REFERENCES mdb_tables (id) ON DELETE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    pkid VARCHAR(36) NOT NULL DEFAULT UUID(),
+    tID  VARCHAR(36) NOT NULL,
+    cid  VARCHAR(36) NOT NULL,
+    PRIMARY KEY (`pkid`),
+    FOREIGN KEY (`tID`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
-    id   UUID NOT NULL DEFAULT UUID(),
-    fkid UUID NOT NULL DEFAULT UUID(),
-    cid  UUID NOT NULL DEFAULT UUID(),
-    rcid UUID NOT NULL DEFAULT UUID(),
-    PRIMARY KEY (id),
+    id   VARCHAR(36) NOT NULL DEFAULT UUID(),
+    fkid VARCHAR(36) NOT NULL,
+    cid  VARCHAR(36) NOT NULL,
+    rcid VARCHAR(36) NOT NULL,
+    PRIMARY KEY (`id`),
     UNIQUE (fkid, cid, rcid),
-    FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id),
-    FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
+    FOREIGN KEY (`fkid`) REFERENCES mdb_constraints_foreign_key (`fkid`) ON UPDATE CASCADE,
+    FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`),
+    FOREIGN KEY (`rcid`) REFERENCES mdb_columns (`id`)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `mdb_constraints_UNIQUE`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
 (
-    uid      UUID         NOT NULL DEFAULT UUID(),
+    uid      VARCHAR(36)  NOT NULL DEFAULT UUID(),
     name     VARCHAR(255) NOT NULL,
-    tid      UUID         NOT NULL DEFAULT UUID(),
+    tid      VARCHAR(36)  NOT NULL,
     position INT          NULL,
-    PRIMARY KEY (uid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    PRIMARY KEY (`uid`),
+    FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS `mdb_constraints_UNIQUE_columns`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (
-    id  UUID NOT NULL DEFAULT UUID(),
-    uid UUID NOT NULL DEFAULT UUID(),
-    cid UUID NOT NULL DEFAULT UUID(),
-    PRIMARY KEY (id),
-    FOREIGN KEY (uid) REFERENCES mdb_constraints_UNIQUE (uid),
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
+    id  VARCHAR(36) NOT NULL DEFAULT UUID(),
+    uid VARCHAR(36) NOT NULL,
+    cid VARCHAR(36) NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`uid`) REFERENCES mdb_constraints_unique (`uid`),
+    FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
-    id     UUID         NOT NULL DEFAULT UUID(),
-    tid    UUID         NOT NULL DEFAULT UUID(),
+    id     VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    tid    VARCHAR(36)  NOT NULL,
     checks VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          UUID         NOT NULL DEFAULT UUID(),
+    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
     uri         TEXT         NOT NULL,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
+    PRIMARY KEY (`id`),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          UUID         NOT NULL DEFAULT UUID(),
+    id          VARCHAR(36)  NOT NULL DEFAULT UUID(),
     uri         TEXT         NOT NULL,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
+    PRIMARY KEY (`id`),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
 (
-    id      UUID      NOT NULL DEFAULT UUID(),
-    cID     UUID      NOT NULL DEFAULT UUID(),
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
+    cID     VARCHAR(36) NOT NULL,
+    created TIMESTAMP   NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cid),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 (
-    id      UUID      NOT NULL DEFAULT UUID(),
-    cID     UUID      NOT NULL DEFAULT UUID(),
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    id      VARCHAR(36) NOT NULL DEFAULT UUID(),
+    cID     VARCHAR(36) NOT NULL,
+    created TIMESTAMP   NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cID),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
+    FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view`
 (
-    id               UUID         NOT NULL DEFAULT UUID(),
-    vdbid            UUID         NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    vdbid            VARCHAR(36)  NOT NULL,
     vName            VARCHAR(64)  NOT NULL,
     internal_name    VARCHAR(64)  NOT NULL,
     Query            TEXT         NOT NULL,
@@ -278,43 +276,43 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     InitialView      BOOLEAN      NOT NULL,
     created          TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_modified    TIMESTAMP,
-    owned_by         UUID         NOT NULL DEFAULT UUID(),
-    PRIMARY KEY (id),
-    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    owned_by         VARCHAR(36)  NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`vdbid`) REFERENCES mdb_databases (`id`),
+    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_messages`
 (
-    id            UUID                              NOT NULL DEFAULT UUID(),
+    id            VARCHAR(36)                       NOT NULL DEFAULT UUID(),
     type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL DEFAULT 'INFO',
     message       TEXT                              NOT NULL,
     link          TEXT                              NULL,
     link_TEXT     VARCHAR(255)                      NULL,
     display_start TIMESTAMP                         NULL,
     display_end   TIMESTAMP                         NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 (
-    id              UUID       NOT NULL DEFAULT UUID(),
-    prefix          VARCHAR(8) NOT NULL,
-    uri             TEXT       NOT NULL,
+    id              VARCHAR(36) NOT NULL DEFAULT UUID(),
+    prefix          VARCHAR(8)  NOT NULL,
+    uri             TEXT        NOT NULL,
     uri_pattern     TEXT,
-    sparql_endpoint TEXT       NULL,
-    rdf_path        TEXT       NULL,
+    sparql_endpoint TEXT        NULL,
+    rdf_path        TEXT        NULL,
     last_modified   TIMESTAMP,
-    created         TIMESTAMP  NOT NULL DEFAULT NOW(),
-    UNIQUE (prefix),
+    created         TIMESTAMP   NOT NULL DEFAULT NOW(),
+    UNIQUE (`prefix`),
     UNIQUE (uri(200)),
-    PRIMARY KEY (id)
+    PRIMARY KEY (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
-    id               UUID        NOT NULL DEFAULT UUID(),
-    view_id          UUID        NOT NULL DEFAULT UUID(),
+    id               VARCHAR(36) NOT NULL DEFAULT UUID(),
+    view_id          VARCHAR(36) NOT NULL,
     name             VARCHAR(64),
     internal_name    VARCHAR(64) NOT NULL,
     column_type      ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
@@ -322,18 +320,18 @@ CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     size             BIGINT UNSIGNED,
     d                BIGINT UNSIGNED,
     is_null_allowed  BOOLEAN     NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id),
-    FOREIGN KEY (view_id) REFERENCES mdb_view (id) ON DELETE CASCADE,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`view_id`) REFERENCES mdb_view (`id`) ON DELETE CASCADE,
     UNIQUE (view_id, internal_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
-    id                UUID                                         NOT NULL DEFAULT UUID(),
-    dbid              UUID                                         NOT NULL DEFAULT UUID(),
-    qid               UUID,
-    vid               UUID,
-    tid               UUID,
+    id                VARCHAR(36)                                  NOT NULL DEFAULT UUID(),
+    dbid              VARCHAR(36)                                  NOT NULL,
+    qid               VARCHAR(36)                                  NOT NULL,
+    vid               VARCHAR(36)                                  NOT NULL,
+    tid               VARCHAR(36)                                  NOT NULL,
     publisher         VARCHAR(255)                                 NOT NULL,
     language          VARCHAR(2),
     publication_year  INT                                          NOT NULL,
@@ -349,37 +347,37 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     result_number     BIGINT,
     doi               VARCHAR(255),
     created           TIMESTAMP                                    NOT NULL DEFAULT NOW(),
-    owned_by          UUID                                         NOT NULL DEFAULT UUID(),
+    owned_by          VARCHAR(36)                                  NOT NULL,
     last_modified     TIMESTAMP,
-    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
+    PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (`dbid`) REFERENCES mdb_databases (`id`),
+    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
-    pid        UUID         NOT NULL DEFAULT UUID(),
+    pid        VARCHAR(36)  NOT NULL DEFAULT UUID(),
     license_id VARCHAR(255) NOT NULL,
     PRIMARY KEY (pid, license_id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`),
+    FOREIGN KEY (`license_id`) REFERENCES mdb_licenses (`identifier`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
-    id         UUID NOT NULL DEFAULT UUID(),
-    pid        UUID NOT NULL DEFAULT UUID(),
-    title      TEXT NOT NULL,
+    id         VARCHAR(36) NOT NULL DEFAULT UUID(),
+    pid        VARCHAR(36) NOT NULL,
+    title      TEXT        NOT NULL,
     title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
     language   VARCHAR(2),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
-    id                     UUID         NOT NULL DEFAULT UUID(),
-    pid                    UUID         NOT NULL DEFAULT UUID(),
+    id                     VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    pid                    VARCHAR(36)  NOT NULL,
     funder_name            VARCHAR(255) NOT NULL,
     funder_identifier      TEXT,
     funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
@@ -387,37 +385,37 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
     award_number           VARCHAR(255),
     award_title            TEXT,
     language               VARCHAR(255),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
-    id               UUID NOT NULL DEFAULT UUID(),
-    pid              UUID NOT NULL DEFAULT UUID(),
-    description      TEXT NOT NULL,
+    id               VARCHAR(36) NOT NULL DEFAULT UUID(),
+    pid              VARCHAR(36) NOT NULL,
+    description      TEXT        NOT NULL,
     description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
     language         VARCHAR(2),
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_related`
 (
-    id       UUID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 NOT NULL DEFAULT UUID(),
-    pid      UUID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 NOT NULL DEFAULT UUID(),
+    id       VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
+    pid      VARCHAR(36)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          NOT NULL DEFAULT UUID(),
     value    VARCHAR(255)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         NOT NULL,
     type     ENUM ('DOI','URL','URN','ARK','ARXIV','BIBCODE','EAN13','EISSN','HANDLE','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','W3ID')                                                                                                                                                                                                                                                                                                                                                                                                                             NOT NULL,
     relation ENUM ('IS_CITED_BY','CITES','IS_SUPPLEMENT_TO','IS_SUPPLEMENTED_BY','IS_CONTINUED_BY','CONTINUES','IS_DESCRIBED_BY','DESCRIBES','HAS_METADATA','IS_METADATA_FOR','HAS_VERSION','IS_VERSION_OF','IS_NEW_VERSION_OF','IS_PREVIOUS_VERSION_OF','IS_PART_OF','HAS_PART','IS_PUBLISHED_IN','IS_REFERENCED_BY','REFERENCES','IS_DOCUMENTED_BY','DOCUMENTS','IS_COMPILED_BY','COMPILES','IS_VARIANT_FORM_OF','IS_ORIGINAL_FORM_OF','IS_IDENTICAL_TO','IS_REVIEWED_BY','REVIEWS','IS_DERIVED_FROM','IS_SOURCE_OF','IS_REQUIRED_BY','REQUIRES','IS_OBSOLETED_BY','OBSOLETES') NOT NULL,
-    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`),
     UNIQUE (pid, value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
-    id                                UUID         NOT NULL               DEFAULT UUID(),
-    pid                               UUID         NOT NULL               DEFAULT UUID(),
+    id                                VARCHAR(36)  NOT NULL               DEFAULT UUID(),
+    pid                               VARCHAR(36)  NOT NULL,
     given_names                       TEXT,
     family_name                       TEXT,
     creator_name                      VARCHAR(255) NOT NULL,
@@ -429,34 +427,36 @@ CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
     affiliation_identifier            TEXT,
     affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
     affiliation_identifier_scheme_uri TEXT,
-    PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`pid`) REFERENCES mdb_identifiers (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_access`
 (
     aUserID  VARCHAR(255) NOT NULL,
-    aDBID    UUID REFERENCES mdb_databases (id),
+    aDBID    VARCHAR(36)  NOT NULL,
     attime   TIMESTAMP,
     download BOOLEAN,
     created  TIMESTAMP    NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aUserID, aDBID)
+    PRIMARY KEY (aUserID, aDBID),
+    FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
-    user_id     UUID                                    NOT NULL DEFAULT UUID(),
-    database_id UUID REFERENCES mdb_databases (id),
+    user_id     VARCHAR(36)                             NOT NULL,
+    database_id VARCHAR(36)                             NOT NULL,
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     TIMESTAMP                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, database_id),
-    FOREIGN KEY (user_id) REFERENCES mdb_users (id)
+    FOREIGN KEY (`database_id`) REFERENCES mdb_databases (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_types`
 (
-    id            UUID         NOT NULL DEFAULT UUID(),
-    image_id      UUID         NOT NULL DEFAULT UUID(),
+    id            VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    image_id      VARCHAR(36)  NOT NULL,
     display_name  VARCHAR(255) NOT NULL,
     value         VARCHAR(255) NOT NULL,
     size_min      INT UNSIGNED,
@@ -475,21 +475,21 @@ CREATE TABLE IF NOT EXISTS `mdb_image_types`
     is_generated  BOOLEAN      NOT NULL,
     is_quoted     BOOLEAN      NOT NULL,
     is_buildable  BOOLEAN      NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
-    UNIQUE (value)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`image_id`) REFERENCES `mdb_images` (`id`),
+    UNIQUE (`value`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_image_operators`
 (
-    id            UUID         NOT NULL DEFAULT UUID(),
-    image_id      UUID         NOT NULL DEFAULT UUID(),
+    id            VARCHAR(36)  NOT NULL DEFAULT UUID(),
+    image_id      VARCHAR(36)  NOT NULL,
     display_name  VARCHAR(255) NOT NULL,
     value         VARCHAR(255) NOT NULL,
     documentation TEXT         NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (image_id) REFERENCES `mdb_images` (`id`),
-    UNIQUE (value)
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`image_id`) REFERENCES `mdb_images` (`id`),
+    UNIQUE (image_id, value)
 ) WITH SYSTEM VERSIONING;
 
 COMMIT;

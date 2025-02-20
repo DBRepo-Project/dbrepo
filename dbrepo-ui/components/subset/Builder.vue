@@ -42,7 +42,8 @@
             v-if="isView"
             class="mt-1"
             dense>
-            <v-col lg="8">
+            <v-col
+              lg="8">
               <v-text-field
                 v-model="view.name"
                 :disabled="isExecuted"
@@ -63,7 +64,7 @@
             v-if="isView"
             dense>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="view.is_public"
                 :items="dataOptions"
@@ -78,7 +79,7 @@
                 :hint="$t('pages.database.resource.data.hint')" />
             </v-col>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="view.is_schema_public"
                 :items="schemaOptions"
@@ -99,7 +100,8 @@
             <v-window-item
               value="0">
               <v-row dense>
-                <v-col lg="4">
+                <v-col
+                  lg="4">
                   <v-select
                     v-model="table"
                     :disabled="isExecuted"
@@ -113,7 +115,8 @@
                     :hint="$t('pages.view.subpages.create.table.hint')"
                     :rules="[v => !!v || $t('validation.required')]" />
                 </v-col>
-                <v-col lg="4">
+                <v-col
+                  lg="4">
                   <v-select
                     v-model="select"
                     item-title="internal_name"
@@ -147,8 +150,10 @@
                   </v-select>
                 </v-col>
               </v-row>
-              <v-row v-if="select.length > 0">
-                <v-col lg="8">
+              <v-row
+                v-if="select.length > 0">
+                <v-col
+                  lg="8">
                   <v-btn
                     v-if="clauses.length === 0"
                     size="small"
@@ -160,7 +165,8 @@
                 </v-col>
               </v-row>
               <div class="mb-5">
-                <v-row v-if="clauses.length > 0">
+                <v-row
+                  v-if="clauses.length > 0">
                   <v-col
                     lg="8"
                     class="text-center">
@@ -170,7 +176,8 @@
                 <div v-for="(clause, idx) in clauses" :key="idx">
                   <v-row
                     v-if="clause.type === 'where'">
-                    <v-col lg="3">
+                    <v-col
+                      lg="3">
                       <v-select
                         v-model="clause.params[0]"
                         :disabled="clausesDisabled"
@@ -182,7 +189,8 @@
                         :hint="$t('pages.subset.subpages.create.filter.column.hint')"
                         :items="select" />
                     </v-col>
-                    <v-col lg="2">
+                    <v-col
+                      lg="2">
                       <v-select
                         v-model="clause.params[1]"
                         :disabled="clausesDisabled"
@@ -211,7 +219,8 @@
                         </template>
                       </v-select>
                     </v-col>
-                    <v-col lg="3">
+                    <v-col
+                      lg="3">
                       <v-text-field
                         v-model="clause.params[2]"
                         :disabled="clausesDisabled"
@@ -219,7 +228,8 @@
                         :label="$t('pages.subset.subpages.create.filter.value.label')"
                         :hint="$t('pages.subset.subpages.create.filter.value.hint')" />
                     </v-col>
-                    <v-col lg="1">
+                    <v-col
+                      lg="1">
                       <v-btn
                         :disabled="clausesDisabled"
                         class="mt-4"
@@ -469,6 +479,7 @@ export default {
   },
   mounted () {
     this.selectTable()
+    this.initViewVisibility()
   },
   methods: {
     fetchTableColumns (tableId) {
@@ -488,6 +499,13 @@ export default {
           toast.error(this.$t(code))
         })
     },
+    initViewVisibility () {
+      if (!this.database) {
+        return
+      }
+      this.view.is_public = this.database.is_public
+      this.view.is_schema_public = this.database.is_schema_public
+    },
     validViewName (name) {
       if (!name) {
         return false
@@ -499,7 +517,7 @@ export default {
       if (this.$route.query.tid === undefined) {
         return
       }
-      const tid = parseInt(this.$route.query.tid)
+      const tid = this.$route.query.tid
       const selection = this.tables.filter(t => t.id === tid)
       if (selection.length > 0) {
         this.table = selection[0]
@@ -509,9 +527,9 @@ export default {
         console.warn('Failed to find table with id', tid)
       }
     },
-    async execute () {
+    execute () {
       if (this.isView) {
-        await this.createView()
+        this.createView()
         return
       }
       if (this.timestamp === '') {
