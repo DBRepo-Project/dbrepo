@@ -5048,7 +5048,7 @@ public abstract class BaseTest {
 
     public static final List<ViewColumn> VIEW_1_COLUMNS = List.of(
             ViewColumn.builder()
-                    .id(COLUMN_2_1_ID)
+                    .id(VIEW_COLUMN_1_1_ID)
                     .ordinalPosition(0)
                     .name("location")
                     .internalName("location")
@@ -5058,7 +5058,7 @@ public abstract class BaseTest {
                     .view(VIEW_1)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_2_2_ID)
+                    .id(VIEW_COLUMN_1_2_ID)
                     .ordinalPosition(1)
                     .name("lat")
                     .internalName("lat")
@@ -5069,7 +5069,7 @@ public abstract class BaseTest {
                     .view(VIEW_1)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_2_3_ID)
+                    .id(VIEW_COLUMN_1_3_ID)
                     .ordinalPosition(2)
                     .name("lng")
                     .internalName("lng")
@@ -5207,7 +5207,7 @@ public abstract class BaseTest {
 
     public static final List<ViewColumn> VIEW_2_COLUMNS = List.of(
             ViewColumn.builder()
-                    .id(COLUMN_1_2_ID)
+                    .id(VIEW_COLUMN_2_1_ID)
                     .ordinalPosition(0)
                     .name("Date")
                     .internalName("date")
@@ -5216,7 +5216,7 @@ public abstract class BaseTest {
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_3_ID)
+                    .id(VIEW_COLUMN_2_2_ID)
                     .ordinalPosition(1)
                     .name("loc")
                     .internalName("loc")
@@ -5226,7 +5226,7 @@ public abstract class BaseTest {
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_5_ID)
+                    .id(VIEW_COLUMN_2_3_ID)
                     .ordinalPosition(2)
                     .name("Rainfall")
                     .internalName("rainfall")
@@ -5237,7 +5237,7 @@ public abstract class BaseTest {
                     .view(VIEW_2)
                     .build(),
             ViewColumn.builder()
-                    .id(COLUMN_1_4_ID)
+                    .id(VIEW_COLUMN_2_4_ID)
                     .ordinalPosition(3)
                     .name("MinTemp")
                     .internalName("mintemp")
@@ -5251,6 +5251,7 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_2_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
+            .vdbid(DATABASE_1_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
             .internalName(VIEW_2_INTERNAL_NAME)
@@ -5431,6 +5432,7 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_3_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
+            .vdbid(DATABASE_1_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
@@ -5637,6 +5639,7 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_4_DTO = ViewDto.builder()
             .id(VIEW_4_ID)
+            .vdbid(DATABASE_2_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
             .internalName(VIEW_4_INTERNAL_NAME)
@@ -5842,6 +5845,7 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_5_DTO = ViewDto.builder()
             .id(VIEW_5_ID)
+            .vdbid(DATABASE_3_ID)
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
             .internalName(VIEW_5_INTERNAL_NAME)
@@ -6048,11 +6052,6 @@ public abstract class BaseTest {
     public static final Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
     public static final Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
     public static final Integer IDENTIFIER_1_PUBLICATION_DAY = null;
-    public static final String IDENTIFIER_1_QUERY_HASH = QUERY_1_QUERY_HASH;
-    public static final String IDENTIFIER_1_RESULT_HASH = QUERY_1_RESULT_HASH;
-    public static final String IDENTIFIER_1_QUERY = QUERY_1_STATEMENT;
-    public static final String IDENTIFIER_1_NORMALIZED = QUERY_1_STATEMENT;
-    public static final Long IDENTIFIER_1_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
     public static final String IDENTIFIER_1_PUBLISHER = "Austrian Government";
     public static final IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public static final IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
@@ -6273,6 +6272,7 @@ public abstract class BaseTest {
 
     public static final Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
+            .queryId(QUERY_1_ID)
             .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2)))
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1)))
             .doi(IDENTIFIER_1_DOI)
@@ -6282,11 +6282,11 @@ public abstract class BaseTest {
             .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
             .owner(USER_1)
@@ -6308,11 +6308,11 @@ public abstract class BaseTest {
             .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
             .owner(USER_1)
@@ -6331,11 +6331,11 @@ public abstract class BaseTest {
             .execution(IDENTIFIER_1_EXECUTION)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .query(QUERY_1_STATEMENT)
+            .queryNormalized(QUERY_1_STATEMENT)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .owner(USER_1_BRIEF_DTO)

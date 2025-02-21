@@ -821,6 +821,7 @@ public interface MetadataMapper {
     }
 
     @Mappings({
+            @Mapping(target = "vdbid", source = "database.id"),
             @Mapping(target = "database.views", ignore = true),
             @Mapping(target = "database.tables", ignore = true)
     })

@@ -72,7 +72,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         final HttpHeaders headers = response.getHeaders();
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
-        assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Jdbc-Method"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
         assertEquals(List.of("X-Username X-Password X-Jdbc-Method"), headers.get("Access-Control-Expose-Headers"));
     }
 

@@ -93,32 +93,32 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
 
     public static Stream<Arguments> malformedDatabase_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedSubset_parameters() {
         return Stream.of(
                 Arguments.arguments("queryId", null, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedView_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
                 Arguments.arguments("viewId", null, null, null),
-                Arguments.arguments("tableId", null, null, 9999L)
+                Arguments.arguments("tableId", null, null, "deadbeef-1f60-4297-9eab-5b0321d96dd7")
         );
     }
 
     public static Stream<Arguments> malformedTable_parameters() {
         return Stream.of(
-                Arguments.arguments("queryId", 9999L, null, null),
-                Arguments.arguments("viewId", null, 9999L, null),
+                Arguments.arguments("queryId", "deadbeef-1f60-4297-9eab-5b0321d96dd7", null, null),
+                Arguments.arguments("viewId", null, "deadbeef-1f60-4297-9eab-5b0321d96dd7", null),
                 Arguments.arguments("tableId", null, null, null)
         );
     }
@@ -126,7 +126,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     public static Stream<Arguments> findAll_anonymousFilterDatabase_parameters() {
         return Stream.of(
                 Arguments.arguments("dbid", DATABASE_1_ID, null, null, null, null, 1),
-                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 0),
+                Arguments.arguments("qid", DATABASE_1_ID, QUERY_1_ID, null, null, null, 1),
                 Arguments.arguments("vid", DATABASE_1_ID, null, VIEW_1_ID, null, null, 0),
                 Arguments.arguments("tid", DATABASE_1_ID, null, null, TABLE_1_ID, null, 0),
                 Arguments.arguments("status_published", DATABASE_1_ID, null, null, null, "PUBLISHED", 1),
@@ -144,7 +144,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
     public static Stream<Arguments> findAll_filterDatabase_parameters() {
         return Stream.of(
                 Arguments.arguments("database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, USER_1_PRINCIPAL),
-                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, USER_1_PRINCIPAL),
+                Arguments.arguments("database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, USER_1_PRINCIPAL),
                 Arguments.arguments("database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, USER_1_PRINCIPAL),
@@ -160,7 +160,7 @@ public class IdentifierEndpointUnitTest extends AbstractUnitTest {
                 Arguments.arguments("table_vid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, USER_1_PRINCIPAL),
                 Arguments.arguments("table_tid", IdentifierTypeDto.TABLE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 1, USER_1_PRINCIPAL),
                 Arguments.arguments("anon_database_dbid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, null, 1, null),
-                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 0, null),
+                Arguments.arguments("anon_database_qid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, QUERY_1_ID, null, null, 1, null),
                 Arguments.arguments("anon_database_vid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, VIEW_1_ID, null, 0, null),
                 Arguments.arguments("anon_database_tid", IdentifierTypeDto.DATABASE, null, DATABASE_1_ID, null, null, TABLE_1_ID, 0, null),
                 Arguments.arguments("anon_subset_dbid", IdentifierTypeDto.SUBSET, null, DATABASE_1_ID, null, null, null, 1, null),

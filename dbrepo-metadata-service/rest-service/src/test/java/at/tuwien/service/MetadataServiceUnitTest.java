@@ -114,7 +114,7 @@ public class MetadataServiceUnitTest extends AbstractUnitTest {
     @Transactional
     public void getRecord_succeeds() throws IdentifierNotFoundException {
         final OaiRecordParameters parameters = OaiRecordParameters.builder()
-                .identifier("oai:1")
+                .identifier("oai:" + IDENTIFIER_1_ID)
                 .build();
 
         /* mock */
@@ -133,7 +133,7 @@ public class MetadataServiceUnitTest extends AbstractUnitTest {
     @Test
     public void getRecord_oaiNotFound_fails() throws IdentifierNotFoundException {
         final OaiRecordParameters parameters = OaiRecordParameters.builder()
-                .identifier("oai:9999")
+                .identifier("oai:deadbeef-bf9c-4943-a30a-ee5295f5b8c2")
                 .build();
 
         /* mock */
