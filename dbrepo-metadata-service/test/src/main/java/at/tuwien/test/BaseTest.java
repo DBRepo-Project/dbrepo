@@ -1486,7 +1486,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_1_DESCRIPTION = "Weather in Australia";
     public static final String TABLE_1_QUEUE_NAME = TABLE_1_INTERNAL_NAME;
-    public static final String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
+    public static final String TABLE_1_ROUTING_KEY = "dbrepo." + DATABASE_1_ID + "." + TABLE_1_ID;
     public static final Long TABLE_1_AVG_ROW_LENGTH = 3L;
     public static final Long TABLE_1_NUM_ROWS = 3L;
     public static final Long TABLE_1_DATA_LENGTH = 2000L;
@@ -1687,7 +1687,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_2_DESCRIPTION = "Weather location";
     public static final String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
-    public static final String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_2_ID;
+    public static final String TABLE_2_ROUTING_KEY = "dbrepo." + DATABASE_1_ID + "." + TABLE_2_ID;
     public static final Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public static final Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public static final Long TABLE_2_AVG_ROW_LENGTH = 3L;
@@ -1782,7 +1782,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_3_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_3_DESCRIPTION = "Some sensor data";
     public static final String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
-    public static final String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_3_ID;
+    public static final String TABLE_3_ROUTING_KEY = "dbrepo." + DATABASE_1_ID + "." + TABLE_3_ID;
     public static final Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public static final Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public static final Long TABLE_3_AVG_ROW_LENGTH = 6L;
@@ -1886,7 +1886,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_5_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_5_DESCRIPTION = "Some Kaggle dataset";
     public static final String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
-    public static final String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_5_ID;
+    public static final String TABLE_5_ROUTING_KEY = "dbrepo." + DATABASE_2_ID + "." + TABLE_5_ID;
     public static final Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
     public static final Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
     public static final Long TABLE_5_AVG_ROW_LENGTH = 1080L;
@@ -1972,7 +1972,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_6_DESCRIPTION = "Some names dataset";
     public static final String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
-    public static final String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_6_ID;
+    public static final String TABLE_6_ROUTING_KEY = "dbrepo." + DATABASE_2_ID + "." + TABLE_6_ID;
     public static final Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
     public static final Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
 
@@ -2032,7 +2032,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_7_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_7_DESCRIPTION = "Some likes dataset";
     public static final String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
-    public static final String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_7_ID;
+    public static final String TABLE_7_ROUTING_KEY = "dbrepo." + DATABASE_2_ID + "." + TABLE_7_ID;
     public static final Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
     public static final Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
 
@@ -2091,7 +2091,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_4_SCHEMA_PUBLIC = false;
     public static final String TABLE_4_DESCRIPTION = "Hello sensor";
     public static final String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
-    public static final String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
+    public static final String TABLE_4_ROUTING_KEY = "dbrepo." + DATABASE_1_ID + "." + TABLE_4_ID;
     public static final Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public static final Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public static final Long TABLE_4_AVG_ROW_LENGTH = 0L;
@@ -2267,7 +2267,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_8_SCHEMA_PUBLIC = false;
     public static final String TABLE_8_DESCRIPTION = "Hello mfcc";
     public static final String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
-    public static final String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_8_ID;
+    public static final String TABLE_8_ROUTING_KEY = "dbrepo." + DATABASE_3_ID + "." + TABLE_8_ID;
     public static final Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
     public static final Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 
@@ -2348,7 +2348,7 @@ public abstract class BaseTest {
     public static final Boolean TABLE_9_PROCESSED_CONSTRAINTS = true;
     public static final String TABLE_9_DESCRIPTION = "Hello mfcc";
     public static final String TABLE_9_QUEUE_NAME = TABLE_9_INTERNAL_NAME;
-    public static final String TABLE_9_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_9_ID;
+    public static final String TABLE_9_ROUTING_KEY = "dbrepo." + DATABASE_3_ID + "." + TABLE_9_ID;
     public static final Instant TABLE_9_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
     public static final Instant TABLE_9_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 

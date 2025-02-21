@@ -181,7 +181,7 @@ public class SubsetEndpoint extends RestEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        if (accept == null || accept.isEmpty() || accept.isBlank()) {
+        if (accept == null || accept.isBlank()) {
             accept = MediaType.APPLICATION_JSON_VALUE;
             log.debug("accept header not set: default to {}", accept);
         }

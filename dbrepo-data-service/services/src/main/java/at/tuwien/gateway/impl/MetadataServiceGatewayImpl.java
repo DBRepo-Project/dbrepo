@@ -48,7 +48,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             ContainerNotFoundException, MetadataServiceException {
         final ResponseEntity<ContainerDto> response;
         final String url = "/api/container/" + containerId;
-        log.debug("get  container info from metadata service: {}", url);
+        log.debug("get container info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
                     ContainerDto.class);
@@ -125,7 +125,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
         final String url = "/api/database/" + databaseId + "/table/" + id;
-        log.debug("get  table info from metadata service: {}", url);
+        log.debug("get table info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {

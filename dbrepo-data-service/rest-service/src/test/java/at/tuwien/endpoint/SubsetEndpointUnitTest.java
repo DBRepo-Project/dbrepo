@@ -309,6 +309,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(mock);
         when(subsetService.findById(eq(DATABASE_3_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
+        when(subsetService.create(eq(DATABASE_3_PRIVILEGED_DTO), eq(QUERY_5_STATEMENT), any(Instant.class), any(UUID.class)))
+                .thenReturn(QUERY_5_ID);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
                 .thenReturn(QUERY_5_VIEW_DTO);
         when(httpServletRequest.getMethod())
@@ -406,6 +408,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_4_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_4_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_5_DTO);
+        when(subsetService.create(eq(DATABASE_4_PRIVILEGED_DTO), eq(QUERY_5_STATEMENT), any(Instant.class), eq(null)))
+                .thenReturn(QUERY_5_ID);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
@@ -434,6 +438,8 @@ public class SubsetEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(subsetService.findById(eq(DATABASE_1_PRIVILEGED_DTO), any(UUID.class)))
                 .thenReturn(QUERY_1_DTO);
+        when(subsetService.create(eq(DATABASE_1_PRIVILEGED_DTO), eq(QUERY_1_STATEMENT), any(Instant.class), any(UUID.class)))
+                .thenReturn(QUERY_1_ID);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(databaseService.inspectView(any(DatabaseDto.class), anyString()))
