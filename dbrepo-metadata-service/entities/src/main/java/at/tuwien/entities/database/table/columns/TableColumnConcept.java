@@ -32,7 +32,7 @@ public class TableColumnConcept {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(updatable = false, nullable = false, columnDefinition = "TEXT")
@@ -59,4 +59,11 @@ public class TableColumnConcept {
             },
             joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private List<TableColumn> columns;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 }

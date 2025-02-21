@@ -49,8 +49,8 @@ public class ViewServiceImpl implements ViewService {
                 .filter(v -> v.getId().equals(viewId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {}", viewId);
-            throw new ViewNotFoundException("Failed to find view with id " + viewId);
+            log.error("Failed to find view with id: {}", viewId);
+            throw new ViewNotFoundException("Failed to find view with id: " + viewId);
         }
         return optional.get();
     }

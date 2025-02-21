@@ -20,7 +20,7 @@ public class Operator {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(name = "display_name", nullable = false)
@@ -39,5 +39,12 @@ public class Operator {
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })
     private ContainerImage image;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

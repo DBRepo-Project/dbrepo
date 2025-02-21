@@ -23,7 +23,7 @@ public class Unique {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "uid", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "uid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
     private UUID id;
 
     @Column(updatable = false, nullable = false)
@@ -51,4 +51,11 @@ public class Unique {
             }
     )
     private List<TableColumn> columns;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 }

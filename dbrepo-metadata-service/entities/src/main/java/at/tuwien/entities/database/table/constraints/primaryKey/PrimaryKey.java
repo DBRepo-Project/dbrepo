@@ -22,7 +22,7 @@ public class PrimaryKey {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "pkid", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "pkid", nullable = false, columnDefinition = "VARCHAR(36) DEFAULT UUID()")
     private UUID id;
 
     @ToString.Exclude
@@ -42,4 +42,11 @@ public class PrimaryKey {
             @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn column;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 }

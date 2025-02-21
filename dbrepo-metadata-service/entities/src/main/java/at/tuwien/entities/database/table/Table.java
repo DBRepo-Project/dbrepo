@@ -39,7 +39,7 @@ public class Table {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(updatable = false, nullable = false)
@@ -127,6 +127,13 @@ public class Table {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }
 

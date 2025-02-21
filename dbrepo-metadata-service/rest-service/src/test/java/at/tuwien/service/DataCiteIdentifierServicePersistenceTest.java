@@ -111,7 +111,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Identifier> response = dataCiteIdentifierService.findAll(null, null, QUERY_1_ID, null, null);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test

@@ -36,7 +36,7 @@ public class View {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ToString.Exclude
@@ -107,5 +107,12 @@ public class View {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

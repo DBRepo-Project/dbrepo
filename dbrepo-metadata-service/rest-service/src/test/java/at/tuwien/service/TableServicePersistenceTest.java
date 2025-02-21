@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;

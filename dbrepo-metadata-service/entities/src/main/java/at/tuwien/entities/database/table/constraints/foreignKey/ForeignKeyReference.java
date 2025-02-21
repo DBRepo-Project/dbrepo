@@ -25,7 +25,7 @@ public class ForeignKeyReference {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ToString.Exclude
@@ -47,5 +47,12 @@ public class ForeignKeyReference {
             @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn referencedColumn;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

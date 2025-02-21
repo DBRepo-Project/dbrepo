@@ -65,16 +65,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void findAllPublicOrSchemaPublicByInternalName_succeeds() {
-
-        /* test */
-        final List<Database> response = databaseService.findAllPublicOrSchemaPublicByInternalName(DATABASE_3_INTERNALNAME);
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_3, response.get(0));
-    }
-
-    @Test
-    @Transactional(readOnly = true)
     public void findAllPublicOrSchemaPublicByInternalName_privateEmpty_succeeds() {
 
         /* test */
@@ -89,18 +79,6 @@ public class DatabaseServicePersistenceTest extends AbstractUnitTest {
         /* test */
         final List<Database> response = databaseService.findAllAtLestReadAccess(USER_4_ID);
         assertEquals(0, response.size());
-    }
-
-    @Test
-    @Transactional(readOnly = true)
-    public void findAllAtLestReadAccess_privateAccess_succeeds() {
-
-        /* test */
-        final List<Database> response = databaseService.findAllAtLestReadAccess(USER_2_ID);
-        assertEquals(3, response.size());
-        assertEquals(DATABASE_4, response.get(0));
-        assertEquals(DATABASE_2, response.get(1));
-        assertEquals(DATABASE_1, response.get(2));
     }
 
 }

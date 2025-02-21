@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -163,7 +164,7 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
     public void getRecord_datacite_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_datacite");
-        parameters.setIdentifier("oai:1");
+        parameters.setIdentifier("oai:" + IDENTIFIER_1_ID);
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -183,7 +184,7 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
     public void getRecord_invalidIdentifierPrefix_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_datacite");
-        parameters.setIdentifier("ark:1");
+        parameters.setIdentifier("ark:" + IDENTIFIER_1_ID);
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -201,7 +202,7 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
     public void getRecord_notFound_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
-        parameters.setIdentifier("oai:9999");
+        parameters.setIdentifier("oai:" + UUID.randomUUID());
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))

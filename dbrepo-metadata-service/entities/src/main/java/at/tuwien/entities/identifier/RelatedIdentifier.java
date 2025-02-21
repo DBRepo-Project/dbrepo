@@ -22,7 +22,7 @@ public class RelatedIdentifier {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(nullable = false)
@@ -42,6 +42,13 @@ public class RelatedIdentifier {
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
     })
     private Identifier identifier;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }
 

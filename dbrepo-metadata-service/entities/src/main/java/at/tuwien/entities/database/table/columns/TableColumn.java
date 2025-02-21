@@ -34,7 +34,7 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ToString.Exclude
@@ -130,5 +130,12 @@ public class TableColumn implements Comparable<TableColumn> {
     @Override
     public int compareTo(TableColumn tableColumn) {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 }

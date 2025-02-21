@@ -106,7 +106,7 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Identifier> response = identifierService.findAll(null, null, QUERY_1_ID, null, null);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test
@@ -131,17 +131,11 @@ public class IdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
         final Identifier identifier0 = response.get(0);
-        assertEquals(IDENTIFIER_2_ID, identifier0.getId());
-    }
-
-    @Test
-    public void findByDatabaseIdAndQueryId_fails() {
-
-        /* test */
-        final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID);
-        assertEquals(1, response.size());
+        assertEquals(IDENTIFIER_1_ID, identifier0.getId());
+        final Identifier identifier1 = response.get(1);
+        assertEquals(IDENTIFIER_2_ID, identifier1.getId());
     }
 
     @Test

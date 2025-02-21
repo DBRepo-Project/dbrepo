@@ -7,8 +7,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Data
 @Entity
 @Builder
@@ -22,7 +20,7 @@ public class DataType {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(name = "display_name", nullable = false)
@@ -77,5 +75,12 @@ public class DataType {
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })
     private ContainerImage image;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

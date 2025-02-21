@@ -22,7 +22,7 @@ public class Creator {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @Column(name = "given_names")
@@ -104,6 +104,13 @@ public class Creator {
             return this.getLastname();
         }
         return this.getFirstname().charAt(0) + ". " + this.getLastname();
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 
 }

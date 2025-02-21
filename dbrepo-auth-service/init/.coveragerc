@@ -1,5 +1,4 @@
 [report]
-format = text
 omit =
     # omit tests
     ./tests/*

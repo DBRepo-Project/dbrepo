@@ -318,7 +318,7 @@ public interface MetadataMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "databaseId", source = "database.id")
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 

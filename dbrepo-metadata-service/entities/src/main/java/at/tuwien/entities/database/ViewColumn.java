@@ -25,7 +25,7 @@ public class ViewColumn implements Comparable<ViewColumn> {
 
     @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(updatable = false, columnDefinition = "VARCHAR(36)")
+    @Column(columnDefinition = "VARCHAR(36)")
     private UUID id;
 
     @ToString.Exclude
@@ -61,5 +61,12 @@ public class ViewColumn implements Comparable<ViewColumn> {
     @Override
     public int compareTo(ViewColumn viewColumn) {
         return Integer.compare(this.ordinalPosition, viewColumn.getOrdinalPosition());
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 }

@@ -5025,6 +5025,7 @@ public abstract class BaseTest {
             .owner(USER_1)
             .identifiers(new LinkedList<>()) /* IDENTIFIER_3 */
             .columns(null) /* VIEW_1_COLUMNS */
+            .database(null) /* DATABASE_1 */
             .build();
 
     public static final Long VIEW_1_DATA_COUNT = 3L;
@@ -5203,6 +5204,7 @@ public abstract class BaseTest {
             .queryHash(VIEW_2_QUERY_HASH)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
+            .database(null) /* DATABASE_1 */
             .build();
 
     public static final List<ViewColumn> VIEW_2_COLUMNS = List.of(
@@ -5368,6 +5370,7 @@ public abstract class BaseTest {
             .queryHash(VIEW_3_QUERY_HASH)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
+            .database(null) /* DATABASE_1 */
             .build();
 
     public static final ViewDto VIEW_3_PRIVILEGED_DTO = ViewDto.builder()
@@ -6325,6 +6328,7 @@ public abstract class BaseTest {
     public static final IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
+            .queryId(QUERY_1_ID)
             .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO)))
             .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO)))
             .doi(IDENTIFIER_1_DOI)
