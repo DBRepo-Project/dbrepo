@@ -51,7 +51,7 @@ class OpenSearchClient:
                                        http_auth=(self.username, self.password))
         return self.instance
 
-    def update_database(self, database_id: int, data: Database) -> Database:
+    def update_database(self, database_id: str, data: Database) -> Database:
         """
         Updates the database data with given id.
 
@@ -66,7 +66,7 @@ class OpenSearchClient:
         response: dict = self._instance().get(index="database", id=database_id)
         return Database.model_validate(response["_source"])
 
-    def delete_database(self, database_id: int) -> None:
+    def delete_database(self, database_id: str) -> None:
         """
         Deletes the database data with given id.
 

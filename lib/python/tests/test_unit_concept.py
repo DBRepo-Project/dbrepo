@@ -11,7 +11,7 @@ class ContainerUnitTest(unittest.TestCase):
 
     def test_get_concepts_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [ConceptBrief(id=1,
+            exp = [ConceptBrief(id="65586aef-f5b0-446f-b2e1-9dc2a3c0c359",
                                 uri="http://dbpedia.org/page/Category:Precipitation",
                                 name="Precipitation")]
             # mock

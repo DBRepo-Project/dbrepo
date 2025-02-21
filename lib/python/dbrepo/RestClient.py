@@ -195,7 +195,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find containers: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_container(self, container_id: int) -> Container:
+    def get_container(self, container_id: str) -> Container:
         """
         Get a container with given id.
 
@@ -244,7 +244,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find databases: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_database(self, database_id: int) -> Database:
+    def get_database(self, database_id: str) -> Database:
         """
         Get a databases with given id.
 
@@ -267,7 +267,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find database: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_database(self, name: str, container_id: int, is_public: bool = True,
+    def create_database(self, name: str, container_id: str, is_public: bool = True,
                         is_schema_public: bool = True) -> Database:
         """
         Create a databases in a container with given container id.
@@ -309,7 +309,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create database: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_container(self, name: str, host: str, image_id: int, privileged_username: str, privileged_password: str,
+    def create_container(self, name: str, host: str, image_id: str, privileged_username: str, privileged_password: str,
                          port: int = None, ui_host: str = None, ui_port: int = None) -> Container:
         """
         Register a container instance executing a given container image. Note that this does not create a container,
@@ -353,7 +353,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create container: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def update_database_visibility(self, database_id: int, is_public: bool, is_schema_public: bool) -> Database:
+    def update_database_visibility(self, database_id: str, is_public: bool, is_schema_public: bool) -> Database:
         """
         Updates the database visibility of a database with given database id.
 
@@ -390,7 +390,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_owner(self, database_id: int, user_id: str) -> Database:
+    def update_database_owner(self, database_id: str, user_id: str) -> Database:
         """
         Updates the database owner of a database with given database id.
 
@@ -426,7 +426,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database visibility: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def update_database_schema(self, database_id: int) -> DatabaseBrief:
+    def update_database_schema(self, database_id: str) -> DatabaseBrief:
         """
         Updates the database table and view metadata of a database with given database id.
 
@@ -464,7 +464,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to update database schema: response code: {response.status_code} is not 200 (OK)')
 
-    def create_table(self, database_id: int, name: str, is_public: bool, is_schema_public: bool,
+    def create_table(self, database_id: str, name: str, is_public: bool, is_schema_public: bool,
                      columns: List[CreateTableColumn], constraints: CreateTableConstraints,
                      description: str = None) -> TableBrief:
         """
@@ -510,7 +510,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create table: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def get_tables(self, database_id: int) -> List[TableBrief]:
+    def get_tables(self, database_id: str) -> List[TableBrief]:
         """
         Get all tables.
 
@@ -534,7 +534,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get tables: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_table(self, database_id: int, table_id: int) -> Table:
+    def get_table(self, database_id: str, table_id: str) -> Table:
         """
         Get a table with given database id and table id.
 
@@ -559,7 +559,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find table: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def delete_table(self, database_id: int, table_id: int) -> None:
+    def delete_table(self, database_id: str, table_id: str) -> None:
         """
         Delete a table with given database id and table id.
 
@@ -590,7 +590,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete table: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def delete_container(self, container_id: int) -> None:
+    def delete_container(self, container_id: str) -> None:
         """
         Deletes a container with given id. Note that this does not delete the container, but deletes the entry in the
         metadata database. The container still needs to be removed, e.g. `docker container stop hash` and then
@@ -616,7 +616,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete container: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_table_history(self, database_id: int, table_id: int, size: int = 100) -> [History]:
+    def get_table_history(self, database_id: str, table_id: str, size: int = 100) -> [History]:
         """
         Get the table history of insert/delete operations.
 
@@ -646,7 +646,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get table history: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_views(self, database_id: int) -> List[ViewBrief]:
+    def get_views(self, database_id: str) -> List[ViewBrief]:
         """
         Gets views of a database with given database id.
 
@@ -667,7 +667,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find views: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_view(self, database_id: int, view_id: int) -> View:
+    def get_view(self, database_id: str, view_id: str) -> View:
         """
         Get a view of a database with given database id and view id.
 
@@ -692,7 +692,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find view: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_view(self, database_id: int, view_id: int, is_public: bool, is_schema_public: bool) -> ViewBrief:
+    def update_view(self, database_id: str, view_id: str, is_public: bool, is_schema_public: bool) -> ViewBrief:
         """
         Get a view of a database with given database id and view id.
 
@@ -720,7 +720,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update view: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_view(self, database_id: int, name: str, query: str, is_public: bool, is_schema_public: bool) -> View:
+    def create_view(self, database_id: str, name: str, query: str, is_public: bool, is_schema_public: bool) -> View:
         """
         Create a view in a database with given database id.
 
@@ -762,7 +762,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create view: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def delete_view(self, database_id: int, view_id: int) -> None:
+    def delete_view(self, database_id: str, view_id: str) -> None:
         """
         Deletes a view in a database with given database id and view id.
 
@@ -796,7 +796,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete view: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_view_data(self, database_id: int, view_id: int, page: int = 0, size: int = 10) -> DataFrame:
+    def get_view_data(self, database_id: str, view_id: str, page: int = 0, size: int = 10) -> DataFrame:
         """
         Get data of a view in a database with given database id and view id.
 
@@ -836,7 +836,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get view data: response code: {response.status_code} is not '
                                 f'200 (OK):{response.text}')
 
-    def get_table_data(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
+    def get_table_data(self, database_id: str, table_id: str, page: int = 0, size: int = 10,
                        timestamp: datetime.datetime = None) -> DataFrame:
         """
         Get data of a table in a database with given database id and table id.
@@ -877,7 +877,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get table data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_table_data(self, database_id: int, table_id: int, data: dict) -> None:
+    def create_table_data(self, database_id: str, table_id: str, data: dict) -> None:
         """
         Insert data into a table in a database with given database id and table id.
 
@@ -907,7 +907,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to insert table data: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def import_table_data(self, database_id: int, table_id: int, dataframe: DataFrame) -> None:
+    def import_table_data(self, database_id: str, table_id: str, dataframe: DataFrame) -> None:
         """
         Import a csv dataset from a file into a table in a database with given database id and table id. ATTENTION:
         the import is column-ordering sensitive! The csv dataset must have the same columns in the same order as the
@@ -1007,7 +1007,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to analyse data types: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def analyse_table_statistics(self, database_id: int, table_id: int) -> TableStatistics:
+    def analyse_table_statistics(self, database_id: str, table_id: str) -> TableStatistics:
         """
         Analyses the numerical contents of a table in a database with given database id and table id.
 
@@ -1039,7 +1039,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to analyse table statistics: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def update_table_data(self, database_id: int, table_id: int, data: dict, keys: dict) -> None:
+    def update_table_data(self, database_id: str, table_id: str, data: dict, keys: dict) -> None:
         """
         Update data in a table in a database with given database id and table id.
 
@@ -1070,7 +1070,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def delete_table_data(self, database_id: int, table_id: int, keys: dict) -> None:
+    def delete_table_data(self, database_id: str, table_id: str, keys: dict) -> None:
         """
         Delete data in a table in a database with given database id and table id.
 
@@ -1100,7 +1100,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete table data: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def get_table_data_count(self, database_id: int, table_id: int, timestamp: datetime.datetime = None) -> int:
+    def get_table_data_count(self, database_id: str, table_id: str, timestamp: datetime.datetime = None) -> int:
         """
         Get data count of a table in a database with given database id and table id.
 
@@ -1138,7 +1138,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to count table data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_view_data_count(self, database_id: int, view_id: int) -> int:
+    def get_view_data_count(self, database_id: str, view_id: str) -> int:
         """
         Get data count of a view in a database with given database id and view id.
 
@@ -1172,7 +1172,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to count view data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_database_access(self, database_id: int) -> AccessType:
+    def get_database_access(self, database_id: str) -> AccessType:
         """
         Get access of a view in a database with given database id and view id.
 
@@ -1196,7 +1196,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get database access: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def create_database_access(self, database_id: int, user_id: str, type: AccessType) -> AccessType:
+    def create_database_access(self, database_id: str, user_id: str, type: AccessType) -> AccessType:
         """
         Create access to a database with given database id and user id.
 
@@ -1232,7 +1232,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create database access: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def update_database_access(self, database_id: int, user_id: str, type: AccessType) -> AccessType:
+    def update_database_access(self, database_id: str, user_id: str, type: AccessType) -> AccessType:
         """
         Updates the access for a user to a database with given database id and user id.
 
@@ -1268,7 +1268,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update database access: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def delete_database_access(self, database_id: int, user_id: str) -> None:
+    def delete_database_access(self, database_id: str, user_id: str) -> None:
         """
         Deletes the access for a user to a database with given database id and user id.
 
@@ -1300,7 +1300,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete database access: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_subset(self, database_id: int, query: str, page: int = 0, size: int = 10,
+    def create_subset(self, database_id: str, query: str, page: int = 0, size: int = 10,
                       timestamp: datetime.datetime = None) -> DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
@@ -1350,7 +1350,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create subset: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def get_subset_data(self, database_id: int, subset_id: int, page: int = 0, size: int = 10) -> DataFrame:
+    def get_subset_data(self, database_id: str, subset_id: str, page: int = 0, size: int = 10) -> DataFrame:
         """
         Re-executes a query in a database with given database id and query id.
 
@@ -1386,7 +1386,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get query data: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_subset_data_count(self, database_id: int, subset_id: int) -> int:
+    def get_subset_data_count(self, database_id: str, subset_id: str) -> int:
         """
         Re-executes a query in a database with given database id and query id and only counts the results.
 
@@ -1416,7 +1416,7 @@ class RestClient:
         raise ResponseCodeError(
             f'Failed to get query count: response code: {response.status_code} is not 200 (OK)')
 
-    def get_subset(self, database_id: int, subset_id: int) -> Query:
+    def get_subset(self, database_id: str, subset_id: str) -> Query:
         """
         Get query from a database with given database id and query id.
 
@@ -1447,7 +1447,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find subset: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_queries(self, database_id: int) -> List[Query]:
+    def get_queries(self, database_id: str) -> List[Query]:
         """
         Get queries from a database with given database id.
 
@@ -1474,7 +1474,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to find query: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_subset(self, database_id: int, subset_id: int, persist: bool) -> Query:
+    def update_subset(self, database_id: str, subset_id: str, persist: bool) -> Query:
         """
         Save query or mark it for deletion (at a later time) in a database with given database id and query id.
 
@@ -1510,11 +1510,11 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update query: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_identifier(self, database_id: int, type: IdentifierType, titles: List[CreateIdentifierTitle],
+    def create_identifier(self, database_id: str, type: IdentifierType, titles: List[CreateIdentifierTitle],
                           publisher: str, creators: List[CreateIdentifierCreator], publication_year: int,
                           descriptions: List[CreateIdentifierDescription] = None,
                           funders: List[CreateIdentifierFunder] = None, licenses: List[License] = None,
-                          language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
+                          language: Language = None, subset_id: str = None, view_id: str = None, table_id: str = None,
                           publication_day: int = None, publication_month: int = None,
                           related_identifiers: List[CreateRelatedIdentifier] = None) -> Identifier:
         """
@@ -1570,11 +1570,11 @@ class RestClient:
         raise ResponseCodeError(f'Failed to create identifier: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def update_identifier(self, identifier_id: int, database_id: int, type: IdentifierType,
+    def update_identifier(self, identifier_id: str, database_id: str, type: IdentifierType,
                           titles: List[SaveIdentifierTitle], publisher: str, creators: List[SaveIdentifierCreator],
                           publication_year: int, descriptions: List[SaveIdentifierDescription] = None,
                           funders: List[SaveIdentifierFunder] = None, licenses: List[License] = None,
-                          language: Language = None, subset_id: int = None, view_id: int = None, table_id: int = None,
+                          language: Language = None, subset_id: str = None, view_id: str = None, table_id: str = None,
                           publication_day: int = None, publication_month: int = None,
                           related_identifiers: List[SaveRelatedIdentifier] = None) -> Identifier:
         """
@@ -1632,7 +1632,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to save identifier: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def publish_identifier(self, identifier_id: int) -> Identifier:
+    def publish_identifier(self, identifier_id: str) -> Identifier:
         """
         Publish an identifier with given id.
 
@@ -1694,8 +1694,8 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get concepts: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def get_identifiers(self, database_id: int = None, subset_id: int = None, view_id: int = None,
-                        table_id: int = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
+    def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
+                        table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
                                                                                                                        Identifier] | str:
         """
         Get list of identifiers, filter by the remaining optional arguments.
@@ -1745,7 +1745,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get identifiers: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
-    def update_table_column(self, database_id: int, table_id: int, column_id: int, concept_uri: str = None,
+    def update_table_column(self, database_id: str, table_id: str, column_id: str, concept_uri: str = None,
                             unit_uri: str = None) -> Column:
         """
         Update semantic information of a table column by given database id and table id and column id.
