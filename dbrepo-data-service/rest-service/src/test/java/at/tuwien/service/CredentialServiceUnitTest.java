@@ -127,7 +127,7 @@ public class CredentialServiceUnitTest extends AbstractUnitTest {
             InterruptedException, ContainerNotFoundException {
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(DATABASE_1_ID))
+        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_2_PRIVILEGED_DTO) /* needs to be different id for test case */
                 .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
 

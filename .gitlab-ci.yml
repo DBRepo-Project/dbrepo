@@ -309,11 +309,11 @@ test-analyse-service:
   artifacts:
     when: always
     paths:
-      - ./dbrepo-analyse-service/report.xml
+      - ./dbrepo-analyse-service/coverage.xml
       - ./dbrepo-analyse-service/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-analyse-service/report.xml
+      junit: ./dbrepo-analyse-service/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-auth-service-init:
@@ -331,11 +331,11 @@ test-auth-service-init:
   artifacts:
     when: always
     paths:
-      - ./dbrepo-auth-service/init/report.xml
+      - ./dbrepo-auth-service/init/coverage.xml
       - ./dbrepo-auth-service/init/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-auth-service/init/report.xml
+      junit: ./dbrepo-auth-service/init/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-search-service:
@@ -362,11 +362,11 @@ test-search-service:
   artifacts:
     when: always
     paths:
-      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.xml
       - ./dbrepo-search-service/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-search-service/report.xml
+      junit: ./dbrepo-search-service/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-search-service-init:
@@ -386,11 +386,11 @@ test-search-service-init:
   artifacts:
     when: always
     paths:
-      - ./dbrepo-search-service/report.xml
+      - ./dbrepo-search-service/coverage.xml
       - ./dbrepo-search-service/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-search-service/report.xml
+      junit: ./dbrepo-search-service/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-lib:
@@ -410,11 +410,11 @@ test-lib:
   artifacts:
     when: always
     paths:
-      - ./lib/python/report.xml
+      - ./lib/python/coverage.xml
       - ./lib/python/coverage.txt
     expire_in: 1 days
     reports:
-      junit: ./lib/python/report.xml
+      junit: ./lib/python/coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-ui:
