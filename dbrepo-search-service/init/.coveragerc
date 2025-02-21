@@ -1,5 +1,5 @@
 [report]
-format = html
+format = text
 omit =
     # omit tests
     ./tests/*
