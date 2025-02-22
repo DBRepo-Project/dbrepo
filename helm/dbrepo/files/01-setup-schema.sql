@@ -441,7 +441,8 @@ CREATE TABLE IF NOT EXISTS `mdb_access`
     download BOOLEAN,
     created  TIMESTAMP    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aUserID, aDBID),
-    FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`)
+    FOREIGN KEY (`aDBID`) REFERENCES mdb_databases (`id`),
+    FOREIGN KEY (`aUserID`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_have_access`
