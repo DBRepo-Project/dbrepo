@@ -251,6 +251,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
     cID     VARCHAR(36) NOT NULL,
     created TIMESTAMP   NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cid),
+    FOREIGN KEY (`id`) REFERENCES mdb_concepts (`id`),
     FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
 ) WITH SYSTEM VERSIONING;
 
@@ -260,6 +261,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_units`
     cID     VARCHAR(36) NOT NULL,
     created TIMESTAMP   NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id, cID),
+    FOREIGN KEY (id) REFERENCES mdb_units (id),
     FOREIGN KEY (`cID`) REFERENCES mdb_columns (`ID`)
 ) WITH SYSTEM VERSIONING;
 
