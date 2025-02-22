@@ -144,7 +144,7 @@ public class MetadataEndpointUnitTest extends AbstractUnitTest {
     public void getRecord_dc_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
-        parameters.setIdentifier("oai:1");
+        parameters.setIdentifier("oai:" + IDENTIFIER_1_ID);
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
