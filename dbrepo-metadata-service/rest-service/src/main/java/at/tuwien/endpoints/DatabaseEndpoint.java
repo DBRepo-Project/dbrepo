@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -160,7 +161,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             ContainerQuotaException {
         log.debug("endpoint create database, data.name={}", data.getName());
         final Container container = containerService.find(data.getCid());
-        if (container.getDatabases().size() + 1 > container.getQuota()) {
+        if (container.getQuota() != null && container.getDatabases().size() + 1 > container.getQuota()) {
             log.error("Failed to create database: quota of {} exceeded", container.getQuota());
             throw new ContainerQuotaException("Failed to create database: quota of " + container.getQuota() + " exceeded");
         }
@@ -209,7 +210,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> refreshTableMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                  @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, MalformedException,
@@ -258,7 +259,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> refreshViewMetadata(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                                 @NotNull Principal principal) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException, NotAllowedException, QueryNotFoundException, ViewNotFoundException {
@@ -311,7 +312,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> visibility(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                        @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                        @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, SearchServiceException, SearchServiceConnectionException, UserNotFoundException {
@@ -365,7 +366,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> transfer(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                      @Valid @RequestBody DatabaseTransferDto data,
                                                      @NotNull Principal principal) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
@@ -421,7 +422,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseBriefDto> modifyImage(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                         @Valid @RequestBody DatabaseModifyImageDto data,
                                                         @NotNull Principal principal) throws NotAllowedException,
             DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException,
@@ -456,7 +457,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))})
     })
-    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<byte[]> findPreviewImage(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseNotFoundException {
         log.debug("endpoint get database preview image, databaseId={}", databaseId);
         return ResponseEntity.ok()
@@ -490,7 +491,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))})
     })
-    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                 Principal principal) throws DatabaseNotFoundException,
             NotAllowedException {
         log.debug("endpoint find database, databaseId={}", databaseId);
@@ -547,7 +548,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         if (isSystem(principal)) {
             headers.set("X-Username", database.getContainer().getPrivilegedUsername());
             headers.set("X-Password", database.getContainer().getPrivilegedPassword());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password");
+            headers.set("X-Jdbc-Method", database.getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
         } else {
             removeInternalData(dto.getContainer());
         }

@@ -12,12 +12,12 @@ class ContainerUnitTest(unittest.TestCase):
 
     def test_create_container_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Container(id=1,
+            exp = Container(id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                             name="MariaDB 10.11.3",
                             internal_name="mariadb_10_11_3",
                             host="data-db",
                             port=12345,
-                            image=Image(id=1,
+                            image=Image(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                         registry="docker.io",
                                         name="mariadb",
                                         version="10.11.3",
@@ -33,7 +33,8 @@ class ContainerUnitTest(unittest.TestCase):
             mock.post('/api/container', json=exp.model_dump(), status_code=201)
             # test
             response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                   host='data-db2', image_id=1,
+                                                                                   host='data-db2',
+                                                                                   image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                    privileged_username='root',
                                                                                    privileged_password='dbrepo',
                                                                                    port=3306)
@@ -42,7 +43,8 @@ class ContainerUnitTest(unittest.TestCase):
     def test_create_container_anonymous_fails(self):
         # test
         try:
-            response = RestClient().create_container(name='MariaDB 10.11.3', host='data-db2', image_id=1,
+            response = RestClient().create_container(name='MariaDB 10.11.3', host='data-db2',
+                                                     image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                      privileged_username='root', privileged_password='dbrepo',
                                                      port=3306)
         except AuthenticationError:
@@ -55,7 +57,8 @@ class ContainerUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                       host='data-db2', image_id=1,
+                                                                                       host='data-db2',
+                                                                                       image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                        privileged_username='root',
                                                                                        privileged_password='dbrepo',
                                                                                        port=3306)
@@ -69,7 +72,8 @@ class ContainerUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                       host='data-db2', image_id=1,
+                                                                                       host='data-db2',
+                                                                                       image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                        privileged_username='root',
                                                                                        privileged_password='dbrepo',
                                                                                        port=3306)
@@ -83,7 +87,8 @@ class ContainerUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                       host='data-db2', image_id=1,
+                                                                                       host='data-db2',
+                                                                                       image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                        privileged_username='root',
                                                                                        privileged_password='dbrepo',
                                                                                        port=3306)
@@ -97,7 +102,8 @@ class ContainerUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                       host='data-db2', image_id=1,
+                                                                                       host='data-db2',
+                                                                                       image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                        privileged_username='root',
                                                                                        privileged_password='dbrepo',
                                                                                        port=3306)
@@ -111,7 +117,8 @@ class ContainerUnitTest(unittest.TestCase):
             # test
             try:
                 response = RestClient(username="foo", password="bar").create_container(name='MariaDB 10.11.3',
-                                                                                       host='data-db2', image_id=1,
+                                                                                       host='data-db2',
+                                                                                       image_id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                                                        privileged_username='root',
                                                                                        privileged_password='dbrepo',
                                                                                        port=3306)
@@ -129,14 +136,13 @@ class ContainerUnitTest(unittest.TestCase):
     def test_get_containers_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [
-                ContainerBrief(id=1,
+                ContainerBrief(id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
                                name="MariaDB 10.11.3",
                                internal_name="mariadb_10_11_3",
                                running=True,
-                               image=ImageBrief(id=1,
+                               image=ImageBrief(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                 name="mariadb",
-                                                version="10.11.3",
-                                                jdbc_method="mariadb"),
+                                                version="10.11.3"),
                                hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             ]
             # mock
@@ -157,12 +163,12 @@ class ContainerUnitTest(unittest.TestCase):
 
     def test_get_container_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = Container(id=1,
+            exp = Container(id="",
                             name="MariaDB 10.11.3",
                             internal_name="mariadb_10_11_3",
                             host="data-db",
                             port=12345,
-                            image=Image(id=1,
+                            image=Image(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                         registry="docker.io",
                                         name="mariadb",
                                         version="10.11.3",
@@ -175,82 +181,87 @@ class ContainerUnitTest(unittest.TestCase):
                                                      documentation="https://mariadb.com/kb/en/bigint/",
                                                      is_quoted=False, is_buildable=True)]))
             # mock
-            mock.get('/api/container/1', json=exp.model_dump())
+            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', json=exp.model_dump())
             # test
-            response = RestClient().get_container(container_id=1)
+            response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             self.assertEqual(exp, response)
 
     def test_get_container_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container/1', status_code=404)
+            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
             # test
             try:
-                response = RestClient().get_container(container_id=1)
+                response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except NotExistsError:
                 pass
 
     def test_get_container_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container/1', status_code=401)
+            mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=401)
             # test
             try:
-                response = RestClient().get_container(container_id=1)
+                response = RestClient().get_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except ResponseCodeError:
                 pass
 
     def test_delete_container_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/1', status_code=202)
+            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=202)
             # test
-            RestClient(username='foo', password='bar').delete_container(container_id=1)
+            RestClient(username='foo', password='bar').delete_container(
+                container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
 
     def test_delete_container_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/1', status_code=400)
+            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=400)
             # test
             try:
-                RestClient(username='foo', password='bar').delete_container(container_id=1)
+                RestClient(username='foo', password='bar').delete_container(
+                    container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except MalformedError:
                 pass
 
     def test_delete_container_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/1', status_code=403)
+            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=403)
             # test
             try:
-                RestClient(username='foo', password='bar').delete_container(container_id=1)
+                RestClient(username='foo', password='bar').delete_container(
+                    container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except ForbiddenError:
                 pass
 
     def test_delete_container_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/1', status_code=404)
+            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=404)
             # test
             try:
-                RestClient(username='foo', password='bar').delete_container(container_id=1)
+                RestClient(username='foo', password='bar').delete_container(
+                    container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except NotExistsError:
                 pass
 
     def test_delete_container_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.delete('/api/container/1', status_code=200)
+            mock.delete('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', status_code=200)
             # test
             try:
-                RestClient(username='foo', password='bar').delete_container(container_id=1)
+                RestClient(username='foo', password='bar').delete_container(
+                    container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
             except ResponseCodeError:
                 pass
 
     def test_delete_container_anonymous_fails(self):
         # test
         try:
-            RestClient().delete_container(container_id=1)
+            RestClient().delete_container(container_id="44d811a8-4019-46ba-bd57-ea10a2eb0c74")
         except AuthenticationError:
             pass
 

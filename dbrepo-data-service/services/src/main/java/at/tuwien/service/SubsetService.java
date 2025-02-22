@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.exception.*;
@@ -25,7 +24,7 @@ public interface SubsetService {
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
      */
-    Long create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
+    UUID create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException;
 
     /**
@@ -45,15 +44,11 @@ public interface SubsetService {
      *
      * @param database The database.
      * @param query   The query statements.
-     * @param page     The page number.
-     * @param size     Te result size.
      * @return The data.
      * @throws QueryMalformedException The mapped query produced a database error.
      * @throws TableNotFoundException  The database table is malformed.
      */
-    Dataset<Row> getData(DatabaseDto database, String query, Instant timestamp, Long page, Long size,
-                         SortTypeDto sortDirection, String sortColumn) throws QueryMalformedException,
-            TableNotFoundException;
+    Dataset<Row> getData(DatabaseDto database, String query) throws QueryMalformedException, TableNotFoundException;
 
     /**
      * Finds all queries in the query store of the given database id and query id.
@@ -97,7 +92,7 @@ public interface SubsetService {
      * @throws DatabaseNotFoundException  The database metadata was not found in the Metadata Service.
      * @throws MetadataServiceException   Communication with the Metadata Service failed.
      */
-    QueryDto findById(DatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
+    QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, MetadataServiceException;
 
     /**
@@ -110,7 +105,7 @@ public interface SubsetService {
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
-    Long storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
+    UUID storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
             QueryStoreInsertException;
 
     /**
@@ -122,7 +117,7 @@ public interface SubsetService {
      * @throws SQLException               The connection to the database could not be established.
      * @throws QueryStorePersistException The query store failed to persist/unpersist the query.
      */
-    void persist(DatabaseDto database, Long queryId, Boolean persist) throws SQLException,
+    void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException,
             QueryStorePersistException;
 
     /**

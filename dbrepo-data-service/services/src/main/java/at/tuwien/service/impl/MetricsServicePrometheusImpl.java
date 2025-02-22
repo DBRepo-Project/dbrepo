@@ -8,6 +8,8 @@ import io.micrometer.core.instrument.Metrics;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Log4j2
 @Service
 public class MetricsServicePrometheusImpl implements MetricsService {
@@ -21,21 +23,21 @@ public class MetricsServicePrometheusImpl implements MetricsService {
     }
 
     @Override
-    public void countTableGetData(Long databaseId, Long tableId) {
+    public void countTableGetData(UUID databaseId, UUID tableId) {
         countGetData(databaseId, tableId, null, null);
     }
 
     @Override
-    public void countSubsetGetData(Long databaseId, Long subsetId) {
+    public void countSubsetGetData(UUID databaseId, UUID subsetId) {
         countGetData(databaseId, null, subsetId, null);
     }
 
     @Override
-    public void countViewGetData(Long databaseId, Long viewId) {
+    public void countViewGetData(UUID databaseId, UUID viewId) {
         countGetData(databaseId, null, null, viewId);
     }
 
-    public void countGetData(Long databaseId, Long tableId, Long subsetId, Long viewId) {
+    public void countGetData(UUID databaseId, UUID tableId, UUID subsetId, UUID viewId) {
         Counter.builder("dbrepo.datasource.data.get")
                 .tag("uri", metadataMapper.metricToUri(metricsConfig.getBaseUrl(), databaseId, tableId, subsetId, viewId))
                 .tag("protocol", "http")

@@ -7,7 +7,6 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.database.table.internal.TableCreateDto;
 import at.tuwien.api.user.internal.UpdateUserPasswordDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DataMapper;
 import at.tuwien.mapper.MariaDbMapper;
@@ -32,15 +31,13 @@ import java.util.List;
 public class DatabaseServiceMariaDbImpl extends DataConnector implements DatabaseService {
 
     private final DataMapper dataMapper;
-    private final QueryConfig queryConfig;
     private final MariaDbMapper mariaDbMapper;
     private final MetadataMapper metadataMapper;
 
     @Autowired
-    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, QueryConfig queryConfig, MariaDbMapper mariaDbMapper,
+    public DatabaseServiceMariaDbImpl(DataMapper dataMapper, MariaDbMapper mariaDbMapper,
                                       MetadataMapper metadataMapper) {
         this.dataMapper = dataMapper;
-        this.queryConfig = queryConfig;
         this.mariaDbMapper = mariaDbMapper;
         this.metadataMapper = metadataMapper;
     }
@@ -151,7 +148,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
             statement2.setString(2, view.getInternalName());
             final ResultSet resultSet2 = statement2.executeQuery();
             while (resultSet2.next()) {
-                view = dataMapper.resultSetToTable(resultSet2, view, queryConfig);
+                view = dataMapper.resultSetToTable(resultSet2, view);
             }
             connection.commit();
         } catch (SQLException e) {

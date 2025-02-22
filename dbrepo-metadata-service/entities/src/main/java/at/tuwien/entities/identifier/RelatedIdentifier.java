@@ -2,9 +2,10 @@ package at.tuwien.entities.identifier;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -14,15 +15,15 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_related_identifiers", uniqueConstraints = {
+@Table(name = "mdb_identifier_related", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "pid"})
 })
 public class RelatedIdentifier {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @Column(nullable = false)
     private String value;
@@ -41,6 +42,13 @@ public class RelatedIdentifier {
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
     })
     private Identifier identifier;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }
 

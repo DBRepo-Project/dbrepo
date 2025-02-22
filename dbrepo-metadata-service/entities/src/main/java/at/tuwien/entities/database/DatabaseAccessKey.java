@@ -10,5 +10,5 @@ public class DatabaseAccessKey implements Serializable {
 
     private UUID huserid;
 
-    private Long hdbid;
+    private UUID hdbid;
 }

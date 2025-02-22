@@ -1,5 +1,5 @@
 {
-  "id": 7,
+  "id": "b216ae00-a31d-4ecb-95fb-37eb4da3946f",
   "type": "database",
   "titles": [],
   "descriptions": [],
@@ -11,7 +11,7 @@
   "licenses": [],
   "creators": [
     {
-      "id": 1,
+      "id": "b899c367-06c7-4f47-8aea-5f15061ee3ee",
       "firstname": "Max",
       "lastname": "Mustermann",
       "creator_name": "Mustermann, Max",

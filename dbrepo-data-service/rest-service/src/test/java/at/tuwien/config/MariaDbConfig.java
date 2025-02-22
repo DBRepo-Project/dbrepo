@@ -141,11 +141,11 @@ public class MariaDbConfig {
         }
     }
 
-    public static void insertQueryStore(DatabaseDto database, QueryDto query, UUID userId) throws SQLException {
+    public static UUID insertQueryStore(DatabaseDto database, QueryDto query, UUID userId) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database: {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
-            final PreparedStatement prepareStatement = connection.prepareStatement(
+            PreparedStatement prepareStatement = connection.prepareStatement(
                     "INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed) VALUES (?,?,?,?,?,?,?,?,?)");
             prepareStatement.setString(1, String.valueOf(userId));
             prepareStatement.setString(2, query.getQuery());
@@ -158,6 +158,13 @@ public class MariaDbConfig {
             prepareStatement.setTimestamp(9, Timestamp.from(query.getExecution()));
             log.trace("prepared statement: {}", prepareStatement);
             prepareStatement.executeUpdate();
+            /* select */
+            prepareStatement = connection.prepareStatement("SELECT id FROM qs_queries WHERE query_hash = ? LIMIT 1");
+            prepareStatement.setString(1, query.getQueryHash());
+            final ResultSet result = prepareStatement.executeQuery();
+            UUID queryId;
+            result.next();
+            return UUID.fromString(result.getString(1));
         }
     }
 

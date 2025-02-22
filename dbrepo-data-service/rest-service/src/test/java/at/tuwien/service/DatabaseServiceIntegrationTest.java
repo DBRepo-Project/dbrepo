@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -709,21 +710,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         assertEquals(TABLE_1_COLUMNS.size(), response.getColumns().size());
     }
 
-    protected static void assertViewColumn(ViewColumnDto column, ViewColumnDto other) {
-        assertNotNull(column);
-        assertNotNull(other);
-        assertEquals(column.getId(), other.getId());
-        assertEquals(column.getDatabaseId(), other.getDatabaseId());
-        assertEquals(column.getName(), other.getName());
-        assertEquals(column.getInternalName(), other.getInternalName());
-        assertEquals(column.getColumnType(), other.getColumnType());
-        assertEquals(column.getSize(), other.getSize());
-        assertEquals(column.getD(), other.getD());
-        assertEquals(column.getIsNullAllowed(), other.getIsNullAllowed());
-        assertEquals(column.getDescription(), other.getDescription());
-    }
-
-    protected static void assertColumn(ColumnDto column, Long id, Long tableId, Long databaseId, String name,
+    protected static void assertColumn(ColumnDto column, UUID id, UUID tableId, UUID databaseId, String name,
                                        String internalName, ColumnTypeDto type, Long size, Long d, Boolean nullAllowed,
                                        String description) {
         log.trace("assert column: {}", internalName);

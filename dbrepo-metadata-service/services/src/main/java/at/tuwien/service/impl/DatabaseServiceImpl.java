@@ -84,7 +84,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     @Transactional(readOnly = true)
-    public Database findById(Long id) throws DatabaseNotFoundException {
+    public Database findById(UUID id) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(id);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {} in metadata database", id);
@@ -130,10 +130,10 @@ public class DatabaseServiceImpl implements DatabaseService {
         final Database entity1 = databaseRepository.save(entity);
         entity1.getAccesses()
                 .add(metadataMapper.userToWriteAllAccess(entity1, user));
-        entity1.getAccesses()
-                .addAll(internalUsers.stream()
-                        .map(internalUser -> metadataMapper.userToWriteAllAccess(entity1, internalUser))
-                        .toList());
+//        entity1.getAccesses()
+//                .addAll(internalUsers.stream()
+//                        .map(internalUser -> metadataMapper.userToWriteAllAccess(entity1, internalUser))
+//                        .toList());
         final Database database = databaseRepository.save(entity1);
         /* create in search service */
         searchServiceGateway.update(database);

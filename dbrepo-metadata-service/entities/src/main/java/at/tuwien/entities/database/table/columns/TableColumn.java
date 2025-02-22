@@ -4,6 +4,7 @@ import at.tuwien.entities.database.table.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -31,9 +33,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -128,5 +130,12 @@ public class TableColumn implements Comparable<TableColumn> {
     @Override
     public int compareTo(TableColumn tableColumn) {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
 }

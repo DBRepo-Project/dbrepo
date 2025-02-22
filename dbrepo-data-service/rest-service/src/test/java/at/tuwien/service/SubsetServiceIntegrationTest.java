@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -55,8 +56,8 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(null);
         assertEquals(2, response.size());
-        assertEquals(1L, response.get(0).getId());
-        assertEquals(2L, response.get(1).getId());
+        assertNotNull(response.get(0).getId());
+        assertNotNull(response.get(1).getId());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(true);
         assertEquals(1, response.size());
-        assertEquals(1L, response.get(0).getId());
+        assertNotNull(response.get(0).getId());
     }
 
     @Test
@@ -76,15 +77,18 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* test */
         final List<QueryDto> response = findAll_generic(false);
         assertEquals(1, response.size());
-        assertEquals(2L, response.get(0).getId());
+        assertNotNull(response.get(0).getId());
     }
 
     @Test
     public void findById_succeeds() throws SQLException, QueryNotFoundException, UserNotFoundException,
             RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException, InterruptedException {
 
+        /* mock */
+        final UUID queryId = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
+
         /* test */
-        findById_generic(QUERY_1_ID);
+        findById_generic(queryId);
     }
 
     @Test
@@ -92,7 +96,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            findById_generic(9999L);
+            findById_generic(UUID.randomUUID());
         });
     }
 
@@ -102,13 +106,14 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
+        final UUID queryId2 = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
         /* test */
-        persist_generic(QUERY_2_ID, List.of(IDENTIFIER_5_BRIEF_DTO), true);
-        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_2_ID);
-        assertEquals(2L, response.getId());
+        persist_generic(queryId2, List.of(IDENTIFIER_5_BRIEF_DTO), true);
+        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId2);
+        assertEquals(queryId2, response.getId());
         assertTrue(response.getIsPersisted());
     }
 
@@ -118,17 +123,18 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
             InterruptedException {
 
         /* mock */
+        final UUID queryId1 = MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
 
         /* test */
-        persist_generic(QUERY_1_ID, List.of(IDENTIFIER_2_BRIEF_DTO), false);
-        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, QUERY_1_ID);
-        assertEquals(1L, response.getId());
+        persist_generic(queryId1, List.of(IDENTIFIER_2_BRIEF_DTO), false);
+        final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId1);
+        assertEquals(queryId1, response.getId());
         assertFalse(response.getIsPersisted());
     }
 
-    protected void findById_generic(Long queryId) throws RemoteUnavailableException, SQLException,
+    protected void findById_generic(UUID queryId) throws RemoteUnavailableException, SQLException,
             UserNotFoundException, QueryNotFoundException, MetadataServiceException, DatabaseNotFoundException,
             InterruptedException {
 
@@ -136,15 +142,14 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* mock */
-        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, QUERY_1_ID))
+        when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
                 .thenReturn(List.of(IDENTIFIER_2_BRIEF_DTO));
         when(metadataServiceGateway.getUserById(USER_1_ID))
                 .thenReturn(USER_1_DTO);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
 
         /* test */
         final QueryDto response = queryService.findById(DATABASE_1_PRIVILEGED_DTO, queryId);
-        assertEquals(QUERY_1_ID, response.getId());
+        assertEquals(queryId, response.getId());
     }
 
     protected List<QueryDto> findAll_generic(Boolean filterPersisted) throws SQLException, QueryNotFoundException,
@@ -164,7 +169,7 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         return queryService.findAll(DATABASE_1_PRIVILEGED_DTO, filterPersisted);
     }
 
-    protected void persist_generic(Long queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
+    protected void persist_generic(UUID queryId, List<IdentifierBriefDto> identifiers, Boolean persist)
             throws RemoteUnavailableException, SQLException, QueryStorePersistException, MetadataServiceException,
             DatabaseNotFoundException, InterruptedException {
 
@@ -174,8 +179,6 @@ public class SubsetServiceIntegrationTest extends AbstractUnitTest {
         /* mock */
         when(metadataServiceGateway.getIdentifiers(DATABASE_1_ID, queryId))
                 .thenReturn(identifiers);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_1_DTO, USER_1_ID);
-        MariaDbConfig.insertQueryStore(DATABASE_1_PRIVILEGED_DTO, QUERY_2_DTO, USER_1_ID);
 
         /* test */
         queryService.persist(DATABASE_1_PRIVILEGED_DTO, queryId, persist);

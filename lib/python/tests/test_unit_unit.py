@@ -11,7 +11,7 @@ class UserUnitTest(unittest.TestCase):
 
     def test_get_units_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [UnitBrief(id=1,
+            exp = [UnitBrief(id="d8eec1ab-7b37-4eb3-bdf7-b44a8b384c0b",
                              uri='http://www.ontology-of-units-of-measure.org/resource/om-2/CelsiusTemperature',
                              name='Celsius Temperature')]
             # mock

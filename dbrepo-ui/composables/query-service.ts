@@ -3,7 +3,7 @@ import type {AxiosRequestConfig} from 'axios'
 import {axiosErrorToApiError} from '@/utils'
 
 export const useQueryService = (): any => {
-  async function findAll(databaseId: number, persisted: boolean): Promise<QueryDto[]> {
+  async function findAll(databaseId: string, persisted: boolean): Promise<QueryDto[]> {
     const axios = useAxiosInstance()
     console.debug('find queries')
     return new Promise<QueryDto[]>((resolve, reject) => {
@@ -23,7 +23,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function findOne(databaseId: number, queryId: number): Promise<QueryDto> {
+  async function findOne(databaseId: string, queryId: string): Promise<QueryDto> {
     const axios = useAxiosInstance()
     console.debug('find query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
@@ -39,7 +39,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function update(databaseId: number, queryId: number, data: QueryPersistDto): Promise<QueryDto> {
+  async function update(databaseId: string, queryId: string, data: QueryPersistDto): Promise<QueryDto> {
     const axios = useAxiosInstance()
     console.debug('update query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
@@ -55,7 +55,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function exportCsv(databaseId: number, queryId: number): Promise<any> {
+  async function exportCsv(databaseId: string, queryId: string): Promise<any> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
       responseType: 'blob',
@@ -77,7 +77,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function execute(databaseId: number, data: ExecuteStatementDto, timestamp: Date | null, page: number, size: number): Promise<QueryResultDto> {
+  async function execute(databaseId: string, data: ExecuteStatementDto, timestamp: Date | null, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
@@ -85,7 +85,7 @@ export const useQueryService = (): any => {
         .then((response) => {
           console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
           const result: QueryResultDto = {
-            id: 1,
+            id: response.headers['x-id'],
             headers: [],
             result: response.data
           }
@@ -98,7 +98,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function reExecuteData(databaseId: number, queryId: number, page: number, size: number): Promise<QueryResultDto> {
+  async function reExecuteData(databaseId: string, queryId: string, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
@@ -106,7 +106,7 @@ export const useQueryService = (): any => {
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
           const result: QueryResultDto = {
-            id: Number(response.headers['x-id']),
+            id: response.headers['x-id'],
             headers: response.headers['x-headers'] ? response.headers['x-headers'].split(',') : [],
             result: response.data
           }
@@ -119,7 +119,7 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function reExecuteCount(databaseId: number, queryId: number): Promise<number> {
+  async function reExecuteCount(databaseId: string, queryId: string): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {

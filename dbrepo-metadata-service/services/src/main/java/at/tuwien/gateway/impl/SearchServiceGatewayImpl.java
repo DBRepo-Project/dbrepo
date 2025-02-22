@@ -18,6 +18,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.UUID;
+
 @Log4j2
 @Service
 public class SearchServiceGatewayImpl implements SearchServiceGateway {
@@ -64,7 +66,7 @@ public class SearchServiceGatewayImpl implements SearchServiceGateway {
     }
 
     @Override
-    public void delete(Long databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
+    public void delete(UUID databaseId) throws SearchServiceConnectionException, SearchServiceException, DatabaseNotFoundException {
         final ResponseEntity<Void> response;
         final String path = "/api/search/database/" + databaseId;
         log.trace("delete database at endpoint {} with path {}", gatewayConfig.getSearchEndpoint(), path);

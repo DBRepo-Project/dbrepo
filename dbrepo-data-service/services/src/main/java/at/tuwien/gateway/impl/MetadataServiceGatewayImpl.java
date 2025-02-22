@@ -44,11 +44,11 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public ContainerDto getContainerById(Long containerId) throws RemoteUnavailableException,
+    public ContainerDto getContainerById(UUID containerId) throws RemoteUnavailableException,
             ContainerNotFoundException, MetadataServiceException {
         final ResponseEntity<ContainerDto> response;
         final String url = "/api/container/" + containerId;
-        log.debug("get  container info from metadata service: {}", url);
+        log.debug("get container info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY,
                     ContainerDto.class);
@@ -63,7 +63,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find container with id {}: service responded unsuccessful: {}", containerId, response.getStatusCode());
             throw new MetadataServiceException("Failed to find container: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Jdbc-Method");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  container headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -77,16 +77,17 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final ContainerDto container = metadataMapper.containerDtoToContainerDto(response.getBody());
         container.setUsername(response.getHeaders().get("X-Username").get(0));
         container.setPassword(response.getHeaders().get("X-Password").get(0));
+        container.getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         container.setLastRetrieved(Instant.now());
         return container;
     }
 
     @Override
-    public DatabaseDto getDatabaseById(Long id) throws DatabaseNotFoundException, RemoteUnavailableException,
+    public DatabaseDto getDatabaseById(UUID id) throws DatabaseNotFoundException, RemoteUnavailableException,
             MetadataServiceException {
         final ResponseEntity<DatabaseDto> response;
         final String url = "/api/database/" + id;
-        log.debug("get  database info from metadata service: {}", url);
+        log.debug("get database info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, DatabaseDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
@@ -100,7 +101,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find database with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find database: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Jdbc-Method");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  database headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -114,16 +115,17 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final DatabaseDto database = response.getBody();
         database.getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         database.getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
+        database.getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         database.setLastRetrieved(Instant.now());
         return database;
     }
 
     @Override
-    public TableDto getTableById(Long databaseId, Long id) throws TableNotFoundException,
+    public TableDto getTableById(UUID databaseId, UUID id) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
         final ResponseEntity<TableDto> response;
         final String url = "/api/database/" + databaseId + "/table/" + id;
-        log.debug("get  table info from metadata service: {}", url);
+        log.debug("get table info from metadata service: {}", url);
         try {
             response = internalRestTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, TableDto.class);
         } catch (ResourceAccessException | HttpServerErrorException e) {
@@ -137,7 +139,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find table with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find table: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Jdbc-Method");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  table headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -151,12 +153,13 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final TableDto table = metadataMapper.tableDtoToTableDto(response.getBody());
         table.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         table.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
+        table.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         table.setLastRetrieved(Instant.now());
         return table;
     }
 
     @Override
-    public ViewDto getViewById(Long databaseId, Long id) throws RemoteUnavailableException,
+    public ViewDto getViewById(UUID databaseId, UUID id) throws RemoteUnavailableException,
             ViewNotFoundException, MetadataServiceException {
         final ResponseEntity<ViewDto> response;
         final String url = "/api/database/" + databaseId + "/view/" + id;
@@ -174,7 +177,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
             log.error("Failed to find view with id {}: service responded unsuccessful: {}", id, response.getStatusCode());
             throw new MetadataServiceException("Failed to find view: service responded unsuccessful: " + response.getStatusCode());
         }
-        final List<String> expectedHeaders = List.of("X-Username", "X-Password");
+        final List<String> expectedHeaders = List.of("X-Username", "X-Password", "X-Jdbc-Method");
         if (!response.getHeaders().keySet().containsAll(expectedHeaders)) {
             log.error("Failed to find all  view headers");
             log.debug("expected headers: {}", expectedHeaders);
@@ -188,6 +191,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
         final ViewDto view = metadataMapper.viewDtoToViewDto(response.getBody());
         view.getDatabase().getContainer().setUsername(response.getHeaders().get("X-Username").get(0));
         view.getDatabase().getContainer().setPassword(response.getHeaders().get("X-Password").get(0));
+        view.getDatabase().getContainer().getImage().setJdbcMethod(response.getHeaders().get("X-Jdbc-Method").get(0));
         view.setLastRetrieved(Instant.now());
         return view;
     }
@@ -230,7 +234,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public DatabaseAccessDto getAccess(Long databaseId, UUID userId) throws RemoteUnavailableException,
+    public DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
             NotAllowedException, MetadataServiceException {
         final ResponseEntity<DatabaseAccessDto> response;
         final String url = "/api/database/" + databaseId + "/access/" + userId;
@@ -256,7 +260,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public List<IdentifierBriefDto> getIdentifiers(@NotNull Long databaseId, Long subsetId) throws MetadataServiceException,
+    public List<IdentifierBriefDto> getIdentifiers(@NotNull UUID databaseId, UUID subsetId) throws MetadataServiceException,
             RemoteUnavailableException, DatabaseNotFoundException {
         final ResponseEntity<IdentifierBriefDto[]> response;
         final String url = "/api/identifier?dbid=" + databaseId + (subsetId != null ? ("&qid=" + subsetId) : "");
@@ -282,7 +286,7 @@ public class MetadataServiceGatewayImpl implements MetadataServiceGateway {
     }
 
     @Override
-    public void updateTableStatistics(Long databaseId, Long tableId, String authorization) throws TableNotFoundException,
+    public void updateTableStatistics(UUID databaseId, UUID tableId, String authorization) throws TableNotFoundException,
             MetadataServiceException, RemoteUnavailableException {
         final ResponseEntity<Void> response;
         final String url = "/api/database/" + databaseId + "/table/" + tableId + "/statistic";

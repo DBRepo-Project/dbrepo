@@ -743,7 +743,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         doNothing()
                 .when(messageQueueService)
                 .setVirtualHostPermissions(user);
-        when(databaseService.findById(anyLong()))
+        when(databaseService.findById(any(UUID.class)))
                 .thenReturn(DATABASE_1);
 
         /* test */
@@ -752,7 +752,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void visibility_generic(Long databaseId, Database database, DatabaseModifyVisibilityDto data,
+    public void visibility_generic(UUID databaseId, Database database, DatabaseModifyVisibilityDto data,
                                    Principal principal) throws NotAllowedException, DatabaseNotFoundException,
             SearchServiceException, SearchServiceConnectionException, UserNotFoundException {
 
@@ -774,7 +774,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
+    public DatabaseDto findById_generic(UUID databaseId, Database database, Principal principal)
             throws DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException,
             DataServiceException, UserNotFoundException, NotAllowedException {
 
@@ -796,7 +796,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         return body;
     }
 
-    public ResponseEntity<byte[]> findPreviewImage_generic(Long databaseId, Database database) throws DatabaseNotFoundException {
+    public ResponseEntity<byte[]> findPreviewImage_generic(UUID databaseId, Database database) throws DatabaseNotFoundException {
 
         /* mock */
         if (database != null) {

@@ -190,7 +190,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Type"));
         assertEquals(List.of(DATABASE_3_INTERNALNAME), headers.get("X-Database"));
         assertEquals(List.of(VIEW_5_INTERNAL_NAME), headers.get("X-View"));
-        assertEquals(List.of("X-Username X-Password X-Host X-Port X-Type X-Database X-View"), headers.get("Access-Control-Expose-Headers"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
+        assertEquals(List.of("X-Username X-Password X-Host X-Port X-Type X-Database X-View X-Jdbc-Method"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test
@@ -441,7 +442,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void findAll_generic(Long databaseId, Database database, Principal principal, UUID userId, User user,
+    protected void findAll_generic(UUID databaseId, Database database, Principal principal, UUID userId, User user,
                                    DatabaseAccess access) throws AccessNotFoundException, UserNotFoundException,
             DatabaseNotFoundException {
 
@@ -477,7 +478,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         }
     }
 
-    protected void create_generic(Long databaseId, Database database, Principal principal, UUID userId, User user,
+    protected void create_generic(UUID databaseId, Database database, Principal principal, UUID userId, User user,
                                   DatabaseAccess access) throws MalformedException, DataServiceException,
             DataServiceConnectionException, NotAllowedException, UserNotFoundException, DatabaseNotFoundException,
             AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
@@ -514,7 +515,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         assertEquals(VIEW_1_NAME, response.getBody().getName());
     }
 
-    protected ResponseEntity<ViewDto> find_generic(Long databaseId, Database database, Principal principal,
+    protected ResponseEntity<ViewDto> find_generic(UUID databaseId, Database database, Principal principal,
                                                    UUID userId, User user, DatabaseAccess access)
             throws DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, ViewNotFoundException {
 
@@ -533,10 +534,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         if (principal != null) {
             when(userService.findById(userId))
                     .thenReturn(user);
-            when(viewService.findById(any(Database.class), anyLong()))
+            when(viewService.findById(any(Database.class), any(UUID.class)))
                     .thenReturn(VIEW_5);
         } else {
-            when(viewService.findById(any(Database.class), anyLong()))
+            when(viewService.findById(any(Database.class), any(UUID.class)))
                     .thenReturn(VIEW_5);
         }
 
@@ -548,7 +549,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
         return response;
     }
 
-    protected void delete_generic(Long databaseId, Database database, Long viewId, View view, Principal principal,
+    protected void delete_generic(UUID databaseId, Database database, UUID viewId, View view, Principal principal,
                                   UUID userId, User user, DatabaseAccess access) throws NotAllowedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, AccessNotFoundException,
             SearchServiceException, SearchServiceConnectionException, ViewNotFoundException, UserNotFoundException {

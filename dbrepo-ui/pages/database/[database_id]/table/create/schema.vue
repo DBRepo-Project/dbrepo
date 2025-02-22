@@ -32,8 +32,10 @@
               :disabled="table"
               @submit.prevent="submit">
               <v-container>
-                <v-row dense>
-                  <v-col md="4">
+                <v-row
+                  dense>
+                  <v-col
+                    lg="4">
                     <v-text-field
                       v-model="tableCreate.name"
                       :rules="[
@@ -48,7 +50,8 @@
                       :hint="$t('pages.table.subpages.import.name.hint')"
                       :label="$t('pages.table.subpages.import.name.label')" />
                   </v-col>
-                  <v-col md="4">
+                  <v-col
+                    lg="4">
                     <v-text-field
                       v-model="generatedTableName"
                       :rules="[
@@ -65,8 +68,10 @@
                       :label="$t('pages.table.subpages.import.generated.label')" />
                   </v-col>
                 </v-row>
-                <v-row dense>
-                  <v-col md="8">
+                <v-row
+                  dense>
+                  <v-col
+                    lg="8">
                     <v-textarea
                       v-model="tableCreate.description"
                       rows="2"
@@ -82,7 +87,7 @@
                 <v-row
                   dense>
                   <v-col
-                    md="4">
+                    lg="4">
                     <v-select
                       v-model="tableCreate.is_public"
                       name="public"
@@ -98,7 +103,7 @@
                     </v-select>
                   </v-col>
                   <v-col
-                    md="4">
+                    lg="4">
                     <v-select
                       v-model="tableCreate.is_schema_public"
                       name="schema-public"
@@ -146,7 +151,8 @@
             <v-container>
               <v-row
                 dense>
-                <v-col md="8">
+                <v-col
+                  lg="8">
                   <v-alert
                     border="start"
                     color="success">

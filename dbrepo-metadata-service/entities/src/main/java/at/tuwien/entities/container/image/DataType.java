@@ -2,9 +2,10 @@ package at.tuwien.entities.container.image;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -18,9 +19,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class DataType {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    public Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @Column(name = "display_name", nullable = false)
     private String displayName;
@@ -74,5 +75,12 @@ public class DataType {
             @JoinColumn(name = "image_id", referencedColumnName = "id")
     })
     private ContainerImage image;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

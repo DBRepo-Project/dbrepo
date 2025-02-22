@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -81,7 +82,7 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container find(Long id) throws ContainerNotFoundException {
+    public Container find(UUID id) throws ContainerNotFoundException {
         final Optional<Container> container = containerRepository.findById(id);
         if (container.isEmpty()) {
             log.error("Failed to find container with id {} in metadata database", id);

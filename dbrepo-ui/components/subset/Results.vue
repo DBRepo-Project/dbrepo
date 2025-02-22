@@ -80,7 +80,7 @@ export default {
     }
   },
   methods: {
-    reExecute (id) {
+    reExecute (id, timestamp) {
       if (id === null) {
         return
       }
@@ -110,7 +110,7 @@ export default {
           })
       } else if (this.type === 'table') {
         const tableService = useTableService()
-        tableService.getData(this.$route.params.database_id, id, (this.options.page - 1), this.options.itemsPerPage, this.timestamp)
+        tableService.getData(this.$route.params.database_id, id, (this.options.page - 1), this.options.itemsPerPage, timestamp ? timestamp : this.timestamp)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -156,7 +156,7 @@ export default {
           })
       }
     },
-    reExecuteCount (id) {
+    reExecuteCount (id, timestamp) {
       if (id === null) {
         return
       }
@@ -181,7 +181,7 @@ export default {
           })
       } else if (this.type === 'table') {
         const tableService = useTableService()
-        tableService.getCount(this.$route.params.database_id, id, this.timestamp)
+        tableService.getCount(this.$route.params.database_id, id, timestamp ? timestamp : this.timestamp)
           .then((count) => {
             this.total = count
             this.loadingCount = false

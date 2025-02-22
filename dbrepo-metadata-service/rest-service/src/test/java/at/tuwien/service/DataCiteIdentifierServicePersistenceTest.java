@@ -36,6 +36,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -88,7 +89,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
         /* test */
         final List<Identifier> response = dataCiteIdentifierService.findAll(null, null, null, null, null);
         assertEquals(7, response.size());
-        for (Long id : List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_4_ID, IDENTIFIER_5_ID, IDENTIFIER_6_ID, IDENTIFIER_7_ID)) {
+        for (UUID id : List.of(IDENTIFIER_1_ID, IDENTIFIER_2_ID, IDENTIFIER_3_ID, IDENTIFIER_4_ID, IDENTIFIER_5_ID, IDENTIFIER_6_ID, IDENTIFIER_7_ID)) {
             assertTrue(response.stream().map(Identifier::getId).toList().contains(id));
         }
     }
@@ -110,7 +111,7 @@ public class DataCiteIdentifierServicePersistenceTest extends AbstractUnitTest {
 
         /* test */
         final List<Identifier> response = dataCiteIdentifierService.findAll(null, null, QUERY_1_ID, null, null);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test

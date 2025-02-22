@@ -2,7 +2,7 @@ import {axiosErrorToApiError} from '@/utils'
 import type {AxiosRequestConfig} from "axios";
 
 export const useViewService = (): any => {
-  async function remove(databaseId: number, viewId: number): Promise<void> {
+  async function remove(databaseId: string, viewId: string): Promise<void> {
     const axios = useAxiosInstance()
     console.debug('delete view with id', viewId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
@@ -18,7 +18,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function findOne(databaseId: number, viewId: number): Promise<ViewDto> {
+  async function findOne(databaseId: string, viewId: string): Promise<ViewDto> {
     const axios = useAxiosInstance()
     console.debug('get view with id', viewId, 'in database with id', databaseId)
     return new Promise<ViewDto>((resolve, reject) => {
@@ -34,7 +34,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function create(databaseId: number, payload: ViewCreateDto): Promise<ViewDto> {
+  async function create(databaseId: string, payload: ViewCreateDto): Promise<ViewDto> {
     const axios = useAxiosInstance()
     console.debug('create view in database with id', databaseId)
     return new Promise<ViewDto>((resolve, reject) => {
@@ -50,7 +50,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function update(databaseId: number, viewId: number, payload: ViewUpdateDto): Promise<ViewDto> {
+  async function update(databaseId: string, viewId: string, payload: ViewUpdateDto): Promise<ViewDto> {
     const axios = useAxiosInstance()
     console.debug('update view with id', viewId)
     return new Promise<ViewDto>((resolve, reject) => {
@@ -66,7 +66,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function reExecuteData(databaseId: number, viewId: number, page: number | null, size: number | null): Promise<QueryResultDto> {
+  async function reExecuteData(databaseId: string, viewId: string, page: number | null, size: number | null): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
@@ -87,7 +87,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function reExecuteCount(databaseId: number, viewId: number): Promise<number> {
+  async function reExecuteCount(databaseId: string, viewId: string): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
@@ -104,7 +104,7 @@ export const useViewService = (): any => {
     })
   }
 
-  async function exportData(databaseId: number, viewId: number): Promise<QueryResultDto> {
+  async function exportData(databaseId: string, viewId: string): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
       responseType: 'blob',

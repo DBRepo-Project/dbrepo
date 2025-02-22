@@ -541,7 +541,7 @@
           }
         },
         "semantics": {
-          "title": "Assign semantic instance for table column",
+          "title": "Assign semantic {type} for table column",
           "subtitle": "Semantic instances help machines to get the proper context of your dataset",
           "recommended": "Recommended semantic instances",
           "bullet": "●",
@@ -1305,8 +1305,9 @@
       "revoked": "Revoked {access} access successfully"
     },
     "data": {
-      "add": "Successfully added data entry",
-      "update": "Successfully updated data entry"
+      "add": "Successfully added data tuple",
+      "update": "Successfully updated data tuple",
+      "deleted": "Successfully deleted {total} data tuple(s)"
     },
     "table": {
       "created": "Created table {table} successfully",

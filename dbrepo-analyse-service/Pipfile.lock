@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1013ec1b081d79912b7ec0878b4824cb4f885a96fec148ae728d746de601b493"
+            "sha256": "0af9d522f713554dd7996401992cffddf372ade320c11d7950bdcd5888aa1a03"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -180,20 +180,20 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:39957eabdce009353d72d131046489fbbfa15891865d5f069f1e8bfa414e6b81",
-                "sha256:768c8a4d4a6227fe2258105efa086f1424cba5ca915a5eb2305b2cd979306ad1"
+                "sha256:777ec08a6fe0ad77fa0607b431542c51d2d2e4145fecd512bee9f383ee4184f2",
+                "sha256:c9055fe6a33f79c43053c06db432092cfcf88f4b4181950f5ca8f2f0cb6abb87"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.22"
+            "version": "==1.36.24"
         },
         "botocore": {
             "hashes": [
-                "sha256:59520247d5a479731724f97c995d5a1c2aae3b303b324f39d99efcfad1d3019e",
-                "sha256:75d6b34acb0686ee4d54ff6eb285e78ccfe318407428769d1e3e13351714d890"
+                "sha256:7d35ba92ccbed7aa7e1563b12bb339bde612d5f845c89bfdd79a6db8c26b9f2e",
+                "sha256:b8b2ad60e6545aaef3a40163793c39555fcfd67fb081a38695018026c4f4db25"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.22"
+            "version": "==1.36.24"
         },
         "certifi": {
             "hashes": [
@@ -421,9 +421,9 @@
         },
         "dbrepo": {
             "hashes": [
-                "sha256:e2312f0d3cff34934578a16b01d646d8309e3a3d1bb4cbda9f984acf97824e00"
+                "sha256:779e7ee84ae91131e16100fee7143013b4c231dcd3990d418d024ff76af271e9"
             ],
-            "path": "./lib/dbrepo-1.6.5.tar.gz"
+            "path": "./lib/dbrepo-1.7.0.tar.gz"
         },
         "events": {
             "hashes": [
@@ -847,11 +847,11 @@
         },
         "mistune": {
             "hashes": [
-                "sha256:02106ac2aa4f66e769debbfa028509a275069dcffce0dfa578edd7b991ee700a",
-                "sha256:e0740d635f515119f7d1feb6f9b192ee60f0cc649f80a8f944f905706a21654c"
+                "sha256:4b47731332315cdca99e0ded46fc0004001c1299ff773dfb48fbe1fd226de319",
+                "sha256:733bf018ba007e8b5f2d3a9eb624034f6ee26c4ea769a98ec533ee111d504dff"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.1.1"
+            "version": "==3.1.2"
         },
         "multidict": {
             "hashes": [

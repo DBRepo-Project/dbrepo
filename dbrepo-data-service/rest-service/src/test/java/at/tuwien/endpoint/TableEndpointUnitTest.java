@@ -290,7 +290,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -313,7 +313,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(tableService.getCount(eq(TABLE_8_PRIVILEGED_DTO), any(Instant.class)))
                 .thenReturn(3L);
-        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(eq(DATABASE_3_PRIVILEGED_DTO), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
@@ -373,7 +373,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
         doThrow(QueryMalformedException.class)
                 .when(subsetService)
-                .getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null));
+                .getData(any(DatabaseDto.class), anyString());
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
 
@@ -416,7 +416,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_2_ID))
                 .thenReturn(access);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(0L), eq(10L), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
@@ -1159,7 +1159,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(TABLE_8_PRIVILEGED_DTO);
         when(credentialService.getDatabase(DATABASE_3_ID))
                 .thenReturn(DATABASE_3_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
 
         /* test */
@@ -1182,7 +1182,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(access);
         when(credentialService.getDatabase(DATABASE_1_ID))
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(subsetService.getData(any(DatabaseDto.class), anyString(), any(Instant.class), eq(null), eq(null), eq(null), eq(null)))
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
                 .thenReturn(mock);
 
         /* test */

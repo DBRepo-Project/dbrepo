@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -17,8 +19,8 @@ import lombok.extern.jackson.Jacksonized;
 public class SaveIdentifierFunderDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "1c6b9212-a315-44b9-946c-3682a7a0e517")
+    private UUID id;
 
     @NotBlank
     @JsonProperty("funder_name")

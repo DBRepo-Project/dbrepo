@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -45,7 +46,6 @@ import java.util.Map;
 public class ViewEndpoint extends RestEndpoint {
 
     private final ViewService viewService;
-    private final TableService tableService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final MetricsService metricsService;
@@ -55,12 +55,10 @@ public class ViewEndpoint extends RestEndpoint {
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, TableService tableService, MariaDbMapper mariaDbMapper,
-                        SubsetService subsetService, MetricsService metricsService, StorageService storageService,
-                        DatabaseService databaseService, CredentialService credentialService,
-                        EndpointValidator endpointValidator) {
+    public ViewEndpoint(ViewService viewService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
+                        MetricsService metricsService, StorageService storageService, DatabaseService databaseService,
+                        CredentialService credentialService, EndpointValidator endpointValidator) {
         this.viewService = viewService;
-        this.tableService = tableService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.metricsService = metricsService;
@@ -107,7 +105,7 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<ViewDto>> getSchema(@NotNull @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<List<ViewDto>> getSchema(@NotNull @PathVariable("databaseId") UUID databaseId)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, MetadataServiceException, ViewNotFoundException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
@@ -152,7 +150,7 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                           @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
             DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
@@ -195,8 +193,8 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("viewId") Long viewId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("viewId") UUID viewId)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
             ViewMalformedException, MetadataServiceException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
@@ -250,8 +248,8 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                             @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                             @NotNull @PathVariable("viewId") UUID viewId,
                                                              @RequestParam(required = false) Long page,
                                                              @RequestParam(required = false) Long size,
                                                              @RequestParam(required = false) Instant timestamp,
@@ -297,7 +295,7 @@ public class ViewEndpoint extends RestEndpoint {
             final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
                     view.getInternalName(), timestamp, page, size);
             final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
-                    query, timestamp, page, size, null, null);
+                    query);
             metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
                     .headers(headers)
@@ -340,8 +338,8 @@ public class ViewEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                             @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<InputStreamResource> exportDataset(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                             @NotNull @PathVariable("viewId") UUID viewId,
                                                              @RequestParam(required = false) Instant timestamp,
                                                              Principal principal)
             throws RemoteUnavailableException, ViewNotFoundException, NotAllowedException, MetadataServiceException,
@@ -364,7 +362,7 @@ public class ViewEndpoint extends RestEndpoint {
         final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
                 view.getInternalName(), timestamp, null, null);
         final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
-                query, timestamp, null, null, null, null);
+                query);
         metricsService.countViewGetData(databaseId, viewId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);
         final HttpHeaders headers = new HttpHeaders();

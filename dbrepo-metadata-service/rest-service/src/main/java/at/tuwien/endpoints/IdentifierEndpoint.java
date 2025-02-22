@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,10 +91,10 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     })
     public ResponseEntity<?> findAll(@Valid @RequestParam(value = "type", required = false) IdentifierTypeDto type,
                                      @Valid @RequestParam(value = "status", required = false) IdentifierStatusTypeDto status,
-                                     @Valid @RequestParam(value = "dbid", required = false) Long dbid,
-                                     @Valid @RequestParam(value = "qid", required = false) Long qid,
-                                     @Valid @RequestParam(value = "vid", required = false) Long vid,
-                                     @Valid @RequestParam(value = "tid", required = false) Long tid,
+                                     @Valid @RequestParam(value = "dbid", required = false) UUID dbid,
+                                     @Valid @RequestParam(value = "qid", required = false) UUID qid,
+                                     @Valid @RequestParam(value = "vid", required = false) UUID vid,
+                                     @Valid @RequestParam(value = "tid", required = false) UUID tid,
                                      @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                      Principal principal) {
         log.debug("endpoint find identifiers, type={}, status={}, dbid={}, qid={}, vid={}, tid={}, accept={}", type,
@@ -185,7 +186,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> find(@Valid @PathVariable("identifierId") Long identifierId,
+    public ResponseEntity<?> find(@Valid @PathVariable("identifierId") UUID identifierId,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                   Principal principal) throws IdentifierNotFoundException,
             DataServiceException, DataServiceConnectionException, MalformedException, FormatNotAvailableException,
@@ -278,7 +279,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("identifierId") Long identifierId)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("identifierId") UUID identifierId)
             throws IdentifierNotFoundException, NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
             SearchServiceConnectionException {
@@ -332,7 +333,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<IdentifierDto> publish(@Valid @PathVariable("identifierId") Long identifierId)
+    public ResponseEntity<IdentifierDto> publish(@Valid @PathVariable("identifierId") UUID identifierId)
             throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException,
             MalformedException, DataServiceConnectionException, IdentifierNotFoundException, ExternalServiceException {
         log.debug("endpoint publish identifier, identifierId={}", identifierId);
@@ -380,7 +381,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<IdentifierDto> save(@NotNull @PathVariable("identifierId") Long identifierId,
+    public ResponseEntity<IdentifierDto> save(@NotNull @PathVariable("identifierId") UUID identifierId,
                                               @NotNull @Valid @RequestBody IdentifierSaveDto data,
                                               @NotNull Principal principal) throws UserNotFoundException,
             DatabaseNotFoundException, MalformedException, NotAllowedException, DataServiceException,

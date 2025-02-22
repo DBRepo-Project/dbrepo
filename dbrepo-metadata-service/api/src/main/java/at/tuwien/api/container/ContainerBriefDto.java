@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,8 +23,8 @@ import java.time.Instant;
 public class ContainerBriefDto {
 
     @NotNull
-    @Schema(example = "4")
-    private Long id;
+    @Schema(example = "7ddb7e87-b965-43a2-9a24-4fa406d998f4")
+    private UUID id;
 
     @NotNull
     @Schema(example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -19,8 +21,8 @@ import lombok.extern.jackson.Jacksonized;
 public class CreatorBriefDto {
 
     @NotNull
-    @Schema(example = "11")
-    private Long id;
+    @Schema(example = "e41f94a6-2b94-4a12-ac0e-678684e1c070")
+    private UUID id;
 
     @NotBlank
     @JsonProperty("creator_name")

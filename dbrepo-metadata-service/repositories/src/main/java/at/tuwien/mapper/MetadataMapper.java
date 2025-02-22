@@ -318,7 +318,7 @@ public interface MetadataMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "database.id"),
+            @Mapping(target = "databaseId", source = "database.id")
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
@@ -821,13 +821,14 @@ public interface MetadataMapper {
     }
 
     @Mappings({
+            @Mapping(target = "vdbid", source = "database.id"),
             @Mapping(target = "database.views", ignore = true),
             @Mapping(target = "database.tables", ignore = true)
     })
     ViewDto viewToViewDto(View data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "view.vdbid"),
+            @Mapping(target = "databaseId", source = "view.database.id"),
     })
     ViewColumnDto viewColumnToViewColumnDto(ViewColumn data);
 

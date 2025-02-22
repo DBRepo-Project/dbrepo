@@ -3,12 +3,12 @@
     no-gutters>
     <v-col
       v-if="!loading"
-      md="10">
+      lg="10">
       {{ citation }}
     </v-col>
     <v-col
       v-if="!$vuetify.display.mdAndDown"
-      md="2"
+      lg="2"
       class="cite-style">
       <v-select
         v-model="style"

@@ -1,11 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.api.container.CreateContainerDto;
-import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.entities.container.Container;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ContainerAlreadyExistsException;
+import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.ContainerRepository;
 import at.tuwien.repository.ImageRepository;
+import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,11 +22,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -87,7 +89,7 @@ public class ContainerServiceUnitTest extends AbstractUnitTest {
     public void create_imageNotFound_fails() {
         final CreateContainerDto request = CreateContainerDto.builder()
                 .name(CONTAINER_3_NAME)
-                .imageId(9999L)
+                .imageId(UUID.randomUUID())
                 .build();
 
         /* mock */
@@ -169,14 +171,14 @@ public class ContainerServiceUnitTest extends AbstractUnitTest {
         assertEquals(limit, response.size());
     }
 
-    protected void find_generic(Long containerId, Container container) throws ContainerNotFoundException {
+    protected void find_generic(UUID containerId, Container container) throws ContainerNotFoundException {
 
         /* mock */
         if (container != null) {
             when(containerRepository.findById(containerId))
                     .thenReturn(Optional.of(container));
         } else {
-            when(containerRepository.findById(anyLong()))
+            when(containerRepository.findById(any(UUID.class)))
                     .thenReturn(Optional.empty());
         }
 

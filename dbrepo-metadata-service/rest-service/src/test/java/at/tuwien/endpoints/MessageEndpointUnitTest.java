@@ -21,6 +21,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -215,7 +216,7 @@ public class MessageEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    protected void find_generic(Long messageId, BannerMessage message) throws MessageNotFoundException {
+    protected void find_generic(UUID messageId, BannerMessage message) throws MessageNotFoundException {
 
         /* mock */
         if (message != null) {
@@ -245,7 +246,7 @@ public class MessageEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    protected void update_generic(BannerMessageUpdateDto data, Long messageId, BannerMessage message)
+    protected void update_generic(BannerMessageUpdateDto data, UUID messageId, BannerMessage message)
             throws MessageNotFoundException {
 
         /* mock */
@@ -260,7 +261,7 @@ public class MessageEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(response.getBody());
     }
 
-    protected void delete_generic(Long messageId, BannerMessage message) throws MessageNotFoundException {
+    protected void delete_generic(UUID messageId, BannerMessage message) throws MessageNotFoundException {
 
         /* mock */
         if (message != null) {

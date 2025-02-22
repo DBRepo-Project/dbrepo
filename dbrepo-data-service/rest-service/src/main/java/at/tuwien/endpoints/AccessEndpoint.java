@@ -74,7 +74,7 @@ public class AccessEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody CreateAccessDto data)
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
@@ -130,7 +130,7 @@ public class AccessEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId,
                                        @Valid @RequestBody CreateAccessDto access) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
@@ -162,7 +162,7 @@ public class AccessEndpoint extends RestEndpoint {
             @ApiResponse(responseCode = "202",
                     description = "Invalidated access cache succeeded")
     })
-    public ResponseEntity<Void> invalidateAccess(@NotNull @PathVariable("databaseId") Long databaseId) {
+    public ResponseEntity<Void> invalidateAccess(@NotNull @PathVariable("databaseId") UUID databaseId) {
         log.debug("endpoint empty access cache for database, databaseId={}", databaseId);
         credentialService.invalidateAccess(databaseId);
         return ResponseEntity.accepted()
@@ -203,7 +203,7 @@ public class AccessEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> revoke(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @PathVariable("userId") UUID userId) throws NotAllowedException,
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {

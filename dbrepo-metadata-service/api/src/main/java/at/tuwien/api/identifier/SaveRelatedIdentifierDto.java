@@ -6,6 +6,8 @@ import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -16,8 +18,8 @@ import jakarta.validation.constraints.NotNull;
 public class SaveRelatedIdentifierDto {
 
     @NotNull
-    @Schema(example = "1")
-    private Long id;
+    @Schema(example = "5bb272c7-7421-4f74-83ac-0486812d0f44")
+    private UUID id;
 
     @NotNull
     @Schema(example = "10.70124/dc4zh-9ce78")

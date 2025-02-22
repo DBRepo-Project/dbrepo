@@ -2,9 +2,12 @@ package at.tuwien.service;
 
 import at.tuwien.api.container.CreateContainerDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ContainerAlreadyExistsException;
+import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.ImageNotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ContainerService {
 
@@ -34,7 +37,7 @@ public interface ContainerService {
      * @return The container object, if successful.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
-    Container find(Long id) throws ContainerNotFoundException;
+    Container find(UUID id) throws ContainerNotFoundException;
 
     /**
      * Retrieve a list of all containers from the metadata database

@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.SortTypeDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
@@ -44,9 +43,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public Dataset<Row> getData(DatabaseDto database, String query, Instant timestamp, Long page, Long size,
-                                SortTypeDto sortDirection, String sortColumn)
-            throws QueryMalformedException, TableNotFoundException {
+    public Dataset<Row> getData(DatabaseDto database, String query) throws QueryMalformedException, TableNotFoundException {
         try {
             return sparkSession.read()
                     .format("jdbc")
@@ -68,7 +65,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public Long create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
+    public UUID create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
             throws QueryStoreInsertException, SQLException {
         return storeQuery(database, statement, timestamp, userId);
     }
@@ -133,14 +130,14 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public QueryDto findById(DatabaseDto database, Long queryId) throws QueryNotFoundException, SQLException,
+    public QueryDto findById(DatabaseDto database, UUID queryId) throws QueryNotFoundException, SQLException,
             RemoteUnavailableException, DatabaseNotFoundException, MetadataServiceException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
             final long start = System.currentTimeMillis();
             final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreFindQueryRawQuery());
-            preparedStatement.setLong(1, queryId);
+            preparedStatement.setString(1, String.valueOf(queryId));
             final ResultSet resultSet = preparedStatement.executeQuery();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             if (!resultSet.next()) {
@@ -160,10 +157,10 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public Long storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
+    public UUID storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
             QueryStoreInsertException {
         /* save */
-        final Long queryId;
+        final UUID queryId;
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -177,10 +174,10 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             }
             callableStatement.setString(2, query);
             callableStatement.setTimestamp(3, Timestamp.from(timestamp));
-            callableStatement.registerOutParameter(4, Types.BIGINT);
+            callableStatement.registerOutParameter(4, Types.VARCHAR);
             callableStatement.executeUpdate();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
-            queryId = callableStatement.getLong(4);
+            queryId = UUID.fromString(callableStatement.getString(4));
             callableStatement.close();
             log.info("Stored query with id {} in database with name {}", queryId, database.getInternalName());
             connection.commit();
@@ -195,7 +192,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public void persist(DatabaseDto database, Long queryId, Boolean persist) throws SQLException,
+    public void persist(DatabaseDto database, UUID queryId, Boolean persist) throws SQLException,
             QueryStorePersistException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
@@ -204,7 +201,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             final long start = System.currentTimeMillis();
             final PreparedStatement preparedStatement = connection.prepareStatement(mariaDbMapper.queryStoreUpdateQueryRawQuery());
             preparedStatement.setBoolean(1, persist);
-            preparedStatement.setLong(2, queryId);
+            preparedStatement.setString(2, String.valueOf(queryId));
             preparedStatement.executeUpdate();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
         } catch (SQLException e) {

@@ -17,7 +17,7 @@
           <v-row
             dense>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="modify.is_public"
                 :items="dataOptions"
@@ -31,7 +31,7 @@
                 :hint="$t('pages.database.resource.data.hint', { resource: 'view' })" />
             </v-col>
             <v-col
-              md="4">
+              lg="4">
               <v-select
                 v-model="modify.is_schema_public"
                 :items="schemaOptions"
@@ -72,7 +72,7 @@
       <v-card-text>
         <v-row>
           <v-col
-            md="8">
+            lg="8">
             <v-btn
               size="small"
               variant="flat"

@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -20,13 +22,13 @@ import lombok.extern.jackson.Jacksonized;
 public class ViewColumnDto {
 
     @NotNull
-    @Schema(example = "12")
-    private Long id;
+    @Schema(example = "6aec3a91-2e0b-4e92-a16a-9c3c5e892da1")
+    private UUID id;
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
-    private Long databaseId;
+    @Schema(example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
+    private UUID databaseId;
 
     @NotNull
     @JsonProperty("ord")

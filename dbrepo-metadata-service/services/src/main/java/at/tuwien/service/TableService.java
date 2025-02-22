@@ -9,6 +9,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 public interface TableService {
 
@@ -19,7 +20,7 @@ public interface TableService {
      * @param tableId  The table id.
      * @return The table, if successful.
      */
-    Table findById(Database database, Long tableId) throws TableNotFoundException, DatabaseNotFoundException;
+    Table findById(Database database, UUID tableId) throws TableNotFoundException, DatabaseNotFoundException;
 
     /**
      * Find a table in the metadata database by database id and table name.
@@ -57,7 +58,7 @@ public interface TableService {
     TableColumn update(TableColumn column, ColumnSemanticsUpdateDto updateDto) throws DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, MalformedException, OntologyNotFoundException, SemanticEntityNotFoundException;
 
-    TableColumn findColumnById(Table table, Long columnId) throws MalformedException;
+    TableColumn findColumnById(Table table, UUID columnId) throws MalformedException;
 
     void updateStatistics(Table table) throws SearchServiceException, DatabaseNotFoundException, SearchServiceConnectionException, MalformedException, TableNotFoundException, DataServiceException, DataServiceConnectionException;
 }

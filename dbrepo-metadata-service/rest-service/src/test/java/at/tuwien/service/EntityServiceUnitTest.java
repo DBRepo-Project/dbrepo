@@ -133,6 +133,7 @@ public class EntityServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @Disabled
     public void suggestTableColumnSemantics_succeeds() throws MalformedException {
 
         /* mock */

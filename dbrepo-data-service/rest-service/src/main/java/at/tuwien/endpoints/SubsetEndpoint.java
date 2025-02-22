@@ -100,7 +100,7 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<QueryDto>> list(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @RequestParam(name = "persisted", required = false) Boolean filterPersisted,
                                                Principal principal)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
@@ -157,8 +157,8 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") Long databaseId,
-                                      @NotNull @PathVariable("subsetId") Long subsetId,
+    public ResponseEntity<?> findById(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                      @NotNull @PathVariable("subsetId") UUID subsetId,
                                       @NotNull @RequestHeader("Accept") String accept,
                                       @RequestParam(required = false) Instant timestamp,
                                       Principal principal)
@@ -181,7 +181,7 @@ public class SubsetEndpoint extends RestEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        if (accept == null || accept.isEmpty() || accept.isBlank()) {
+        if (accept == null || accept.isBlank()) {
             accept = MediaType.APPLICATION_JSON_VALUE;
             log.debug("accept header not set: default to {}", accept);
         }
@@ -192,7 +192,7 @@ public class SubsetEndpoint extends RestEndpoint {
             case "text/csv":
                 log.trace("accept header matches csv");
                 final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, null, null);
-                final Dataset<Row> dataset = subsetService.getData(database, query, timestamp, null, null, null, null);
+                final Dataset<Row> dataset = subsetService.getData(database, query);
                 metricsService.countSubsetGetData(databaseId, subsetId);
                 final ExportResourceDto resource = storageService.transformDataset(dataset);
                 final HttpHeaders headers = new HttpHeaders();
@@ -247,7 +247,7 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<Map<String, Object>>> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                             @Valid @RequestBody ExecuteStatementDto data,
                                                             Principal principal,
                                                             @NotNull HttpServletRequest request,
@@ -288,7 +288,7 @@ public class SubsetEndpoint extends RestEndpoint {
         final DatabaseDto database = credentialService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
-            final Long subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
+            final UUID subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
             return getData(databaseId, subsetId, principal, request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -304,9 +304,9 @@ public class SubsetEndpoint extends RestEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved subset data",
-                    headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = Long.class)),
+                    headers = {@Header(name = "X-Count", description = "Number of rows", schema = @Schema(implementation = UUID.class)),
                             @Header(name = "X-Headers", description = "The list of headers separated by comma", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Id", description = "The subset id", schema = @Schema(implementation = Long.class), required = true),
+                            @Header(name = "X-Id", description = "The subset id", schema = @Schema(implementation = UUID.class), required = true),
                             @Header(name = "Access-Control-Expose-Headers", description = "Reverse proxy exposing of custom headers", schema = @Schema(implementation = String.class), required = true)},
                     content = {@Content(
                             mediaType = "application/json",
@@ -332,8 +332,8 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                             @NotNull @PathVariable("subsetId") Long subsetId,
+    public ResponseEntity<List<Map<String, Object>>> getData(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                                             @NotNull @PathVariable("subsetId") UUID subsetId,
                                                              Principal principal,
                                                              @NotNull HttpServletRequest request,
                                                              @RequestParam(required = false) Instant timestamp,
@@ -381,7 +381,7 @@ public class SubsetEndpoint extends RestEndpoint {
                         .build();
             }
             final String query = mariaDbMapper.rawSelectQuery(subset.getQuery(), timestamp, page, size);
-            final Dataset<Row> dataset = subsetService.getData(database, query, timestamp, page, size, null, null);
+            final Dataset<Row> dataset = subsetService.getData(database, query);
             metricsService.countSubsetGetData(databaseId, subsetId);
             final String viewName = metadataMapper.queryDtoToViewName(subset);
             databaseService.createView(database, CreateViewDto.builder()
@@ -440,8 +440,8 @@ public class SubsetEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
-                                            @NotNull @PathVariable("queryId") Long queryId,
+    public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                            @NotNull @PathVariable("queryId") UUID queryId,
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
                                             @NotNull Principal principal) throws NotAllowedException,
             RemoteUnavailableException, DatabaseNotFoundException, QueryStorePersistException,

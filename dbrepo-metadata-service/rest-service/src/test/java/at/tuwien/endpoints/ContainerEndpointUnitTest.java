@@ -25,6 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
@@ -68,10 +69,11 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         final ResponseEntity<ContainerDto> response = findById_generic(CONTAINER_1_ID, CONTAINER_1, USER_LOCAL_ADMIN_PRINCIPAL);
-        final HttpHeaders headers = response.getHeaders() ;
+        final HttpHeaders headers = response.getHeaders();
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_USERNAME), headers.get("X-Username"));
         assertEquals(List.of(CONTAINER_1_PRIVILEGED_PASSWORD), headers.get("X-Password"));
-        assertEquals(List.of("X-Username X-Password"), headers.get("Access-Control-Expose-Headers"));
+        assertEquals(List.of(IMAGE_1_JDBC), headers.get("X-Jdbc-Method"));
+        assertEquals(List.of("X-Username X-Password X-Jdbc-Method"), headers.get("Access-Control-Expose-Headers"));
     }
 
     @Test
@@ -178,7 +180,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public ResponseEntity<ContainerDto> findById_generic(Long containerId, Container container, Principal principal)
+    public ResponseEntity<ContainerDto> findById_generic(UUID containerId, Container container, Principal principal)
             throws ContainerNotFoundException {
 
         /* mock */
@@ -192,7 +194,7 @@ public class ContainerEndpointUnitTest extends AbstractUnitTest {
         return response;
     }
 
-    public void delete_generic(Long containerId, Container container) throws ContainerNotFoundException {
+    public void delete_generic(UUID containerId, Container container) throws ContainerNotFoundException {
 
         /* mock */
         when(containerService.find(containerId))

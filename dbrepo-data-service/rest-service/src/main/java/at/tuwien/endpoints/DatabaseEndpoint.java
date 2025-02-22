@@ -28,6 +28,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -128,7 +129,7 @@ public class DatabaseEndpoint extends RestEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @Valid @RequestBody UpdateUserPasswordDto data)
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, MetadataServiceException {

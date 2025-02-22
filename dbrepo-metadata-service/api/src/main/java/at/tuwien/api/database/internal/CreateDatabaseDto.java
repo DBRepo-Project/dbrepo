@@ -20,8 +20,8 @@ public class CreateDatabaseDto {
 
     @NotNull
     @JsonProperty("container_id")
-    @Schema(example = "1")
-    private Long containerId;
+    @Schema(example = "83ea2326-f8f6-4263-baf8-cdf88a54efc7")
+    private UUID containerId;
 
     @NotBlank
     @JsonProperty("internal_name")

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -22,8 +24,8 @@ public class CreateContainerDto {
 
     @NotNull
     @JsonProperty("image_id")
-    @Schema(example = "1", description = "Image ID")
-    private Long imageId;
+    @Schema(example = "2360f3c4-85e0-4fac-a7c6-73b296b9dde2", description = "Image ID")
+    private UUID imageId;
 
     @NotBlank
     @Schema(example = "data-db2", description = "Hostname of container")

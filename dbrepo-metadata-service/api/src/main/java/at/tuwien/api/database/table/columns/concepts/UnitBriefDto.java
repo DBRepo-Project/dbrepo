@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -17,8 +19,8 @@ import lombok.extern.jackson.Jacksonized;
 public class UnitBriefDto {
 
     @NotNull
-    @Schema(example = "34")
-    private Long id;
+    @Schema(example = "ba1935e8-6817-488f-af0a-f54389af9000")
+    private UUID id;
 
     @NotBlank
     @Schema(example = "http://www.wikidata.org/entity/Q1422583")

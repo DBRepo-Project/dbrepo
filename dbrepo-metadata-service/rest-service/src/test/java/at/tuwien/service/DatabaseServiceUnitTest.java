@@ -22,9 +22,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -347,12 +349,12 @@ public class DatabaseServiceUnitTest extends AbstractUnitTest {
     public void find_fails() {
 
         /* mock */
-        when(databaseRepository.findById(anyLong()))
+        when(databaseRepository.findById(any(UUID.class)))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findById(9999L);
+            databaseService.findById(UUID.randomUUID());
         });
     }
 

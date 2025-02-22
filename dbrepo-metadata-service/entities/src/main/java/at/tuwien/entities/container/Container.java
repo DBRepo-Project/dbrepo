@@ -5,14 +5,14 @@ import at.tuwien.entities.database.Database;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.List;
-
-import static jakarta.persistence.GenerationType.IDENTITY;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -26,9 +26,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Container {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(columnDefinition = "VARCHAR(36)")
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -48,8 +48,8 @@ public class Container {
     @Column
     private Integer uiPort;
 
-    @Column(nullable = false, columnDefinition = "INT DEFAULT 50")
-    private Integer quota = 50;
+    @Column
+    private Integer quota;
 
     @Column
     private String uiAdditionalFlags;
@@ -83,5 +83,12 @@ public class Container {
 
     @Column
     private String privilegedPassword;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+    }
 
 }

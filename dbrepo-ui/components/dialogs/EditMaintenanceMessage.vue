@@ -89,7 +89,7 @@ import { useCacheStore } from '@/stores/cache.js'
 export default {
   props: {
     id: {
-      type: Number,
+      type: String,
       default () {
         return null
       }

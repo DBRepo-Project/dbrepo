@@ -1,7 +1,9 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.test.AbstractUnitTest;
@@ -87,7 +89,7 @@ public class MetadataMapperUnitTest extends AbstractUnitTest {
         assertNull(response.getDatabase());
         assertNull(response.getViewId());
         assertNull(response.getTableId());
-        assertEquals(IDENTIFIER_2_QUERY_ID, response.getQueryId());
+        assertEquals(QUERY_1_ID, response.getQueryId());
         assertNull(response.getDoi());
         assertEquals(IDENTIFIER_2_TYPE, response.getType());
     }

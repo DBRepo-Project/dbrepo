@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -75,7 +76,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                       Principal principal) throws UserNotFoundException,
             DatabaseNotFoundException {
         log.debug("endpoint find all views, databaseId={}", databaseId);
@@ -136,7 +137,7 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                                @NotNull @Valid @RequestBody CreateViewDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             MalformedException, DataServiceException, DataServiceConnectionException, DatabaseNotFoundException,
@@ -184,8 +185,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
-                                        @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                        @NotNull @PathVariable("viewId") UUID viewId,
                                         Principal principal) throws DatabaseNotFoundException,
             ViewNotFoundException {
         log.debug("endpoint find view, databaseId={}, viewId={}", databaseId, viewId);
@@ -200,7 +201,8 @@ public class ViewEndpoint extends AbstractEndpoint {
             headers.set("X-Type", database.getContainer().getImage().getJdbcMethod());
             headers.set("X-Database", database.getInternalName());
             headers.set("X-View", view.getInternalName());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View");
+            headers.set("X-Jdbc-Method", view.getDatabase().getContainer().getImage().getJdbcMethod());
+            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-View X-Jdbc-Method");
         }
         final ViewDto dto = metadataMapper.viewToViewDto(view);
         if (!isSystem(principal)) {
@@ -252,8 +254,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                       @NotNull @PathVariable("viewId") UUID viewId,
                                        @NotNull Principal principal) throws NotAllowedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,
             SearchServiceConnectionException, UserNotFoundException {
@@ -305,8 +307,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("viewId") Long viewId,
+    public ResponseEntity<ViewBriefDto> update(@NotNull @PathVariable("databaseId") UUID databaseId,
+                                               @NotNull @PathVariable("viewId") UUID viewId,
                                                @NotNull @Valid @RequestBody ViewUpdateDto data,
                                                @NotNull Principal principal) throws NotAllowedException,
             DataServiceConnectionException, DatabaseNotFoundException, ViewNotFoundException, SearchServiceException,

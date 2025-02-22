@@ -78,7 +78,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
     @Test
     public void onMessage_messageMalformed_fails(CapturedOutput output) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
-        final Message request = buildMessage("dbrepo.1.1", "{,}", new HashMap<>());
+        final Message request = buildMessage(TABLE_1_ROUTING_KEY, "{,}", new HashMap<>());
 
         /* mock */
         when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
@@ -92,7 +92,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
     @Test
     public void onMessage_tableNotFound_fails(CapturedOutput output) throws TableNotFoundException,
             RemoteUnavailableException, MetadataServiceException {
-        final Message request = buildMessage("dbrepo.1.1", "{\"id\":1}", new HashMap<>());
+        final Message request = buildMessage(TABLE_1_ROUTING_KEY, "{\"id\": 1}", new HashMap<>());
 
         /* mock */
         doThrow(TableNotFoundException.class)
