@@ -541,7 +541,7 @@
           }
         },
         "semantics": {
-          "title": "Assign semantic instance for table column",
+          "title": "Assign semantic {type} for table column",
           "subtitle": "Semantic instances help machines to get the proper context of your dataset",
           "recommended": "Recommended semantic instances",
           "bullet": "●",

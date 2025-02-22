@@ -55,6 +55,7 @@
           v-if="recommendations.length === 0">
           <v-col>
             <v-btn
+              v-if="finishedRecommendations"
               color="secondary"
               variant="flat"
               size="small"
@@ -165,6 +166,7 @@ export default {
       uri: null,
       valid: false,
       loading: false,
+      finishedRecommendations: false,
       loadingOntologies: false,
       loadingSemantics: false,
       cacheStore: useCacheStore()
@@ -172,7 +174,7 @@ export default {
   },
   computed: {
     title () {
-      return this.$t('pages.table.subpages.semantics.title') + ' ' +  this.column.internal_name
+      return this.$t('pages.table.subpages.semantics.title', { type: this.mode }) + ' ' +  this.column.internal_name
     },
     ontologies () {
       return this.cacheStore.getOntologies.filter(o => o.sparql || o.rdf)
@@ -243,6 +245,13 @@ export default {
             action: 'assign'
           })
         })
+        .catch(({code, message}) => {
+          const toast = useToastInstance()
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
+        })
         .finally(() => {
           this.recommendation = null
           this.$refs.form.reset()
@@ -255,10 +264,14 @@ export default {
       tableService.suggest(this.database.id, this.tableId, this.column.id)
         .then((recommendations) => {
           this.recommendations = recommendations
+          this.finishedRecommendations = true
         })
-        .catch((error) => {
+        .catch(({code, message}) => {
           const toast = useToastInstance()
-          toast.error(this.$t('error.semantics.timeout'))
+          if (typeof code !== 'string') {
+            return
+          }
+          toast.error(message)
         })
         .finally(() => {
           this.loadingSemantics = false
