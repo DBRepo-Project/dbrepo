@@ -351,7 +351,9 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     last_modified     TIMESTAMP,
     PRIMARY KEY (`id`), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (`dbid`) REFERENCES mdb_databases (`id`),
-    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
+    FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`),
+    FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`),
+    FOREIGN KEY (`vid`) REFERENCES mdb_view (`id`)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
