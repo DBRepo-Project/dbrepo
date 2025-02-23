@@ -84,6 +84,8 @@ ALTER TABLE mdb_identifier_creators
 ALTER TABLE mdb_identifier_creators
     DROP FOREIGN KEY mdb_identifier_creators_ibfk_1;
 ALTER TABLE mdb_identifier_creators
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE mdb_identifier_creators
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_descriptions
 ALTER TABLE mdb_identifier_descriptions
@@ -91,12 +93,16 @@ ALTER TABLE mdb_identifier_descriptions
 ALTER TABLE mdb_identifier_descriptions
     DROP FOREIGN KEY mdb_identifier_descriptions_ibfk_1;
 ALTER TABLE mdb_identifier_descriptions
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE mdb_identifier_descriptions
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_funders
 ALTER TABLE mdb_identifier_funders
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_identifier_funders
     DROP FOREIGN KEY mdb_identifier_funders_ibfk_1;
+ALTER TABLE mdb_identifier_funders
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE mdb_identifier_funders
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_licenses
@@ -226,6 +232,8 @@ ALTER TABLE mdb_constraints_primary_key
     CHANGE COLUMN pkid pkid VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE mdb_constraints_primary_key
     CHANGE COLUMN tID tID VARCHAR(36) NOT NULL;
+ALTER TABLE mdb_constraints_primary_key
+    CHANGE COLUMN cid cid VARCHAR(36) NOT NULL;
 -- mdb_constraints_unique
 ALTER TABLE mdb_constraints_unique
     DROP FOREIGN KEY mdb_constraints_unique_ibfk_1;
@@ -410,9 +418,9 @@ ALTER TABLE mdb_constraints_foreign_key_reference
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_primary_key
 ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (pkid) REFERENCES mdb_tables (ID);
+    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (ID);
 ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (tID) REFERENCES mdb_columns (ID);
+    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
 ALTER TABLE mdb_constraints_primary_key
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_unique

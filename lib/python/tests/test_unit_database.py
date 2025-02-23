@@ -28,18 +28,7 @@ class DatabaseUnitTest(unittest.TestCase):
                 contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
                 internal_name='test_abcd',
                 is_public=True,
-                is_schema_public=True,
-                container=ContainerBrief(
-                    id=1,
-                    name='MariaDB Galera 11.1.3',
-                    internal_name='mariadb',
-                    image=ImageBrief(
-                        id=1,
-                        name='mariadb',
-                        version='11.2.2',
-                        jdbc_method='mariadb'
-                    )
-                )
+                is_schema_public=True
             )
         ]
         with requests_mock.Mocker() as mock:
@@ -67,7 +56,8 @@ class DatabaseUnitTest(unittest.TestCase):
                     id=1,
                     name='mariadb',
                     version='11.2.2',
-                    jdbc_method='mariadb'
+                    jdbc_method='mariadb',
+                    default=True
                 )
             )
         )
@@ -122,7 +112,8 @@ class DatabaseUnitTest(unittest.TestCase):
                     id=1,
                     name='mariadb',
                     version='11.2.2',
-                    jdbc_method='mariadb'
+                    jdbc_method='mariadb',
+                    default=True
                 )
             )
         )
@@ -184,7 +175,8 @@ class DatabaseUnitTest(unittest.TestCase):
                     id=1,
                     name='mariadb',
                     version='11.2.2',
-                    jdbc_method='mariadb'
+                    jdbc_method='mariadb',
+                    default=True
                 )
             )
         )
@@ -246,7 +238,8 @@ class DatabaseUnitTest(unittest.TestCase):
                     id=1,
                     name='mariadb',
                     version='11.2.2',
-                    jdbc_method='mariadb'
+                    jdbc_method='mariadb',
+                    default=True
                 )
             )
         )

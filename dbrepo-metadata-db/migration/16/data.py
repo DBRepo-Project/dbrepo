@@ -26,7 +26,7 @@ def update_concepts() -> None:
 def update_ontologies() -> None:
     plan.append("-- ontologies")
     plan.append("BEGIN;")
-    plan.append(f"UPDATE mdb_ontology SET id = UUID()")
+    plan.append(f"UPDATE mdb_ontologies SET id = UUID();")
     plan.append("COMMIT;")
 
 
@@ -74,14 +74,14 @@ def update_databases() -> None:
         new_id: uuid = uuid.uuid4()
         plan.append(f"UPDATE mdb_tables SET tDBID = '{new_id}' WHERE tDBID = {old_id};")
         plan.append(f"UPDATE mdb_have_access SET database_id = '{new_id}' WHERE database_id = {old_id};")
-        plan.append(f"UPDATE mdb_views SET vdbid = '{new_id}' WHERE vdbid = {old_id};")
+        plan.append(f"UPDATE mdb_view SET vdbid = '{new_id}' WHERE vdbid = {old_id};")
         plan.append(f"UPDATE mdb_identifiers SET dbid = '{new_id}' WHERE dbid = {old_id};")
         plan.append(f"UPDATE mdb_access SET aDBID = '{new_id}' WHERE aDBID = {old_id};")
         for view in database.views:
             v_old_id: int = view.id
             v_new_id: uuid = uuid.uuid4()
             plan.append(f"UPDATE mdb_identifiers SET vid = '{v_new_id}' WHERE vid = {v_old_id};")
-            plan.append(f"UPDATE mdb_view_columns SET id = UUID(), view_id = '{v_new_id}' WHERE tid = {v_old_id};")
+            plan.append(f"UPDATE mdb_view_columns SET id = UUID(), view_id = '{v_new_id}' WHERE id = {v_old_id};")
         for table in database.tables:
             tbl_old_id: int = table.id
             tbl_new_id: uuid = uuid.uuid4()
@@ -99,8 +99,8 @@ def update_databases() -> None:
             for uk in table.constraints.uniques:
                 uk_old_id: int = uk.id
                 uk_new_id: uuid = uuid.uuid4()
-                plan.append(f"UPDATE mdb_constraints_unique SET uid = '{uk_new_id}', tid = '{tbl_new_id}' WHERE uid = {uk_old_id}")
-                plan.append(f"UPDATE mdb_constraints_unique_columns SET id = UUID(), uid = '{uk_new_id}' WHERE uid = {uk_old_id}")
+                plan.append(f"UPDATE mdb_constraints_unique SET uid = '{uk_new_id}', tid = '{tbl_new_id}' WHERE uid = {uk_old_id};")
+                plan.append(f"UPDATE mdb_constraints_unique_columns SET id = UUID(), uid = '{uk_new_id}' WHERE uid = {uk_old_id};")
             for column in table.columns:
                 col_old_id: int = column.id
                 col_new_id: uuid = uuid.uuid4()
@@ -120,7 +120,7 @@ def update_databases() -> None:
 def update_messages() -> None:
     plan.append("-- messages")
     plan.append("BEGIN;")
-    plan.append(f"UPDATE mdb_banner_messages SET ID = UUID();")
+    plan.append(f"UPDATE mdb_messages SET ID = UUID();")
     plan.append("COMMIT;")
 
 def update_identifiers() -> None:
@@ -134,7 +134,7 @@ def update_identifiers() -> None:
         plan.append(f"UPDATE mdb_identifier_descriptions SET id = UUID(), pid = '{i_new_id}' WHERE pid = {i_old_id};")
         plan.append(f"UPDATE mdb_identifier_titles SET id = UUID(), pid = '{i_new_id}' WHERE pid = {i_old_id};")
         plan.append(f"UPDATE mdb_identifier_funders SET id = UUID(), pid = '{i_new_id}' WHERE pid = {i_old_id};")
-        plan.append(f"UPDATE mdb_identifier_licenses SET id = UUID(), pid = '{i_new_id}' WHERE pid = {i_old_id};")
+        plan.append(f"UPDATE mdb_identifier_licenses SET pid = '{i_new_id}' WHERE pid = {i_old_id};")
     plan.append("COMMIT;")
 
 

@@ -28,7 +28,8 @@ class ContainerUnitTest(unittest.TestCase):
                                image=ImageBrief(id=1,
                                                 name="mariadb",
                                                 version="10.11.3",
-                                                jdbc_method="mariadb"),
+                                                jdbc_method="mariadb",
+                                                default=True),
                                hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             ]
             # mock

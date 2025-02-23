@@ -6,7 +6,7 @@ from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Identifier, IdentifierType, SaveIdentifierTitle, Creator, IdentifierTitle, \
     IdentifierDescription, SaveIdentifierDescription, Language, SaveIdentifierFunder, SaveRelatedIdentifier, \
     RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, RelatedIdentifier, UserBrief, \
-    IdentifierStatusType, CreateIdentifierCreator
+    IdentifierStatusType, CreateIdentifierCreator, IdentifierBrief
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, AuthenticationError
 
 
@@ -112,24 +112,17 @@ class IdentifierUnitTest(unittest.TestCase):
 
     def test_get_identifiers_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [Identifier(id=10,
-                              database_id=1,
-                              view_id=32,
-                              publication_year=2024,
-                              publisher='TU Wien',
-                              type=IdentifierType.VIEW,
-                              language=Language.EN,
-                              descriptions=[IdentifierDescription(id=2, description='Test Description')],
-                              titles=[IdentifierTitle(id=3, title='Test Title')],
-                              funders=[IdentifierFunder(id=4, funder_name='FWF')],
-                              related_identifiers=[RelatedIdentifier(id=7, value='10.12345/abc',
-                                                                     relation=RelatedIdentifierRelation.CITES,
-                                                                     type=RelatedIdentifierType.DOI)],
-                              creators=[Creator(id=5, creator_name='Carberry, Josiah')],
-                              status=IdentifierStatusType.PUBLISHED,
-                              owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
+            exp = [IdentifierBrief(id=10,
+                                   database_id=1,
+                                   view_id=32,
+                                   publication_year=2024,
+                                   publisher='TU Wien',
+                                   type=IdentifierType.VIEW,
+                                   titles=[IdentifierTitle(id=3, title='Test Title')],
+                                   status=IdentifierStatusType.PUBLISHED,
+                                   owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16')]
             # mock
-            mock.get('/api/identifiers', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
+            mock.get('/api/identifier', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers()
             self.assertEqual(exp, response)
