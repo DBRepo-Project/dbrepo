@@ -1950,7 +1950,7 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_identifiers(self, database_id: int = None, subset_id: int = None, view_id: int = None,
-                        table_id: int = None) -> List[Identifier] | str:
+                        table_id: int = None) -> List[IdentifierBrief] | str:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1983,7 +1983,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Identifier]).validate_python(body)
+            return TypeAdapter(List[IdentifierBrief]).validate_python(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get identifiers: requested style is not known')
         if response.status_code == 406:

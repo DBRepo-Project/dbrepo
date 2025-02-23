@@ -644,7 +644,7 @@ class Identifier(BaseModel):
     creators: List[Creator]
     titles: List[IdentifierTitle]
     descriptions: List[IdentifierDescription]
-    owned_by: str
+    owner: UserBrief
     funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     language: Optional[str] = None

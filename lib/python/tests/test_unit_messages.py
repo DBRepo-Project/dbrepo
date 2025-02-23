@@ -4,7 +4,7 @@ import requests_mock
 
 from dbrepo.RestClient import RestClient
 
-from dbrepo.api.dto import ImageBrief
+from dbrepo.api.dto import ImageBrief, BannerMessage
 
 
 class ImageUnitTest(unittest.TestCase):
@@ -14,7 +14,7 @@ class ImageUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/message', json=[])
             # test
-            response = RestClient().get_images()
+            response = RestClient().get_messages()
             self.assertEqual([], response)
 
     def test_get_images_succeeds(self):
@@ -23,7 +23,7 @@ class ImageUnitTest(unittest.TestCase):
             # mock
             mock.get('/api/message', json=[exp[0].model_dump()])
             # test
-            response = RestClient().get_images()
+            response = RestClient().get_messages()
             self.assertEqual(exp, response)
 
 
