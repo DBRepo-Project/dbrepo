@@ -1,9 +1,8 @@
 import logging
 import os
+import requests
 import sys
 import time
-
-import requests
 from pandas import DataFrame
 from pydantic import TypeAdapter
 
@@ -1966,7 +1965,7 @@ class RestClient:
         :raises FormatNotAvailable: If the service could not represent the output.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """
-        url = f'/api/identifiers'
+        url = f'/api/identifier'
         if database_id is not None:
             url += f'?dbid={database_id}'
         if subset_id is not None:
@@ -1991,6 +1990,34 @@ class RestClient:
             raise MalformedError(
                 f'Failed to get identifiers: accept header must be application/json or application/ld+json')
         raise ResponseCodeError(f'Failed to get identifiers: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_images(self) -> List[ImageBrief] | str:
+        """
+        Get list of container images.
+
+        :returns: List of images, if successful.
+        """
+        url = f'/api/image'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[ImageBrief]).validate_python(body)
+        raise ResponseCodeError(f'Failed to get images: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_messages(self) -> List[BannerMessage] | str:
+        """
+        Get list of messages.
+
+        :returns: List of messages, if successful.
+        """
+        url = f'/api/message'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[BannerMessage]).validate_python(body)
+        raise ResponseCodeError(f'Failed to get messages: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
     def update_table_column(self, database_id: int, table_id: int, column_id: int, concept_uri: str = None,

@@ -106,7 +106,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
                 .filter(i -> !Objects.nonNull(qid) || qid.equals(i.getQueryId()))
                 .filter(i -> !Objects.nonNull(vid) || vid.equals(i.getViewId()))
                 .filter(i -> !Objects.nonNull(tid) || tid.equals(i.getTableId()))
-                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? i.getOwnedBy().equals(getId(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
+                .filter(i -> principal != null && i.getStatus().equals(IdentifierStatusType.DRAFT) ? (i.getOwnedBy().equals(getId(principal)) || isSystem(principal)) : i.getStatus().equals(IdentifierStatusType.PUBLISHED))
                 .toList();
         if (identifiers.isEmpty()) {
             return ResponseEntity.ok(List.of());

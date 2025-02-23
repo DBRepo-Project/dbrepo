@@ -3,9 +3,8 @@ from __future__ import annotations
 import datetime
 from dataclasses import field
 from enum import Enum
-from typing import List, Optional, Annotated
-
 from pydantic import BaseModel, PlainSerializer
+from typing import List, Optional, Annotated
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -41,6 +40,16 @@ class ImageBrief(BaseModel):
     name: str
     version: str
     jdbc_method: str
+    default: bool
+
+
+class BannerMessage(BaseModel):
+    id: int
+    type: str
+    link: Optional[str] = None
+    link_text: Optional[str] = None
+    display_start: Optional[Timestamp] = None
+    display_end: Optional[Timestamp] = None
 
 
 class CreateDatabase(BaseModel):
@@ -629,13 +638,13 @@ class Identifier(BaseModel):
     id: int
     database_id: int
     type: IdentifierType
-    owner: UserBrief
     status: IdentifierStatusType
     publication_year: int
     publisher: str
     creators: List[Creator]
     titles: List[IdentifierTitle]
     descriptions: List[IdentifierDescription]
+    owned_by: str
     funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     language: Optional[str] = None
@@ -699,7 +708,7 @@ class ViewBrief(BaseModel):
     initial_view: bool
     query: str
     query_hash: str
-    owned_by: str
+    owner: UserBrief
 
 
 class ConceptBrief(BaseModel):
@@ -1024,7 +1033,7 @@ class Database(BaseModel):
     preview_image: Optional[str] = None
     description: Optional[str] = None
     tables: Optional[List[Table]] = field(default_factory=list)
-    views: Optional[List[View]] = field(default_factory=list)
+    views: Optional[List[ViewBrief]] = field(default_factory=list)
     accesses: Optional[List[DatabaseAccess]] = field(default_factory=list)
     exchange_name: Optional[str] = None
 
