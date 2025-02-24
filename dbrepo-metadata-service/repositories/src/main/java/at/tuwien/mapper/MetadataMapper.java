@@ -57,6 +57,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.DataType;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.ColumnEnum;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
@@ -766,6 +767,8 @@ public interface MetadataMapper {
             @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
             @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
+            @Mapping(target = "enums", ignore = true),
+            @Mapping(target = "sets", ignore = true),
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 

@@ -63,6 +63,11 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
+    public List<Database> findByInternalName(String internalName) {
+        return databaseRepository.findAllByInternalNameDesc(internalName);
+    }
+
+    @Override
     public List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName) {
         return databaseRepository.findAllPublicOrSchemaPublicOrReadAccessByInternalNameDesc(userId, internalName);
     }

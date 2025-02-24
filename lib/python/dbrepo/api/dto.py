@@ -3,8 +3,9 @@ from __future__ import annotations
 import datetime
 from dataclasses import field
 from enum import Enum
-from pydantic import BaseModel, PlainSerializer
 from typing import List, Optional, Annotated
+
+from pydantic import BaseModel, PlainSerializer
 
 Timestamp = Annotated[
     datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
@@ -23,6 +24,13 @@ class JwtAuth(BaseModel):
     token_type: str
 
 
+class Operator(BaseModel):
+    id: int
+    display_name: str
+    value: str
+    documentation: str
+
+
 class Image(BaseModel):
     id: int
     registry: str
@@ -32,6 +40,7 @@ class Image(BaseModel):
     driver_class: str
     jdbc_method: str
     default_port: int
+    operators: List[Operator] = field(default_factory=list)
     data_types: List[DataType] = field(default_factory=list)
 
 
@@ -470,6 +479,15 @@ class License(BaseModel):
     identifier: str
     uri: str
     description: str
+
+
+class OntologyBrief(BaseModel):
+    id: int
+    uri: str
+    prefix: str
+    sparql: bool
+    rdf: bool
+    uri_pattern: Optional[str] = None
 
 
 class Tuple(BaseModel):
@@ -918,7 +936,18 @@ class UpdateQuery(BaseModel):
     persist: bool
 
 
+class ColumnEnum(BaseModel):
+    id: int
+    value: str
+
+
+class ColumnSet(BaseModel):
+    id: int
+    value: str
+
+
 class DataType(BaseModel):
+    id: int
     display_name: str
     value: str
     documentation: str
@@ -953,8 +982,8 @@ class Column(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
-    enums: Optional[List[str]] = field(default_factory=list)
-    sets: Optional[List[str]] = field(default_factory=list)
+    enums: Optional[List[ColumnEnum]] = field(default_factory=list)
+    sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
     length: Optional[int] = None
     data_length: Optional[int] = None

@@ -17,6 +17,9 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class DataTypeDto {
 
+    @NotNull
+    private Long id;
+
     @NotBlank
     @JsonProperty("display_name")
     @Schema(example = "TIME(fsp)")

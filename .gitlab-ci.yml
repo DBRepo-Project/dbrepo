@@ -403,7 +403,7 @@ test-lib:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_image.py tests/test_unit_messages.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+    - cd ./lib/python/ && coverage run -m pytest tests/test_unit_analyse.py tests/test_unit_ontology.py tests/test_unit_container.py tests/test_unit_database.py tests/test_unit_identifier.py tests/test_unit_image.py tests/test_unit_messages.py tests/test_unit_license.py tests/test_unit_query.py tests/test_unit_rest_client.py tests/test_unit_table.py tests/test_unit_user.py tests/test_unit_view.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

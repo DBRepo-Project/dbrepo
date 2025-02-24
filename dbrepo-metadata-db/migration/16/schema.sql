@@ -33,8 +33,6 @@ ALTER TABLE mdb_messages
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE `mdb_messages`
     DROP PRIMARY KEY;
-ALTER TABLE `mdb_messages`
-    ADD SYSTEM VERSIONING;
 -- mdb_image_operators
 ALTER TABLE mdb_image_operators
     DROP SYSTEM VERSIONING;
@@ -612,4 +610,7 @@ ALTER TABLE mdb_image_operators
 ALTER TABLE mdb_ontologies
     ADD PRIMARY KEY (id);
 ALTER TABLE mdb_ontologies
+    ADD SYSTEM VERSIONING;
+-- mdb_messages
+ALTER TABLE `mdb_messages`
     ADD SYSTEM VERSIONING;

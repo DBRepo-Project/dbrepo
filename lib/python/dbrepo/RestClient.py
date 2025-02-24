@@ -1,8 +1,9 @@
 import logging
 import os
-import requests
 import sys
 import time
+
+import requests
 from pandas import DataFrame
 from pydantic import TypeAdapter
 
@@ -1935,6 +1936,20 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get licenses: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
+    def get_ontologies(self) -> List[OntologyBrief]:
+        """
+        Get list of ontologies.
+
+        :returns: List of ontologies, if successful.
+        """
+        url = f'/api/ontology'
+        response = self._wrapper(method="get", url=url)
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[OntologyBrief]).validate_python(body)
+        raise ResponseCodeError(f'Failed to get ontologies: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
     def get_concepts(self) -> List[ConceptBrief]:
         """
         Get list of concepts known to the metadata database.
@@ -1950,7 +1965,7 @@ class RestClient:
                                 f'200 (OK): {response.text}')
 
     def get_identifiers(self, database_id: int = None, subset_id: int = None, view_id: int = None,
-                        table_id: int = None) -> List[IdentifierBrief] | str:
+                        table_id: int = None) -> List[IdentifierBrief]:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1990,6 +2005,48 @@ class RestClient:
             raise MalformedError(
                 f'Failed to get identifiers: accept header must be application/json or application/ld+json')
         raise ResponseCodeError(f'Failed to get identifiers: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_identifier(self, identifier_id: int) -> Identifier:
+        """
+        Get list of identifiers, filter by the remaining optional arguments.
+
+        :param identifier_id: The identifier id.
+
+        :returns: The identifier, if successful.
+
+        :raises NotExistsError: If the identifier does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval of the identifier.
+        """
+        url = f'/api/identifier/{identifier_id}'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return Identifier.model_validate(body)
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get identifier: not found')
+        raise ResponseCodeError(f'Failed to get identifier: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_image(self, image_id: int) -> Image:
+        """
+        Get container image.
+
+        :param image_id: The image id.
+
+        :returns: The image, if successful.
+
+        :raises NotExistsError: If the image does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval of the image.
+        """
+        url = f'/api/image/{image_id}'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return Image.model_validate(body)
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get image: not found')
+        raise ResponseCodeError(f'Failed to get image: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
 
     def get_images(self) -> List[ImageBrief] | str:

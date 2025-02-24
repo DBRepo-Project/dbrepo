@@ -1,1 +1,1 @@
-dbrepo==1.6.5rc10
+dbrepo==1.6.5rc15

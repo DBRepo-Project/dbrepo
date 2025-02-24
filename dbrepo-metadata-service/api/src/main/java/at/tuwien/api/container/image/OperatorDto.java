@@ -17,6 +17,7 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class OperatorDto {
 
+    @NotNull
     private Long id;
 
     @NotBlank

@@ -79,15 +79,24 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final List<Database> databases;
         if (principal != null) {
             if (internalName != null) {
-                log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name {}", getId(principal), internalName);
-                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
+                if (isSystem(principal)) {
+                    log.debug("filter request to contain only databases that match internal name: {}", internalName);
+                    databases = databaseService.findByInternalName(internalName);
+                } else {
+                    log.debug("filter request to contain only public databases or where user with id {} has at least read access that match internal name: {}", getId(principal), internalName);
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccessByInternalName(getId(principal), internalName);
+                }
             } else {
-                log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
-                databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
+                if (isSystem(principal)) {
+                    databases = databaseService.findAll();
+                } else {
+                    log.debug("filter request to contain only databases where user with id {} has at least read access", getId(principal));
+                    databases = databaseService.findAllPublicOrSchemaPublicOrReadAccess(getId(principal));
+                }
             }
         } else {
             if (internalName != null) {
-                log.debug("filter request to contain only public databases that match internal name {}", internalName);
+                log.debug("filter request to contain only public databases that match internal name: {}", internalName);
                 databases = databaseService.findAllPublicOrSchemaPublicByInternalName(internalName);
             } else {
                 log.debug("filter request to contain only public databases");
@@ -521,14 +530,14 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .size();
             database.setTables(database.getTables()
                     .stream()
-                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent())
+                    .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || optional.isPresent() || isSystem(principal))
                     .toList());
             log.trace("filtered database tables from {} to {}", tables, database.getTables().size());
             final int views = database.getViews()
                     .size();
             database.setViews(database.getViews()
                     .stream()
-                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent())
+                    .filter(v -> v.getIsPublic() || v.getIsSchemaPublic() || optional.isPresent() || isSystem(principal))
                     .toList());
             log.trace("filtered database views from {} to {}", views, database.getViews().size());
             if (!isSystem(principal) && !database.getOwner().getId().equals(getId(principal))) {

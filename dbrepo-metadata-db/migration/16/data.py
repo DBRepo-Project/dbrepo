@@ -26,7 +26,10 @@ def update_concepts() -> None:
 def update_ontologies() -> None:
     plan.append("-- ontologies")
     plan.append("BEGIN;")
-    plan.append(f"UPDATE mdb_ontologies SET id = UUID();")
+    for ontology in client.get_ontologies():
+        old_id = ontology.id
+        new_id: uuid = uuid.uuid4()
+        plan.append(f"UPDATE mdb_ontologies SET id = '{new_id}' WHERE id = '{old_id}';")
     plan.append("COMMIT;")
 
 
@@ -44,13 +47,22 @@ def update_units() -> None:
 def update_images() -> None:
     plan.append("-- images")
     plan.append("BEGIN;")
-    for image in client.get_images():
-        old_id: int = image.id
+    for _image in client.get_images():
+        old_id: int = _image.id
+        image = client.get_image(old_id)
         new_id: uuid = uuid.uuid4()
         plan.append(f"UPDATE mdb_images SET id = '{new_id}' WHERE id = '{old_id}';")
-        plan.append(f"UPDATE mdb_image_operators SET id = UUID(), image_id = '{new_id}' WHERE image_id = '{old_id}';")
-        plan.append(f"UPDATE mdb_image_types SET id = UUID(), image_id = '{new_id}' WHERE image_id = '{old_id}';")
-        plan.append(f"UPDATE mdb_containers SET id = UUID(), image_id = '{new_id}' WHERE image_id = '{old_id}';")
+        plan.append(f"UPDATE mdb_image_operators SET image_id = '{new_id}' WHERE image_id = '{old_id}';")
+        plan.append(f"UPDATE mdb_image_types SET image_id = '{new_id}' WHERE image_id = '{old_id}';")
+        plan.append(f"UPDATE mdb_containers SET image_id = '{new_id}' WHERE image_id = '{old_id}';")
+        for operator in image.operators:
+            o_old_id: int = operator.id
+            o_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_image_operators SET id = '{o_new_id}' WHERE id = '{o_old_id}';")
+        for data_type in image.data_types:
+            d_old_id: int = data_type.id
+            d_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_image_types SET id = '{d_new_id}' WHERE id = '{d_old_id}';")
     plan.append("COMMIT;")
 
 
@@ -86,6 +98,9 @@ def update_databases() -> None:
             tbl_old_id: int = table.id
             tbl_new_id: uuid = uuid.uuid4()
             plan.append(f"UPDATE mdb_identifiers SET tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
+            plan.append(f"UPDATE mdb_columns SET tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
+            plan.append(f"UPDATE mdb_constraints_primary_key SET pkid = UUID(), tID = '{tbl_new_id}' WHERE tID = '{tbl_old_id}';")
+            plan.append(f"UPDATE mdb_constraints_unique SET tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
             plan.append(
                 f"UPDATE mdb_constraints_checks SET id = UUID(), tid = '{tbl_new_id}' WHERE tid = '{tbl_old_id}';")
             for fk in table.constraints.foreign_keys:
@@ -122,6 +137,14 @@ def update_databases() -> None:
                 plan.append(f"UPDATE mdb_columns_units SET cID = '{col_new_id}' WHERE cID = '{col_old_id}';")
                 plan.append(f"UPDATE mdb_columns_sets SET column_id = '{col_new_id}' WHERE column_id = '{col_old_id}';")
                 plan.append(f"UPDATE mdb_columns_enums SET column_id = '{col_new_id}' WHERE column_id = '{col_old_id}';")
+                for set in column.sets:
+                    s_old_id: int = set.id
+                    s_new_id: uuid = uuid.uuid4()
+                    plan.append(f"UPDATE mdb_columns_sets SET id = '{s_new_id}' WHERE id = '{s_old_id}';")
+                for enum in column.enums:
+                    e_old_id: int = enum.id
+                    e_new_id: uuid = uuid.uuid4()
+                    plan.append(f"UPDATE mdb_columns_enums SET id = '{e_new_id}' WHERE id = '{e_old_id}';")
             plan.append(f"UPDATE mdb_tables SET ID = '{tbl_new_id}' WHERE ID = '{tbl_old_id}';")
         plan.append(f"UPDATE mdb_databases SET id = '{new_id}' WHERE id = '{old_id}';")
     plan.append("COMMIT;")
@@ -130,60 +153,50 @@ def update_databases() -> None:
 def update_messages() -> None:
     plan.append("-- messages")
     plan.append("BEGIN;")
-    plan.append(f"UPDATE mdb_messages SET ID = UUID();")
+    for message in client.get_messages():
+        old_id = message.id
+        new_id: uuid = uuid.uuid4()
+        plan.append(f"UPDATE mdb_messages SET id = '{new_id}' WHERE id = '{old_id}';")
     plan.append("COMMIT;")
 
 
 def update_identifiers() -> None:
     plan.append("-- identifiers")
     plan.append("BEGIN;")
-    for identified in client.get_identifiers():
-        i_old_id: int = identified.id
+    for _identifier in client.get_identifiers():
+        identifier = client.get_identifier(identifier_id=_identifier.id)
+        i_old_id: int = identifier.id
         i_new_id: uuid = uuid.uuid4()
         plan.append(f"UPDATE mdb_identifiers SET ID = '{i_new_id}' WHERE id = '{i_old_id}';")
-        plan.append(f"UPDATE mdb_identifier_creators SET id = UUID(), pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
-        plan.append(f"UPDATE mdb_identifier_descriptions SET id = UUID(), pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
-        plan.append(f"UPDATE mdb_identifier_titles SET id = UUID(), pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
-        plan.append(f"UPDATE mdb_identifier_funders SET id = UUID(), pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_titles SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_descriptions SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_creators SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        plan.append(f"UPDATE mdb_identifier_funders SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
         plan.append(f"UPDATE mdb_identifier_licenses SET pid = '{i_new_id}' WHERE pid = '{i_old_id}';")
+        for title in identifier.titles:
+            t_old_id = title.id
+            t_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_titles SET id = '{t_new_id}' WHERE id = '{t_old_id}';")
+        for description in identifier.descriptions:
+            d_old_id = description.id
+            d_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_descriptions SET id = '{d_new_id}' WHERE id = '{d_old_id}';")
+        for creator in identifier.creators:
+            c_old_id = creator.id
+            c_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_creators SET id = '{c_new_id}' WHERE id = '{c_old_id}';")
+        for funder in identifier.funders:
+            f_old_id = funder.id
+            f_new_id: uuid = uuid.uuid4()
+            plan.append(f"UPDATE mdb_identifier_funders SET id = '{f_new_id}' WHERE id = '{f_old_id}';")
     plan.append("COMMIT;")
 
-def finish_schema() -> None:
-    plan.append(f"ALTER TABLE `mdb_ontologies` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_units` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_concepts` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_messages` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_image_operators` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_image_types` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_access` ADD PRIMARY KEY (aUserID, aDBID);")
-    plan.append(f"ALTER TABLE `mdb_have_access` ADD PRIMARY KEY (user_id, database_id);")
-    plan.append(f"ALTER TABLE `mdb_identifier_creators` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_identifier_descriptions` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_identifier_funders` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_identifier_licenses` ADD PRIMARY KEY (pid, license_id);")
-    plan.append(f"ALTER TABLE `mdb_identifier_titles` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_related_identifiers` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_identifiers` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_columns_concepts` ADD PRIMARY KEY (id, cid);")
-    plan.append(f"ALTER TABLE `mdb_columns_enums` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_columns_sets` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_columns_units` ADD PRIMARY KEY (id, cID);")
-    plan.append(f"ALTER TABLE `mdb_constraints_checks` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_constraints_foreign_key_reference` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_constraints_foreign_key` ADD PRIMARY KEY (fkid);")
-    plan.append(f"ALTER TABLE `mdb_constraints_primary_key` ADD PRIMARY KEY (pkid);")
-    plan.append(f"ALTER TABLE `mdb_constraints_unique` ADD PRIMARY KEY (uid);")
-    plan.append(f"ALTER TABLE `mdb_constraints_unique_columns` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_columns` ADD PRIMARY KEY (ID);")
-    plan.append(f"ALTER TABLE `mdb_tables` ADD PRIMARY KEY (ID);")
-    plan.append(f"ALTER TABLE `mdb_view_columns` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_view` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_databases` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_containers` ADD PRIMARY KEY (id);")
-    plan.append(f"ALTER TABLE `mdb_images` ADD PRIMARY KEY (id);")
 
 if __name__ == '__main__':
     plan.append("SET FOREIGN_KEY_CHECKS=0;")
+    plan.append("BEGIN;")
+    plan.append(f"INSERT INTO mdb_have_access SELECT uu.id as user_id, d.id as database_id, 'WRITE_ALL' as access_type, NOW() as created FROM mdb_databases d, mdb_users uu WHERE NOT EXISTS(SELECT 1 FROM mdb_have_access a JOIN mdb_users u ON a.user_id = u.id AND u.is_internal = TRUE) AND uu.is_internal = TRUE;")
+    plan.append("COMMIT;")
     update_concepts()
     update_units()
     update_messages()
@@ -192,5 +205,6 @@ if __name__ == '__main__':
     update_containers()
     update_databases()
     update_identifiers()
+    update_messages()
     plan.append("SET FOREIGN_KEY_CHECKS=1;")
     print("\n".join(plan))

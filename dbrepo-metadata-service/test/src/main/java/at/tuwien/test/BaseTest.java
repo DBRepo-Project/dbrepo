@@ -6,8 +6,6 @@ import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.auth.CreateUserDto;
-import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.auth.RefreshTokenRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.*;
@@ -279,10 +277,6 @@ public abstract class BaseTest {
             .scope(TOKEN_ACCESS_SCOPE)
             .build();
 
-    public static final RefreshTokenRequestDto REFRESH_TOKEN_REQUEST_DTO = RefreshTokenRequestDto.builder()
-            .refreshToken("ey.yee.skrr")
-            .build();
-
     public static final Long CONCEPT_1_ID = 1L;
     public static final String CONCEPT_1_NAME = "precipitation";
     public static final String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
@@ -446,11 +440,6 @@ public abstract class BaseTest {
     @SuppressWarnings("java:S2068")
     public static final String USER_LOCAL_ADMIN_MARIADB_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA";
 
-    public static final LoginRequestDto USER_LOCAL_ADMIN_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
-            .username(USER_LOCAL_ADMIN_USERNAME)
-            .password(USER_LOCAL_ADMIN_PASSWORD)
-            .build();
-
     public static final UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
             .id(USER_LOCAL_ADMIN_ID.toString())
             .username(USER_LOCAL_ADMIN_USERNAME)
@@ -597,11 +586,6 @@ public abstract class BaseTest {
 
     public static final Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
-
-    public static final LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
-            .username(USER_1_USERNAME)
-            .password(USER_1_PASSWORD)
-            .build();
 
     public static final UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
     public static final UUID USER_2_KEYCLOAK_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
