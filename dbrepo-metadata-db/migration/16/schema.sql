@@ -3,11 +3,14 @@ DROP TABLE IF EXISTS `mdb_columns_nom`;
 DROP TABLE IF EXISTS `mdb_columns_cat`;
 DROP TABLE IF EXISTS `mdb_update`;
 DROP TABLE IF EXISTS `mdb_databases_subjects`;
+DROP TABLE IF EXISTS `mdb_images_date`;
 -- mdb_ontologies
 ALTER TABLE `mdb_ontologies`
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_ontologies
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_ontologies`
+    DROP PRIMARY KEY;
 ALTER TABLE `mdb_ontologies`
     ADD SYSTEM VERSIONING;
 -- mdb_units
@@ -16,12 +19,16 @@ ALTER TABLE `mdb_units`
 ALTER TABLE mdb_units
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE `mdb_units`
+    DROP PRIMARY KEY;
+ALTER TABLE `mdb_units`
     ADD SYSTEM VERSIONING;
--- mdb_units
+-- mdb_concepts
 ALTER TABLE `mdb_concepts`
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_concepts
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_concepts`
+    DROP PRIMARY KEY;
 ALTER TABLE `mdb_concepts`
     ADD SYSTEM VERSIONING;
 -- mdb_messages
@@ -31,6 +38,8 @@ ALTER TABLE `mdb_banner_messages` RENAME `mdb_messages`;
 ALTER TABLE mdb_messages
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE `mdb_messages`
+    DROP PRIMARY KEY;
+ALTER TABLE `mdb_messages`
     ADD SYSTEM VERSIONING;
 -- mdb_image_operators
 ALTER TABLE mdb_image_operators
@@ -39,6 +48,8 @@ ALTER TABLE mdb_image_operators
     DROP FOREIGN KEY mdb_image_operators_ibfk_1;
 ALTER TABLE mdb_image_operators
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_image_operators`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_image_operators
     CHANGE COLUMN image_id image_id VARCHAR(36) NOT NULL;
 -- mdb_image_types
@@ -48,43 +59,40 @@ ALTER TABLE mdb_image_types
     DROP FOREIGN KEY mdb_image_types_ibfk_1;
 ALTER TABLE mdb_image_types
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_image_types`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_image_types
     CHANGE COLUMN image_id image_id VARCHAR(36) NOT NULL;
--- mdb_images
-ALTER TABLE mdb_images
-    DROP SYSTEM VERSIONING;
-ALTER TABLE mdb_images
-    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 -- mdb_access
 ALTER TABLE mdb_access
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_access
     DROP FOREIGN KEY mdb_access_ibfk_1;
 ALTER TABLE mdb_access
-    ADD FOREIGN KEY (aUserID) REFERENCES mdb_users (id);
-ALTER TABLE mdb_access
     CHANGE COLUMN aDBID aDBID VARCHAR(36) NOT NULL;
--- mdb_users
-ALTER TABLE mdb_users
-    DROP SYSTEM VERSIONING;
-ALTER TABLE mdb_users
-    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_access`
+    DROP PRIMARY KEY;
 -- mdb_have_access
 ALTER TABLE mdb_have_access
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_have_access
     DROP FOREIGN KEY mdb_have_access_ibfk_1;
 ALTER TABLE mdb_have_access
+    DROP FOREIGN KEY mdb_have_access_ibfk_2;
+ALTER TABLE mdb_have_access
     CHANGE COLUMN user_id user_id VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_have_access
     CHANGE COLUMN database_id database_id VARCHAR(36) NOT NULL;
--- mdb_identifier_creators
+ALTER TABLE `mdb_have_access`
+    DROP PRIMARY KEY;-- mdb_identifier_creators
 ALTER TABLE mdb_identifier_creators
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_identifier_creators
     DROP FOREIGN KEY mdb_identifier_creators_ibfk_1;
 ALTER TABLE mdb_identifier_creators
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifier_creators`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifier_creators
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_descriptions
@@ -94,6 +102,8 @@ ALTER TABLE mdb_identifier_descriptions
     DROP FOREIGN KEY mdb_identifier_descriptions_ibfk_1;
 ALTER TABLE mdb_identifier_descriptions
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifier_descriptions`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifier_descriptions
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_funders
@@ -103,6 +113,8 @@ ALTER TABLE mdb_identifier_funders
     DROP FOREIGN KEY mdb_identifier_funders_ibfk_1;
 ALTER TABLE mdb_identifier_funders
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifier_funders`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifier_funders
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_licenses
@@ -112,6 +124,8 @@ ALTER TABLE mdb_identifier_licenses
     DROP FOREIGN KEY mdb_identifier_licenses_ibfk_1;
 ALTER TABLE mdb_identifier_licenses
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
+ALTER TABLE `mdb_identifier_licenses`
+    DROP PRIMARY KEY;
 -- mdb_identifier_titles
 ALTER TABLE mdb_identifier_titles
     DROP SYSTEM VERSIONING;
@@ -119,6 +133,8 @@ ALTER TABLE mdb_identifier_titles
     DROP FOREIGN KEY mdb_identifier_titles_ibfk_1;
 ALTER TABLE mdb_identifier_titles
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifier_titles`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifier_titles
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifier_licenses
@@ -129,6 +145,8 @@ ALTER TABLE mdb_related_identifiers
 ALTER TABLE mdb_related_identifiers RENAME mdb_identifier_related;
 ALTER TABLE mdb_identifier_related
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifier_related`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifier_related
     CHANGE COLUMN pid pid VARCHAR(36) NOT NULL;
 -- mdb_identifiers
@@ -138,6 +156,8 @@ ALTER TABLE mdb_identifiers
     DROP FOREIGN KEY mdb_identifiers_ibfk_1;
 ALTER TABLE mdb_identifiers
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_identifiers`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_identifiers
     CHANGE COLUMN dbid dbid VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_identifiers
@@ -149,6 +169,8 @@ ALTER TABLE mdb_identifiers
 -- mdb_columns_concepts
 ALTER TABLE mdb_columns_concepts
     DROP SYSTEM VERSIONING;
+ALTER TABLE `mdb_columns_concepts`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_columns_concepts
     DROP FOREIGN KEY mdb_columns_concepts_ibfk_1;
 ALTER TABLE mdb_columns_concepts
@@ -162,6 +184,8 @@ ALTER TABLE mdb_columns_enums
     DROP FOREIGN KEY mdb_columns_enums_ibfk_1;
 ALTER TABLE mdb_columns_enums
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_columns_enums`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_columns_enums
     CHANGE COLUMN column_id column_id VARCHAR(36) NOT NULL;
 -- mdb_columns_sets
@@ -171,6 +195,8 @@ ALTER TABLE mdb_columns_sets
     DROP FOREIGN KEY mdb_columns_sets_ibfk_1;
 ALTER TABLE mdb_columns_sets
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_columns_sets`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_columns_sets
     CHANGE COLUMN column_id column_id VARCHAR(36) NOT NULL;
 -- mdb_columns_units
@@ -180,6 +206,8 @@ ALTER TABLE mdb_columns_units
     DROP FOREIGN KEY mdb_columns_units_ibfk_1;
 ALTER TABLE mdb_columns_units
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_columns_units`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_columns_units
     CHANGE COLUMN cID cID VARCHAR(36) NOT NULL;
 -- mdb_constraints_checks
@@ -189,6 +217,8 @@ ALTER TABLE mdb_constraints_checks
     DROP FOREIGN KEY mdb_constraints_checks_ibfk_1;
 ALTER TABLE mdb_constraints_checks
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_checks`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_checks
     CHANGE COLUMN tid tid VARCHAR(36) NOT NULL;
 -- mdb_constraints_foreign_key_reference
@@ -202,6 +232,8 @@ ALTER TABLE mdb_constraints_foreign_key_reference
     DROP FOREIGN KEY mdb_constraints_foreign_key_reference_ibfk_3;
 ALTER TABLE mdb_constraints_foreign_key_reference
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_foreign_key_reference`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_foreign_key_reference
     CHANGE COLUMN fkid fkid VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_constraints_foreign_key_reference
@@ -217,6 +249,8 @@ ALTER TABLE mdb_constraints_foreign_key
     DROP FOREIGN KEY mdb_constraints_foreign_key_ibfk_2;
 ALTER TABLE mdb_constraints_foreign_key
     CHANGE COLUMN fkid fkid VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_foreign_key`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_foreign_key
     CHANGE COLUMN tid tid VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_constraints_foreign_key
@@ -230,13 +264,12 @@ ALTER TABLE mdb_constraints_primary_key
     DROP FOREIGN KEY mdb_constraints_primary_key_ibfk_2;
 ALTER TABLE mdb_constraints_primary_key
     CHANGE COLUMN pkid pkid VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_primary_key`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_primary_key
     CHANGE COLUMN tID tID VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_constraints_primary_key
     CHANGE COLUMN cid cid VARCHAR(36) NOT NULL;
--- mdb_constraints_unique
-ALTER TABLE mdb_constraints_unique
-    DROP FOREIGN KEY mdb_constraints_unique_ibfk_1;
 -- mdb_constraints_unique_columns
 ALTER TABLE mdb_constraints_unique_columns
     DROP SYSTEM VERSIONING;
@@ -246,13 +279,19 @@ ALTER TABLE mdb_constraints_unique_columns
     DROP FOREIGN KEY mdb_constraints_unique_columns_ibfk_2;
 ALTER TABLE mdb_constraints_unique_columns
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_unique_columns`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_unique_columns
     CHANGE COLUMN uid uid VARCHAR(36) NOT NULL;
 ALTER TABLE mdb_constraints_unique_columns
     CHANGE COLUMN cid cid VARCHAR(36) NOT NULL;
 -- mdb_constraints_unique
 ALTER TABLE mdb_constraints_unique
+    DROP FOREIGN KEY mdb_constraints_unique_ibfk_1;
+ALTER TABLE mdb_constraints_unique
     CHANGE COLUMN uid uid VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_constraints_unique`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_constraints_unique
     CHANGE COLUMN tid tid VARCHAR(36) NOT NULL;
 -- mdb_columns
@@ -262,6 +301,8 @@ ALTER TABLE mdb_columns
     DROP FOREIGN KEY mdb_columns_ibfk_1;
 ALTER TABLE mdb_columns
     CHANGE COLUMN ID ID VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_columns`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_columns
     CHANGE COLUMN tID tID VARCHAR(36) NOT NULL;
 -- mdb_tables
@@ -283,6 +324,8 @@ ALTER TABLE mdb_tables
     DROP FOREIGN KEY mdb_tables_ibfk_1;
 ALTER TABLE mdb_tables
     CHANGE COLUMN ID ID VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_tables`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_tables
     CHANGE COLUMN tDBID tDBID VARCHAR(36) NOT NULL;
 -- mdb_view_columns
@@ -292,6 +335,8 @@ ALTER TABLE mdb_view_columns
     DROP FOREIGN KEY mdb_view_columns_ibfk_1;
 ALTER TABLE mdb_view_columns
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_view_columns`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_view_columns
     CHANGE COLUMN view_id view_id VARCHAR(36) NOT NULL;
 -- mdb_view
@@ -301,6 +346,8 @@ ALTER TABLE mdb_view
     DROP FOREIGN KEY mdb_view_ibfk_1;
 ALTER TABLE mdb_view
     CHANGE COLUMN ID ID VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_view`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_view
     CHANGE COLUMN vdbid vdbid VARCHAR(36) NOT NULL;
 -- mdb_databases
@@ -310,6 +357,8 @@ ALTER TABLE mdb_databases
     DROP FOREIGN KEY mdb_databases_ibfk_1;
 ALTER TABLE mdb_databases
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_databases`
+    DROP PRIMARY KEY;
 ALTER TABLE mdb_databases
     CHANGE COLUMN cid cid VARCHAR(36) NOT NULL;
 -- mdb_containers
@@ -317,11 +366,24 @@ ALTER TABLE mdb_containers
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_containers
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_containers`
+    DROP PRIMARY KEY;
+ALTER TABLE mdb_containers
+    DROP FOREIGN KEY mdb_containers_ibfk_1;
 ALTER TABLE mdb_containers
     CHANGE COLUMN image_id image_id VARCHAR(36) NOT NULL;
 -- mdb_images
 ALTER TABLE mdb_images
-    ADD SYSTEM VERSIONING;
+    DROP SYSTEM VERSIONING;
+ALTER TABLE mdb_images
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_images`
+    DROP PRIMARY KEY;
+-- mdb_users
+ALTER TABLE mdb_users
+    DROP SYSTEM VERSIONING;
+ALTER TABLE mdb_users
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 -- mdb_identifiers
 ALTER TABLE mdb_identifiers
     ADD FOREIGN KEY (dbid) REFERENCES mdb_databases (id);
@@ -369,6 +431,8 @@ ALTER TABLE mdb_containers
 -- mdb_access
 ALTER TABLE mdb_access
     ADD FOREIGN KEY (aDBID) REFERENCES mdb_databases (id);
+ALTER TABLE mdb_access
+    ADD FOREIGN KEY (aUserID) REFERENCES mdb_users (id);
 ALTER TABLE mdb_access
     ADD SYSTEM VERSIONING;
 -- mdb_columns_concepts
@@ -466,6 +530,8 @@ ALTER TABLE mdb_users
 -- mdb_have_access
 ALTER TABLE mdb_have_access
     ADD FOREIGN KEY (database_id) REFERENCES mdb_databases (id);
+ALTER TABLE mdb_have_access
+    ADD FOREIGN KEY (user_id) REFERENCES mdb_users (id);
 ALTER TABLE mdb_have_access
     ADD SYSTEM VERSIONING;
 -- mdb_image_types
