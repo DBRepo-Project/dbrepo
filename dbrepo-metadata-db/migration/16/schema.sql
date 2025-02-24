@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS `mdb_columns_nom`;
 DROP TABLE IF EXISTS `mdb_columns_cat`;
 DROP TABLE IF EXISTS `mdb_update`;
 DROP TABLE IF EXISTS `mdb_databases_subjects`;
+DROP TABLE IF EXISTS `mdb_images_date`;
 -- mdb_ontologies
 ALTER TABLE `mdb_ontologies`
     DROP SYSTEM VERSIONING;
@@ -50,11 +51,6 @@ ALTER TABLE mdb_image_types
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE mdb_image_types
     CHANGE COLUMN image_id image_id VARCHAR(36) NOT NULL;
--- mdb_images
-ALTER TABLE mdb_images
-    DROP SYSTEM VERSIONING;
-ALTER TABLE mdb_images
-    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 -- mdb_access
 ALTER TABLE mdb_access
     DROP SYSTEM VERSIONING;
@@ -318,8 +314,14 @@ ALTER TABLE mdb_containers
 ALTER TABLE mdb_containers
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE mdb_containers
+    DROP FOREIGN KEY mdb_containers_ibfk_1;
+ALTER TABLE mdb_containers
     CHANGE COLUMN image_id image_id VARCHAR(36) NOT NULL;
 -- mdb_images
+ALTER TABLE mdb_images
+    DROP SYSTEM VERSIONING;
+ALTER TABLE mdb_images
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE mdb_images
     ADD SYSTEM VERSIONING;
 -- mdb_identifiers
@@ -380,12 +382,12 @@ ALTER TABLE mdb_columns_concepts
     ADD SYSTEM VERSIONING;
 -- mdb_columns_enums
 ALTER TABLE mdb_columns_enums
-    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
+    ADD FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE;
 ALTER TABLE mdb_columns_enums
     ADD SYSTEM VERSIONING;
 -- mdb_columns_sets
 ALTER TABLE mdb_columns_sets
-    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
+    ADD FOREIGN KEY (`column_id`) REFERENCES mdb_columns (`ID`) ON DELETE CASCADE;
 ALTER TABLE mdb_columns_sets
     ADD SYSTEM VERSIONING;
 -- mdb_columns_units
@@ -397,47 +399,47 @@ ALTER TABLE mdb_columns_units
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_checks
 ALTER TABLE mdb_constraints_checks
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
+    ADD FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_checks
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_foreign_key
 ALTER TABLE mdb_constraints_foreign_key
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
+    ADD FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_foreign_key
-    ADD FOREIGN KEY (rtid) REFERENCES mdb_constraints_foreign_key_reference (id);
+    ADD FOREIGN KEY (`rtid`) REFERENCES mdb_tables (`id`);
 ALTER TABLE mdb_constraints_foreign_key
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_foreign_key_reference
 ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid);
+    ADD FOREIGN KEY (`fkid`) REFERENCES mdb_constraints_foreign_key (`fkid`) ON UPDATE CASCADE;
 ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+    ADD FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`);
 ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (rcid) REFERENCES mdb_constraints_foreign_key_reference (ID);
+    ADD FOREIGN KEY (`rcid`) REFERENCES mdb_columns (`id`);
 ALTER TABLE mdb_constraints_foreign_key_reference
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_primary_key
 ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (ID);
+    ADD FOREIGN KEY (`tID`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+    ADD FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_primary_key
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_unique
 ALTER TABLE mdb_constraints_unique
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (ID);
+    ADD FOREIGN KEY (`tid`) REFERENCES mdb_tables (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_unique
     ADD SYSTEM VERSIONING;
 -- mdb_constraints_unique_columns
 ALTER TABLE mdb_constraints_unique_columns
     ADD FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid);
 ALTER TABLE mdb_constraints_unique_columns
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+    ADD FOREIGN KEY (`cid`) REFERENCES mdb_columns (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_constraints_unique_columns
     ADD SYSTEM VERSIONING;
 -- mdb_columns
 ALTER TABLE mdb_columns
-    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (id);
+    ADD FOREIGN KEY (`tID`) REFERENCES mdb_tables (`ID`) ON DELETE CASCADE;
 ALTER TABLE mdb_columns
     ADD SYSTEM VERSIONING;
 -- mdb_tables
@@ -447,7 +449,7 @@ ALTER TABLE mdb_tables
     ADD SYSTEM VERSIONING;
 -- mdb_view_columns
 ALTER TABLE mdb_view_columns
-    ADD FOREIGN KEY (view_id) REFERENCES mdb_view (id);
+    ADD FOREIGN KEY (`view_id`) REFERENCES mdb_view (`id`) ON DELETE CASCADE;
 ALTER TABLE mdb_view_columns
     ADD SYSTEM VERSIONING;
 -- mdb_view
