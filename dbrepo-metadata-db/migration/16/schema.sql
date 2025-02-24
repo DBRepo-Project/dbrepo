@@ -11,8 +11,13 @@ ALTER TABLE mdb_ontologies
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE `mdb_ontologies`
     DROP PRIMARY KEY;
-ALTER TABLE `mdb_ontologies`
-    ADD SYSTEM VERSIONING;
+-- mdb_concepts
+ALTER TABLE mdb_concepts
+    DROP SYSTEM VERSIONING;
+ALTER TABLE mdb_concepts
+    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+ALTER TABLE `mdb_concepts`
+    DROP PRIMARY KEY;
 -- mdb_units
 ALTER TABLE `mdb_units`
     DROP SYSTEM VERSIONING;
@@ -20,17 +25,6 @@ ALTER TABLE mdb_units
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
 ALTER TABLE `mdb_units`
     DROP PRIMARY KEY;
-ALTER TABLE `mdb_units`
-    ADD SYSTEM VERSIONING;
--- mdb_concepts
-ALTER TABLE `mdb_concepts`
-    DROP SYSTEM VERSIONING;
-ALTER TABLE mdb_concepts
-    CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
-ALTER TABLE `mdb_concepts`
-    DROP PRIMARY KEY;
-ALTER TABLE `mdb_concepts`
-    ADD SYSTEM VERSIONING;
 -- mdb_messages
 ALTER TABLE `mdb_banner_messages`
     DROP SYSTEM VERSIONING;
@@ -384,7 +378,160 @@ ALTER TABLE mdb_users
     DROP SYSTEM VERSIONING;
 ALTER TABLE mdb_users
     CHANGE COLUMN id id VARCHAR(36) NOT NULL DEFAULT UUID();
+-- mdb_images
+ALTER TABLE mdb_images
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_images
+    ADD SYSTEM VERSIONING;
+-- mdb_containers
+ALTER TABLE mdb_containers
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_containers
+    ADD FOREIGN KEY (image_id) REFERENCES mdb_images (id);
+ALTER TABLE mdb_containers
+    ADD SYSTEM VERSIONING;
+-- mdb_concepts
+ALTER TABLE mdb_concepts
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_concepts
+    ADD SYSTEM VERSIONING;
+-- mdb_databases
+ALTER TABLE mdb_databases
+    ADD FOREIGN KEY (cid) REFERENCES mdb_containers (id);
+ALTER TABLE mdb_databases
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_databases
+    ADD SYSTEM VERSIONING;
+-- mdb_tables
+ALTER TABLE mdb_tables
+    ADD FOREIGN KEY (tDBID) REFERENCES mdb_databases (id);
+ALTER TABLE mdb_tables
+    ADD PRIMARY KEY (ID);
+ALTER TABLE mdb_tables
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_checks
+ALTER TABLE mdb_constraints_checks
+    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
+ALTER TABLE mdb_constraints_checks
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_constraints_checks
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_foreign_key
+ALTER TABLE mdb_constraints_foreign_key
+    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
+ALTER TABLE mdb_constraints_foreign_key
+    ADD PRIMARY KEY (fkid);
+-- mdb_columns
+ALTER TABLE mdb_columns
+    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (id);
+ALTER TABLE mdb_columns
+    ADD PRIMARY KEY (ID);
+ALTER TABLE mdb_columns
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_foreign_key_reference
+ALTER TABLE mdb_constraints_foreign_key_reference
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_constraints_foreign_key_reference
+    ADD FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid);
+ALTER TABLE mdb_constraints_foreign_key_reference
+    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+ALTER TABLE mdb_constraints_foreign_key_reference
+    ADD FOREIGN KEY (rcid) REFERENCES mdb_columns (ID);
+ALTER TABLE mdb_constraints_foreign_key_reference
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_foreign_key
+ALTER TABLE mdb_constraints_foreign_key
+    ADD FOREIGN KEY (rtid) REFERENCES mdb_tables (`id`) ON DELETE CASCADE;
+ALTER TABLE mdb_constraints_foreign_key
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_primary_key
+ALTER TABLE mdb_constraints_primary_key
+    ADD PRIMARY KEY (pkid);
+ALTER TABLE mdb_constraints_primary_key
+    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (ID);
+ALTER TABLE mdb_constraints_primary_key
+    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+ALTER TABLE mdb_constraints_primary_key
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_unique
+ALTER TABLE mdb_constraints_unique
+    ADD PRIMARY KEY (uid);
+ALTER TABLE mdb_constraints_unique
+    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (ID);
+ALTER TABLE mdb_constraints_unique
+    ADD SYSTEM VERSIONING;
+-- mdb_constraints_unique_columns
+ALTER TABLE mdb_constraints_unique_columns
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_constraints_unique_columns
+    ADD FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid);
+ALTER TABLE mdb_constraints_unique_columns
+    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
+ALTER TABLE mdb_constraints_unique_columns
+    ADD SYSTEM VERSIONING;
+-- mdb_columns_enums
+ALTER TABLE mdb_columns_enums
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_columns_enums
+    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
+ALTER TABLE mdb_columns_enums
+    ADD SYSTEM VERSIONING;
+-- mdb_columns_sets
+ALTER TABLE mdb_columns_sets
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_columns_sets
+    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
+ALTER TABLE mdb_columns_sets
+    ADD SYSTEM VERSIONING;
+-- mdb_units
+ALTER TABLE mdb_units
+    ADD PRIMARY KEY (id);
+-- mdb_columns_units
+ALTER TABLE mdb_units
+    ADD SYSTEM VERSIONING;
+ALTER TABLE mdb_columns_units
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_columns_units
+    ADD FOREIGN KEY (id) REFERENCES mdb_units (id);
+ALTER TABLE mdb_columns_units
+    ADD FOREIGN KEY (cID) REFERENCES mdb_columns (id);
+ALTER TABLE mdb_columns_units
+    ADD SYSTEM VERSIONING;
+-- mdb_columns_concepts
+ALTER TABLE mdb_columns_concepts
+    ADD PRIMARY KEY (id, cid);
+ALTER TABLE mdb_columns_concepts
+    ADD FOREIGN KEY (id) REFERENCES mdb_concepts (id);
+ALTER TABLE mdb_columns_concepts
+    ADD FOREIGN KEY (cID) REFERENCES mdb_columns (id);
+ALTER TABLE mdb_columns_concepts
+    ADD SYSTEM VERSIONING;
+-- mdb_view
+ALTER TABLE mdb_view
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_view
+    ADD FOREIGN KEY (vdbid) REFERENCES mdb_databases (id);
+ALTER TABLE mdb_view
+    ADD SYSTEM VERSIONING;
+-- mdb_view_columns
+ALTER TABLE mdb_view_columns
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_view_columns
+    ADD FOREIGN KEY (view_id) REFERENCES mdb_view (id);
+ALTER TABLE mdb_view_columns
+    ADD SYSTEM VERSIONING;
+-- mdb_access
+ALTER TABLE mdb_access
+    ADD PRIMARY KEY (aUserID, aDBID);
+ALTER TABLE mdb_access
+    ADD FOREIGN KEY (aDBID) REFERENCES mdb_databases (id);
+ALTER TABLE mdb_access
+    ADD FOREIGN KEY (aUserID) REFERENCES mdb_users (id);
+ALTER TABLE mdb_access
+    ADD SYSTEM VERSIONING;
 -- mdb_identifiers
+ALTER TABLE mdb_identifiers
+    ADD PRIMARY KEY (id);
 ALTER TABLE mdb_identifiers
     ADD FOREIGN KEY (dbid) REFERENCES mdb_databases (id);
 ALTER TABLE mdb_identifiers
@@ -395,139 +542,52 @@ ALTER TABLE mdb_identifiers
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_licenses
 ALTER TABLE mdb_identifier_licenses
+    ADD PRIMARY KEY (pid, license_id);
+ALTER TABLE mdb_identifier_licenses
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_licenses
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_titles
+ALTER TABLE mdb_identifier_titles
+    ADD PRIMARY KEY (id);
 ALTER TABLE mdb_identifier_titles
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_titles
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_funders
 ALTER TABLE mdb_identifier_funders
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_identifier_funders
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_funders
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_descriptions
+ALTER TABLE mdb_identifier_descriptions
+    ADD PRIMARY KEY (id);
 ALTER TABLE mdb_identifier_descriptions
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_descriptions
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_creators
 ALTER TABLE mdb_identifier_creators
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_identifier_creators
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_creators
     ADD SYSTEM VERSIONING;
 -- mdb_identifier_related
 ALTER TABLE mdb_identifier_related
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_identifier_related
     ADD FOREIGN KEY (pid) REFERENCES mdb_identifiers (id);
 ALTER TABLE mdb_identifier_related
-    ADD SYSTEM VERSIONING;
--- mdb_containers
-ALTER TABLE mdb_containers
-    ADD FOREIGN KEY (image_id) REFERENCES mdb_images (id);
-ALTER TABLE mdb_containers
-    ADD SYSTEM VERSIONING;
--- mdb_access
-ALTER TABLE mdb_access
-    ADD FOREIGN KEY (aDBID) REFERENCES mdb_databases (id);
-ALTER TABLE mdb_access
-    ADD FOREIGN KEY (aUserID) REFERENCES mdb_users (id);
-ALTER TABLE mdb_access
-    ADD SYSTEM VERSIONING;
--- mdb_columns_concepts
-ALTER TABLE mdb_columns_concepts
-    ADD FOREIGN KEY (id) REFERENCES mdb_concepts (id);
-ALTER TABLE mdb_columns_concepts
-    ADD FOREIGN KEY (cID) REFERENCES mdb_columns (id);
-ALTER TABLE mdb_columns_concepts
-    ADD SYSTEM VERSIONING;
--- mdb_columns_enums
-ALTER TABLE mdb_columns_enums
-    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
-ALTER TABLE mdb_columns_enums
-    ADD SYSTEM VERSIONING;
--- mdb_columns_sets
-ALTER TABLE mdb_columns_sets
-    ADD FOREIGN KEY (column_id) REFERENCES mdb_columns (id);
-ALTER TABLE mdb_columns_sets
-    ADD SYSTEM VERSIONING;
--- mdb_columns_units
-ALTER TABLE mdb_columns_units
-    ADD FOREIGN KEY (id) REFERENCES mdb_units (id);
-ALTER TABLE mdb_columns_units
-    ADD FOREIGN KEY (cID) REFERENCES mdb_columns (id);
-ALTER TABLE mdb_columns_units
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_checks
-ALTER TABLE mdb_constraints_checks
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
-ALTER TABLE mdb_constraints_checks
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_foreign_key
-ALTER TABLE mdb_constraints_foreign_key
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (id);
-ALTER TABLE mdb_constraints_foreign_key
-    ADD FOREIGN KEY (rtid) REFERENCES mdb_constraints_foreign_key_reference (id);
-ALTER TABLE mdb_constraints_foreign_key
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_foreign_key_reference
-ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid);
-ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
-ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD FOREIGN KEY (rcid) REFERENCES mdb_constraints_foreign_key_reference (ID);
-ALTER TABLE mdb_constraints_foreign_key_reference
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_primary_key
-ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (ID);
-ALTER TABLE mdb_constraints_primary_key
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
-ALTER TABLE mdb_constraints_primary_key
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_unique
-ALTER TABLE mdb_constraints_unique
-    ADD FOREIGN KEY (tid) REFERENCES mdb_tables (ID);
-ALTER TABLE mdb_constraints_unique
-    ADD SYSTEM VERSIONING;
--- mdb_constraints_unique_columns
-ALTER TABLE mdb_constraints_unique_columns
-    ADD FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid);
-ALTER TABLE mdb_constraints_unique_columns
-    ADD FOREIGN KEY (cid) REFERENCES mdb_columns (ID);
-ALTER TABLE mdb_constraints_unique_columns
-    ADD SYSTEM VERSIONING;
--- mdb_columns
-ALTER TABLE mdb_columns
-    ADD FOREIGN KEY (tID) REFERENCES mdb_tables (id);
-ALTER TABLE mdb_columns
-    ADD SYSTEM VERSIONING;
--- mdb_tables
-ALTER TABLE mdb_tables
-    ADD FOREIGN KEY (tDBID) REFERENCES mdb_databases (id);
-ALTER TABLE mdb_tables
-    ADD SYSTEM VERSIONING;
--- mdb_view_columns
-ALTER TABLE mdb_view_columns
-    ADD FOREIGN KEY (view_id) REFERENCES mdb_view (id);
-ALTER TABLE mdb_view_columns
-    ADD SYSTEM VERSIONING;
--- mdb_view
-ALTER TABLE mdb_view
-    ADD FOREIGN KEY (vdbid) REFERENCES mdb_databases (id);
-ALTER TABLE mdb_view
-    ADD SYSTEM VERSIONING;
--- mdb_databases
-ALTER TABLE mdb_databases
-    ADD FOREIGN KEY (cid) REFERENCES mdb_containers (id);
-ALTER TABLE mdb_databases
     ADD SYSTEM VERSIONING;
 -- mdb_users
 ALTER TABLE mdb_users
     ADD SYSTEM VERSIONING;
 -- mdb_have_access
+ALTER TABLE mdb_have_access
+    ADD PRIMARY KEY (user_id, database_id);
 ALTER TABLE mdb_have_access
     ADD FOREIGN KEY (database_id) REFERENCES mdb_databases (id);
 ALTER TABLE mdb_have_access
@@ -536,11 +596,20 @@ ALTER TABLE mdb_have_access
     ADD SYSTEM VERSIONING;
 -- mdb_image_types
 ALTER TABLE mdb_image_types
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_image_types
     ADD FOREIGN KEY (image_id) REFERENCES mdb_images (id);
 ALTER TABLE mdb_image_types
     ADD SYSTEM VERSIONING;
 -- mdb_image_operators
 ALTER TABLE mdb_image_operators
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_image_operators
     ADD FOREIGN KEY (image_id) REFERENCES mdb_images (id);
 ALTER TABLE mdb_image_operators
+    ADD SYSTEM VERSIONING;
+-- mdb_ontologies
+ALTER TABLE mdb_ontologies
+    ADD PRIMARY KEY (id);
+ALTER TABLE mdb_ontologies
     ADD SYSTEM VERSIONING;
