@@ -92,10 +92,11 @@ def update_databases() -> None:
                 fk_old_id: int = fk.id
                 fk_new_id: uuid = uuid.uuid4()
                 plan.append(
-                    f"UPDATE mdb_constraints_foreign_key SET id = '{fk_new_id}', tid = '{tbl_new_id}' WHERE id = '{fk_old_id}';")
+                    f"UPDATE mdb_constraints_foreign_key SET fkid = '{fk_new_id}', tid = '{tbl_new_id}' WHERE fkid = '{fk_old_id}';")
                 for fkref in fk.references:
+                    fkref_old_id = fkref.id
                     plan.append(
-                        f"UPDATE mdb_constraints_foreign_key_reference SET id = UUID(), fkid = '{fk_new_id}' WHERE fkid = '{fkref}';")
+                        f"UPDATE mdb_constraints_foreign_key_reference SET id = UUID(), fkid = '{fk_new_id}' WHERE fkid = '{fkref_old_id}';")
             for pk in table.constraints.primary_key:
                 pk_old_id: int = pk.id
                 plan.append(
