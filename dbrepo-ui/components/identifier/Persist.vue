@@ -1391,9 +1391,10 @@ export default {
       this.loadingPublish = true
       const identifierService = useIdentifierService()
       identifierService.publish(this.identifier.id)
-        .then(() => {
+        .then((identifier) => {
           const toast = useToastInstance()
           toast.success(this.$t('success.pid.published'))
+          this.identifier = identifier
           this.cacheStore.reloadDatabase()
           this.loadingPublish = false
         })

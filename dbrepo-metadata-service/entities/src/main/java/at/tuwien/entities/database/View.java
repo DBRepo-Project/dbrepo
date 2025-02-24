@@ -84,10 +84,9 @@ public class View {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "vdbid", referencedColumnName = "id")
     })
     private Database database;
 
