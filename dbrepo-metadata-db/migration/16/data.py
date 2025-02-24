@@ -4,9 +4,9 @@ import uuid
 
 from dbrepo.RestClient import RestClient
 
-endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'http://localhost')
+endpoint = os.getenv('METADATA_SERVICE_ENDPOINT', 'https://dbrepo1.ec.tuwien.ac.at')
 username = os.getenv('SYSTEM_USERNAME', 'admin')
-password = os.getenv('SYSTEM_PASSWORD', 'admin')
+password = os.getenv('SYSTEM_PASSWORD', 'f24870437f82adf567c0b03179f15e21')
 client = RestClient(endpoint=endpoint, username=username, password=password)
 
 plan: [str] = []
@@ -86,29 +86,37 @@ def update_databases() -> None:
             tbl_old_id: int = table.id
             tbl_new_id: uuid = uuid.uuid4()
             plan.append(f"UPDATE mdb_identifiers SET tid = '{tbl_new_id}' WHERE tid = {tbl_old_id};")
-            plan.append(f"UPDATE mdb_constraints_checks SET id = UUID(), tid = '{tbl_new_id}' WHERE tid = {tbl_old_id};")
+            plan.append(
+                f"UPDATE mdb_constraints_checks SET id = UUID(), tid = '{tbl_new_id}' WHERE tid = {tbl_old_id};")
             for fk in table.constraints.foreign_keys:
                 fk_old_id: int = fk.id
                 fk_new_id: uuid = uuid.uuid4()
-                plan.append(f"UPDATE mdb_constraints_foreign_key SET id = '{fk_new_id}', tid = '{tbl_new_id}' WHERE id = {fk_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_foreign_key SET id = '{fk_new_id}', tid = '{tbl_new_id}' WHERE id = {fk_old_id};")
                 for fkref in fk.references:
-                    plan.append(f"UPDATE mdb_constraints_foreign_key_reference SET id = UUID(), fkid = '{fk_new_id}' WHERE fkid = {fkref};")
+                    plan.append(
+                        f"UPDATE mdb_constraints_foreign_key_reference SET id = UUID(), fkid = '{fk_new_id}' WHERE fkid = {fkref};")
             for pk in table.constraints.primary_key:
                 pk_old_id: int = pk.id
-                plan.append(f"UPDATE mdb_constraints_primary_key SET pkid = UUID(), tID = '{tbl_new_id}' WHERE tID = {pk_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_primary_key SET pkid = UUID(), tID = '{tbl_new_id}' WHERE tID = {pk_old_id};")
             for uk in table.constraints.uniques:
                 uk_old_id: int = uk.id
                 uk_new_id: uuid = uuid.uuid4()
-                plan.append(f"UPDATE mdb_constraints_unique SET uid = '{uk_new_id}', tid = '{tbl_new_id}' WHERE uid = {uk_old_id};")
-                plan.append(f"UPDATE mdb_constraints_unique_columns SET id = UUID(), uid = '{uk_new_id}' WHERE uid = {uk_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_unique SET uid = '{uk_new_id}', tid = '{tbl_new_id}' WHERE uid = {uk_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_unique_columns SET id = UUID(), uid = '{uk_new_id}' WHERE uid = {uk_old_id};")
             for column in table.columns:
                 col_old_id: int = column.id
                 col_new_id: uuid = uuid.uuid4()
                 plan.append(f"UPDATE mdb_columns SET ID = '{col_new_id}' WHERE ID = {col_old_id};")
                 plan.append(f"UPDATE mdb_constraints_unique_columns SET cid = '{col_new_id}' WHERE cid = {col_old_id};")
                 plan.append(f"UPDATE mdb_constraints_primary_key SET cid = '{col_new_id}' WHERE cid = {col_old_id};")
-                plan.append(f"UPDATE mdb_constraints_foreign_key_reference SET cid = '{col_new_id}' WHERE cid = {col_old_id};")
-                plan.append(f"UPDATE mdb_constraints_foreign_key_reference SET rcid = '{col_new_id}' WHERE rcid = {col_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_foreign_key_reference SET cid = '{col_new_id}' WHERE cid = {col_old_id};")
+                plan.append(
+                    f"UPDATE mdb_constraints_foreign_key_reference SET rcid = '{col_new_id}' WHERE rcid = {col_old_id};")
                 plan.append(f"UPDATE mdb_columns_concepts SET cID = '{col_new_id}' WHERE cID = {col_old_id};")
                 plan.append(f"UPDATE mdb_columns_units SET cID = '{col_new_id}' WHERE cID = {col_old_id};")
                 plan.append(f"UPDATE mdb_columns_sets SET column_id = '{col_new_id}' WHERE column_id = {col_old_id};")
@@ -117,11 +125,13 @@ def update_databases() -> None:
         plan.append(f"UPDATE mdb_databases SET id = '{new_id}' WHERE id = {old_id};")
     plan.append("COMMIT;")
 
+
 def update_messages() -> None:
     plan.append("-- messages")
     plan.append("BEGIN;")
     plan.append(f"UPDATE mdb_messages SET ID = UUID();")
     plan.append("COMMIT;")
+
 
 def update_identifiers() -> None:
     plan.append("-- identifiers")
