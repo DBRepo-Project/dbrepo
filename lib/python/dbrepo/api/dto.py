@@ -665,6 +665,14 @@ class Identifier(BaseModel):
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
 
+class Message(BaseModel):
+    id: int
+    type: str
+    link: Optional[str] = None
+    link_text: Optional[str] = None
+    display_start: Optional[Timestamp] = None
+    display_end: Optional[Timestamp] = None
+
 
 class IdentifierBrief(BaseModel):
     id: str

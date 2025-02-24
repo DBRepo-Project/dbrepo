@@ -187,7 +187,7 @@ class IdentifierUnitTest(unittest.TestCase):
                               status=IdentifierStatusType.PUBLISHED,
                               owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
             # mock
-            mock.get('/api/identifiers', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
+            mock.get('/api/identifier', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     view_id="e5229d24-584a-43e8-b9f6-d349c3053f9c",
@@ -199,7 +199,7 @@ class IdentifierUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/identifiers', json=[], headers={"Accept": "application/json"})
+            mock.get('/api/identifier', json=[], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     subset_id="0831bf54-9dd9-46fe-8c2c-c539332ea177")
@@ -209,7 +209,7 @@ class IdentifierUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/identifiers', json=[], headers={"Accept": "application/json"})
+            mock.get('/api/identifier', json=[], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
                                                     table_id="b3230b86-4743-498d-9015-3fad58049692")
@@ -239,7 +239,7 @@ class IdentifierUnitTest(unittest.TestCase):
     def test_get_identifiers_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/identifiers', status_code=404)
+            mock.get('/api/identifier', status_code=404)
             # test
             try:
                 RestClient().get_identifiers()
@@ -249,7 +249,7 @@ class IdentifierUnitTest(unittest.TestCase):
     def test_get_identifiers_406_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/identifiers', status_code=406)
+            mock.get('/api/identifier', status_code=406)
             # test
             try:
                 RestClient().get_identifiers()
@@ -259,7 +259,7 @@ class IdentifierUnitTest(unittest.TestCase):
     def test_get_identifiers_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/identifiers', status_code=202)
+            mock.get('/api/identifier', status_code=202)
             # test
             try:
                 RestClient().get_identifiers()

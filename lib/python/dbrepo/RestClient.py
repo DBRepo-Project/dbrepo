@@ -1713,7 +1713,7 @@ class RestClient:
         :raises FormatNotAvailable: If the service could not represent the output.
         :raises ResponseCodeError: If something went wrong with the retrieval of the identifiers.
         """
-        url = f'/api/identifiers'
+        url = f'/api/identifier'
         params = []
         if database_id is not None:
             params.append(('dbid', database_id))
@@ -1744,6 +1744,35 @@ class RestClient:
                 f'Failed to get identifiers: accept header must be application/json or application/ld+json')
         raise ResponseCodeError(f'Failed to get identifiers: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
+
+    def get_images(self) -> List[ImageBrief] | str:
+        """
+        Get list of container images.
+
+        :returns: List of images, if successful.
+        """
+        url = f'/api/image'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[ImageBrief]).validate_python(body)
+        raise ResponseCodeError(f'Failed to get images: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
+    def get_messages(self) -> List[Message] | str:
+        """
+        Get list of messages.
+
+        :returns: List of messages, if successful.
+        """
+        url = f'/api/message'
+        response = self._wrapper(method="get", url=url, headers={'Accept': 'application/json'})
+        if response.status_code == 200:
+            body = response.json()
+            return TypeAdapter(List[Message]).validate_python(body)
+        raise ResponseCodeError(f'Failed to get messages: response code: {response.status_code} is not '
+                                f'200 (OK): {response.text}')
+
 
     def update_table_column(self, database_id: str, table_id: str, column_id: str, concept_uri: str = None,
                             unit_uri: str = None) -> Column:

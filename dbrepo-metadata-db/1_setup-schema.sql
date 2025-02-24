@@ -331,9 +331,9 @@ CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
     id                VARCHAR(36)                                  NOT NULL DEFAULT UUID(),
     dbid              VARCHAR(36)                                  NOT NULL,
-    qid               VARCHAR(36)                                  NOT NULL,
-    vid               VARCHAR(36)                                  NOT NULL,
-    tid               VARCHAR(36)                                  NOT NULL,
+    qid               VARCHAR(36),
+    vid               VARCHAR(36),
+    tid               VARCHAR(36),
     publisher         VARCHAR(255)                                 NOT NULL,
     language          VARCHAR(2),
     publication_year  INT                                          NOT NULL,
