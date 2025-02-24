@@ -23,6 +23,8 @@ public interface DatabaseService {
 
     List<Database> findAllPublicOrSchemaPublic();
 
+    List<Database> findByInternalName(String internalName);
+
     List<Database> findAllPublicOrSchemaPublicOrReadAccessByInternalName(UUID userId, String internalName);
 
     /**

@@ -23,4 +23,6 @@ public interface DatabaseRepository extends JpaRepository<Database, UUID> {
 
     List<Database> findAllPublicOrSchemaPublicByInternalNameDesc(String internalName);
 
+    List<Database> findAllByInternalNameDesc(String internalName);
+
 }

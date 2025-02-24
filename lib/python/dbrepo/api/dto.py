@@ -24,6 +24,13 @@ class Image(BaseModel):
     data_types: List[DataType] = field(default_factory=list)
 
 
+
+class Operator(BaseModel):
+    id: str
+    display_name: str
+    value: str
+    documentation: str
+
 class ImageBrief(BaseModel):
     id: str
     name: str
@@ -464,6 +471,15 @@ class License(BaseModel):
     description: str
 
 
+class OntologyBrief(BaseModel):
+    id: str
+    uri: str
+    prefix: str
+    sparql: bool
+    rdf: bool
+    uri_pattern: Optional[str] = None
+
+
 class Tuple(BaseModel):
     data: dict
 
@@ -666,7 +682,7 @@ class Identifier(BaseModel):
     publication_month: Optional[int] = None
 
 class Message(BaseModel):
-    id: int
+    id: str
     type: str
     link: Optional[str] = None
     link_text: Optional[str] = None
@@ -945,7 +961,18 @@ class UpdateQuery(BaseModel):
     persist: bool
 
 
+class ColumnEnum(BaseModel):
+    id: str
+    value: str
+
+
+class ColumnSet(BaseModel):
+    id: str
+    value: str
+
+
 class DataType(BaseModel):
+    id: str
     display_name: str
     value: str
     documentation: str

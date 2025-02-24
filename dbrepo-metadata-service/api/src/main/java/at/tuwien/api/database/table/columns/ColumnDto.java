@@ -120,12 +120,10 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<String> enums;
+    private List<EnumDto> enums;
 
-    @Schema(example = "[\"val1\"]")
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<String> sets;
+    private List<SetDto> sets;
 
 }

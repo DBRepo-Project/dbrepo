@@ -766,6 +766,8 @@ public interface MetadataMapper {
             @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
             @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
+            @Mapping(target = "enums", ignore = true),
+            @Mapping(target = "sets", ignore = true),
     })
     TableColumn columnCreateDtoToTableColumn(CreateTableColumnDto data, ContainerImage image);
 

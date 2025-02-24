@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -85,15 +87,13 @@ public class TableColumn implements Comparable<TableColumn> {
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
-    @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
-    @CollectionTable(name = "mdb_columns_enums", joinColumns = @JoinColumn(name = "column_id"))
-    @Column(name = "value", nullable = false)
-    private List<String> enums;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "column")
+    private List<ColumnEnum> enums;
 
-    @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
-    @CollectionTable(name = "mdb_columns_sets", joinColumns = @JoinColumn(name = "column_id"))
-    @Column(name = "value", nullable = false)
-    private List<String> sets;
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "column")
+    private List<ColumnSet> sets;
 
     @Column
     private Long size;

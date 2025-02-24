@@ -19,6 +19,8 @@ import java.util.UUID;
 @ToString
 public class OperatorDto {
 
+    @NotNull
+    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dccf")
     private UUID id;
 
     @NotBlank

@@ -5,10 +5,7 @@ import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.*;
-import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnStatisticDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyBriefDto;
 import at.tuwien.api.database.table.constraints.foreign.ForeignKeyDto;
@@ -140,14 +137,18 @@ public interface DataMapper {
             column.setEnums(Arrays.stream(dataType.substring(0, resultSet.getString(8).length() - 1)
                             .replace("enum(", "")
                             .split(","))
-                    .map(value -> value.replace("'", ""))
+                    .map(value -> EnumDto.builder()
+                            .value(value.replace("'", ""))
+                            .build())
                     .toList());
         }
         if (column.getColumnType().equals(ColumnTypeDto.SET)) {
             column.setSets(Arrays.stream(dataType.substring(0, dataType.length() - 1)
                             .replace("set(", "")
                             .split(","))
-                    .map(value -> value.replace("'", ""))
+                    .map(value -> SetDto.builder()
+                            .value(value.replace("'", ""))
+                            .build())
                     .toList());
         }
         /* fix boolean and set size for others */

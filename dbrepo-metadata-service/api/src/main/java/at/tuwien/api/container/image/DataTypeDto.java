@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -16,6 +18,10 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @ToString
 public class DataTypeDto {
+
+    @NotNull
+    @Schema(example = "816f55d5-1098-4f60-a4af-c8121c04dcca")
+    private UUID id;
 
     @NotBlank
     @JsonProperty("display_name")

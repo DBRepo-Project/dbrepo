@@ -99,7 +99,7 @@ public class TableEndpoint extends AbstractEndpoint {
         endpointValidator.validateOnlyPrivateSchemaHasRole(database, principal, "list-tables");
         return ResponseEntity.ok(database.getTables()
                 .stream()
-                .filter(t -> t.getIsPublic() || t.getIsSchemaPublic())
+                .filter(t -> t.getIsPublic() || t.getIsSchemaPublic() || (principal != null && isSystem(principal)))
                 .map(metadataMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
     }
