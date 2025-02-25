@@ -34,6 +34,8 @@ author: Martin Weise
 
 * Implemented a basic brute-force security defense strategy in the Auth Service that increments the wait time on wrong
   logins in [#494](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/494).
+* Implemented a password policy
+  in [#495](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/495).
 
 #### Changes
 
