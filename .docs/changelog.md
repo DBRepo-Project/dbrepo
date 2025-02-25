@@ -8,13 +8,36 @@ author: Martin Weise
 
 !!! warning "Contains Breaking Changes"
 
-    This release updates the Metadata Database schema which is incompatible to v1.6.3! Use the migration
-    script [`schema_1.6.3-to-1.7.0.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/schema_1.6.3-to-1.7.0.sql)
-    to apply the changes manually.
+    This release updates the Metadata Database schema which is incompatible to v1.6.3! Follow the steps:
+
+    1. Make a backup of the database with `mariadb-dump`.
+    2. Apply the schema changes script: [`schema.sql`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/schema.sql):
+       ```shell
+       mariadb -h 127.0.0.1 -p3306 -u root --password=<password> -D dbrepo < schema.sql
+       ```
+    3. Install the dependencies from the [`requirements.txt`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/requirements.txt)
+       file or use your local environment:
+       ```shell
+       pip install dbrepo==1.6.5rc15
+       ```
+    4. Run the data migration script [`data.py`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.7/dbrepo-metadata-db/migration/16/data.py):
+       ```shell
+       python data.py > data.sql
+       ```
+       It generates the SQL statements used for migrating to the new schema.
+    5. Run the generated `data.sql` script:
+       ```shell
+       mariadb -h 127.0.0.1 -p3306 -u root --password=<password> -D dbrepo < data.sql
+       ```
+
+#### Features
+
+* Implemented a basic brute-force security defense strategy in the Auth Service that increments the wait time on wrong
+  logins in [#494](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/494).
 
 #### Changes
 
-* Replaced sequential numerical ids with non-guessable random ids in the Metadata Database 
+* Replaced sequential numerical ids with non-guessable random ids in the Metadata Database
   in [#491](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/491).
 
 ## v1.6.5 (2025-02-18)
