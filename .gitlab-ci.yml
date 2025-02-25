@@ -80,9 +80,9 @@ lint-helm-chart:
     - apk --no-cache add helm git bash
     - cp ./helm/dbrepo/values.schema.json ./CI_values.schema.json
     - helm plugin install https://github.com/losisin/helm-values-schema-json.git
-    - helm dependency update ./helm/seaweedfs
     - helm package ./helm/seaweedfs --destination ./build
-    - helm dependency update ./helm/dbrepo
+    - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
+    - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
   script:
     - bash .scripts/check-helm.sh
     - helm lint ./helm/dbrepo
@@ -472,6 +472,8 @@ release-helm:
     - "mkdir -p ~/.gnupg"
     - echo "$CI_GPG_KEYRING" | base64 -d > ~/.gnupg/secring.gpg
     - echo "$CI_GPG_KEYRING2" | base64 -d > ~/.gnupg/pubring.gpg
+    - helm registry login --username "${CI_REGISTRY_USER}" --password "${CI_REGISTRY_PASSWORD}" "${CI_REGISTRY_URL}"
+    - helm registry login --username "${CI_REGISTRY2_USER}" --password "${CI_REGISTRY2_PASSWORD}" "${CI_REGISTRY2_URL}"
     - make build-helm
     - "helm package ./helm/dbrepo --sign --key 'Martin Weise' --keyring ~/.gnupg/secring.gpg --destination ./build"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
