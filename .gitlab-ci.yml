@@ -248,7 +248,7 @@ test-metadata-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
   variables:
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-metadata-service
   dependencies:
@@ -270,7 +270,7 @@ test-data-service:
   image: maven:3-openjdk-${JAVA_VERSION}
   stage: test
   variables:
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-data-service
   dependencies:
@@ -301,7 +301,7 @@ test-analyse-service:
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-analyse-service
   dependencies:
@@ -326,7 +326,7 @@ test-auth-service-init:
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-auth-service/init/Pipfile"
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   before_script:
     - "apk add --no-cache alpine-sdk gcc python3-dev mariadb-connector-c-dev"
     - "pip install pipenv"
@@ -349,7 +349,7 @@ test-search-service:
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/Pipfile"
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-search-service
   dependencies:
@@ -381,7 +381,7 @@ test-search-service-init:
   stage: test
   variables:
     PIPENV_PIPFILE: "./dbrepo-search-service/init/Pipfile"
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-search-service
   dependencies:
@@ -406,7 +406,7 @@ test-lib:
   stage: test
   variables:
     PIPENV_PIPFILE: "./lib/python/Pipfile"
-    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry:80/"
+    TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "registry/"
   needs:
     - build-lib
   dependencies:
