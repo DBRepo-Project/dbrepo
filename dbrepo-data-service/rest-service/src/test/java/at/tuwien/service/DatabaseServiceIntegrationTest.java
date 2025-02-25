@@ -4,9 +4,7 @@ import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
@@ -206,10 +204,10 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         assertColumn(columns.get(0), null, null, DATABASE_2_ID, "id", "id", ColumnTypeDto.BIGINT, 19L, 0L, false, null);
         assertColumn(columns.get(1), null, null, DATABASE_2_ID, "mode", "mode", ColumnTypeDto.ENUM, 3L, null, false, null);
         assertEquals(2, columns.get(1).getEnums().size());
-        assertEquals(List.of("ABC", "DEF"), columns.get(1).getEnums());
+        assertEquals(List.of("ABC", "DEF"), columns.get(1).getEnums().stream().map(EnumDto::getValue).toList());
         assertColumn(columns.get(2), null, null, DATABASE_2_ID, "seq", "seq", ColumnTypeDto.SET, 5L, null, true, null);
         assertEquals(3, columns.get(2).getSets().size());
-        assertEquals(List.of("1", "2", "3"), columns.get(2).getSets());
+        assertEquals(List.of("1", "2", "3"), columns.get(2).getSets().stream().map(SetDto::getValue).toList());
         /* ignore rest (constraints) */
     }
 

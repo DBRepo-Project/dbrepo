@@ -26,9 +26,12 @@ class ContainerUnitTest(unittest.TestCase):
                                         driver_class="org.mariadb.jdbc.Driver",
                                         jdbc_method="mariadb",
                                         data_types=[
-                                            DataType(display_name="SERIAL", value="serial",
+                                            DataType(id="a01957bf-6fed-46a3-8b13-dc6ea304a3af",
+                                                     display_name="SERIAL",
+                                                     value="serial",
                                                      documentation="https://mariadb.com/kb/en/bigint/",
-                                                     is_quoted=False, is_buildable=True)]))
+                                                     is_quoted=False,
+                                                     is_buildable=True)]))
             # mock
             mock.post('/api/container', json=exp.model_dump(), status_code=201)
             # test
@@ -177,9 +180,12 @@ class ContainerUnitTest(unittest.TestCase):
                                         driver_class="org.mariadb.jdbc.Driver",
                                         jdbc_method="mariadb",
                                         data_types=[
-                                            DataType(display_name="SERIAL", value="serial",
+                                            DataType(id="a01957bf-6fed-46a3-8b13-dc6ea304a3af",
+                                                     display_name="SERIAL",
+                                                     value="serial",
                                                      documentation="https://mariadb.com/kb/en/bigint/",
-                                                     is_quoted=False, is_buildable=True)]))
+                                                     is_quoted=False,
+                                                     is_buildable=True)]))
             # mock
             mock.get('/api/container/44d811a8-4019-46ba-bd57-ea10a2eb0c74', json=exp.model_dump())
             # test

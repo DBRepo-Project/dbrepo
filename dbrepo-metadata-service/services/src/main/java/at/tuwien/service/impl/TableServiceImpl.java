@@ -3,8 +3,8 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.TableUpdateDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.Database;
@@ -114,20 +114,24 @@ public class TableServiceImpl implements TableService {
             for (int i = 0; i < data.getColumns().size(); i++) {
                 final CreateTableColumnDto c = data.getColumns().get(i);
                 final TableColumn column = metadataMapper.columnCreateDtoToTableColumn(c, database.getContainer().getImage());
-                column.setEnums(c.getEnums()
-                        .stream()
-                        .map(e -> ColumnEnum.builder()
-                                .column(column)
-                                .value(e)
-                                .build())
-                        .toList());
-                column.setSets(c.getSets()
-                        .stream()
-                        .map(e -> ColumnSet.builder()
-                                .column(column)
-                                .value(e)
-                                .build())
-                        .toList());
+                if (c.getEnums() != null) {
+                    column.setEnums(c.getEnums()
+                            .stream()
+                            .map(e -> ColumnEnum.builder()
+                                    .column(column)
+                                    .value(e)
+                                    .build())
+                            .toList());
+                }
+                if (c.getSets() != null) {
+                    column.setSets(c.getSets()
+                            .stream()
+                            .map(e -> ColumnSet.builder()
+                                    .column(column)
+                                    .value(e)
+                                    .build())
+                            .toList());
+                }
                 column.setOrdinalPosition(idx[0]++);
                 column.setTable(table);
                 if (c.getUnitUri() != null) {
