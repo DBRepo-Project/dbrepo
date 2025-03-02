@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.exception.*;
@@ -53,11 +54,10 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
                     .option("query", query)
                     .load();
         } catch (Exception e) {
-            if (e instanceof ExtendedAnalysisException exception) {
-                if (exception.getSimpleMessage().contains("TABLE_OR_VIEW_NOT_FOUND")) {
-                    log.error("Failed to find named reference: {}", exception.getSimpleMessage());
-                    throw new TableNotFoundException("Failed to find named reference: " + exception.getSimpleMessage()) /* remove throwable on purpose, clutters the output */;
-                }
+            if (e instanceof ExtendedAnalysisException && e.getMessage().contains("TABLE_OR_VIEW_NOT_FOUND")
+                    || e instanceof SQLSyntaxErrorException && e.getMessage().contains("doesn't exist")) {
+                log.error("Failed to find named reference: {}", e.getMessage());
+                throw new TableNotFoundException("Failed to find named reference: " + e.getMessage()) /* remove throwable on purpose, clutters the output */;
             }
             log.error("Malformed query: {}", e.getMessage());
             throw new QueryMalformedException("Malformed query: " + e.getMessage(), e);
@@ -65,14 +65,15 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
     }
 
     @Override
-    public UUID create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
-            throws QueryStoreInsertException, SQLException {
+    public UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
+            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException,
+            ImageNotFoundException, ViewMalformedException {
+        final String statement = mariaDbMapper.subsetDtoToRawQuery(database, subset);
         return storeQuery(database, statement, timestamp, userId);
     }
 
     @Override
-    public Long reExecuteCount(DatabaseDto database, QueryDto query) throws TableMalformedException,
-            SQLException, QueryMalformedException {
+    public Long reExecuteCount(DatabaseDto database, QueryDto query) throws SQLException, QueryMalformedException {
         return executeCountNonPersistent(database, query.getQuery(), query.getExecution());
     }
 
@@ -112,7 +113,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
 
     @Override
     public Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
-            throws SQLException, QueryMalformedException, TableMalformedException {
+            throws SQLException, QueryMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         try {
@@ -123,7 +124,7 @@ public class SubsetServiceMariaDbImpl extends DataConnector implements SubsetSer
             return mariaDbMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
+            throw new QueryMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

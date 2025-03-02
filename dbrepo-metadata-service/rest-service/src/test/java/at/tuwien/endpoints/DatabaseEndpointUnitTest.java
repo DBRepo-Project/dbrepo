@@ -563,8 +563,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymousPublicSchemaNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
-            DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException, DataServiceConnectionException {
+    public void findById_anonymousPublicSchemaNoAccess_succeeds() throws NotAllowedException,
+            DatabaseNotFoundException {
 
         /* test */
         final DatabaseDto database = findById_generic(DATABASE_2_ID, DATABASE_2, null);
@@ -575,13 +575,12 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
-    public void findById_privateSchemaNoAccessInternalUser_succeeds() throws UserNotFoundException,
-            NotAllowedException, DataServiceException, DatabaseNotFoundException, ExchangeNotFoundException,
-            DataServiceConnectionException {
+    public void findById_privateSchemaNoAccessInternalUser_succeeds() throws NotAllowedException,
+            DatabaseNotFoundException {
 
         /* test */
         final DatabaseDto database = findById_generic(DATABASE_3_ID, DATABASE_3, USER_LOCAL_ADMIN_PRINCIPAL);
-        assertEquals(0, database.getTables().size());
+        assertEquals(1, database.getTables().size());
         assertEquals(1, database.getViews().size());
         assertNotEquals(0, database.getAccesses().size());
     }
@@ -608,8 +607,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findById_ownerSeesAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
+    public void findById_ownerSeesAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -624,8 +622,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
-    public void findById_hiddenAccessRights_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
+    public void findById_hiddenAccessRights_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -640,8 +637,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findById_hiddenAccessRightsSeesOwn_succeeds() throws DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, ExchangeNotFoundException, UserNotFoundException, NotAllowedException {
+    public void findById_hiddenAccessRightsSeesOwn_succeeds() throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
         when(accessService.list(DATABASE_1))
@@ -775,8 +771,7 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
     }
 
     public DatabaseDto findById_generic(UUID databaseId, Database database, Principal principal)
-            throws DataServiceConnectionException, DatabaseNotFoundException, ExchangeNotFoundException,
-            DataServiceException, UserNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException {
 
         /* mock */
         if (database != null) {
@@ -796,7 +791,8 @@ public class DatabaseEndpointUnitTest extends AbstractUnitTest {
         return body;
     }
 
-    public ResponseEntity<byte[]> findPreviewImage_generic(UUID databaseId, Database database) throws DatabaseNotFoundException {
+    public ResponseEntity<byte[]> findPreviewImage_generic(UUID databaseId, Database database)
+            throws DatabaseNotFoundException {
 
         /* mock */
         if (database != null) {

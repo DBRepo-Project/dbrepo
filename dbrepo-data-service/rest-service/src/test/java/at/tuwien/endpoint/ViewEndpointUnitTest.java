@@ -4,7 +4,7 @@ import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.endpoints.ViewEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SubsetService;
 import at.tuwien.service.ViewService;
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -46,7 +47,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
-    private CredentialService credentialService;
+    private CacheService credentialService;
 
     @MockBean
     private HttpServletRequest httpServletRequest;
@@ -68,13 +69,14 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void create_succeeds() throws DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException,
-            SQLException, DatabaseUnavailableException, MetadataServiceException {
+            SQLException, DatabaseUnavailableException, MetadataServiceException, TableNotFoundException,
+            ImageNotFoundException, QueryMalformedException {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(databaseService.createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
+        when(databaseService.createView(any(DatabaseDto.class), anyString(), anyString()))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         final ResponseEntity<ViewDto> response = viewEndpoint.create(DATABASE_1_ID, VIEW_1_CREATE_DTO);
@@ -88,10 +90,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+                .createView(any(DatabaseDto.class), anyString(), anyString());
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -106,9 +108,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(databaseService.createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
+        when(databaseService.createView(DATABASE_1_DTO, VIEW_1_NAME, VIEW_1_QUERY))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -139,8 +141,8 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
-        when(databaseService.exploreViews(DATABASE_1_PRIVILEGED_DTO))
+                .thenReturn(DATABASE_1_DTO);
+        when(databaseService.exploreViews(DATABASE_1_DTO))
                 .thenReturn(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO));
 
         /* test */
@@ -181,10 +183,10 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         doThrow(SQLException.class)
                 .when(databaseService)
-                .exploreViews(DATABASE_1_PRIVILEGED_DTO);
+                .exploreViews(DATABASE_1_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -205,14 +207,16 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void delete_succeeds() throws RemoteUnavailableException, ViewMalformedException, ViewNotFoundException,
-            SQLException, DatabaseUnavailableException, MetadataServiceException {
+            SQLException, DatabaseUnavailableException, MetadataServiceException, DatabaseNotFoundException {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
+        when(credentialService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
-                .delete(VIEW_1_PRIVILEGED_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
 
         /* test */
         final ResponseEntity<Void> response = viewEndpoint.delete(DATABASE_1_ID, VIEW_1_ID);
@@ -222,14 +226,16 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_LOCAL_ADMIN_USERNAME, authorities = {"system"})
     public void delete_unavailable_fails() throws RemoteUnavailableException, ViewMalformedException, SQLException,
-            MetadataServiceException, ViewNotFoundException {
+            MetadataServiceException, ViewNotFoundException, DatabaseNotFoundException {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
+        when(credentialService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doThrow(SQLException.class)
                 .when(viewService)
-                .delete(VIEW_1_PRIVILEGED_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
 
         /* test */
         assertThrows(DatabaseUnavailableException.class, () -> {
@@ -247,7 +253,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
                 .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         doNothing()
                 .when(viewService)
-                .delete(VIEW_1_PRIVILEGED_DTO);
+                .delete(DATABASE_1_PRIVILEGED_DTO,VIEW_1_DTO);
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -280,9 +286,9 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
         when(credentialService.getDatabase(DATABASE_1_ID))
-                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+                .thenReturn(DATABASE_1_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(subsetService.getData(any(DatabaseDto.class), anyString()))
@@ -297,6 +303,31 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
+    public void getData_privateDataPrivateSchemaAnonymous_fails() throws RemoteUnavailableException,
+            ViewNotFoundException, QueryMalformedException, NotAllowedException, MetadataServiceException,
+            TableNotFoundException, DatabaseNotFoundException {
+        final Dataset<Row> mock = sparkSession.emptyDataFrame();
+
+        /* mock */
+        when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
+                .thenReturn(VIEW_1_DTO);
+        when(credentialService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
+        when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
+                .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
+        when(subsetService.getData(any(DatabaseDto.class), anyString()))
+                .thenReturn(mock);
+        when(httpServletRequest.getMethod())
+                .thenReturn("GET");
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            viewEndpoint.getData(DATABASE_1_ID, VIEW_1_ID, null, null, null, httpServletRequest, null);
+        });
+    }
+
+    @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"view-database-view-data"})
     public void getData_privateHead_succeeds() throws RemoteUnavailableException, ViewNotFoundException,
             SQLException, DatabaseUnavailableException, QueryMalformedException, PaginationException,
@@ -304,12 +335,14 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_3_ID))
-                .thenReturn(VIEW_3_PRIVILEGED_DTO);
+                .thenReturn(VIEW_3_DTO);
+        when(credentialService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(credentialService.getAccess(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("HEAD");
-        when(viewService.count(eq(VIEW_3_PRIVILEGED_DTO), any(Instant.class)))
+        when(viewService.count(any(DatabaseDto.class), eq(VIEW_3_DTO), any(Instant.class)))
                 .thenReturn(VIEW_3_DATA_COUNT);
 
         /* test */
@@ -331,7 +364,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
         when(httpServletRequest.getMethod())
                 .thenReturn("GET");
         doThrow(NotAllowedException.class)
@@ -367,7 +400,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_4_ID);
@@ -385,7 +418,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_4_ID);
@@ -419,7 +452,7 @@ public class ViewEndpointUnitTest extends AbstractUnitTest {
 
         /* mock */
         when(credentialService.getView(DATABASE_1_ID, VIEW_1_ID))
-                .thenReturn(VIEW_1_PRIVILEGED_DTO);
+                .thenReturn(VIEW_1_DTO);
         doThrow(NotAllowedException.class)
                 .when(credentialService)
                 .getAccess(DATABASE_1_ID, USER_4_ID);

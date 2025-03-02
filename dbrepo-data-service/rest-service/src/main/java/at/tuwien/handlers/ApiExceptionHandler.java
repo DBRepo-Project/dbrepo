@@ -459,6 +459,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ExceptionHandler(ViewExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(ViewExistsException e) {
+        return generic_handle(e.getClass(), e.getLocalizedMessage());
+    }
+
+    @Hidden
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ViewMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewMalformedException e) {

@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
@@ -59,7 +58,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                 throw new ViewNotFoundException("Failed to find view in the information schema");
             }
             final ViewDto view = dataMapper.schemaResultSetToView(database, resultSet1);
-            view.setVdbid(database.getId());
+            view.setDatabaseId(database.getId());
             view.setOwner(database.getOwner());
             /* obtain view columns */
             start = System.currentTimeMillis();
@@ -97,7 +96,8 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         try {
             /* create table if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(data))
+            connection.prepareStatement(mariaDbMapper.tableCreateDtoToCreateTableRawQuery(database.getInternalName(),
+                            data))
                     .execute();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             connection.commit();
@@ -112,34 +112,33 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
         } finally {
             dataSource.close();
         }
-        log.info("Created table with name {}", tableName);
-        final TableDto table = inspectTable(database, tableName);
-        return table;
+        log.info("Created table with name {}.{}", database.getInternalName(), tableName);
+        return inspectTable(database, tableName);
     }
 
     @Override
-    public ViewDto createView(DatabaseDto database, CreateViewDto data) throws SQLException,
+    public ViewDto createView(DatabaseDto database, String viewName, String query) throws SQLException,
             ViewMalformedException {
         final ComboPooledDataSource dataSource = getDataSource(database);
         final Connection connection = dataSource.getConnection();
         ViewDto view = ViewDto.builder()
-                .name(data.getName())
-                .internalName(mariaDbMapper.nameToInternalName(data.getName()))
-                .query(data.getQuery())
+                .name(viewName)
+                .internalName(mariaDbMapper.nameToInternalName(viewName))
+                .query(query)
                 .queryHash(Hashing.sha256()
-                        .hashString(data.getQuery(), StandardCharsets.UTF_8)
+                        .hashString(query, StandardCharsets.UTF_8)
                         .toString())
                 .isPublic(database.getIsPublic())
                 .owner(database.getOwner())
                 .identifiers(new LinkedList<>())
                 .isInitialView(false)
-                .vdbid(database.getId())
+                .databaseId(database.getId())
                 .columns(new LinkedList<>())
                 .build();
         try {
             /* create view if not exists */
             final long start = System.currentTimeMillis();
-            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), data.getQuery()))
+            connection.prepareStatement(mariaDbMapper.viewCreateRawQuery(view.getInternalName(), query))
                     .execute();
             log.trace("executed statement in {} ms", System.currentTimeMillis() - start);
             /* select view columns */
@@ -293,7 +292,7 @@ public class DatabaseServiceMariaDbImpl extends DataConnector implements Databas
                             });
                 }
             }
-            table.setTdbid(database.getId());
+            table.setDatabaseId(database.getId());
             table.setOwner(database.getOwner());
             final TableDto tmpTable = table;
             tmpTable.getColumns()

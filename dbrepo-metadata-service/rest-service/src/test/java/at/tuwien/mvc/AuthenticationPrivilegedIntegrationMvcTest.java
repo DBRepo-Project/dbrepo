@@ -100,10 +100,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Jdbc-Method"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -151,10 +147,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).header("Authorization", "Bearer " + jwt.getAccessToken()))
                 .andDo(print())
-                .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
-                .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 
@@ -167,10 +159,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Jdbc-Method"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -183,10 +171,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/table/" + TABLE_1_ID).with(httpBasic(USER_LOCAL_ADMIN_USERNAME, USER_LOCAL_ADMIN_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().string("X-Username", CONTAINER_1_PRIVILEGED_USERNAME))
-                .andExpect(header().string("X-Password", CONTAINER_1_PRIVILEGED_PASSWORD))
-                .andExpect(header().string("X-Jdbc-Method", IMAGE_1_JDBC))
-                .andExpect(header().string("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method"))
                 .andExpect(status().isOk());
     }
 
@@ -200,10 +184,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/database/" + DATABASE_1_ID + "/view/" + VIEW_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Jdbc-Method"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 
@@ -216,10 +196,6 @@ public class AuthenticationPrivilegedIntegrationMvcTest extends AbstractUnitTest
         /* test */
         this.mockMvc.perform(get("/api/container/" + CONTAINER_1_ID).with(httpBasic(USER_1_USERNAME, USER_1_PASSWORD)))
                 .andDo(print())
-                .andExpect(header().doesNotExist("X-Username"))
-                .andExpect(header().doesNotExist("X-Password"))
-                .andExpect(header().doesNotExist("X-Jdbc-Method"))
-                .andExpect(header().doesNotExist("Access-Control-Expose-Headers"))
                 .andExpect(status().isOk());
     }
 

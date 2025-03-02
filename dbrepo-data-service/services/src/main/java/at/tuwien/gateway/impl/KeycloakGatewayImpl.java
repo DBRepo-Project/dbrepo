@@ -2,67 +2,47 @@ package at.tuwien.gateway.impl;
 
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.config.KeycloakConfig;
-import at.tuwien.exception.AccountNotSetupException;
-import at.tuwien.exception.AuthServiceConnectionException;
-import at.tuwien.exception.CredentialsInvalidException;
 import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.mapper.MetadataMapper;
+import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.log4j.Log4j2;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 @Log4j2
 @Service
 public class KeycloakGatewayImpl implements KeycloakGateway {
 
     private final KeycloakConfig keycloakConfig;
+    private final MetadataMapper metadataMapper;
 
     @Autowired
-    public KeycloakGatewayImpl(KeycloakConfig keycloakConfig) {
+    public KeycloakGatewayImpl(KeycloakConfig keycloakConfig, MetadataMapper metadataMapper) {
         this.keycloakConfig = keycloakConfig;
+        this.metadataMapper = metadataMapper;
     }
 
     @Override
-    public TokenDto obtainUserToken(String username, String password) throws AuthServiceConnectionException,
-            CredentialsInvalidException, AccountNotSetupException {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
-        payload.add("username", username);
-        payload.add("password", password);
-        payload.add("grant_type", "password");
-        payload.add("scope", "openid roles");
-        payload.add("client_id", keycloakConfig.getKeycloakClient());
-        payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
-        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
-        log.trace("request user token from url: {}", url);
-        final ResponseEntity<TokenDto> response;
-        try {
-            response = new RestTemplate()
-                    .exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
-        } catch (HttpServerErrorException e) {
+    public TokenDto obtainUserToken(String username, String password) throws BadCredentialsException {
+        try (Keycloak userKeycloak = KeycloakBuilder.builder()
+                .serverUrl(keycloakConfig.getKeycloakEndpoint())
+                .realm(keycloakConfig.getRealm())
+                .grantType(OAuth2Constants.PASSWORD)
+                .clientId(keycloakConfig.getKeycloakClient())
+                .clientSecret(keycloakConfig.getKeycloakClientSecret())
+                .username(username)
+                .password(password)
+                .build()) {
+            return metadataMapper.accessTokenResponseToTokenDto(userKeycloak.tokenManager()
+                    .getAccessToken());
+        } catch (NotAuthorizedException e) {
             log.error("Failed to obtain user token: {}", e.getMessage());
-            throw new AuthServiceConnectionException("Failed to obtain user token: " + e.getMessage(), e);
-        } catch (HttpClientErrorException.BadRequest e) {
-            if (e.getResponseBodyAsByteArray() != null && e.getResponseBodyAsByteArray().length > 0) {
-                final String error = e.getResponseBodyAsString();
-                if (error != null && error.contains("invalid_grant")) {
-                    log.error("Failed to obtain user token: {}", error);
-                    throw new AccountNotSetupException("Failed to obtain user token: " + error, e);
-                }
-            }
-            log.error("Failed to obtain user token: bad request");
-            throw new CredentialsInvalidException("Bad request", e);
-        } catch (HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to obtain user token: invalid credentials");
-            throw new CredentialsInvalidException("Invalid credentials: " + e.getMessage(), e);
+            throw new BadCredentialsException("Failed to obtain user token", e);
         }
-        return response.getBody();
     }
 
 }

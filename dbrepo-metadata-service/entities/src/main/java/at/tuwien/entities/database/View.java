@@ -25,7 +25,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_view")
+@Table(name = "mdb_view", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"vdbid", "internalName"})
+})
 @NamedQueries({
         @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
         @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.ownedBy = ?2)"),

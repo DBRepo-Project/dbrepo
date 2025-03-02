@@ -8,7 +8,7 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.MetadataServiceGateway;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Log4j2
 @Service
-public class CredentialServiceImpl implements CredentialService {
+public class CacheServiceImpl implements CacheService {
 
     private final MetadataServiceGateway gateway;
     private final Cache<UUID, UserDto> userCache;
@@ -29,10 +29,10 @@ public class CredentialServiceImpl implements CredentialService {
     private final Cache<UUID, DatabaseAccessDto> accessCache;
 
     @Autowired
-    public CredentialServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
-                                 Cache<UUID, ViewDto> viewCache, Cache<UUID, TableDto> tableCache,
-                                 Cache<UUID, DatabaseAccessDto> accessCache, Cache<UUID, DatabaseDto> databaseCache,
-                                 Cache<UUID, ContainerDto> containerCache) {
+    public CacheServiceImpl(MetadataServiceGateway gateway, Cache<UUID, UserDto> userCache,
+                            Cache<UUID, ViewDto> viewCache, Cache<UUID, TableDto> tableCache,
+                            Cache<UUID, DatabaseAccessDto> accessCache, Cache<UUID, DatabaseDto> databaseCache,
+                            Cache<UUID, ContainerDto> containerCache) {
         this.gateway = gateway;
         this.userCache = userCache;
         this.viewCache = viewCache;
@@ -68,12 +68,6 @@ public class CredentialServiceImpl implements CredentialService {
         final TableDto table = gateway.getTableById(databaseId, tableId);
         tableCache.put(tableId, table);
         return table;
-    }
-
-    @Override
-    public void invalidateAccess(UUID databaseId) {
-        accessCache.invalidate(databaseId);
-        log.debug("invalidated access for database with id {} in cache", databaseId);
     }
 
     @Override

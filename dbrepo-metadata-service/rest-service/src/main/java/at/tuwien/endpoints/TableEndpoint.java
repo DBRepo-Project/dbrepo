@@ -17,7 +17,6 @@ import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,7 +27,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -442,9 +440,6 @@ public class TableEndpoint extends AbstractEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table successfully",
-                    headers = {@Header(name = "X-Username", description = "The authentication username", schema = @Schema(implementation = String.class)),
-                            @Header(name = "X-Password", description = "The authentication password", schema = @Schema(implementation = String.class)),
-                            @Header(name = "Access-Control-Expose-Headers", description = "Expose custom headers", schema = @Schema(implementation = String.class))},
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = TableDto.class))}),
@@ -486,17 +481,7 @@ public class TableEndpoint extends AbstractEndpoint {
             table.setConstraints(null);
         }
         final TableDto dto = metadataMapper.tableToTableDto(table);
-        final HttpHeaders headers = new HttpHeaders();
-        if (isSystem(principal)) {
-            headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
-            headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
-            headers.set("X-Jdbc-Method", table.getDatabase().getContainer().getImage().getJdbcMethod());
-            headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Jdbc-Method");
-        } else {
-            removeInternalData(dto.getDatabase().getContainer());
-        }
         return ResponseEntity.ok()
-                .headers(headers)
                 .body(dto);
     }
 

@@ -54,7 +54,7 @@ public interface ViewService {
      */
     View create(Database database, User user, CreateViewDto data) throws MalformedException, DataServiceException,
             DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException;
+            SearchServiceConnectionException, TableNotFoundException, ImageNotFoundException;
 
     /**
      * @param database

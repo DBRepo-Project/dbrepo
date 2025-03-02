@@ -10,8 +10,7 @@ import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.*;
-import at.tuwien.api.database.query.QueryBriefDto;
-import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.columns.concepts.*;
@@ -935,7 +934,7 @@ public abstract class BaseTest {
             .version(IMAGE_1_VERSION)
             .isDefault(IMAGE_1_IS_DEFAULT)
             .jdbcMethod(IMAGE_1_JDBC)
-            .operators(null)
+            .operators(null) /* IMAGE_1_OPERATORS_DTO */
             .build();
 
     public static final ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
@@ -950,6 +949,11 @@ public abstract class BaseTest {
     public static final String IMAGE_1_OPERATORS_1_VALUE = "XOR";
     public static final String IMAGE_1_OPERATORS_1_DOCUMENTATION = "https://mariadb.com/kb/en/xor/";
 
+    public static final UUID IMAGE_1_OPERATORS_2_ID = UUID.fromString("42a56348-38bd-4aba-b0f2-ac813d5d2da2");
+    public static final String IMAGE_1_OPERATORS_2_DISPLAY_NAME = "=";
+    public static final String IMAGE_1_OPERATORS_2_VALUE = "=";
+    public static final String IMAGE_1_OPERATORS_2_DOCUMENTATION = "https://mariadb.com/kb/en/equal/";
+
     public static final List<Operator> IMAGE_1_OPERATORS = new LinkedList<>(List.of(
             Operator.builder()
                     .id(IMAGE_1_OPERATORS_1_ID)
@@ -957,6 +961,13 @@ public abstract class BaseTest {
                     .displayName(IMAGE_1_OPERATORS_1_DISPLAY_NAME)
                     .value(IMAGE_1_OPERATORS_1_VALUE)
                     .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
+                    .build(),
+            Operator.builder()
+                    .id(IMAGE_1_OPERATORS_2_ID)
+                    .image(IMAGE_1)
+                    .displayName(IMAGE_1_OPERATORS_2_DISPLAY_NAME)
+                    .value(IMAGE_1_OPERATORS_2_VALUE)
+                    .documentation(IMAGE_1_OPERATORS_2_DOCUMENTATION)
                     .build()));
 
     public static final List<OperatorDto> IMAGE_1_OPERATORS_DTO = new LinkedList<>(List.of(
@@ -965,6 +976,12 @@ public abstract class BaseTest {
                     .displayName(IMAGE_1_OPERATORS_1_DISPLAY_NAME)
                     .value(IMAGE_1_OPERATORS_1_VALUE)
                     .documentation(IMAGE_1_OPERATORS_1_DOCUMENTATION)
+                    .build(),
+            OperatorDto.builder()
+                    .id(IMAGE_1_OPERATORS_2_ID)
+                    .displayName(IMAGE_1_OPERATORS_2_DISPLAY_NAME)
+                    .value(IMAGE_1_OPERATORS_2_VALUE)
+                    .documentation(IMAGE_1_OPERATORS_2_DOCUMENTATION)
                     .build()));
 
     public static final UUID CONTAINER_1_ID = UUID.fromString("7ddb7e87-b965-43a2-9a24-4fa406d998f4");
@@ -1238,6 +1255,16 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
+    public static final DatabaseBriefDto DATABASE_3_PRIVILEGED_BRIEF_DTO = DatabaseBriefDto.builder()
+            .id(DATABASE_3_ID)
+            .isPublic(DATABASE_3_PUBLIC)
+            .isSchemaPublic(DATABASE_3_SCHEMA_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .ownerId(USER_3_ID)
+            .identifiers(new LinkedList<>()) /* IDENTIFIER_6_DTO */
+            .build();
+
     public static final DatabaseBriefDto DATABASE_3_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_3_ID)
             .isPublic(DATABASE_3_PUBLIC)
@@ -1494,29 +1521,6 @@ public abstract class BaseTest {
     public static final Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public static final Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
-    public static final TableDto TABLE_1_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_1_ID)
-            .tdbid(DATABASE_1_ID)
-            .internalName(TABLE_1_INTERNAL_NAME)
-            .isVersioned(TABLE_1_VERSIONED)
-            .isPublic(TABLE_1_SCHEMA_PUBLIC)
-            .description(TABLE_1_DESCRIPTION)
-            .name(TABLE_1_NAME)
-            .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .identifiers(new LinkedList<>())
-            .columns(new LinkedList<>() /* TABLE_1_COLUMNS_DTO */)
-            .constraints(null) /* TABLE_1_CONSTRAINTS_DTO */
-            .owner(USER_1_BRIEF_DTO)
-            .isPublic(DATABASE_1_PUBLIC)
-            .avgRowLength(TABLE_1_AVG_ROW_LENGTH)
-            .numRows(TABLE_1_NUM_ROWS)
-            .dataLength(TABLE_1_DATA_LENGTH)
-            .maxDataLength(TABLE_1_MAX_DATA_LENGTH)
-            .lastRetrieved(Instant.now())
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
-            .build();
-
     public static final Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
@@ -1543,7 +1547,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_1_DTO = TableDto.builder()
             .id(TABLE_1_ID)
-            .tdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_1_INTERNAL_NAME)
             .isVersioned(TABLE_1_VERSIONED)
             .isPublic(TABLE_1_IS_PUBLIC)
@@ -1718,32 +1722,9 @@ public abstract class BaseTest {
             .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
             .build();
 
-    public static final TableDto TABLE_2_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_2_ID)
-            .tdbid(DATABASE_1_ID)
-            .internalName(TABLE_2_INTERNALNAME)
-            .isVersioned(TABLE_2_VERSIONED)
-            .isPublic(TABLE_2_IS_PUBLIC)
-            .isSchemaPublic(TABLE_2_SCHEMA_PUBLIC)
-            .description(TABLE_2_DESCRIPTION)
-            .name(TABLE_2_NAME)
-            .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .identifiers(new LinkedList<>())
-            .columns(new LinkedList<>() /* TABLE_2_COLUMNS_DTO */)
-            .constraints(null) /* TABLE_2_CONSTRAINTS_DTO */
-            .owner(USER_2_BRIEF_DTO)
-            .avgRowLength(TABLE_2_AVG_ROW_LENGTH)
-            .numRows(TABLE_2_NUM_ROWS)
-            .dataLength(TABLE_2_DATA_LENGTH)
-            .maxDataLength(TABLE_2_MAX_DATA_LENGTH)
-            .lastRetrieved(Instant.now())
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
-            .build();
-
     public static final TableDto TABLE_2_DTO = TableDto.builder()
             .id(TABLE_2_ID)
-            .tdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_2_INTERNALNAME)
             .isVersioned(TABLE_2_VERSIONED)
             .isPublic(TABLE_2_IS_PUBLIC)
@@ -1815,7 +1796,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_3_DTO = TableDto.builder()
             .id(TABLE_3_ID)
-            .tdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_3_INTERNALNAME)
             .isVersioned(TABLE_3_VERSIONED)
             .isPublic(TABLE_3_IS_PUBLIC)
@@ -1914,7 +1895,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_5_DTO = TableDto.builder()
             .id(TABLE_5_ID)
-            .tdbid(DATABASE_2_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_5_INTERNALNAME)
             .isVersioned(TABLE_5_VERSIONED)
             .isPublic(TABLE_5_IS_PUBLIC)
@@ -1926,29 +1907,6 @@ public abstract class BaseTest {
             .columns(new LinkedList<>()) /* TABLE_5_COLUMNS_DTO */
             .constraints(null) /* TABLE_5_CONSTRAINTS_DTO */
             .owner(USER_1_BRIEF_DTO)
-            .build();
-
-    public static final TableDto TABLE_5_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_5_ID)
-            .tdbid(DATABASE_2_ID)
-            .internalName(TABLE_5_INTERNALNAME)
-            .isVersioned(TABLE_5_VERSIONED)
-            .isPublic(TABLE_5_IS_PUBLIC)
-            .isSchemaPublic(TABLE_5_SCHEMA_PUBLIC)
-            .description(TABLE_5_DESCRIPTION)
-            .name(TABLE_5_NAME)
-            .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .identifiers(new LinkedList<>())
-            .columns(new LinkedList<>() /* TABLE_5_COLUMNS_DTO */)
-            .constraints(null) /* TABLE_5_CONSTRAINTS_DTO */
-            .owner(USER_5_BRIEF_DTO)
-            .isPublic(DATABASE_2_PUBLIC)
-            .avgRowLength(TABLE_5_AVG_ROW_LENGTH)
-            .numRows(TABLE_5_NUM_ROWS)
-            .dataLength(TABLE_5_DATA_LENGTH)
-            .maxDataLength(TABLE_5_MAX_DATA_LENGTH)
-            .lastRetrieved(Instant.now())
             .build();
 
     public static final TableBriefDto TABLE_5_BRIEF_DTO = TableBriefDto.builder()
@@ -1997,7 +1955,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_6_DTO = TableDto.builder()
             .id(TABLE_6_ID)
-            .tdbid(DATABASE_2_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_6_INTERNALNAME)
             .isVersioned(TABLE_6_VERSIONED)
             .isPublic(TABLE_6_IS_PUBLIC)
@@ -2057,7 +2015,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_7_DTO = TableDto.builder()
             .id(TABLE_7_ID)
-            .tdbid(DATABASE_2_ID)
+            .databaseId(DATABASE_2_ID)
             .internalName(TABLE_7_INTERNAL_NAME)
             .isVersioned(TABLE_7_VERSIONED)
             .isPublic(TABLE_7_IS_PUBLIC)
@@ -2124,7 +2082,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_4_DTO = TableDto.builder()
             .id(TABLE_4_ID)
-            .tdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .internalName(TABLE_4_INTERNALNAME)
             .description(TABLE_4_DESCRIPTION)
             .name(TABLE_4_NAME)
@@ -2140,28 +2098,6 @@ public abstract class BaseTest {
             .numRows(TABLE_4_NUM_ROWS)
             .dataLength(TABLE_4_DATA_LENGTH)
             .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
-            .build();
-
-    public static final TableDto TABLE_4_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_4_ID)
-            .tdbid(DATABASE_1_ID)
-            .internalName(TABLE_4_INTERNALNAME)
-            .description(TABLE_4_DESCRIPTION)
-            .name(TABLE_4_NAME)
-            .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .database(null) /* DATABASE_1_DTO */
-            .columns(new LinkedList<>()) /* TABLE_4_COLUMNS_DTO */
-            .constraints(null) /* TABLE_4_CONSTRAINTS_DTO */
-            .isVersioned(TABLE_4_VERSIONED)
-            .isPublic(TABLE_4_IS_PUBLIC)
-            .isSchemaPublic(TABLE_4_SCHEMA_PUBLIC)
-            .owner(USER_1_BRIEF_DTO)
-            .avgRowLength(TABLE_4_AVG_ROW_LENGTH)
-            .numRows(TABLE_4_NUM_ROWS)
-            .dataLength(TABLE_4_DATA_LENGTH)
-            .maxDataLength(TABLE_4_MAX_DATA_LENGTH)
-            .lastRetrieved(Instant.now())
             .build();
 
     public static final TableBriefDto TABLE_4_BRIEF_DTO = TableBriefDto.builder()
@@ -2292,7 +2228,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_8_DTO = TableDto.builder()
             .id(TABLE_8_ID)
-            .tdbid(DATABASE_3_ID)
+            .databaseId(DATABASE_3_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
             .description(TABLE_8_DESCRIPTION)
             .isVersioned(TABLE_8_VERSIONED)
@@ -2323,32 +2259,16 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .build();
 
-    public static final TableDto TABLE_8_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_8_ID)
-            .tdbid(DATABASE_3_ID)
-            .internalName(TABLE_8_INTERNAL_NAME)
-            .description(TABLE_8_DESCRIPTION)
-            .isVersioned(TABLE_8_VERSIONED)
-            .isPublic(TABLE_8_IS_PUBLIC)
-            .isSchemaPublic(TABLE_8_SCHEMA_PUBLIC)
-            .name(TABLE_8_NAME)
-            .queueName(TABLE_8_QUEUE_NAME)
-            .columns(new LinkedList<>()) /* TABLE_8_COLUMNS_DTO */
-            .owner(USER_1_BRIEF_DTO)
-            .isPublic(DATABASE_3_PUBLIC)
-            .lastRetrieved(Instant.now())
-            .build();
-
     public static final UUID TABLE_9_ID = UUID.fromString("9314294f-04fc-4354-8b1f-2a8aeb566453");
-    public static final String TABLE_9_NAME = "mfcc";
-    public static final String TABLE_9_INTERNAL_NAME = "mfcc";
+    public static final String TABLE_9_NAME = "Weather Location";
+    public static final String TABLE_9_INTERNAL_NAME = "weather_location";
     public static final Boolean TABLE_9_VERSIONED = true;
     public static final Boolean TABLE_9_IS_PUBLIC = false;
     public static final Boolean TABLE_9_SCHEMA_PUBLIC = true;
     public static final Boolean TABLE_9_PROCESSED_CONSTRAINTS = true;
-    public static final String TABLE_9_DESCRIPTION = "Hello mfcc";
+    public static final String TABLE_9_DESCRIPTION = "Location";
     public static final String TABLE_9_QUEUE_NAME = TABLE_9_INTERNAL_NAME;
-    public static final String TABLE_9_ROUTING_KEY = "dbrepo." + DATABASE_3_ID + "." + TABLE_9_ID;
+    public static final String TABLE_9_ROUTING_KEY = "dbrepo." + DATABASE_4_ID + "." + TABLE_9_ID;
     public static final Instant TABLE_9_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
     public static final Instant TABLE_9_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 
@@ -2373,7 +2293,7 @@ public abstract class BaseTest {
 
     public static final TableDto TABLE_9_DTO = TableDto.builder()
             .id(TABLE_9_ID)
-            .tdbid(DATABASE_4_ID)
+            .databaseId(DATABASE_4_ID)
             .internalName(TABLE_9_INTERNAL_NAME)
             .description(TABLE_9_DESCRIPTION)
             .isVersioned(TABLE_9_VERSIONED)
@@ -2396,22 +2316,6 @@ public abstract class BaseTest {
             .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
             .name(TABLE_9_NAME)
             .ownedBy(USER_1_ID)
-            .build();
-
-    public static final TableDto TABLE_9_PRIVILEGED_DTO = TableDto.builder()
-            .id(TABLE_9_ID)
-            .tdbid(DATABASE_4_ID)
-            .internalName(TABLE_9_INTERNAL_NAME)
-            .description(TABLE_9_DESCRIPTION)
-            .isVersioned(TABLE_9_VERSIONED)
-            .isPublic(TABLE_9_IS_PUBLIC)
-            .isSchemaPublic(TABLE_9_SCHEMA_PUBLIC)
-            .name(TABLE_9_NAME)
-            .queueName(TABLE_9_QUEUE_NAME)
-            .columns(new LinkedList<>()) /* TABLE_9_COLUMNS_DTO */
-            .owner(USER_1_BRIEF_DTO)
-            .isPublic(DATABASE_3_PUBLIC)
-            .lastRetrieved(Instant.now())
             .build();
 
     public static final UUID COLUMN_9_1_ID = UUID.fromString("e03c7578-2d1a-4599-9b11-7174f40efc0a");
@@ -2524,6 +2428,54 @@ public abstract class BaseTest {
                     .column(TABLE_9_COLUMNS_BRIEF_0_DTO)
                     .id(COLUMN_9_1_ID)
                     .build())))
+            .build();
+
+    public static final UUID QUERY_9_ID = UUID.fromString("df34f0b9-b64c-406c-9109-7a031f4a7f27");
+    public static final String QUERY_9_STATEMENT = "SELECT `lat`, `lng` FROM `mfcc` WHERE `location` = 'Fuji'";
+    public static final String QUERY_9_QUERY_HASH = "dfcdec827b2ea74d89415f8d1ce39354f59ef304444ba4e12e4f3d9d3f35abe3";
+    public static final String QUERY_9_RESULT_HASH = "f0aba070a1fd29e96230d12d7c0b4d08b89820b3cc2dda0575680492010016e7";
+    public static final Instant QUERY_9_CREATED = Instant.now().minus(5, MINUTES);
+    public static final Instant QUERY_9_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Instant QUERY_9_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
+    public static final Long QUERY_9_RESULT_NUMBER = 6L;
+    public static final Boolean QUERY_9_PERSISTED = true;
+
+    public static final QueryDto QUERY_9_DTO = QueryDto.builder()
+            .id(QUERY_9_ID)
+            .databaseId(DATABASE_3_ID)
+            .query(QUERY_9_STATEMENT)
+            .queryNormalized(QUERY_9_STATEMENT)
+            .resultNumber(QUERY_9_RESULT_NUMBER)
+            .resultHash(QUERY_9_RESULT_HASH)
+            .queryHash(QUERY_9_QUERY_HASH)
+            .execution(QUERY_9_EXECUTION)
+            .isPersisted(QUERY_9_PERSISTED)
+            .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public static final SubsetDto QUERY_9_SUBSET_DTO = SubsetDto.builder()
+            .tableId(TABLE_9_ID)
+            .columns(new LinkedList<>(List.of(COLUMN_9_2_ID, COLUMN_9_3_ID)))
+            .filter(new LinkedList<>(List.of(FilterDto.builder()
+                    .columnId(COLUMN_9_1_ID)
+                    .operatorId(IMAGE_1_OPERATORS_2_ID)
+                    .value("Fuji")
+                    .type(FilterTypeDto.WHERE)
+                    .build())))
+            .build();
+
+    public static final ViewDto QUERY_9_VIEW_DTO = ViewDto.builder()
+            .query(QUERY_9_STATEMENT)
+            .queryHash(QUERY_9_QUERY_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .columns(new LinkedList<>(List.of(ViewColumnDto.builder()
+                            .name("lat")
+                            .internalName("lat")
+                            .build(),
+                    ViewColumnDto.builder()
+                            .name("lng")
+                            .internalName("lng")
+                            .build())))
             .build();
 
     public static final String QUEUE_NAME = "dbrepo";
@@ -2819,20 +2771,16 @@ public abstract class BaseTest {
     public static final Instant QUERY_1_EXECUTION = Instant.now();
     public static final Boolean QUERY_1_PERSISTED = true;
 
-    public static final QueryDto QUERY_1_DTO = QueryDto.builder()
-            .id(QUERY_1_ID)
-            .databaseId(DATABASE_1_ID)
-            .query(QUERY_1_STATEMENT)
-            .queryHash(QUERY_1_QUERY_HASH)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .execution(QUERY_1_EXECUTION)
-            .owner(USER_1_BRIEF_DTO)
-            .isPersisted(QUERY_1_PERSISTED)
-            .resultNumber(3L)
+    public static final SubsetDto QUERY_1_SUBSET_DTO = SubsetDto.builder()
+            .tableId(TABLE_1_ID)
+            .columns(new LinkedList<UUID>(List.of(COLUMN_1_1_ID, COLUMN_1_2_ID, COLUMN_1_3_ID, COLUMN_1_4_ID, COLUMN_1_5_ID)))
+            .order(new LinkedList<OrderDto>(List.of(OrderDto.builder()
+                    .columnId(COLUMN_1_1_ID)
+                    .direction(OrderTypeDto.ASC)
+                    .build())))
             .build();
 
     public static final ViewDto QUERY_1_VIEW_DTO = ViewDto.builder()
-            .vdbid(DATABASE_1_ID)
             .query(QUERY_1_STATEMENT)
             .queryHash(QUERY_1_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -2880,20 +2828,6 @@ public abstract class BaseTest {
     public static final Instant QUERY_2_LAST_MODIFIED = Instant.ofEpochSecond(1541588352L);
     public static final Boolean QUERY_2_PERSISTED = false;
 
-    public static final QueryDto QUERY_2_DTO = QueryDto.builder()
-            .id(QUERY_2_ID)
-            .databaseId(DATABASE_2_ID)
-            .query(QUERY_2_STATEMENT)
-            .queryNormalized(QUERY_2_STATEMENT)
-            .resultNumber(QUERY_2_RESULT_NUMBER)
-            .resultHash(QUERY_2_RESULT_HASH)
-            .owner(USER_1_BRIEF_DTO)
-            .queryHash(QUERY_2_QUERY_HASH)
-            .execution(QUERY_2_EXECUTION)
-            .isPersisted(QUERY_2_PERSISTED)
-            .resultNumber(3L)
-            .build();
-
     public static final UUID QUERY_3_ID = UUID.fromString("a9849020-45a7-40a8-9a19-d4ae2b28dd46");
     public static final String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
     public static final String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
@@ -2903,20 +2837,6 @@ public abstract class BaseTest {
     public static final Instant QUERY_3_LAST_MODIFIED = Instant.ofEpochSecond(1541588353L);
     public static final Long QUERY_3_RESULT_NUMBER = 2L;
     public static final Boolean QUERY_3_PERSISTED = true;
-
-    public static final QueryDto QUERY_3_DTO = QueryDto.builder()
-            .id(QUERY_3_ID)
-            .databaseId(DATABASE_1_ID)
-            .query(QUERY_3_STATEMENT)
-            .queryNormalized(QUERY_3_STATEMENT)
-            .resultNumber(QUERY_3_RESULT_NUMBER)
-            .resultHash(QUERY_3_RESULT_HASH)
-            .owner(USER_1_BRIEF_DTO)
-            .queryHash(QUERY_3_QUERY_HASH)
-            .execution(QUERY_3_EXECUTION)
-            .isPersisted(QUERY_3_PERSISTED)
-            .resultNumber(2L)
-            .build();
 
     public static final UUID QUERY_7_ID = UUID.fromString("fe73a325-30a0-444c-b74f-23ce1533e55f");
     public static final String QUERY_7_STATEMENT = "SELECT id, date, a.location, lat, lng FROM weather_aus a JOIN weather_location l on a.location = l.location WHERE date = '2008-12-01'";
@@ -2929,20 +2849,6 @@ public abstract class BaseTest {
     public static final Long QUERY_7_RESULT_ID = 4L;
     public static final Boolean QUERY_7_PERSISTED = false;
 
-    public static final QueryDto QUERY_7_DTO = QueryDto.builder()
-            .id(QUERY_7_ID)
-            .databaseId(DATABASE_4_ID)
-            .query(QUERY_7_STATEMENT)
-            .queryNormalized(QUERY_7_STATEMENT)
-            .resultNumber(QUERY_7_RESULT_NUMBER)
-            .resultHash(QUERY_7_RESULT_HASH)
-            .owner(USER_1_BRIEF_DTO)
-            .queryHash(QUERY_7_QUERY_HASH)
-            .execution(QUERY_7_EXECUTION)
-            .isPersisted(QUERY_7_PERSISTED)
-            .resultNumber(2L)
-            .build();
-
     public static final UUID QUERY_4_ID = UUID.fromString("18a98197-51ff-4011-9f40-914a11675a6d");
     public static final String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
     public static final String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
@@ -2953,18 +2859,6 @@ public abstract class BaseTest {
     public static final Long QUERY_4_RESULT_NUMBER = 6L;
     public static final Long QUERY_4_RESULT_ID = 4L;
     public static final Boolean QUERY_4_PERSISTED = false;
-
-    public static final QueryDto QUERY_4 = QueryDto.builder()
-            .id(QUERY_4_ID)
-            .query(QUERY_4_STATEMENT)
-            .queryHash(QUERY_4_QUERY_HASH)
-            .resultHash(QUERY_4_RESULT_HASH)
-            .execution(QUERY_4_EXECUTION)
-            .isPersisted(QUERY_4_PERSISTED)
-            .resultNumber(QUERY_4_RESULT_NUMBER)
-            .owner(USER_3_BRIEF_DTO)
-            .isPersisted(QUERY_4_PERSISTED)
-            .build();
 
     public static final List<Map<String, Object>> QUERY_4_RESULT_DTO = new LinkedList<>(List.of(
             new HashMap<>() {{
@@ -3023,8 +2917,18 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public static final SubsetDto QUERY_5_SUBSET_DTO = SubsetDto.builder()
+            .tableId(TABLE_8_ID)
+            .columns(new LinkedList<>(List.of(COLUMN_8_1_ID, COLUMN_8_2_ID)))
+            .filter(new LinkedList<>(List.of(FilterDto.builder()
+                    .columnId(COLUMN_8_2_ID)
+                    .operatorId(IMAGE_1_OPERATORS_2_ID)
+                    .value("0")
+                    .type(FilterTypeDto.WHERE)
+                    .build())))
+            .build();
+
     public static final ViewDto QUERY_5_VIEW_DTO = ViewDto.builder()
-            .vdbid(DATABASE_3_ID)
             .query(QUERY_5_STATEMENT)
             .queryHash(QUERY_5_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
@@ -3056,19 +2960,6 @@ public abstract class BaseTest {
     public static final Instant QUERY_6_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
     public static final Long QUERY_6_RESULT_NUMBER = 1L;
     public static final Boolean QUERY_6_PERSISTED = true;
-
-    public static final QueryDto QUERY_6_DTO = QueryDto.builder()
-            .id(QUERY_6_ID)
-            .databaseId(DATABASE_2_ID)
-            .query(QUERY_6_STATEMENT)
-            .queryNormalized(QUERY_6_STATEMENT)
-            .resultNumber(QUERY_6_RESULT_NUMBER)
-            .resultHash(QUERY_6_RESULT_HASH)
-            .owner(USER_1_BRIEF_DTO)
-            .queryHash(QUERY_6_QUERY_HASH)
-            .execution(QUERY_6_EXECUTION)
-            .isPersisted(QUERY_6_PERSISTED)
-            .build();
 
     public static final List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
@@ -4739,6 +4630,34 @@ public abstract class BaseTest {
             .constraints(TABLE_5_CONSTRAINTS_INVALID_CREATE)
             .build();
 
+    public static final UUID QUERY_8_ID = UUID.fromString("1c466eee-d551-4ef9-a7e0-b5a2d1b15473");
+    public static final String QUERY_8_STATEMENT = "SELECT `id`, `animal_name` FROM `zoo` WHERE `hair` = TRUE AND `feathers` = FALSE;";
+    public static final String QUERY_8_QUERY_HASH = "f0ee0d6dd45e092fca120c4f0eab089f91ed26ccf8dc34a03c6b9c6bb4141271";
+    public static final Long QUERY_8_RESULT_NUMBER = 5L;
+    public static final String QUERY_8_RESULT_HASH = "b5f9cae916d32deff81c5f2e9f8ff43904034bc084b12320730953d120698bed";
+    public static final Instant QUERY_8_EXECUTION = Instant.now().minus(1, MINUTES);
+    public static final Boolean QUERY_8_PERSISTED = true;
+
+    public static final SubsetDto QUERY_8_SUBSET_DTO = SubsetDto.builder()
+            .tableId(TABLE_5_ID)
+            .columns(new LinkedList<>(List.of(COLUMN_5_1_ID, COLUMN_5_2_ID)))
+            .filter(new LinkedList<>(List.of(FilterDto.builder()
+                            .type(FilterTypeDto.WHERE)
+                            .columnId(COLUMN_5_3_ID)
+                            .operatorId(IMAGE_1_OPERATORS_2_ID)
+                            .value("true")
+                            .build(),
+                    FilterDto.builder()
+                            .type(FilterTypeDto.AND)
+                            .build(),
+                    FilterDto.builder()
+                            .type(FilterTypeDto.WHERE)
+                            .columnId(COLUMN_5_4_ID)
+                            .operatorId(IMAGE_1_OPERATORS_2_ID)
+                            .value("false")
+                            .build())))
+            .build();
+
     public static final UUID COLUMN_6_1_ID = UUID.fromString("27b04a64-2849-4fae-b295-858c3e50361f");
 
     public static final UUID COLUMN_6_2_ID = UUID.fromString("1ea62e32-5719-4152-94da-45d37eb88b6f");
@@ -4968,7 +4887,7 @@ public abstract class BaseTest {
     public static final String VIEW_1_INTERNAL_NAME = "junit";
     public static final Boolean VIEW_1_PUBLIC = false;
     public static final Boolean VIEW_1_SCHEMA_PUBLIC = false;
-    public static final String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
+    public static final String VIEW_1_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location`";
     public static final String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
     public static final UUID VIEW_COLUMN_1_1_ID = UUID.fromString("ebf2c5ce-4deb-4cc6-b6f6-61f5d3f6fc98");
@@ -4976,6 +4895,11 @@ public abstract class BaseTest {
     public static final UUID VIEW_COLUMN_1_2_ID = UUID.fromString("d6ba3475-cefa-4771-aaa1-9274f16335ee");
 
     public static final UUID VIEW_COLUMN_1_3_ID = UUID.fromString("4f189a5f-c9ca-4518-9758-1a0730f6276b");
+
+    public static final SubsetDto VIEW_1_SUBSET_DTO = SubsetDto.builder()
+            .tableId(TABLE_2_ID)
+            .columns(new LinkedList<>(List.of(COLUMN_2_1_ID, COLUMN_2_2_ID, COLUMN_2_3_ID)))
+            .build();
 
     public static final List<ViewColumnDto> VIEW_1_COLUMNS_DTO = List.of(
             ViewColumnDto.builder()
@@ -5084,10 +5008,10 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_1_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
+            .databaseId(DATABASE_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
             .internalName(VIEW_1_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_1_PUBLIC)
             .isSchemaPublic(VIEW_1_SCHEMA_PUBLIC)
             .identifiers(null /* VIEW_1_DTO_IDENTIFIERS */)
@@ -5095,21 +5019,6 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .columns(VIEW_1_COLUMNS_DTO)
-            .build();
-
-    public static final ViewDto VIEW_1_PRIVILEGED_DTO = ViewDto.builder()
-            .id(VIEW_1_ID)
-            .isInitialView(VIEW_1_INITIAL_VIEW)
-            .name(VIEW_1_NAME)
-            .internalName(VIEW_1_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
-            .isPublic(VIEW_1_PUBLIC)
-            .owner(USER_1_BRIEF_DTO)
-            .query(VIEW_1_QUERY)
-            .queryHash(VIEW_1_QUERY_HASH)
-            .columns(VIEW_1_COLUMNS_DTO)
-            .lastRetrieved(Instant.now())
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
     public static final ViewBriefDto VIEW_1_BRIEF_DTO = ViewBriefDto.builder()
@@ -5128,7 +5037,7 @@ public abstract class BaseTest {
     public static final CreateViewDto VIEW_1_CREATE_DTO = CreateViewDto.builder()
             .isPublic(VIEW_1_PUBLIC)
             .name(VIEW_1_NAME)
-            .query(VIEW_1_QUERY)
+            .query(VIEW_1_SUBSET_DTO)
             .build();
 
     public static final UUID VIEW_2_ID = UUID.fromString("1921a0a0-e4b0-4d12-a05f-be920af9b5ce");
@@ -5253,33 +5162,16 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_2_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
-            .vdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
             .internalName(VIEW_2_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_2_PUBLIC)
             .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
             .columns(VIEW_2_COLUMNS_DTO)
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
             .owner(USER_1_BRIEF_DTO)
-            .build();
-
-    public static final ViewDto VIEW_2_PRIVILEGED_DTO = ViewDto.builder()
-            .id(VIEW_2_ID)
-            .isInitialView(VIEW_2_INITIAL_VIEW)
-            .name(VIEW_2_NAME)
-            .internalName(VIEW_2_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
-            .isPublic(VIEW_2_PUBLIC)
-            .isSchemaPublic(VIEW_2_SCHEMA_PUBLIC)
-            .owner(USER_2_BRIEF_DTO)
-            .query(VIEW_2_QUERY)
-            .queryHash(VIEW_2_QUERY_HASH)
-            .columns(VIEW_2_COLUMNS_DTO)
-            .lastRetrieved(Instant.now())
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .build();
 
     public static final ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
@@ -5373,22 +5265,6 @@ public abstract class BaseTest {
             .database(null) /* DATABASE_1 */
             .build();
 
-    public static final ViewDto VIEW_3_PRIVILEGED_DTO = ViewDto.builder()
-            .id(VIEW_3_ID)
-            .isInitialView(VIEW_3_INITIAL_VIEW)
-            .name(VIEW_3_NAME)
-            .internalName(VIEW_3_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
-            .isPublic(VIEW_3_PUBLIC)
-            .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
-            .owner(USER_1_BRIEF_DTO)
-            .query(VIEW_3_QUERY)
-            .queryHash(VIEW_3_QUERY_HASH)
-            .columns(VIEW_3_COLUMNS_DTO)
-            .lastRetrieved(Instant.now())
-            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
-            .build();
-
     public static final List<ViewColumn> VIEW_3_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(VIEW_COLUMN_3_1_ID)
@@ -5435,11 +5311,10 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_3_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
-            .vdbid(DATABASE_1_ID)
+            .databaseId(DATABASE_1_ID)
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
-            .vdbid(DATABASE_1_ID)
             .isPublic(VIEW_3_PUBLIC)
             .isSchemaPublic(VIEW_3_SCHEMA_PUBLIC)
             .columns(VIEW_3_COLUMNS_DTO)
@@ -5642,11 +5517,10 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_4_DTO = ViewDto.builder()
             .id(VIEW_4_ID)
-            .vdbid(DATABASE_2_ID)
+            .databaseId(DATABASE_2_ID)
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
             .internalName(VIEW_4_INTERNAL_NAME)
-            .vdbid(DATABASE_2_ID)
             .isPublic(VIEW_4_PUBLIC)
             .isSchemaPublic(VIEW_4_SCHEMA_PUBLIC)
             .query(VIEW_4_QUERY)
@@ -5848,11 +5722,10 @@ public abstract class BaseTest {
 
     public static final ViewDto VIEW_5_DTO = ViewDto.builder()
             .id(VIEW_5_ID)
-            .vdbid(DATABASE_3_ID)
+            .databaseId(DATABASE_3_ID)
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
             .internalName(VIEW_5_INTERNAL_NAME)
-            .vdbid(DATABASE_3_ID)
             .isPublic(VIEW_5_PUBLIC)
             .isSchemaPublic(VIEW_5_SCHEMA_PUBLIC)
             .query(VIEW_5_QUERY)
@@ -7687,6 +7560,16 @@ public abstract class BaseTest {
             .lastRetrieved(Instant.now())
             .build();
 
+    public static final DatabaseBriefDto DATABASE_2_PRIVILEGED_BRIEF_DTO = DatabaseBriefDto.builder()
+            .id(DATABASE_2_ID)
+            .isPublic(DATABASE_2_PUBLIC)
+            .isSchemaPublic(DATABASE_2_SCHEMA_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .identifiers(new LinkedList<>(List.of(IDENTIFIER_5_BRIEF_DTO)))
+            .ownerId(USER_2_ID)
+            .build();
+
     public static final DatabaseBriefDto DATABASE_2_BRIEF_DTO = DatabaseBriefDto.builder()
             .id(DATABASE_2_ID)
             .isPublic(DATABASE_2_PUBLIC)
@@ -8319,6 +8202,87 @@ public abstract class BaseTest {
     public static final ExportResourceDto EXPORT_RESOURCE_DTO = ExportResourceDto.builder()
             .filename("68b329da9893e34099c7d8ad5cb9c940")
             .resource(new InputStreamResource(InputStream.nullInputStream()))
+            .build();
+
+    public static final QueryDto QUERY_1_DTO = QueryDto.builder()
+            .id(QUERY_1_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_1_STATEMENT)
+            .queryHash(QUERY_1_QUERY_HASH)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .execution(QUERY_1_EXECUTION)
+            .owner(USER_1_BRIEF_DTO)
+            .isPersisted(QUERY_1_PERSISTED)
+            .resultNumber(3L)
+            .build();
+
+    public static final QueryDto QUERY_2_DTO = QueryDto.builder()
+            .id(QUERY_2_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_2_STATEMENT)
+            .queryNormalized(QUERY_2_STATEMENT)
+            .resultNumber(QUERY_2_RESULT_NUMBER)
+            .resultHash(QUERY_2_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_2_QUERY_HASH)
+            .execution(QUERY_2_EXECUTION)
+            .isPersisted(QUERY_2_PERSISTED)
+            .resultNumber(3L)
+            .build();
+
+    public static final QueryDto QUERY_3_DTO = QueryDto.builder()
+            .id(QUERY_3_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_3_STATEMENT)
+            .queryNormalized(QUERY_3_STATEMENT)
+            .resultNumber(QUERY_3_RESULT_NUMBER)
+            .resultHash(QUERY_3_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_3_QUERY_HASH)
+            .execution(QUERY_3_EXECUTION)
+            .isPersisted(QUERY_3_PERSISTED)
+            .resultNumber(2L)
+            .build();
+
+    public static final QueryDto QUERY_7_DTO = QueryDto.builder()
+            .id(QUERY_7_ID)
+            .databaseId(DATABASE_4_ID)
+            .query(QUERY_7_STATEMENT)
+            .queryNormalized(QUERY_7_STATEMENT)
+            .resultNumber(QUERY_7_RESULT_NUMBER)
+            .resultHash(QUERY_7_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_7_QUERY_HASH)
+            .execution(QUERY_7_EXECUTION)
+            .isPersisted(QUERY_7_PERSISTED)
+            .resultNumber(2L)
+            .build();
+
+    public static final QueryDto QUERY_6_DTO = QueryDto.builder()
+            .id(QUERY_6_ID)
+            .databaseId(DATABASE_1_ID)
+            .query(QUERY_6_STATEMENT)
+            .queryNormalized(QUERY_6_STATEMENT)
+            .resultNumber(QUERY_6_RESULT_NUMBER)
+            .resultHash(QUERY_6_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_6_QUERY_HASH)
+            .execution(QUERY_6_EXECUTION)
+            .isPersisted(QUERY_6_PERSISTED)
+            .build();
+
+    public static final QueryDto QUERY_8_DTO = QueryDto.builder()
+            .id(QUERY_8_ID)
+            .databaseId(DATABASE_2_ID)
+            .query(QUERY_8_STATEMENT)
+            .queryNormalized(QUERY_8_STATEMENT)
+            .resultNumber(QUERY_8_RESULT_NUMBER)
+            .resultHash(QUERY_8_RESULT_HASH)
+            .owner(USER_1_BRIEF_DTO)
+            .queryHash(QUERY_8_QUERY_HASH)
+            .execution(QUERY_8_EXECUTION)
+            .isPersisted(QUERY_8_PERSISTED)
+            .resultNumber(3L)
             .build();
 
 }

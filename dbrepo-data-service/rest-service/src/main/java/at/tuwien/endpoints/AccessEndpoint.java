@@ -6,7 +6,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,13 +31,13 @@ import java.util.UUID;
 @RequestMapping(path = "/api/database/{databaseId}/access")
 public class AccessEndpoint extends RestEndpoint {
 
+    private final CacheService cacheService;
     private final AccessService accessService;
-    private final CredentialService credentialService;
 
     @Autowired
-    public AccessEndpoint(AccessService accessService, CredentialService credentialService) {
+    public AccessEndpoint(CacheService cacheService, AccessService accessService) {
+        this.cacheService = cacheService;
         this.accessService = accessService;
-        this.credentialService = credentialService;
     }
 
     @PostMapping("/{userId}")
@@ -80,8 +80,8 @@ public class AccessEndpoint extends RestEndpoint {
             throws NotAllowedException, DatabaseUnavailableException, DatabaseNotFoundException,
             RemoteUnavailableException, UserNotFoundException, DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint give access to database, databaseId={}, userId={}", databaseId, userId);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
-        final UserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final UserDto user = cacheService.getUser(userId);
         if (database.getAccesses().stream().anyMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to create access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to create access to user with id " + userId + ": already has access");
@@ -137,8 +137,8 @@ public class AccessEndpoint extends RestEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
                 access.getType());
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
-        final UserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final UserDto user = cacheService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getHuserid().equals(userId))) {
             log.error("Failed to update access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to update access to user with id " + userId + ": no access");
@@ -151,22 +151,6 @@ public class AccessEndpoint extends RestEndpoint {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database", e);
         }
-    }
-
-    @PutMapping
-    @PreAuthorize("hasAuthority('system')")
-    @Operation(summary = "Invalidate access cache for database",
-            security = {@SecurityRequirement(name = "basicAuth")},
-            hidden = true)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Invalidated access cache succeeded")
-    })
-    public ResponseEntity<Void> invalidateAccess(@NotNull @PathVariable("databaseId") UUID databaseId) {
-        log.debug("endpoint empty access cache for database, databaseId={}", databaseId);
-        credentialService.invalidateAccess(databaseId);
-        return ResponseEntity.accepted()
-                .build();
     }
 
     @DeleteMapping("/{userId}")
@@ -208,8 +192,8 @@ public class AccessEndpoint extends RestEndpoint {
             DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException, UserNotFoundException,
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint revoke access to database, databaseId={}, userId={}", databaseId, userId);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
-        final UserDto user = credentialService.getUser(userId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final UserDto user = cacheService.getUser(userId);
         if (database.getAccesses().stream().noneMatch(a -> a.getUser().getId().equals(userId))) {
             log.error("Failed to delete access to user with id {}: no access", userId);
             throw new NotAllowedException("Failed to delete access to user with id " + userId + ": no access");

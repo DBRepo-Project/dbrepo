@@ -10,4 +10,7 @@ select.native {
   border-style: solid;
   width: 100%; }
 
+.line-break {
+  white-space: pre-wrap; }
+
 /*# sourceMappingURL=globals.css.map */

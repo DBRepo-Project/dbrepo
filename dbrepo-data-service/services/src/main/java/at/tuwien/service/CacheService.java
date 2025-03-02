@@ -10,7 +10,7 @@ import at.tuwien.exception.*;
 
 import java.util.UUID;
 
-public interface CredentialService {
+public interface CacheService {
 
     /**
      * Gets credentials for a database with given id either from the cache (if not expired) or retrieves them from the
@@ -92,11 +92,4 @@ public interface CredentialService {
      */
     DatabaseAccessDto getAccess(UUID databaseId, UUID userId) throws RemoteUnavailableException,
             MetadataServiceException, NotAllowedException;
-
-    /**
-     * Invalidate the caches to force a refresh of access to a database with given id.
-     *
-     * @param databaseId The database id.
-     */
-    void invalidateAccess(UUID databaseId);
 }

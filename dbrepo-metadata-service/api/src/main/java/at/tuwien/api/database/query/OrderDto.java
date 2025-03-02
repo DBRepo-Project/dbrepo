@@ -1,5 +1,6 @@
-package at.tuwien.api.database.table.columns;
+package at.tuwien.api.database.query;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -15,14 +16,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class SetDto {
+public class OrderDto {
 
     @NotNull
-    @Schema(example = "7eb4eded-bacc-4a91-84db-a9ae6ddafda7")
-    private UUID id;
+    @JsonProperty("column_id")
+    @Schema(example = "e891ba86-0258-41a6-a8d9-ff58bc10b618")
+    private UUID columnId;
 
-    @NotNull
-    @Schema(example = "3")
-    private String value;
+    @Schema(example = "asc")
+    private OrderTypeDto direction;
 
 }

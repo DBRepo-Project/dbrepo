@@ -2,14 +2,17 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.table.CreateTableDto;
 import at.tuwien.api.database.table.TableStatisticDto;
-import at.tuwien.api.database.table.columns.CreateTableColumnDto;
+import at.tuwien.api.database.table.TableUpdateDto;
 import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.CreateTableColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.CreateTableConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreign.CreateForeignKeyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.ColumnEnum;
+import at.tuwien.entities.database.table.columns.ColumnSet;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.constraints.Constraints;
@@ -341,6 +344,54 @@ public class TableServiceUnitTest extends AbstractUnitTest {
     }
 
     @Test
+    public void createTable_enumsSets_succeeds() throws DataServiceException,
+            DataServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException,
+            OntologyNotFoundException, SemanticEntityNotFoundException {
+        final CreateTableDto request = CreateTableDto.builder()
+                .name("New Table")
+                .description("A wonderful table")
+                .columns(new LinkedList<>(List.of(CreateTableColumnDto.builder()
+                                .name("sex")
+                                .type(ColumnTypeDto.ENUM) // <<<
+                                .enums(new LinkedList<>(List.of("male", "female", "other")))
+                                .build(),
+                        CreateTableColumnDto.builder()
+                                .name("status")
+                                .type(ColumnTypeDto.SET) // <<<
+                                .sets(new LinkedList<>(List.of("single", "married", "divorced", "widowed")))
+                                .build())))
+                .constraints(CreateTableConstraintsDto.builder()
+                        .checks(Set.of())
+                        .uniques(List.of())
+                        .foreignKeys(List.of())
+                        .primaryKey(Set.of())
+                        .build())
+                .build();
+
+        /* mock */
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+        doNothing()
+                .when(dataServiceGateway)
+                .createTable(eq(DATABASE_1_ID), any(CreateTableDto.class));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_1_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
+        final TableColumn column0 = response.getColumns().get(0);
+        assertEquals("sex", column0.getInternalName());
+        assertEquals(TableColumnType.ENUM, column0.getColumnType());
+        assertEquals(List.of("male", "female", "other"), column0.getEnums().stream().map(ColumnEnum::getValue).toList());
+        final TableColumn column1 = response.getColumns().get(1);
+        assertEquals("status", column1.getInternalName());
+        assertEquals(List.of("single", "married", "divorced", "widowed"), column1.getSets().stream().map(ColumnSet::getValue).toList());
+    }
+
+    @Test
     public void createTable_dateFormatNotFound_fails() throws DataServiceException, DataServiceConnectionException,
             UserNotFoundException, DatabaseNotFoundException, TableExistsException, SearchServiceException,
             SearchServiceConnectionException {
@@ -375,6 +426,23 @@ public class TableServiceUnitTest extends AbstractUnitTest {
         assertThrows(MalformedException.class, () -> {
             tableService.createTable(DATABASE_1, request, USER_1_PRINCIPAL);
         });
+    }
+
+    @Test
+    public void updateTable_succeeds() throws DataServiceException, DataServiceConnectionException,
+            TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+
+        /* mock */
+        doNothing()
+                .when(dataServiceGateway)
+                .updateTable(any(UUID.class), any(UUID.class), any(TableUpdateDto.class));
+        when(searchServiceGateway.update(any(Database.class)))
+                .thenReturn(DATABASE_3_BRIEF_DTO);
+
+        /* test */
+        final Table response = tableService.updateTable(TABLE_8, TABLE_8_UPDATE_DTO);
+        assertNotNull(response.getId());
     }
 
     @Test

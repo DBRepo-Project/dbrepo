@@ -3,10 +3,13 @@ package at.tuwien.validation;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.query.FilterDto;
+import at.tuwien.api.database.query.FilterTypeDto;
+import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.endpoints.RestEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,10 +27,10 @@ import java.util.regex.Pattern;
 public class EndpointValidator extends RestEndpoint {
 
     private final QueryConfig queryConfig;
-    private final CredentialService credentialService;
+    private final CacheService credentialService;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, CredentialService credentialService) {
+    public EndpointValidator(QueryConfig queryConfig, CacheService credentialService) {
         this.queryConfig = queryConfig;
         this.credentialService = credentialService;
     }
@@ -61,6 +64,22 @@ public class EndpointValidator extends RestEndpoint {
             return;
         }
         validateOnlyAccess(database, principal, writeAccessOnly);
+    }
+
+    public void validateSubsetParams(SubsetDto subset) throws QueryMalformedException {
+        if (subset.getFilter() != null) {
+            final List<FilterDto> filters = subset.getFilter();
+            FilterTypeDto previous = null;
+            for (int i = 0; i < filters.size(); i++) {
+                final FilterDto filter = filters.get(i);
+                if ((i == 0 && !filter.getType().equals(FilterTypeDto.WHERE)) ||
+                        (i > 0 && !previous.equals(FilterTypeDto.WHERE) && (filter.getType().equals(FilterTypeDto.AND) || filter.getType().equals(FilterTypeDto.OR)))) {
+                    log.error("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
+                    throw new QueryMalformedException("Failed to validate subset: invalid specification, must be where-[(and|or)-where]");
+                }
+                previous = filter.getType();
+            }
+        }
     }
 
     public void validateOnlyPrivateSchemaHasRole(DatabaseDto database, Principal principal, String role)

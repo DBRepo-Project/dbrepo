@@ -34,7 +34,7 @@
       <v-btn
         v-if="canPublish"
         class="mr-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
         :loading="loadingPublish"

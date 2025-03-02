@@ -12,29 +12,27 @@ Timestamp = Annotated[
 ]
 
 
-class Image(BaseModel):
-    id: str
-    registry: str
-    name: str
-    version: str
-    dialect: str
-    driver_class: str
-    jdbc_method: str
-    default_port: int
-    data_types: List[DataType] = field(default_factory=list)
-
-
-
 class Operator(BaseModel):
     id: str
     display_name: str
     value: str
     documentation: str
 
+
+class Image(BaseModel):
+    id: str
+    name: str
+    version: str
+    default: bool
+    data_types: List[DataType] = field(default_factory=list)
+    operators: List[Operator] = field(default_factory=list)
+
+
 class ImageBrief(BaseModel):
     id: str
     name: str
     version: str
+    default: bool
 
 
 class CreateDatabase(BaseModel):
@@ -89,8 +87,6 @@ class Container(BaseModel):
     id: str
     name: str
     internal_name: str
-    host: str
-    port: int
     image: Image
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
@@ -681,6 +677,7 @@ class Identifier(BaseModel):
     publication_day: Optional[int] = None
     publication_month: Optional[int] = None
 
+
 class Message(BaseModel):
     id: str
     type: str
@@ -707,9 +704,9 @@ class IdentifierBrief(BaseModel):
 
 class View(BaseModel):
     id: str
-    database_id: str
     name: str
     query: str
+    database_id: str
     query_hash: str
     owner: UserBrief
     internal_name: str
@@ -722,7 +719,7 @@ class View(BaseModel):
 
 class CreateView(BaseModel):
     name: str
-    query: str
+    query: Subset
     is_public: bool
     is_schema_public: bool
 
@@ -788,8 +785,59 @@ class UnitBrief(BaseModel):
     description: Optional[str] = None
 
 
-class ExecuteQuery(BaseModel):
-    statement: str
+class FilterType(str, Enum):
+    """
+    Enumeration of filter types.
+    """
+    WHERE = "where"
+    OR = "or"
+    AND = "and"
+
+
+class OrderType(str, Enum):
+    """
+    Enumeration of order types.
+    """
+    ASC = "asc"
+    DESC = "desc"
+
+
+class Filter(BaseModel):
+    type: FilterType
+    column_id: str
+    operator_id: str
+    value: str
+
+
+class FilterDefinition(BaseModel):
+    type: FilterType
+    column: str
+    operator: str
+    value: str
+
+
+class Order(BaseModel):
+    column_id: str
+    direction: Optional[OrderType] = None
+
+
+class OrderDefinition(BaseModel):
+    column: str
+    direction: Optional[OrderType] = None
+
+
+class Subset(BaseModel):
+    table_id: str
+    columns: List[str]
+    filter: Optional[List[Filter]] = None
+    order: Optional[List[Order]] = None
+
+
+class QueryDefinition(BaseModel):
+    table: str
+    columns: List[str]
+    filter: Optional[List[FilterDefinition]] = None
+    order: Optional[List[OrderDefinition]] = None
 
 
 class TitleType(str, Enum):
@@ -925,23 +973,6 @@ class IdentifierStatusType(str, Enum):
     """The identifier is a draft and can still be edited."""
 
 
-class IdentifierType(str, Enum):
-    """
-    Enumeration of identifier types.
-    """
-    TABLE = "table"
-    """The identifier identifies a table."""
-
-    DATABASE = "database"
-    """The identifier identifies a database."""
-
-    VIEW = "view"
-    """The identifier identifies a view."""
-
-    SUBSET = "subset"
-    """The identifier identifies a subset."""
-
-
 class Query(BaseModel):
     id: str
     owner: UserBrief
@@ -1007,8 +1038,8 @@ class Column(BaseModel):
     median: Optional[float] = None
     concept: Optional[ConceptBrief] = None
     unit: Optional[UnitBrief] = None
-    enums: Optional[List[str]] = field(default_factory=list)
-    sets: Optional[List[str]] = field(default_factory=list)
+    enums: Optional[List[ColumnEnum]] = field(default_factory=list)
+    sets: Optional[List[ColumnSet]] = field(default_factory=list)
     index_length: Optional[int] = None
     length: Optional[int] = None
     data_length: Optional[int] = None

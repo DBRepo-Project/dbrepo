@@ -26,7 +26,7 @@
         <v-list-item
           :title="$t('pages.identifier.descriptions.title')"
           density="compact">
-          <p
+          <div
             v-for="(description, i) in identifier.descriptions"
             :key="`d-${i}`">
             <div
@@ -36,7 +36,7 @@
             <span>
               {{ description.description }}
             </span>
-          </p>
+          </div>
         </v-list-item>
         <v-list-item
           :title="$t('pages.identifier.publisher.title')"

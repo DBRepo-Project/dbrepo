@@ -30,10 +30,10 @@ public class MariaDbConfig {
         log.debug("created database {}", database);
     }
 
-    public static void createInitDatabase(ContainerDto container, DatabaseDto database) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
+    public static void createInitDatabase(DatabaseDto database) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort();
         log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, container.getUsername(), container.getPassword())) {
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getUsername(), database.getContainer().getPassword())) {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/users.sql"), new ClassPathResource("init/querystore.sql"));
             populator.setSeparator(";\n");
             populator.populate(connection);

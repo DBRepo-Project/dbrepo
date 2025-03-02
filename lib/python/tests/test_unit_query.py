@@ -6,108 +6,257 @@ import requests_mock
 from pandas import DataFrame
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Query, QueryType, UserBrief
+from dbrepo.api.dto import Query, QueryType, UserBrief, QueryDefinition, FilterDefinition, FilterType, Database, \
+    ContainerBrief, ImageBrief, Image, Table, Constraints, PrimaryKey, TableBrief, ColumnBrief, ColumnType, \
+    Column, Operator
 from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError, QueryStoreError, FormatNotAvailable, \
     ServiceError, ResponseCodeError, AuthenticationError
 
 
 class QueryUnitTest(unittest.TestCase):
+    database = Database(
+        id="6bd39359-b154-456d-b9c2-caa516a45732",
+        name='test',
+        owner=UserBrief(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='mweise'),
+        contact=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+        exchange_name='dbrepo',
+        internal_name='test_abcd',
+        is_public=True,
+        is_schema_public=True,
+        tables=[Table(id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
+                      name="Some Table",
+                      description="Test Table",
+                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                      internal_name="some_table",
+                      owner=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'),
+                      is_versioned=True,
+                      queue_name='test',
+                      routing_key='dbrepo.test_database_1234.test',
+                      is_public=True,
+                      is_schema_public=True,
+                      constraints=Constraints(uniques=[],
+                                              foreign_keys=[],
+                                              checks=[],
+                                              primary_key=[PrimaryKey(id="1516310f-ecb5-4614-abe2-3b96114e1484",
+                                                                      table=TableBrief(
+                                                                          id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
+                                                                          database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                                          name='Other',
+                                                                          internal_name='other',
+                                                                          description=None,
+                                                                          is_versioned=True,
+                                                                          is_public=True,
+                                                                          is_schema_public=True,
+                                                                          owned_by='8638c043-5145-4be8-a3e4-4b79991b0a16'),
+                                                                      column=ColumnBrief(
+                                                                          id="31a533b6-8ddf-43d6-ac6a-b9da597cb976",
+                                                                          table_id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
+                                                                          database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                                                          name='id',
+                                                                          alias=None,
+                                                                          internal_name='id',
+                                                                          type=ColumnType.BIGINT))]),
+                      columns=[Column(id="31a533b6-8ddf-43d6-ac6a-b9da597cb976",
+                                      name="ID",
+                                      ord=0,
+                                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                      table_id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
+                                      internal_name="id",
+                                      type=ColumnType.BIGINT,
+                                      is_null_allowed=False),
+                               Column(id="85de93a8-834c-4cf4-9d34-f80ebd97e606",
+                                      name="Username",
+                                      ord=1,
+                                      database_id="6bd39359-b154-456d-b9c2-caa516a45732",
+                                      table_id="029d773f-f98b-40c0-ab22-b8b1635d4fbc",
+                                      internal_name="username",
+                                      type=ColumnType.VARCHAR,
+                                      is_null_allowed=False)
+                               ])],
+        container=ContainerBrief(id="44d811a8-4019-46ba-bd57-ea10a2eb0c74",
+                                 name='MariaDB Galera 11.1.3',
+                                 internal_name='mariadb',
+                                 image=ImageBrief(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
+                                                  name='mariadb',
+                                                  version='11.2.2',
+                                                  default=True)))
+    image = Image(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
+                  name='mariadb',
+                  version='11.2.2',
+                  default=True,
+                  data_types=[],
+                  operators=[Operator(id="6a96bd99-be3d-4d56-8c38-b14bdfead634",
+                                      display_name="IN",
+                                      value="IN",
+                                      documentation="https://mariadb.com/kb/en/in/")])
 
     def test_create_subset_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
             df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', json=json.dumps(exp),
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', json=json.dumps(exp),
                       headers={'X-Id': '1'}, status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
                                             timestamp=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
-                                            query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                            query=QueryDefinition(table="some_table",
+                                                                  columns=["id", "username"],
+                                                                  filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                           column="id",
+                                                                                           operator="IN",
+                                                                                           value="(1,2)")]))
             self.assertTrue(DataFrame.equals(df, response))
 
     def test_create_subset_400_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=400)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except MalformedError:
                 pass
 
     def test_create_subset_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=403)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except ForbiddenError:
                 pass
 
     def test_create_subset_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=404)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except NotExistsError:
                 pass
 
     def test_create_subset_417_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=417)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=417)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except QueryStoreError:
                 pass
 
     def test_create_subset_501_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=501)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=501)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except FormatNotAvailable:
                 pass
 
     def test_create_subset_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=503)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=503)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except ServiceError:
                 pass
 
     def test_create_subset_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=200)
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', status_code=200)
             # test
             try:
                 client = RestClient(username="a", password="b")
                 client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732",
-                                     query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                     query=QueryDefinition(table="some_table",
+                                                           columns=["id", "username"],
+                                                           filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                    column="id",
+                                                                                    operator="IN",
+                                                                                    value="(1,2)")]))
             except ResponseCodeError:
                 pass
 
@@ -116,13 +265,22 @@ class QueryUnitTest(unittest.TestCase):
             exp = [{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}]
             df = DataFrame.from_records(json.dumps(exp))
             # mock
-            mock.post('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', json=json.dumps(exp),
+            mock.get(f'/api/image/{self.image.id}', json=self.image.model_dump(),
+                     status_code=200)
+            mock.get(f'/api/database/{self.database.id}', json=self.database.model_dump(),
+                     status_code=200)
+            mock.post(f'/api/database/{self.database.id}/subset', json=json.dumps(exp),
                       headers={'X-Id': '1'}, status_code=201)
             # test
 
             client = RestClient()
             response = client.create_subset(database_id="6bd39359-b154-456d-b9c2-caa516a45732", page=0, size=10,
-                                            query="SELECT id, username FROM some_table WHERE id IN (1,2)")
+                                            query=QueryDefinition(table="some_table",
+                                                                  columns=["id", "username"],
+                                                                  filter=[FilterDefinition(type=FilterType.WHERE,
+                                                                                           column="id",
+                                                                                           operator="IN",
+                                                                                           value="(1,2)")]))
             self.assertTrue(DataFrame.equals(df, response))
 
     def test_get_subset_succeeds(self):
@@ -211,7 +369,7 @@ class QueryUnitTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', json=[])
+            mock.get(f'/api/database/{self.database.id}/subset', json=[])
             # test
             response = RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -343,7 +501,7 @@ class QueryUnitTest(unittest.TestCase):
                          result_number=None,
                          identifiers=[])]
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', json=[exp[0].model_dump()])
+            mock.get(f'/api/database/{self.database.id}/subset', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
             self.assertEqual(exp, response)
@@ -351,7 +509,7 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_queries_403_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=403)
+            mock.get(f'/api/database/{self.database.id}/subset', status_code=403)
             # test
             try:
                 RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -361,7 +519,7 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_queries_404_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=404)
+            mock.get(f'/api/database/{self.database.id}/subset', status_code=404)
             # test
             try:
                 RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -371,7 +529,7 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_queries_503_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=503)
+            mock.get(f'/api/database/{self.database.id}/subset', status_code=503)
             # test
             try:
                 RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")
@@ -381,7 +539,7 @@ class QueryUnitTest(unittest.TestCase):
     def test_get_queries_unknown_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/6bd39359-b154-456d-b9c2-caa516a45732/subset', status_code=202)
+            mock.get(f'/api/database/{self.database.id}/subset', status_code=202)
             # test
             try:
                 RestClient().get_queries(database_id="6bd39359-b154-456d-b9c2-caa516a45732")

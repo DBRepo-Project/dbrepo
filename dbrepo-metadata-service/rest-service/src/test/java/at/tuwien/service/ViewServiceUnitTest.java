@@ -50,10 +50,11 @@ public class ViewServiceUnitTest extends AbstractUnitTest {
 
     @Test
     public void create_succeeds() throws MalformedException, DataServiceException, DataServiceConnectionException,
-            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException, TableNotFoundException,
+            ImageNotFoundException {
         final CreateViewDto request = CreateViewDto.builder()
                 .name(VIEW_1_NAME)
-                .query(VIEW_1_QUERY)
+                .query(VIEW_1_SUBSET_DTO)
                 .isPublic(VIEW_1_PUBLIC)
                 .build();
 

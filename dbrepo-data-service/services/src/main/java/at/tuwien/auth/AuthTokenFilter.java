@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,13 +53,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    public UserDetails verifyJwt(String token) throws ServletException {
+    public UserDetails verifyJwt(String token) throws BadCredentialsException {
         final KeyFactory kf;
         try {
             kf = KeyFactory.getInstance("RSA");
         } catch (NoSuchAlgorithmException e) {
             log.error("Failed to find RSA algorithm");
-            throw new ServletException("Failed to find RSA algorithm", e);
+            throw new BadCredentialsException("Failed to find RSA algorithm", e);
         }
         final X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
         final RSAPublicKey pubKey;
@@ -66,7 +67,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
         } catch (InvalidKeySpecException e) {
             log.error("Provided public key is invalid");
-            throw new ServletException("Provided public key is invalid", e);
+            throw new BadCredentialsException("Provided public key is invalid", e);
         }
         final Algorithm algorithm = Algorithm.RSA256(pubKey, null);
         final Verification verification = JWT.require(algorithm);

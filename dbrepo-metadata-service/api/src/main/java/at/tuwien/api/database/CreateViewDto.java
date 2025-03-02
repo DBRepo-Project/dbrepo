@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.database.query.SubsetDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -23,9 +24,8 @@ public class CreateViewDto {
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank
-    @Schema(example = "SELECT `id` FROM `air_quality`")
-    private String query;
+    @NotNull
+    private SubsetDto query;
 
     @NotNull
     @JsonProperty("is_public")

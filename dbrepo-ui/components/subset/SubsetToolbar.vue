@@ -34,7 +34,7 @@
         color="primary"
         variant="flat"
         class="mr-2"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
         :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/persist`">
         {{ ($vuetify.display.lgAndUp ? $t('toolbars.subset.pid.xl') + ' ' : '') + $t('toolbars.subset.pid.permanent') }}
       </v-btn>

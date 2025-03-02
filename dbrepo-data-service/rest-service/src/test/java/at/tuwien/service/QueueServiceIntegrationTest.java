@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.TableNotFoundException;
@@ -53,12 +53,12 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
-    public void insert_succeeds() throws SQLException, RemoteUnavailableException, ContainerNotFoundException,
-            TableNotFoundException, MetadataServiceException {
+    public void insert_succeeds() throws SQLException, RemoteUnavailableException, TableNotFoundException,
+            MetadataServiceException, DatabaseNotFoundException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 4L);
             put("date", "2023-10-03");
@@ -68,29 +68,31 @@ public class QueueServiceIntegrationTest extends AbstractUnitTest {
         }};
 
         /* mock */
-        when(metadataServiceGateway.getContainerById(CONTAINER_1_ID))
-                .thenReturn(CONTAINER_1_PRIVILEGED_DTO);
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
+                .thenReturn(TABLE_1_DTO);
 
         /* test */
-        queueService.insert(TABLE_1_PRIVILEGED_DTO, request);
+        queueService.insert(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
     }
 
     @Test
     public void insert_onlyMandatoryFields_succeeds() throws SQLException, RemoteUnavailableException,
-            TableNotFoundException, MetadataServiceException {
+            TableNotFoundException, MetadataServiceException, DatabaseNotFoundException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 5L);
             put("date", "2023-10-04");
         }};
 
         /* mock */
+        when(metadataServiceGateway.getDatabaseById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
         when(metadataServiceGateway.getTableById(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
+                .thenReturn(TABLE_1_DTO);
 
         /* test */
-        queueService.insert(TABLE_1_PRIVILEGED_DTO, request);
+        queueService.insert(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
     }
 
 }

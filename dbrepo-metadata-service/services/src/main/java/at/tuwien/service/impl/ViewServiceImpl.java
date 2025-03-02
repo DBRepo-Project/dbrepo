@@ -90,7 +90,7 @@ public class ViewServiceImpl implements ViewService {
     @Transactional
     public View create(Database database, User creator, CreateViewDto data) throws MalformedException,
             DataServiceException, DataServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
-            SearchServiceConnectionException {
+            SearchServiceConnectionException, TableNotFoundException, ImageNotFoundException {
         /* create in metadata database */
         final View view = View.builder()
                 .database(database)
@@ -99,10 +99,6 @@ public class ViewServiceImpl implements ViewService {
                 .ownedBy(creator.getId())
                 .owner(creator)
                 .identifiers(new LinkedList<>())
-                .query(data.getQuery())
-                .queryHash(Hashing.sha256()
-                        .hashString(data.getQuery(), StandardCharsets.UTF_8)
-                        .toString())
                 .columns(new LinkedList<>())
                 .isInitialView(false)
                 .isSchemaPublic(data.getIsSchemaPublic())
@@ -117,6 +113,10 @@ public class ViewServiceImpl implements ViewService {
                 .toList());
         view.getColumns()
                 .forEach(column -> column.setView(view));
+        view.setQuery(rawView.getQuery());
+        view.setQueryHash(Hashing.sha256()
+                .hashString(rawView.getQuery(), StandardCharsets.UTF_8)
+                .toString());
         database.getViews()
                 .add(view);
         database = databaseRepository.save(database);
