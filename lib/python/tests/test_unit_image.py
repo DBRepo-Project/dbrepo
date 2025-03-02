@@ -18,9 +18,10 @@ class ImageUnitTest(unittest.TestCase):
 
     def test_get_images_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [ImageBrief(id="5d065194-2196-42e3-83e6-d8fc658c4b66",
+            exp = [ImageBrief(id="96c1876a-7473-44fd-8115-19ca6fde32d4",
                               name="mariadb",
-                              version="11.1.3")]
+                              version="11.1.3",
+                              default=False)]
             # mock
             mock.get('/api/image', json=[exp[0].model_dump()])
             # test

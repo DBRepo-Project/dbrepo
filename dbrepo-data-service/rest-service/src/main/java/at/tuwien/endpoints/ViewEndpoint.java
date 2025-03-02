@@ -46,25 +46,25 @@ import java.util.UUID;
 public class ViewEndpoint extends RestEndpoint {
 
     private final ViewService viewService;
+    private final CacheService cacheService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
-    private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, MariaDbMapper mariaDbMapper, SubsetService subsetService,
-                        MetricsService metricsService, StorageService storageService, DatabaseService databaseService,
-                        CredentialService credentialService, EndpointValidator endpointValidator) {
+    public ViewEndpoint(ViewService viewService, CacheService cacheService, MariaDbMapper mariaDbMapper,
+                        SubsetService subsetService, MetricsService metricsService, StorageService storageService,
+                        DatabaseService databaseService, EndpointValidator endpointValidator) {
         this.viewService = viewService;
+        this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
-        this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
     }
 
@@ -109,7 +109,7 @@ public class ViewEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             DatabaseMalformedException, MetadataServiceException, ViewNotFoundException {
         log.debug("endpoint inspect view schemas, databaseId={}", databaseId);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             return ResponseEntity.ok(databaseService.exploreViews(database));
         } catch (SQLException e) {
@@ -152,12 +152,17 @@ public class ViewEndpoint extends RestEndpoint {
     })
     public ResponseEntity<ViewDto> create(@NotNull @PathVariable("databaseId") UUID databaseId,
                                           @Valid @RequestBody CreateViewDto data) throws DatabaseUnavailableException,
-            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException {
+            DatabaseNotFoundException, RemoteUnavailableException, ViewMalformedException, MetadataServiceException,
+            TableNotFoundException, ImageNotFoundException, QueryMalformedException {
         log.debug("endpoint create view, databaseId={}, data.name={}", databaseId, data.getName());
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        /* check */
+        endpointValidator.validateSubsetParams(data.getQuery());
+        /* create */
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(databaseService.createView(database, data));
+                    .body(databaseService.createView(database, mariaDbMapper.nameToInternalName(data.getName()),
+                            mariaDbMapper.subsetDtoToRawQuery(database, data.getQuery())));
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
             throw new DatabaseUnavailableException("Failed to establish connection to database: " + e.getMessage(), e);
@@ -196,11 +201,12 @@ public class ViewEndpoint extends RestEndpoint {
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") UUID databaseId,
                                        @NotNull @PathVariable("viewId") UUID viewId)
             throws DatabaseUnavailableException, RemoteUnavailableException, ViewNotFoundException,
-            ViewMalformedException, MetadataServiceException {
+            ViewMalformedException, MetadataServiceException, DatabaseNotFoundException {
         log.debug("endpoint delete view, databaseId={}, viewId={}", databaseId, viewId);
-        final ViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = cacheService.getView(databaseId, viewId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
-            viewService.delete(view);
+            viewService.delete(database, view);
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .build();
         } catch (SQLException e) {
@@ -273,28 +279,29 @@ public class ViewEndpoint extends RestEndpoint {
             timestamp = Instant.now();
             log.debug("timestamp not set: default to {}", timestamp);
         }
-        final ViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = cacheService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to get data from view: unauthorized");
                 throw new NotAllowedException("Failed to get data from view: unauthorized");
             }
-            credentialService.getAccess(databaseId, getId(principal));
+            cacheService.getAccess(databaseId, getId(principal));
         }
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             final HttpHeaders headers = new HttpHeaders();
             if (request.getMethod().equals("HEAD")) {
                 headers.set("Access-Control-Expose-Headers", "X-Count");
-                headers.set("X-Count", "" + viewService.count(view, timestamp));
+                headers.set("X-Count", "" + viewService.count(database, view, timestamp));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .build();
             }
             headers.set("Access-Control-Expose-Headers", "X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
-            final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+            final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                     view.getInternalName(), timestamp, page, size);
-            final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+            final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
                     query);
             metricsService.countViewGetData(databaseId, viewId);
             return ResponseEntity.ok()
@@ -351,17 +358,18 @@ public class ViewEndpoint extends RestEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* parameters */
-        final ViewDto view = credentialService.getView(databaseId, viewId);
+        final ViewDto view = cacheService.getView(databaseId, viewId);
         if (!view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to export private view: principal is null");
                 throw new NotAllowedException("Failed to export private view: principal is null");
             }
-            credentialService.getAccess(databaseId, getId(principal));
+            cacheService.getAccess(databaseId, getId(principal));
         }
-        final String query = mariaDbMapper.defaultRawSelectQuery(view.getDatabase().getInternalName(),
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        final String query = mariaDbMapper.defaultRawSelectQuery(database.getInternalName(),
                 view.getInternalName(), timestamp, null, null);
-        final Dataset<Row> dataset = subsetService.getData(credentialService.getDatabase(databaseId),
+        final Dataset<Row> dataset = subsetService.getData(cacheService.getDatabase(databaseId),
                 query);
         metricsService.countViewGetData(databaseId, viewId);
         final ExportResourceDto resource = storageService.transformDataset(dataset);

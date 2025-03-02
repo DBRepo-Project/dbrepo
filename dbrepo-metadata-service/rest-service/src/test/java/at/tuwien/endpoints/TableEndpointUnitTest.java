@@ -524,22 +524,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_publicDatabasePrivateDataPrivateSchemaAnonymous_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
-
-        /* test */
-        final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
-        final TableDto body = response.getBody();
-        assertNull(body.getConstraints());
-        assertEquals(List.of(), body.getColumns());
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws DataServiceException,
-            DataServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, UserNotFoundException, NotAllowedException {
+    public void findById_publicDataPublicSchemaAnonymous_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_4_ID, DATABASE_4, TABLE_9_ID, TABLE_9, null, null, null);
@@ -567,9 +553,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_publicHasRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -580,9 +565,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicNoRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_publicNoRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_PRINCIPAL, USER_1, null);
@@ -633,7 +617,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), null);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), null);
         });
     }
 
@@ -643,7 +627,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_4_PRINCIPAL);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_4_PRINCIPAL);
         });
     }
 
@@ -653,7 +637,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        analyseTableColumn_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_1_PRINCIPAL);
+        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(), TABLE_1_COLUMNS.get(0), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -935,8 +919,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_privateDatabasePrivateDataPublicSchemaAnonymous_fails() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, null, null, null);
@@ -944,19 +927,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_privateSchemaNotOwnerNoAccess_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_4_PRINCIPAL, USER_4, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, DataServiceException, DatabaseNotFoundException, AccessNotFoundException,
-            QueueNotFoundException, DataServiceConnectionException {
+    public void findById_publicSchemaNotOwnerNoAccess_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_2_ID, TABLE_2, USER_4_PRINCIPAL, USER_4, null);
@@ -987,9 +959,8 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRole_succeeds() throws DataServiceException, DataServiceConnectionException,
-            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, QueueNotFoundException,
-            UserNotFoundException, NotAllowedException {
+    public void findById_privateHasRole_succeeds() throws UserNotFoundException,
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
                 USER_1_PRINCIPAL, USER_1, DATABASE_1_USER_1_READ_ACCESS);
@@ -1001,8 +972,7 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_privateDatabasePrivateDataPrivateSchemaNoRole_succeeds() throws UserNotFoundException,
-            TableNotFoundException, NotAllowedException, DataServiceException, DatabaseNotFoundException,
-            AccessNotFoundException, QueueNotFoundException, DataServiceConnectionException {
+            TableNotFoundException, NotAllowedException, DatabaseNotFoundException, AccessNotFoundException {
 
         /* test */
         generic_findById(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_4_PRINCIPAL, USER_4, DATABASE_1_USER_4_READ_ACCESS);
@@ -1149,9 +1119,9 @@ public class TableEndpointUnitTest extends AbstractUnitTest {
         assertNotNull(body);
     }
 
-    public void analyseTableColumn_generic(UUID databaseId, Database database, UUID tableId, UUID columnId,
-                                           TableColumn tableColumn, Principal principal)
-            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
+    public void analyseTableColumn_generic(UUID databaseId, UUID tableId, UUID columnId, TableColumn tableColumn,
+                                           Principal principal) throws MalformedException, TableNotFoundException,
+            DatabaseNotFoundException {
 
         /* mock */
         when(entityService.suggestByColumn(tableColumn))

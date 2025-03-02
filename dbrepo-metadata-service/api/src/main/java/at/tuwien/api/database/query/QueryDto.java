@@ -1,5 +1,6 @@
 package at.tuwien.api.database.query;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -30,7 +31,7 @@ public class QueryDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1a6fb0c0-49c3-4a22-a515-35f7a3dd8e62")
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
     private UUID databaseId;
 
     @NotNull

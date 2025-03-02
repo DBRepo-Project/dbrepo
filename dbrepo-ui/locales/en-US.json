@@ -1015,6 +1015,15 @@
             "or": {
               "text": "Add \"OR\" Filter"
             }
+          },
+          "order": {
+            "text": "Add Sorting",
+            "direction": {
+              "label": "Direction"
+            },
+            "remove": {
+              "text": "Remove"
+            }
           }
         }
       }
@@ -1270,7 +1279,8 @@
     "view": {
       "create": "Failed to create view",
       "missing": "Failed to find view in metadata database",
-      "invalid": "Failed to map view query to columns in data service"
+      "invalid": "Failed to map view query to columns in data service",
+      "exists": "View with this name exists already"
     },
     "broker": {
       "connection": "Failed to contact broker service",

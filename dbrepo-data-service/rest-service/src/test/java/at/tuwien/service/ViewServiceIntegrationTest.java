@@ -34,14 +34,14 @@ public class ViewServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
     public void delete_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        viewService.delete(VIEW_1_PRIVILEGED_DTO);
+        viewService.delete(DATABASE_1_PRIVILEGED_DTO, VIEW_1_DTO);
     }
 
 }

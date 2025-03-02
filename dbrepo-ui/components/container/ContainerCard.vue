@@ -17,7 +17,7 @@
         height="20"
         class="font-small">
         <template v-slot:default>
-          {{ container.count }} / {{ container.quota }}
+          {{ container.count }} / {{ quota }}
         </template>
       </v-progress-linear>
     </v-card-text>
@@ -39,7 +39,16 @@ export default {
     }
   },
   computed: {
+    quota () {
+      if (!this.container || !this.container.quota) {
+        return '∞'
+      }
+      return this.container.quota
+    },
     utilization () {
+      if (!this.container || !this.container.quota) {
+        return 0
+      }
       return this.container.count * 100.0 / this.container.quota
     },
     colorVariant () {

@@ -2,6 +2,7 @@ package at.tuwien.api.container;
 
 import at.tuwien.api.CacheableDto;
 import at.tuwien.api.container.image.ImageDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -35,19 +36,13 @@ public class ContainerDto extends CacheableDto {
     @Schema(example = "air_quality")
     private String internalName;
 
+    @JsonIgnore
     @Schema(example = "data-db")
     private String host;
 
+    @JsonIgnore
     @Schema(example = "3306")
     private Integer port;
-
-    @JsonProperty("ui_host")
-    @Schema(example = "example.com")
-    private String uiHost;
-
-    @JsonProperty("ui_port")
-    @Schema(example = "3306")
-    private Integer uiPort;
 
     @NotNull
     private ImageDto image;

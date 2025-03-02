@@ -32,7 +32,6 @@
     "parse-md": "^3.0.3",
     "pinia": "^2.1.7",
     "qs": "^6.11.2",
-    "sql-formatter": "^15.2.0",
     "tus-js-client": "^4.0.1",
     "vue": "^3.4.21",
     "vue-axios": "^3.5.2",

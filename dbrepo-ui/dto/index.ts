@@ -437,8 +437,9 @@ interface DatabaseModifyImageDto {
 
 interface ViewCreateDto {
   name: string;
-  query: string;
+  query: SubsetDto;
   is_public: boolean;
+  is_schema_public: boolean;
 }
 
 interface ViewUpdateDto {
@@ -475,10 +476,6 @@ interface TableCsvDto {
 
 interface TableCsvDeleteDto {
   keys: Map<string, string>;
-}
-
-interface ExecuteStatementDto {
-  statement: string;
 }
 
 interface ApiErrorDto {
@@ -597,6 +594,25 @@ interface ImportCsv {
   quote: string;
   skip_lines: number;
   line_termination: string;
+}
+
+interface FilterDto {
+  type: string;
+  value: string;
+  column_id: string;
+  operator_id: string;
+}
+
+interface OrderDto {
+  column_id: string;
+  direction: string;
+}
+
+interface SubsetDto {
+  table_id: string;
+  columns: string[];
+  filter: FilterDto[] | null;
+  order: OrderDto[] | null;
 }
 
 interface QueryResultDto {

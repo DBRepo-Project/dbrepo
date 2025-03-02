@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.exception.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -17,15 +18,15 @@ public interface SubsetService {
      * Creates a subset from the given statement at given time in the given database.
      *
      * @param database  The database.
-     * @param statement The subset statement.
+     * @param subset The subset information.
      * @param timestamp The timestamp as of which the data is queried. If smaller than <now>, historic data is queried.
      * @param userId    The user id of the creating user.
      * @return The query id.
      * @throws QueryStoreInsertException The query store refused to insert the query.
      * @throws SQLException              The connection to the database could not be established.
      */
-    UUID create(DatabaseDto database, String statement, Instant timestamp, UUID userId)
-            throws QueryStoreInsertException, SQLException;
+    UUID create(DatabaseDto database, SubsetDto subset, Instant timestamp, UUID userId)
+            throws QueryStoreInsertException, SQLException, QueryMalformedException, TableNotFoundException, ImageNotFoundException, ViewMalformedException;
 
     /**
      * Counts the subset row count of a query of a given subset in the given database.
@@ -33,11 +34,10 @@ public interface SubsetService {
      * @param database The database.
      * @param query    The subset.
      * @return The row count.
-     * @throws TableMalformedException The table is malformed.
+     * @throws QueryMalformedException The query is malformed.
      * @throws SQLException            The connection to the database could not be established.
      */
-    Long reExecuteCount(DatabaseDto database, QueryDto query) throws TableMalformedException,
-            SQLException, QueryMalformedException;
+    Long reExecuteCount(DatabaseDto database, QueryDto query) throws SQLException, QueryMalformedException;
 
     /**
      * Retrieve data from a subset in a database and optionally paginate with number of page and size of results.
@@ -74,10 +74,9 @@ public interface SubsetService {
      * @return The row count.
      * @throws SQLException            The connection to the database could not be established.
      * @throws QueryMalformedException The mapped query produced a database error.
-     * @throws TableMalformedException The database table is malformed.
      */
     Long executeCountNonPersistent(DatabaseDto database, String statement, Instant timestamp)
-            throws SQLException, QueryMalformedException, TableMalformedException;
+            throws SQLException, QueryMalformedException;
 
     /**
      * Finds a query in the query store of the given database id and query id.
@@ -99,14 +98,14 @@ public interface SubsetService {
      * Inserts a query and metadata to the query store of a given database id.
      *
      * @param database The database.
-     * @param query    The query statement.
+     * @param statement    The query statement.
      * @param userId   The user id.
      * @return The stored query id on success.
      * @throws SQLException              The connection to the database could not be established.
      * @throws QueryStoreInsertException The query store failed to insert the query.
      */
-    UUID storeQuery(DatabaseDto database, String query, Instant timestamp, UUID userId) throws SQLException,
-            QueryStoreInsertException;
+    UUID storeQuery(DatabaseDto database, String statement, Instant timestamp, UUID userId) throws SQLException,
+            QueryStoreInsertException, ViewMalformedException;
 
     /**
      * Persists a query to be displayed in the frontend.

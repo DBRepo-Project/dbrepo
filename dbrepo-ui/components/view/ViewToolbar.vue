@@ -19,7 +19,7 @@
     <v-btn
       v-if="canCreatePid"
       class="mr-2"
-      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
+      :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
       variant="flat"
       color="primary"
       :text="($vuetify.display.mdAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"

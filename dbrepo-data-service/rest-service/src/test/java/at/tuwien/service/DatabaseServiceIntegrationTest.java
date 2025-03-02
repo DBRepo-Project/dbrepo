@@ -63,9 +63,9 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_2_PRIVILEGED_DTO);
         Thread.sleep(1000) /* wait for test container some more */;
     }
 
@@ -73,7 +73,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
     public void createView_succeeds() throws SQLException, ViewMalformedException {
 
         /* test */
-        databaseService.createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_CREATE_DTO);
+        databaseService.createView(DATABASE_1_PRIVILEGED_DTO, VIEW_1_NAME, VIEW_1_QUERY);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final ViewDto view0 = response.get(0);
         assertEquals("not_in_metadata_db2", view0.getName());
         assertEquals("not_in_metadata_db2", view0.getInternalName());
-        assertEquals(DATABASE_1_ID, view0.getVdbid());
+        assertEquals(DATABASE_1_ID, view0.getDatabaseId());
         assertEquals(USER_1_BRIEF_DTO, view0.getOwner());
         assertFalse(view0.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, view0.getIsPublic());
@@ -149,7 +149,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db");
         assertEquals("not_in_metadata_db", response.getInternalName());
         assertEquals("not_in_metadata_db", response.getName());
-        assertEquals(DATABASE_1_ID, response.getTdbid());
+        assertEquals(DATABASE_1_ID, response.getDatabaseId());
         assertTrue(response.getIsVersioned());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
         final List<ColumnDto> columns = response.getColumns();
@@ -185,7 +185,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto response = databaseService.inspectTable(DATABASE_2_PRIVILEGED_DTO, "experiments");
         assertEquals("experiments", response.getInternalName());
         assertEquals("experiments", response.getName());
-        assertEquals(DATABASE_2_ID, response.getTdbid());
+        assertEquals(DATABASE_2_ID, response.getDatabaseId());
         assertTrue(response.getIsVersioned());
         assertEquals(DATABASE_2_PUBLIC, response.getIsPublic());
         assertNotNull(response.getOwner());
@@ -218,7 +218,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto response = databaseService.inspectTable(DATABASE_1_PRIVILEGED_DTO, "weather_aus");
         assertEquals("weather_aus", response.getInternalName());
         assertEquals("weather_aus", response.getName());
-        assertEquals(DATABASE_1_ID, response.getTdbid());
+        assertEquals(DATABASE_1_ID, response.getDatabaseId());
         assertTrue(response.getIsVersioned());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
         assertNotNull(response.getOwner());
@@ -438,7 +438,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final ViewDto response = databaseService.inspectView(DATABASE_1_PRIVILEGED_DTO, "not_in_metadata_db2");
         assertEquals("not_in_metadata_db2", response.getInternalName());
         assertEquals("not_in_metadata_db2", response.getName());
-        assertEquals(DATABASE_1_ID, response.getVdbid());
+        assertEquals(DATABASE_1_ID, response.getDatabaseId());
         assertEquals(USER_1_BRIEF_DTO, response.getOwner());
         assertFalse(response.getIsInitialView());
         assertEquals(DATABASE_1_PUBLIC, response.getIsPublic());
@@ -472,7 +472,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto table0 = response.get(0);
         Assertions.assertEquals("complex_foreign_keys", table0.getInternalName());
         Assertions.assertEquals("complex_foreign_keys", table0.getName());
-        Assertions.assertEquals(DATABASE_1_ID, table0.getTdbid());
+        Assertions.assertEquals(DATABASE_1_ID, table0.getDatabaseId());
         assertTrue(table0.getIsVersioned());
         Assertions.assertEquals(DATABASE_1_PUBLIC, table0.getIsPublic());
         final List<ColumnDto> columns0 = table0.getColumns();
@@ -519,7 +519,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto table1 = response.get(1);
         Assertions.assertEquals("complex_primary_key", table1.getInternalName());
         Assertions.assertEquals("complex_primary_key", table1.getName());
-        Assertions.assertEquals(DATABASE_1_ID, table1.getTdbid());
+        Assertions.assertEquals(DATABASE_1_ID, table1.getDatabaseId());
         assertTrue(table1.getIsVersioned());
         Assertions.assertEquals(DATABASE_1_PUBLIC, table1.getIsPublic());
         final List<ColumnDto> columns1 = table1.getColumns();
@@ -547,7 +547,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto table2 = response.get(2);
         Assertions.assertEquals("exotic_boolean", table2.getInternalName());
         Assertions.assertEquals("exotic_boolean", table2.getName());
-        Assertions.assertEquals(DATABASE_1_ID, table2.getTdbid());
+        Assertions.assertEquals(DATABASE_1_ID, table2.getDatabaseId());
         assertTrue(table2.getIsVersioned());
         Assertions.assertEquals(DATABASE_1_PUBLIC, table2.getIsPublic());
         final List<ColumnDto> columns2 = table2.getColumns();
@@ -568,7 +568,7 @@ public class DatabaseServiceIntegrationTest extends AbstractUnitTest {
         final TableDto table3 = response.get(3);
         Assertions.assertEquals("not_in_metadata_db", table3.getInternalName());
         Assertions.assertEquals("not_in_metadata_db", table3.getName());
-        Assertions.assertEquals(DATABASE_1_ID, table3.getTdbid());
+        Assertions.assertEquals(DATABASE_1_ID, table3.getDatabaseId());
         assertTrue(table3.getIsVersioned());
         Assertions.assertEquals(DATABASE_1_PUBLIC, table3.getIsPublic());
         final List<ColumnDto> columns3 = table3.getColumns();

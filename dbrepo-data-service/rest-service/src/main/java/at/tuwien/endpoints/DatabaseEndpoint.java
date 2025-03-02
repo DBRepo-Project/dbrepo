@@ -10,7 +10,7 @@ import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.service.DatabaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,18 +36,18 @@ import java.util.UUID;
 @RequestMapping(path = "/api/database")
 public class DatabaseEndpoint extends RestEndpoint {
 
+    private final CacheService cacheService;
     private final AccessService accessService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
-    private final CredentialService credentialService;
 
     @Autowired
-    public DatabaseEndpoint(AccessService accessService, DatabaseService databaseService,
-                            ContainerService containerService, CredentialService credentialService) {
+    public DatabaseEndpoint(CacheService cacheService, AccessService accessService, DatabaseService databaseService,
+                            ContainerService containerService) {
+        this.cacheService = cacheService;
         this.accessService = accessService;
         this.databaseService = databaseService;
         this.containerService = containerService;
-        this.credentialService = credentialService;
     }
 
     @PostMapping
@@ -87,7 +87,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DatabaseMalformedException, QueryStoreCreateException, MetadataServiceException {
         log.debug("endpoint create database, data.containerId={}, data.internalName={}, data.username={}",
                 data.getContainerId(), data.getInternalName(), data.getUsername());
-        final ContainerDto container = credentialService.getContainer(data.getContainerId());
+        final ContainerDto container = cacheService.getContainer(data.getContainerId());
         try {
             final DatabaseDto database = containerService.createDatabase(container, data);
             containerService.createQueryStore(container, data.getInternalName());
@@ -135,7 +135,7 @@ public class DatabaseEndpoint extends RestEndpoint {
             DatabaseMalformedException, MetadataServiceException {
         log.debug("endpoint update user password in database, databaseId={}, data.username={}", databaseId,
                 data.getUsername());
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         try {
             databaseService.update(database, data);
             return ResponseEntity.status(HttpStatus.ACCEPTED)

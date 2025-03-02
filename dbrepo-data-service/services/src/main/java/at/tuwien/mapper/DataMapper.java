@@ -48,9 +48,6 @@ public interface DataMapper {
     ColumnBriefDto columnDtoToColumnBriefDto(ColumnDto data);
 
     /* redundant */
-    @Mappings({
-            @Mapping(target = "databaseId", source = "tdbid")
-    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     /* redundant */
@@ -58,9 +55,11 @@ public interface DataMapper {
 
     ForeignKeyBriefDto foreignKeyDtoToForeignKeyBriefDto(ForeignKeyDto data);
 
-    default String rabbitMqTupleToInsertOrUpdateQuery(TableDto table, Map<String, Object> data) {
+    default String rabbitMqTupleToInsertOrUpdateQuery(String databaseName, TableDto table, Map<String, Object> data) {
         /* parameterized query for prepared statement */
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
+                .append(databaseName)
+                .append("`.`")
                 .append(table.getInternalName())
                 .append("` (")
                 .append(data.keySet()
@@ -89,7 +88,7 @@ public interface DataMapper {
         return ViewDto.builder()
                 .name(resultSet.getString(1))
                 .internalName(resultSet.getString(1))
-                .vdbid(database.getId())
+                .databaseId(database.getId())
                 .isInitialView(false)
                 .isPublic(database.getIsPublic())
                 .isSchemaPublic(database.getIsSchemaPublic())
@@ -129,7 +128,7 @@ public interface DataMapper {
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
                 .tableId(table.getId())
-                .databaseId(table.getTdbid())
+                .databaseId(table.getDatabaseId())
                 .description(resultSet.getString(11))
                 .build();
         final String dataType = resultSet.getString(8);
@@ -179,7 +178,7 @@ public interface DataMapper {
                 .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
                 .name(resultSet.getString(10))
                 .internalName(resultSet.getString(10))
-                .databaseId(view.getVdbid())
+                .databaseId(view.getDatabaseId())
                 .build();
         /* fix boolean and set size for others */
         if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
@@ -273,12 +272,12 @@ public interface DataMapper {
                     .column(ColumnBriefDto.builder()
                             .name(columnName)
                             .internalName(columnName)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .referencedColumn(ColumnBriefDto.builder()
                             .name(referencedColumnName)
                             .internalName(referencedColumnName)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .build();
             if (optional1.isPresent()) {
@@ -295,7 +294,7 @@ public interface DataMapper {
                     .referencedTable(TableBriefDto.builder()
                             .name(referencedTable)
                             .internalName(referencedTable)
-                            .databaseId(table.getTdbid())
+                            .databaseId(table.getDatabaseId())
                             .build())
                     .references(new LinkedList<>(List.of(foreignKeyReference)))
                     .onDelete(deleteRule)
@@ -325,7 +324,7 @@ public interface DataMapper {
                 .avgRowLength(resultSet.getLong(4))
                 .dataLength(resultSet.getLong(5))
                 .maxDataLength(resultSet.getLong(6))
-                .tdbid(database.getId())
+                .databaseId(database.getId())
                 .queueName("dbrepo")
                 .routingKey("dbrepo")
                 .description(resultSet.getString(10))

@@ -18,7 +18,7 @@ class ImageUnitTest(unittest.TestCase):
 
     def test_get_images_succeeds(self):
         with requests_mock.Mocker() as mock:
-            exp = [Message(id="97e46776-aef2-4a6f-9e82-9d2ae556745f", type="info")]
+            exp = [Message(id="a456d7f0-9d42-48a8-bf5b-4ead85279e0e", type="info")]
             # mock
             mock.get('/api/message', json=[exp[0].model_dump()])
             # test

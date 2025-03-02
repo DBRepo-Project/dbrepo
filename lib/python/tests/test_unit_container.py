@@ -3,7 +3,7 @@ import unittest
 import requests_mock
 
 from dbrepo.RestClient import RestClient
-from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief, DataType
+from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief, DataType, Operator
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, AuthenticationError, MalformedError, \
     ForbiddenError, NameExistsError
 
@@ -25,8 +25,14 @@ class ContainerUnitTest(unittest.TestCase):
                                         dialect="org.hibernate.dialect.MariaDBDialect",
                                         driver_class="org.mariadb.jdbc.Driver",
                                         jdbc_method="mariadb",
+                                        default=True,
+                                        operators=[
+                                            Operator(id="0917b17e-5d68-4ddf-94f6-f178f74a0dae",
+                                                     display_name="XOR",
+                                                     value="XOR",
+                                                     documentation="https://mariadb.com/kb/en/xor/")],
                                         data_types=[
-                                            DataType(id="a01957bf-6fed-46a3-8b13-dc6ea304a3af",
+                                            DataType(id="22975809-5496-4d67-9fd4-6689f0030f82",
                                                      display_name="SERIAL",
                                                      value="serial",
                                                      documentation="https://mariadb.com/kb/en/bigint/",
@@ -145,7 +151,8 @@ class ContainerUnitTest(unittest.TestCase):
                                running=True,
                                image=ImageBrief(id="b104648b-54d2-4d72-9834-8e0e6d428b39",
                                                 name="mariadb",
-                                                version="10.11.3"),
+                                                version="10.11.3",
+                                                default=True),
                                hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             ]
             # mock
@@ -179,8 +186,14 @@ class ContainerUnitTest(unittest.TestCase):
                                         dialect="org.hibernate.dialect.MariaDBDialect",
                                         driver_class="org.mariadb.jdbc.Driver",
                                         jdbc_method="mariadb",
+                                        default=True,
+                                        operators=[
+                                            Operator(id="0917b17e-5d68-4ddf-94f6-f178f74a0dae",
+                                                     display_name="XOR",
+                                                     value="XOR",
+                                                     documentation="https://mariadb.com/kb/en/xor/")],
                                         data_types=[
-                                            DataType(id="a01957bf-6fed-46a3-8b13-dc6ea304a3af",
+                                            DataType(id="22975809-5496-4d67-9fd4-6689f0030f82",
                                                      display_name="SERIAL",
                                                      value="serial",
                                                      documentation="https://mariadb.com/kb/en/bigint/",

@@ -48,7 +48,7 @@
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
         v-if="canGetPid"
-        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-content-save-outline' : null"
+        :prepend-icon="$vuetify.display.mdAndUp ? 'mdi-identifier' : null"
         color="primary"
         variant="flat"
         :text="($vuetify.display.mdAndUp ? 'Get ' : '') + 'PID'"

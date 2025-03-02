@@ -1,6 +1,7 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.CacheableDto;
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.identifier.IdentifierDto;

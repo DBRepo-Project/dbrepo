@@ -30,8 +30,8 @@ public class ViewDto extends CacheableDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "2b5b2b03-fdd0-40d6-afe0-e5d02fd839e4")
-    private UUID vdbid;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID databaseId;
 
     @NotBlank
     @Schema(example = "Air Quality")
@@ -65,10 +65,6 @@ public class ViewDto extends CacheableDto {
     @JsonProperty("query_hash")
     @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
     private String queryHash;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private DatabaseDto database;
 
     @NotNull
     private UserBriefDto owner;

@@ -32,7 +32,8 @@
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.query.title')">
-                <pre>{{ view.query }}</pre>
+                <pre
+                  class="line-break">{{ view.query }}</pre>
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.owner.title')">

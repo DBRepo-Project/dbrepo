@@ -1,13 +1,12 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.ExportResourceDto;
-import at.tuwien.api.database.CreateViewDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewColumnDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
+import at.tuwien.api.database.query.SubsetDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.MariaDbMapper;
@@ -50,26 +49,26 @@ import java.util.UUID;
 @RequestMapping(path = "/api/database/{databaseId}/subset")
 public class SubsetEndpoint extends RestEndpoint {
 
+    private final CacheService cacheService;
     private final MariaDbMapper mariaDbMapper;
     private final SubsetService subsetService;
     private final MetadataMapper metadataMapper;
     private final MetricsService metricsService;
     private final StorageService storageService;
     private final DatabaseService databaseService;
-    private final CredentialService credentialService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public SubsetEndpoint(MariaDbMapper mariaDbMapper, SubsetService subsetService, MetadataMapper metadataMapper,
-                          MetricsService metricsService, StorageService storageService, DatabaseService databaseService,
-                          CredentialService credentialService, EndpointValidator endpointValidator) {
+    public SubsetEndpoint(CacheService cacheService, MariaDbMapper mariaDbMapper, SubsetService subsetService, 
+                          MetadataMapper metadataMapper, MetricsService metricsService, StorageService storageService, 
+                          DatabaseService databaseService, EndpointValidator endpointValidator) {
+        this.cacheService = cacheService;
         this.mariaDbMapper = mariaDbMapper;
         this.subsetService = subsetService;
         this.metadataMapper = metadataMapper;
         this.metricsService = metricsService;
         this.storageService = storageService;
         this.databaseService = databaseService;
-        this.credentialService = credentialService;
         this.endpointValidator = endpointValidator;
     }
 
@@ -106,7 +105,7 @@ public class SubsetEndpoint extends RestEndpoint {
             throws DatabaseUnavailableException, DatabaseNotFoundException, RemoteUnavailableException,
             QueryNotFoundException, NotAllowedException, MetadataServiceException {
         log.debug("endpoint find subsets in database, databaseId={}, filterPersisted={}", databaseId, filterPersisted);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final List<QueryDto> queries;
         try {
@@ -167,7 +166,7 @@ public class SubsetEndpoint extends RestEndpoint {
             MetadataServiceException, TableNotFoundException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint find subset in database, databaseId={}, subsetId={}, accept={}, timestamp={}", databaseId,
                 subsetId, accept, timestamp);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         final QueryDto subset;
         try {
@@ -248,7 +247,7 @@ public class SubsetEndpoint extends RestEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<Map<String, Object>>> create(@NotNull @PathVariable("databaseId") UUID databaseId,
-                                                            @Valid @RequestBody ExecuteStatementDto data,
+                                                            @Valid @RequestBody SubsetDto data,
                                                             Principal principal,
                                                             @NotNull HttpServletRequest request,
                                                             @RequestParam(required = false) Instant timestamp,
@@ -258,13 +257,12 @@ public class SubsetEndpoint extends RestEndpoint {
             QueryNotFoundException, StorageUnavailableException, QueryMalformedException, StorageNotFoundException,
             QueryStoreInsertException, TableMalformedException, PaginationException, QueryNotSupportedException,
             NotAllowedException, UserNotFoundException, MetadataServiceException, TableNotFoundException,
-            ViewMalformedException, ViewNotFoundException {
-        log.debug("endpoint create subset in database, databaseId={}, data.statement={}, page={}, size={}, " +
-                        "timestamp={}", databaseId, data.getStatement(), page, size,
-                timestamp);
+            ViewMalformedException, ViewNotFoundException, ImageNotFoundException {
+        log.debug("endpoint create subset in database, databaseId={}, page={}, size={}, timestamp={}", databaseId,
+                page, size, timestamp);
         /* check */
         endpointValidator.validateDataParams(page, size);
-        endpointValidator.validateForbiddenStatements(data.getStatement());
+        endpointValidator.validateSubsetParams(data);
         /* parameters */
         final UUID userId;
         if (principal != null) {
@@ -285,10 +283,10 @@ public class SubsetEndpoint extends RestEndpoint {
             log.debug("timestamp not set: default to {}", timestamp);
         }
         /* create */
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         endpointValidator.validateOnlyPrivateSchemaAccess(database, principal);
         try {
-            final UUID subsetId = subsetService.create(database, data.getStatement(), timestamp, userId);
+            final UUID subsetId = subsetService.create(database, data, timestamp, userId);
             return getData(databaseId, subsetId, principal, request, timestamp, page, size);
         } catch (SQLException e) {
             log.error("Failed to establish connection to database: {}", e.getMessage());
@@ -340,19 +338,18 @@ public class SubsetEndpoint extends RestEndpoint {
                                                              @RequestParam(required = false) Long page,
                                                              @RequestParam(required = false) Long size)
             throws PaginationException, DatabaseNotFoundException, RemoteUnavailableException, NotAllowedException,
-            QueryNotFoundException, DatabaseUnavailableException, TableMalformedException, QueryMalformedException,
-            UserNotFoundException, MetadataServiceException, TableNotFoundException, ViewNotFoundException,
-            ViewMalformedException {
+            QueryNotFoundException, DatabaseUnavailableException, QueryMalformedException, UserNotFoundException,
+            MetadataServiceException, TableNotFoundException, ViewNotFoundException, ViewMalformedException {
         log.debug("endpoint get subset data, databaseId={}, subsetId={}, principal.name={} page={}, size={}",
                 databaseId, subsetId, principal != null ? principal.getName() : null, page, size);
         endpointValidator.validateDataParams(page, size);
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to re-execute query: no authentication found");
                 throw new NotAllowedException("Failed to re-execute query: no authentication found");
             }
-            credentialService.getAccess(databaseId, getId(principal));
+            cacheService.getAccess(databaseId, getId(principal));
         }
         log.trace("visibility for database: is_public={}, is_schema_public={}", database.getIsPublic(), database.getIsSchemaPublic());
         /* parameters */
@@ -384,12 +381,7 @@ public class SubsetEndpoint extends RestEndpoint {
             final Dataset<Row> dataset = subsetService.getData(database, query);
             metricsService.countSubsetGetData(databaseId, subsetId);
             final String viewName = metadataMapper.queryDtoToViewName(subset);
-            databaseService.createView(database, CreateViewDto.builder()
-                    .name(viewName)
-                    .isPublic(false)
-                    .isSchemaPublic(false)
-                    .query(query)
-                    .build());
+            databaseService.createView(database, viewName, subset.getQuery());
             final ViewDto view = databaseService.inspectView(database, viewName);
             headers.set("Access-Control-Expose-Headers", "X-Id X-Headers");
             headers.set("X-Headers", String.join(",", view.getColumns().stream().map(ViewColumnDto::getInternalName).toList()));
@@ -448,8 +440,8 @@ public class SubsetEndpoint extends RestEndpoint {
             DatabaseUnavailableException, QueryNotFoundException, UserNotFoundException, MetadataServiceException {
         log.debug("endpoint persist query, databaseId={}, queryId={}, data.persist={}, principal.name={}", databaseId,
                 queryId, data.getPersist(), principal.getName());
-        final DatabaseDto database = credentialService.getDatabase(databaseId);
-        credentialService.getAccess(databaseId, getId(principal));
+        final DatabaseDto database = cacheService.getDatabase(databaseId);
+        cacheService.getAccess(databaseId, getId(principal));
         try {
             subsetService.persist(database, queryId, data.getPersist());
             final QueryDto dto = subsetService.findById(database, queryId);

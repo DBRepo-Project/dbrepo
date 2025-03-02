@@ -285,13 +285,6 @@ test-data-service:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
-test-upload-service:
-  image: maven:3-openjdk-${JAVA_VERSION}
-  stage: test
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install $MAVEN_OPTS -DskipTests"
-    - "mvn -f ./dbrepo-upload-service/pom.xml clean test $MAVEN_OPTS"
-
 test-analyse-service:
   image: docker.io/python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
   stage: test

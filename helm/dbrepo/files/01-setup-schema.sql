@@ -280,6 +280,7 @@ CREATE TABLE IF NOT EXISTS `mdb_view`
     last_modified    TIMESTAMP,
     owned_by         VARCHAR(36)  NOT NULL,
     PRIMARY KEY (`id`),
+    UNIQUE (`vdbid`, `internal_name`),
     FOREIGN KEY (`vdbid`) REFERENCES mdb_databases (`id`),
     FOREIGN KEY (`owned_by`) REFERENCES mdb_users (`id`)
 ) WITH SYSTEM VERSIONING;
@@ -596,32 +597,14 @@ VALUES ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Equal operator', '=',
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Greater than or equal operator', '>=',
         'https://mariadb.com/kb/en/greater-than-or-equal/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Not equal operator', '!=', 'https://mariadb.com/kb/en/not-equal/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Addition operator', '+',
-        'https://mariadb.com/kb/en/addition-operator/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Division operator', '/',
-        'https://mariadb.com/kb/en/division-operator/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Modulo operator', '%', 'https://mariadb.com/kb/en/modulo-operator/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Multiplication operator', '*',
-        'https://mariadb.com/kb/en/multiplication-operator/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Subtraction operator', '-',
-        'https://mariadb.com/kb/en/subtraction-operator-/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'LIKE', 'LIKE', 'https://mariadb.com/kb/en/like/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT LIKE', 'NOT LIKE', 'https://mariadb.com/kb/en/not-like/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IN', 'IN', 'https://mariadb.com/kb/en/in/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT IN', 'NOT IN', 'https://mariadb.com/kb/en/not-in/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS', 'IS', 'https://mariadb.com/kb/en/is/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NOT', 'IS NOT', 'https://mariadb.com/kb/en/is-not/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NOT NULL', 'IS NOT NULL', 'https://mariadb.com/kb/en/is-not-null/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'IS NULL', 'IS NULL', 'https://mariadb.com/kb/en/is-null/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'ISNULL', 'ISNULL', 'https://mariadb.com/kb/en/isnull/'),
        ('d79cb089-363c-488b-9717-649e44d8fcc5', 'REGEXP', 'REGEXP', 'https://mariadb.com/kb/en/regexp/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise AND', '&', 'https://mariadb.com/kb/en/bitwise_and/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise OR', '|', 'https://mariadb.com/kb/en/bitwise-or/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise XOR', '^', 'https://mariadb.com/kb/en/bitwise-xor/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Bitwise NOT', '~', 'https://mariadb.com/kb/en/bitwise-not/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Left shift', '<<', 'https://mariadb.com/kb/en/shift-left/'),
-       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'Right shift', '>>', 'https://mariadb.com/kb/en/shift-right/');
+       ('d79cb089-363c-488b-9717-649e44d8fcc5', 'NOT REGEXP', 'NOT REGEXP', 'https://mariadb.com/kb/en/not-regexp/');
 
 INSERT
 INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)

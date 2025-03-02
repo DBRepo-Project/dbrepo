@@ -40,17 +40,18 @@
               :resource="identifier" />
           </v-list-item>
           <v-list-item
-            v-if="subset.creator"
+            v-if="subset.owner"
             :title="$t('pages.subset.creator.title')"
             density="compact">
             <UserBadge
-              :user="subset.creator"
+              :user="subset.owner"
               :other-user="cacheUser" />
           </v-list-item>
           <v-list-item
             :title="$t('pages.subset.query.title')"
             density="compact">
-            <pre>{{ subset.query }}</pre>
+            <pre
+              class="line-break">{{ subset.query }}</pre>
           </v-list-item>
           <v-list-item
             :title="`${$t('pages.subset.query.title')} ${$t('pages.subset.hash.title')}`"

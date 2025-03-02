@@ -25,7 +25,7 @@ public class IdentifierBriefDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "1")
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
     private UUID databaseId;
 
     @JsonProperty("query_id")

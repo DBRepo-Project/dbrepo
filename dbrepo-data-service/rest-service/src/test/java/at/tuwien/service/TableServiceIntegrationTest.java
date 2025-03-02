@@ -79,8 +79,8 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_INTERNALNAME);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_3_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_3_PRIVILEGED_DTO);
         /* s3 */
         if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(s3Config.getS3Bucket()))) {
             s3Client.createBucket(CreateBucketRequest.builder()
@@ -110,7 +110,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
@@ -137,7 +137,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
@@ -163,7 +163,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
@@ -189,7 +189,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.updateTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.updateTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 1", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("1", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date")); // <<<
@@ -213,7 +213,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.createTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.createTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
@@ -240,7 +240,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/keyboard.csv")));
 
         /* test */
-        tableService.createTuple(TABLE_8_PRIVILEGED_DTO, request);
+        tableService.createTuple(DATABASE_3_PRIVILEGED_DTO, TABLE_8_DTO, request);
         final List<Map<String, byte[]>> result = MariaDbConfig.selectQueryByteArr(DATABASE_3_PRIVILEGED_DTO, "SELECT raw FROM mfcc WHERE raw IS NOT NULL", Set.of("raw"));
         assertNotNull(result.get(0).get("raw"));
         assertArrayEquals(Files.toByteArray(new File("src/test/resources/csv/keyboard.csv")), result.get(0).get("raw"));
@@ -261,7 +261,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.createTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.createTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id, `date`, location, mintemp, rainfall FROM weather_aus WHERE id = 4", Set.of("id", "date", "location", "mintemp", "rainfall"));
         assertEquals("4", result.get(0).get("id"));
         assertEquals("2023-10-03", result.get(0).get("date"));
@@ -280,7 +280,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.deleteTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.deleteTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
@@ -297,7 +297,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build();
 
         /* test */
-        tableService.deleteTuple(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.deleteTuple(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         final List<Map<String, String>> result = MariaDbConfig.selectQuery(DATABASE_1_PRIVILEGED_DTO, "SELECT id FROM weather_aus WHERE id = 1", Set.of("id"));
         assertEquals(0, result.size());
     }
@@ -307,7 +307,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getStatistics_succeeds() throws TableMalformedException, SQLException, TableNotFoundException {
 
         /* test */
-        final TableStatisticDto response = tableService.getStatistics(TABLE_2_PRIVILEGED_DTO);
+        final TableStatisticDto response = tableService.getStatistics(DATABASE_1_PRIVILEGED_DTO, TABLE_2_DTO);
         assertEquals(TABLE_2_COLUMNS.size(), response.getColumns().size());
         log.trace("response rows: {}", response.getRows());
         assertEquals(3L, response.getRows());
@@ -336,7 +336,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void delete_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        tableService.delete(TABLE_1_PRIVILEGED_DTO);
+        tableService.delete(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO);
     }
 
     @Test
@@ -347,7 +347,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            tableService.delete(TABLE_5_PRIVILEGED_DTO);
+            tableService.delete(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO);
         });
     }
 
@@ -355,7 +355,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(TABLE_1_PRIVILEGED_DTO, null);
+        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, null);
         assertEquals(3, response);
     }
 
@@ -363,7 +363,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void getCount_timestamp_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
-        final Long response = tableService.getCount(TABLE_1_PRIVILEGED_DTO, Instant.ofEpochSecond(0));
+        final Long response = tableService.getCount(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, Instant.ofEpochSecond(0));
         assertEquals(0, response);
     }
 
@@ -375,7 +375,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            tableService.getCount(TABLE_5_PRIVILEGED_DTO, null);
+            tableService.getCount(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO, null);
         });
     }
 
@@ -383,7 +383,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
     public void history_succeeds() throws SQLException, TableNotFoundException {
 
         /* test */
-        final List<TableHistoryDto> response = tableService.history(TABLE_1_PRIVILEGED_DTO, 1000L);
+        final List<TableHistoryDto> response = tableService.history(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, 1000L);
         assertEquals(1, response.size());
         final TableHistoryDto history0 = response.get(0);
         assertNotNull(history0.getTimestamp());
@@ -399,7 +399,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.history(TABLE_5_PRIVILEGED_DTO, null);
+            tableService.history(DATABASE_2_PRIVILEGED_DTO, TABLE_5_DTO, null);
         });
     }
 
@@ -421,7 +421,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
                 .build(), RequestBody.fromFile(new File("src/test/resources/csv/weather_aus.csv")));
 
         /* test */
-        tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
+        tableService.importDataset(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
     }
 
     @Test
@@ -442,7 +442,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
+            tableService.importDataset(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         });
     }
 
@@ -464,7 +464,7 @@ public class TableServiceIntegrationTest extends AbstractUnitTest {
 
         /* test */
         assertThrows(MalformedException.class, () -> {
-            tableService.importDataset(TABLE_1_PRIVILEGED_DTO, request);
+            tableService.importDataset(DATABASE_1_PRIVILEGED_DTO, TABLE_1_DTO, request);
         });
     }
 

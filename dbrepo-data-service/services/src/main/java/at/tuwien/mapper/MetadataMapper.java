@@ -12,8 +12,10 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
+import org.keycloak.representations.AccessTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -45,11 +47,13 @@ public interface MetadataMapper {
 
     UserDto userDtoToUserDto(UserDto data);
 
+    @Mappings({
+            @Mapping(target = "accessToken", source = "token")
+    })
+    TokenDto accessTokenResponseToTokenDto(AccessTokenResponse data);
+
     UserBriefDto userDtoToUserBriefDto(UserDto data);
 
-    @Mappings({
-            @Mapping(target = "databaseId", source = "tdbid")
-    })
     TableBriefDto tableDtoToTableBriefDto(TableDto data);
 
     IdentifierBriefDto identifierDtoToIdentifierBriefDto(IdentifierDto data);

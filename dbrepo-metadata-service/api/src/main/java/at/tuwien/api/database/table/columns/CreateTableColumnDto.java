@@ -28,7 +28,7 @@ public class CreateTableColumnDto {
     private Long indexLength;
 
     @NotNull
-    @Schema(example = "string")
+    @Schema(example = "varchar")
     private ColumnTypeDto type;
 
     @Schema(example = "255")

@@ -2,6 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.CacheableDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
@@ -36,8 +37,8 @@ public class TableDto extends CacheableDto {
 
     @NotNull
     @JsonProperty("database_id")
-    @Schema(example = "692511b6-5af3-4043-8b9b-626af8756d92")
-    private UUID tdbid;
+    @Schema(example = "fc29f89c-86a8-4020-9e36-4d954736c6cc")
+    private UUID databaseId;
 
     @NotBlank
     @Schema(example = "Air Quality")
@@ -107,10 +108,6 @@ public class TableDto extends CacheableDto {
 
     @NotNull
     private List<ColumnDto> columns;
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private DatabaseDto database;
 
     @NotNull
     private ConstraintsDto constraints;

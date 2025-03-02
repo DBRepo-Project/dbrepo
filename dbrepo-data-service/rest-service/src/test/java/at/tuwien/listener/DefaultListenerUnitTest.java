@@ -2,10 +2,11 @@ package at.tuwien.listener;
 
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.MetadataServiceException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.service.CredentialService;
+import at.tuwien.service.CacheService;
 import at.tuwien.test.AbstractUnitTest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
 public class DefaultListenerUnitTest extends AbstractUnitTest {
 
     @MockBean
-    private CredentialService credentialService;
+    private CacheService credentialService;
 
     @Autowired
     private DefaultListener defaultListener;
@@ -54,7 +55,7 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
         genesis();
         /* metadata database */
         MariaDbConfig.dropAllDatabases(CONTAINER_1_PRIVILEGED_DTO);
-        MariaDbConfig.createInitDatabase(CONTAINER_1_PRIVILEGED_DTO, DATABASE_1_PRIVILEGED_DTO);
+        MariaDbConfig.createInitDatabase(DATABASE_1_PRIVILEGED_DTO);
     }
 
     @Test
@@ -77,12 +78,14 @@ public class DefaultListenerUnitTest extends AbstractUnitTest {
 
     @Test
     public void onMessage_messageMalformed_fails(CapturedOutput output) throws TableNotFoundException,
-            RemoteUnavailableException, MetadataServiceException {
+            RemoteUnavailableException, MetadataServiceException, DatabaseNotFoundException {
         final Message request = buildMessage(TABLE_1_ROUTING_KEY, "{,}", new HashMap<>());
 
         /* mock */
         when(credentialService.getTable(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1_PRIVILEGED_DTO);
+                .thenReturn(TABLE_1_DTO);
+        when(credentialService.getDatabase(DATABASE_1_ID))
+                .thenReturn(DATABASE_1_PRIVILEGED_DTO);
 
         /* test */
         defaultListener.onMessage(request);

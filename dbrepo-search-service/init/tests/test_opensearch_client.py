@@ -22,7 +22,7 @@ req = Database(id="209acf92-5c9b-4633-ad99-113c86f6e948",
                                         image=ImageBrief(id="f97791b4-baf4-4b18-8f7d-3084818e6549",
                                                          name="mariadb",
                                                          version="11.1.3",
-                                                         jdbc_method="mariadb")),
+                                                         default=True)),
                tables=[Table(id="f94a6164-cad4-4873-a9fd-3fe5313b2e95",
                              database_id="209acf92-5c9b-4633-ad99-113c86f6e948",
                              name="Data",
@@ -163,7 +163,7 @@ class OpenSearchClientTest(unittest.TestCase):
 
         # test
         try:
-            OpenSearchClient().delete_database(database_id=9999)
+            OpenSearchClient().delete_database(database_id="deadbeef-a5aa-49bb-87e7-6c6271731a1a")
         except opensearchpy.exceptions.NotFoundError:
             pass
 

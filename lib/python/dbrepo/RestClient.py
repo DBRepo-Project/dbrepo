@@ -11,6 +11,7 @@ from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, ExternalSystemError, \
     AuthenticationError, FormatNotAvailable, RequestError, ServiceError, ServiceConnectionError
+from dbrepo.api.mapper import query_to_subset
 
 logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.INFO,
                     stream=sys.stdout)
@@ -720,13 +721,14 @@ class RestClient:
         raise ResponseCodeError(f'Failed to update view: response code: {response.status_code} is not '
                                 f'202 (ACCEPTED): {response.text}')
 
-    def create_view(self, database_id: str, name: str, query: str, is_public: bool, is_schema_public: bool) -> View:
+    def create_view(self, database_id: str, name: str, query: QueryDefinition, is_public: bool,
+                    is_schema_public: bool) -> ViewBrief:
         """
         Create a view in a database with given database id.
 
         :param database_id: The database id.
         :param name: The name of the created view.
-        :param query: The query of the created view.
+        :param query: The query definition of the view.
         :param is_public: The visibility of the data. If set to true the data will be publicly visible. Optional. Default: `True`.
         :param is_schema_public: The visibility of the schema metadata. If set to true the schema metadata will be publicly visible. Optional. Default: `True`.
 
@@ -740,13 +742,15 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the search service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
+        database = self.get_database(database_id=database_id)
+        subset = query_to_subset(database, self.get_image(database.container.image.id), query)
         url = f'/api/database/{database_id}/view'
         response = self._wrapper(method="post", url=url, force_auth=True,
-                                 payload=CreateView(name=name, query=query, is_public=is_public,
+                                 payload=CreateView(name=name, query=subset, is_public=is_public,
                                                     is_schema_public=is_schema_public))
         if response.status_code == 201:
             body = response.json()
-            return View.model_validate(body)
+            return ViewBrief.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create view: {response.text}')
         if response.status_code == 403:
@@ -1300,7 +1304,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to delete database access: response code: {response.status_code} is not '
                                 f'201 (CREATED): {response.text}')
 
-    def create_subset(self, database_id: str, query: str, page: int = 0, size: int = 10,
+    def create_subset(self, database_id: str, query: QueryDefinition, page: int = 0, size: int = 10,
                       timestamp: datetime.datetime = None) -> DataFrame:
         """
         Executes a SQL query in a database where the current user has at least read access with given database id. The
@@ -1308,7 +1312,7 @@ class RestClient:
         timestamp.
 
         :param database_id: The database id.
-        :param query: The query statement.
+        :param query: The query definition.
         :param page: The result pagination number. Optional. Default: `0`.
         :param size: The result pagination size. Optional. Default: `10`.
         :param timestamp: The timestamp at which the data validity is set. Optional. Default: <current timestamp>.
@@ -1323,15 +1327,17 @@ class RestClient:
         :raises ServiceError: If something went wrong with obtaining the information in the data service.
         :raises ResponseCodeError: If something went wrong with the retrieval.
         """
-        url = f'/api/database/{database_id}/subset'
+        database = self.get_database(database_id=database_id)
+        subset = query_to_subset(database, self.get_image(database.container.image.id), query)
         params = []
         if page is not None and size is not None:
             params.append(('page', page))
             params.append(('size', size))
         if timestamp is not None:
             params.append(('timestamp', timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")))
+        url = f'/api/database/{database_id}/subset'
         response = self._wrapper(method="post", url=url, headers={"Accept": "application/json"}, params=params,
-                                 payload=ExecuteQuery(statement=query))
+                                 payload=subset)
         if response.status_code == 201:
             logging.info(f'Created subset with id: {response.headers["X-Id"]}')
             return DataFrame.from_records(response.json())
@@ -1710,7 +1716,7 @@ class RestClient:
 
     def get_identifiers(self, database_id: str = None, subset_id: str = None, view_id: str = None,
                         table_id: str = None, type: IdentifierType = None, status: IdentifierStatusType = None) -> List[
-                                                                                                                       Identifier]:
+        Identifier]:
         """
         Get list of identifiers, filter by the remaining optional arguments.
 
@@ -1828,7 +1834,6 @@ class RestClient:
             return TypeAdapter(List[Message]).validate_python(body)
         raise ResponseCodeError(f'Failed to get messages: response code: {response.status_code} is not '
                                 f'200 (OK): {response.text}')
-
 
     def update_table_column(self, database_id: str, table_id: str, column_id: str, concept_uri: str = None,
                             unit_uri: str = None) -> Column:
